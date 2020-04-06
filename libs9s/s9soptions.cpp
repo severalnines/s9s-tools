@@ -6722,6 +6722,8 @@ S9sOptions::readOptionsBackup(
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
         { "use-pigz",         no_argument,       0, OptionUsePigz         },
+        { "no-install",       no_argument,       0, OptionNoInstall       },
+        { "no-terminate",     no_argument,       0, OptionNoTerminate     },
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -7020,6 +7022,16 @@ S9sOptions::readOptionsBackup(
             case OptionUsePigz:
                 // --use-pigz
                 m_options["use_pigz"] = true;
+                break;
+            
+            case OptionNoInstall:
+                // --no-install
+                m_options["no_install"] = true;
+                break;
+            
+            case OptionNoTerminate:
+                // --no-terminate
+                m_options["no_terminate"] = true;
                 break;
 
             case OptionOnNode:
