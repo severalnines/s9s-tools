@@ -165,6 +165,8 @@ function testCreateCluster()
 #
 function testCreateBackup()
 {
+    local nodeState
+
     print_title "Taking backup of the Cluster"
     begin_verbatim
 
@@ -190,9 +192,11 @@ function testCreateBackup()
     #
     #
     print_title "Verify Backup First Run"
-    cat <<EOF
-  This test will verify 
+    cat <<EOF | paragraph
+  This test will verify the previously created backup and keep the verification
+  server by passing the --no-terminate command line option to the s9s CLI.
 EOF
+
     begin_verbatim
 
     backupId=$(\
@@ -214,13 +218,28 @@ EOF
 
     check_exit_code $?
 
-    mys9s node --list --long
-    mys9s node --stat
-    echo "There something strange here, let's wait for a while and check the"
-    echo " nodes again."
-    mysleep 60
-    mys9s node --list --long
-    mys9s node --stat
+    # Checking the node state.
+    nodeState=$(node_state $FIRST_ADDED_NODE)
+    if [ "$nodeState" != "CmonHostOnline" ]; then
+        failure "The node state for $FIRST_ADDED_NODE is $nodeState."
+        mys9s node --list --long
+        mys9s node --stat
+    else
+        success "  o The node state for $FIRST_ADDED_NODE is $nodeState."
+        cat << EOF
+            There something strange here, let's wait for a while and check the
+            nodes again.
+EOF
+        mysleep 60
+        mys9s node --list --long
+        mys9s node --stat
+        nodeState=$(node_state $FIRST_ADDED_NODE)
+        if [ "$nodeState" != "CmonHostOnline" ]; then
+            failure "The node state for $FIRST_ADDED_NODE is $nodeState."
+        else
+            success "  o The node state for $FIRST_ADDED_NODE is $nodeState."
+        fi
+    fi
 
     end_verbatim
 
