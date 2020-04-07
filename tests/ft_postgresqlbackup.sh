@@ -224,8 +224,9 @@ EOF
         failure "The node state for $FIRST_ADDED_NODE is $nodeState."
         mys9s node --list --long
         mys9s node --stat
-    else
-        success "  o The node state for $FIRST_ADDED_NODE is $nodeState."
+        
+        # Waiting for a while and re-checking. We already failed, but we might
+        # provide some additional information.
         cat << EOF
             There something strange here, let's wait for a while and check the
             nodes again.
@@ -239,6 +240,8 @@ EOF
         else
             success "  o The node state for $FIRST_ADDED_NODE is $nodeState."
         fi
+    else
+        success "  o The node state for $FIRST_ADDED_NODE is $nodeState."
     fi
 
     end_verbatim
