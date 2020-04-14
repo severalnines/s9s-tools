@@ -243,7 +243,7 @@ function testHaProxyConnect()
     for HAPROXY_IP in $HAPROXY_IPS; do    
         check_postgresql_account \
             --hostname          "$HAPROXY_IP" \
-            --port              "3307" \
+            --port              "5433" \
             --account-name      "pipas" \
             --account-password  "pipas" \
             --database-name     "testdatabase" \
