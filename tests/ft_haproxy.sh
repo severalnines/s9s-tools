@@ -246,6 +246,8 @@ function testHaProxyConnect()
     print_title "Testing the HaProxy Server"
 
     begin_verbatim
+    mys9s node --list --long
+
     if [ -n "$HAPROXY_IPS" ]; then
         success "  o HaProxy IPs found, ok."
     else

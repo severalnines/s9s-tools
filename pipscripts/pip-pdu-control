@@ -1195,7 +1195,7 @@ function discover_device_at()
     printVerbose "Accessing '$url'..."
     name=$(curl $url 2>/dev/null | jq '.Status.Topic' | tr -d '"')
     if [ -z "$name" ]; then
-        printError "Failed to discover..."
+        printError "Failed to discover $url..."
         return 0
     fi
 
