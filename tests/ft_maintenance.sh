@@ -479,7 +479,7 @@ EOF
     check_exit_code_no_job $?
     
     check_job_statistics \
-        --cluster-id=1
+        --cluster-id 1
 
     mys9s job --list --job-tags=$tag
 
@@ -490,7 +490,7 @@ EOF
         failure "The job should be in scheduled state."
     fi
 
-    mys9s cluster --list --print-json
+    #mys9s cluster --list --print-json
 
     #
     # Waiting and checking if the job is triggered.
