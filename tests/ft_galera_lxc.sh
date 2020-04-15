@@ -322,12 +322,13 @@ function unregisterServer()
 {
     if [ -n "$CONTAINER_SERVER" ]; then
         print_title "Unregistering Cmon-cloud server"
-        
+        begin_verbatim
         mys9s server \
             --unregister \
             --servers="cmon-cloud://$CONTAINER_SERVER"
 
         check_exit_code_no_job $?
+        end_verbatim
     fi
 
 }
