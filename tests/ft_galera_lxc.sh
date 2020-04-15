@@ -209,7 +209,10 @@ EOF
 
     mys9s report --list --cluster-id=1 --long
     mys9s alarm --list --long 
-    mys9s alarm --stat --print-json
+
+    check_alarm_statistics         \
+        --cluster-id     1         \
+        --should-have_critical
 
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -lt 1 ]; then

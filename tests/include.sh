@@ -3708,7 +3708,58 @@ EOF
             --command="SELECT datname, datacl FROM pg_database;"
 }
 
+function check_alarm_statistics()
+{
+    local cluster_id=1
+    local should_have_critical=""
+    local lines
 
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --cluster-id)
+                cluster_id=$2
+                shift 2
+                ;;
+
+            --should-have_critical)
+                should_have_critical="true"
+                shift
+                ;;
+
+            *)
+                failure "check_alarm_statistics(): Unknown option $1."
+                break
+                ;;
+        esac
+    done
+
+    mys9s alarm --stat --cluster-id=$cluster_id --print-json
+    lines=$(s9s alarm --stat --cluster-id=$cluster_id --batch --print-json)
+
+    tmp=$(cat "$lines" | jq .alarm_statistics[0].class_name)
+    if [ "$tmp" == '"CmonAlarmStatistics"' ]; then
+        success "  o Class name is $tmp, ok."
+    else
+        failure "Class name is $tmp, should be CmonAlarmStatistics."
+    fi
+
+    tmp=$(cat "$lines" | jq .alarm_statistics[0].cluster_id)
+    if [ "$tmp" == "$cluster_id" ]; then
+        success "  o Cluster ID is $tmp, ok."
+    else
+        failure "Cluster ID is $tmp, should be $cluster_id."
+    fi
+
+    tmp=$(cat "$lines" | jq .alarm_statistics[0].warning)
+    if [ -n "$should_have_critical" ]; then
+        if [ "$tmp" -gt 0 ]; then
+            success "Has $tmp critical alarms reported, OK."
+        else
+            failure "Should have critical alarms in the statistics."
+        fi
+    fi
+
+}
 
 trap clean_up_after_test EXIT
 
