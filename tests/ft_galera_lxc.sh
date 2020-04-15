@@ -212,6 +212,7 @@ EOF
 
     check_alarm_statistics         \
         --cluster-id     1         \
+        --check-metatype           \
         --should-have_critical
 
     n_alarms=$(s9s alarm --list --long --batch | wc -l)

@@ -3712,7 +3712,10 @@ function check_alarm_statistics()
 {
     local cluster_id=1
     local should_have_critical=""
+    local check_metatype=""
     local lines
+    local n
+    local tmp
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -3726,12 +3729,42 @@ function check_alarm_statistics()
                 shift
                 ;;
 
+            --check-metatype)
+                check_metatype="true"
+                shift
+                ;;
+
             *)
                 failure "check_alarm_statistics(): Unknown option $1."
                 break
                 ;;
         esac
     done
+
+    if [ -n "$check_metatype" ]; then
+        s9s metatype --list-properties --type=CmonAlarmStatistics --long
+
+        tmp=$(s9s metatype --list-properties --type=CmonAlarmStatistics)
+        n=0
+        for name in $tmp; do
+            case "$name" in
+                cluster_id|created_after|critical|reported_after|warning)
+                    success "  o Property '$tmp' recognized, OK."
+                    let n+=1
+                    ;;
+
+                *)
+                    failure "Property $tmp was not recognized."
+                    ;;
+            esac
+        done
+
+        if [ "$n" -lt 5 ]; then
+            failure "Some properties were not found."
+        else
+            success "  o Found $n properties, OK."
+        fi
+    fi
 
     mys9s alarm --stat --cluster-id=$cluster_id --print-json
     lines=$(s9s alarm --stat --cluster-id=$cluster_id --batch --print-json)
