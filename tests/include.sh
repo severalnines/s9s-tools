@@ -3727,13 +3727,15 @@ function check_job_statistics()
         esac
     done
 
+    mys9s job --list
+
     cat <<EOF
     s9s cluster --list --cluster-id=$cluster_id --print-json | \\
-        jq .cluster.job_statistics
+        jq -C .cluster.job_statistics
 EOF
 
     s9s cluster --list --cluster-id=1 --print-json | \
-        jq .cluster.job_statistics
+        jq -C .cluster.job_statistics
 
     lines=$(s9s cluster --list --cluster-id=1 --print-json | \
         jq .cluster.job_statistics)
@@ -3820,7 +3822,7 @@ function check_alarm_statistics()
     tmp=$(echo "$lines" | jq .alarm_statistics[0].critical)
     if [ -n "$should_have_critical" ]; then
         if [ "$tmp" -gt 0 ]; then
-            success "Has $tmp critical alarms reported, OK."
+            success "  o Has $tmp critical alarms reported, OK."
         else
             failure "Should have critical alarms in the statistics."
         fi
