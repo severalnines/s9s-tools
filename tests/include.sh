@@ -3708,6 +3708,40 @@ EOF
             --command="SELECT datname, datacl FROM pg_database;"
 }
 
+function check_job_statistics()
+{
+    local cluster_id=1
+    local lines
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --cluster-id)
+                cluster_id=$2
+                shift 2
+                ;;
+            
+            *)
+                failure "check_job_statistics(): Unknown option $1."
+                break
+                ;;
+        esac
+    done
+
+    cat <<EOF
+    s9s cluster --list --cluster-id=$cluster_id --print-json | \\
+        jq .cluster.job_statistics
+EOF
+
+    s9s cluster --list --cluster-id=1 --print-json | \
+        jq .cluster.job_statistics
+
+    lines=$(s9s cluster --list --cluster-id=1 --print-json | \
+        jq .cluster.job_statistics)
+
+    aborted=$(echo "$lines" | jq .by_state.ABORTED)
+    echo "aborted: $aborted"
+}
+
 function check_alarm_statistics()
 {
     local cluster_id=1
@@ -3783,7 +3817,7 @@ function check_alarm_statistics()
         failure "Cluster ID is $tmp, should be $cluster_id."
     fi
 
-    tmp=$(echo "$lines" | jq .alarm_statistics[0].warning)
+    tmp=$(echo "$lines" | jq .alarm_statistics[0].critical)
     if [ -n "$should_have_critical" ]; then
         if [ "$tmp" -gt 0 ]; then
             success "Has $tmp critical alarms reported, OK."

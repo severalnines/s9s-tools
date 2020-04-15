@@ -477,6 +477,10 @@ EOF
         --job-tags=$tag 
 
     check_exit_code_no_job $?
+    
+    check_job_statistics \
+        --cluster-id=1
+
     mys9s job --list --job-tags=$tag
 
     state=$(s9s job --list --job-tags=$tag --batch | awk '{print $3}')
@@ -485,7 +489,6 @@ EOF
     else
         failure "The job should be in scheduled state."
     fi
-
 
     mys9s cluster --list --print-json
 
