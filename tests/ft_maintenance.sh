@@ -479,10 +479,12 @@ EOF
 
     check_exit_code_no_job $?
     
-    check_job_statistics   \
-        --cluster-id    1  \
-        --scheduled     1  \
-        --finished      2
+    check_job_statistics           \
+        --check-metatype           \
+        --cluster-id    1          \
+        --scheduled     1          \
+        --finished      2          \
+        --running       0
 
     mys9s job --list --job-tags=$tag
 
