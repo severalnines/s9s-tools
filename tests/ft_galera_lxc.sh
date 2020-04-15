@@ -258,6 +258,7 @@ function dropCluster()
     # Dropping the cluster.
     #
     print_title "Dropping Cluster"
+    begin_verbatim
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
@@ -282,6 +283,7 @@ function dropCluster()
         esac
     done
     IFS=$old_ifs  
+    end_verbatim
 }
 
 #
@@ -296,7 +298,7 @@ function deleteContainer()
     containers+=" ft_galera_lxc_02_$$"
 
     print_title "Deleting Containers"
-
+    begin_verbatim
     #
     # Deleting all the containers we created.
     #
@@ -313,6 +315,7 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 function unregisterServer()
