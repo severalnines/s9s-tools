@@ -135,6 +135,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+    begin_verbatim
     mys9s cluster \
         --create \
         --template="ubuntu" \
@@ -170,11 +171,7 @@ function createCluster()
     check_container_ids --galera-nodes
 
     wait_for_cluster_started "$CLUSTER_NAME"
-    #for i in $(seq 1 10); do
-    #    mys9s cluster --list --long
-    #    mys9s node    --list --long
-    #    sleep 6
-    #done
+    end_verbatim
 }
 
 function testAlarms()
@@ -212,6 +209,7 @@ EOF
 
     mys9s report --list --cluster-id=1 --long
     mys9s alarm --list --long 
+    mys9s alarm --stat --print-json
 
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -lt 1 ]; then

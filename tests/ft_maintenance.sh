@@ -486,6 +486,9 @@ EOF
         failure "The job should be in scheduled state."
     fi
 
+
+    mys9s cluster --list --print-json
+
     #
     # Waiting and checking if the job is triggered.
     #
