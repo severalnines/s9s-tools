@@ -270,6 +270,7 @@ ft_ndb.sh
 ft_replication_aws.sh
 ft_galerakill.sh
 ft_galerassl.sh
+ft_galera_lxc.sh
 ft_installserver.sh
 ft_galera_c2c.sh
 ft_containers_lxc.sh
