@@ -3778,7 +3778,7 @@ function check_alarm_statistics()
     done
 
     if [ -n "$check_metatype" ]; then
-        s9s metatype --list-properties --type=CmonAlarmStatistics --long
+        mys9s metatype --list-properties --type=CmonAlarmStatistics --long
 
         tmp=$(s9s metatype --list-properties --type=CmonAlarmStatistics)
         n=0
