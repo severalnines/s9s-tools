@@ -3711,7 +3711,13 @@ EOF
 function check_job_statistics()
 {
     local cluster_id=1
+    local scheduled=""
+    local finished=""
+    local running=""
+    local check_metatype=""
     local lines
+    local tmp
+    local n
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -3720,12 +3726,57 @@ function check_job_statistics()
                 shift 2
                 ;;
             
+            --scheduled)
+                scheduled=$2
+                shift 2
+                ;;
+
+            --finished)
+                finished=$2
+                shift 2
+                ;;
+
+            --running)
+                running=$2
+                shift 2
+                ;;
+            
+            --check-metatype)
+                check_metatype="true"
+                shift
+                ;;
+
             *)
                 failure "check_job_statistics(): Unknown option $1."
                 break
                 ;;
         esac
     done
+
+    if [ -n "$check_metatype" ]; then
+        mys9s metatype --list-properties --type=CmonJobStatistics --long
+
+        tmp=$(s9s metatype --list-properties --type=CmonJobStatistics)
+        n=0
+        for name in $tmp; do
+            case "$name" in
+                cluster_id|by_state)
+                    success "  o Property '$name' recognized, OK."
+                    let n+=1
+                    ;;
+
+                *)
+                    failure "Property $tmp was not recognized."
+                    ;;
+            esac
+        done
+
+        if [ "$n" -lt 2 ]; then
+            failure "Some properties were not found."
+        else
+            success "  o Found $n properties, OK."
+        fi
+    fi
 
     mys9s job --list
 
@@ -3740,8 +3791,32 @@ EOF
     lines=$(s9s cluster --list --cluster-id=1 --print-json | \
         jq .cluster.job_statistics)
 
-    aborted=$(echo "$lines" | jq .by_state.ABORTED)
-    echo "aborted: $aborted"
+    if [ -n "$scheduled" ]; then
+        tmp=$(echo "$lines" | jq .by_state.SCHEDULED)
+        if [ "$tmp" == "$scheduled" ]; then
+            success "  o Number of scheduled jobs is $tmp, OK."
+        else
+            failure "Number of scheduled jobs is $tmp, should be $scheduled."
+        fi
+    fi
+    
+    if [ -n "$finished" ]; then
+        tmp=$(echo "$lines" | jq .by_state.FINISHED)
+        if [ "$tmp" == "$finished" ]; then
+            success "  o Number of finished jobs is $tmp, OK."
+        else
+            failure "Number of finished jobs is $tmp, should be $finished."
+        fi
+    fi
+
+    if [ -n "$running" ]; then
+        tmp=$(echo "$lines" | jq .by_state.RUNNING)
+        if [ "$tmp" == "$running" ]; then
+            success "  o Number of running jobs is $tmp, OK."
+        else
+            failure "Number of running jobs is $tmp, should be $running."
+        fi
+    fi
 }
 
 function check_alarm_statistics()

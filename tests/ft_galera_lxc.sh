@@ -211,6 +211,7 @@ EOF
     mys9s alarm --list --long 
 
     check_alarm_statistics         \
+        --check-metatype           \
         --cluster-id     1         \
         --check-metatype           \
         --should-have_critical

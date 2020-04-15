@@ -7802,6 +7802,10 @@ S9sRpcReply::printJobListBrief()
             {
                 stateColorStart = XTERM_COLOR_GREEN;
                 stateColorEnd   = TERM_NORMAL;
+            } else if (status == "SCHEDULED")
+            {
+                stateColorStart = XTERM_COLOR_GREEN;
+                stateColorEnd   = TERM_NORMAL;
             } else if (status == "ABORTED")
             {
                 stateColorStart = XTERM_COLOR_YELLOW;

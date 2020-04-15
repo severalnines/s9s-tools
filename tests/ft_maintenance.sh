@@ -473,13 +473,16 @@ EOF
     #
     mys9s job \
         --success \
+        --cluster-id=1 \
         --schedule="$(dateFormat "now + 10 sec")" \
         --job-tags=$tag 
 
     check_exit_code_no_job $?
     
-    check_job_statistics \
-        --cluster-id 1
+    check_job_statistics   \
+        --cluster-id    1  \
+        --scheduled     1  \
+        --finished      2
 
     mys9s job --list --job-tags=$tag
 
