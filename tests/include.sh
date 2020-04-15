@@ -3731,11 +3731,11 @@ function check_job_statistics()
 
     cat <<EOF
     s9s cluster --list --cluster-id=$cluster_id --print-json | \\
-        jq -C .cluster.job_statistics
+        jq .cluster.job_statistics
 EOF
 
     s9s cluster --list --cluster-id=1 --print-json | \
-        jq -C .cluster.job_statistics
+        jq .cluster.job_statistics
 
     lines=$(s9s cluster --list --cluster-id=1 --print-json | \
         jq .cluster.job_statistics)
