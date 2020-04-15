@@ -3749,7 +3749,7 @@ function check_alarm_statistics()
         for name in $tmp; do
             case "$name" in
                 cluster_id|created_after|critical|reported_after|warning)
-                    success "  o Property '$tmp' recognized, OK."
+                    success "  o Property '$name' recognized, OK."
                     let n+=1
                     ;;
 
@@ -3769,21 +3769,21 @@ function check_alarm_statistics()
     mys9s alarm --stat --cluster-id=$cluster_id --print-json
     lines=$(s9s alarm --stat --cluster-id=$cluster_id --batch --print-json)
 
-    tmp=$(cat "$lines" | jq .alarm_statistics[0].class_name)
+    tmp=$(echo "$lines" | jq .alarm_statistics[0].class_name)
     if [ "$tmp" == '"CmonAlarmStatistics"' ]; then
         success "  o Class name is $tmp, ok."
     else
         failure "Class name is $tmp, should be CmonAlarmStatistics."
     fi
 
-    tmp=$(cat "$lines" | jq .alarm_statistics[0].cluster_id)
+    tmp=$(echo "$lines" | jq .alarm_statistics[0].cluster_id)
     if [ "$tmp" == "$cluster_id" ]; then
         success "  o Cluster ID is $tmp, ok."
     else
         failure "Cluster ID is $tmp, should be $cluster_id."
     fi
 
-    tmp=$(cat "$lines" | jq .alarm_statistics[0].warning)
+    tmp=$(echo "$lines" | jq .alarm_statistics[0].warning)
     if [ -n "$should_have_critical" ]; then
         if [ "$tmp" -gt 0 ]; then
             success "Has $tmp critical alarms reported, OK."
