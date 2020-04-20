@@ -42,6 +42,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Mon Apr 20 2020 David Kedves <kedazo@severalnines.com> 1.7.20200420
+- Version bump
 * Tue Apr 14 2020 David Kedves <kedazo@severalnines.com> 1.7.20200414
 - Bersion bump
 * Tue Mar 10 2020 David Kedves <kedazo@severalnines.com> 1.7.20200310
