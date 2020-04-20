@@ -3407,8 +3407,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
     jobData["ssh_user"]         = osUserName;
-    jobData["repl_user"]        = options->dbAdminUserName();
-    jobData["repl_password"]    = options->dbAdminPassword();
+    jobData["mysql_password"]   = options->dbAdminPassword();
    
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3557,8 +3556,7 @@ S9sRpcClient::createGroupReplication(
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
     jobData["ssh_user"]         = osUserName;
-    jobData["repl_user"]        = options->dbAdminUserName();
-    jobData["repl_password"]    = options->dbAdminPassword();
+    jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (options->noInstall())
     {
