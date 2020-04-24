@@ -5551,7 +5551,7 @@ S9sOptions::printHelpGeneric()
 "\n"
 "Generic options:\n"
 "  -c, --controller=URL       The URL where the controller is found.\n"
-"  --config-file=PATH         Set the configuration file.\n"
+"  --config-file=PATH         Specify the configuration file for the program.\n"
 "  --help                     Show help message and exit.\n" 
 "  -P, --controller-port INT  The port of the controller.\n"
 "  -p, --password=PASSWORD    The password for the Cmon user.\n"
