@@ -90,6 +90,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonCloudServer";
         else if (m_url.protocol().toLower() == "haproxy")
             m_properties["class_name"] = "CmonHaProxyHost";
+        else if (m_url.protocol().toLower() == "pgbouncer")
+            m_properties["class_name"] = "CmonPgBouncerHost";
         else if (m_url.protocol().toLower() == "proxysql")
             m_properties["class_name"] = "CmonProxySqlHost";
         else if (m_url.protocol().toLower() == "proxysql")
@@ -1049,6 +1051,8 @@ S9sNode::nodeTypeFlag() const
         return 'y';
     else if (theNodeType == "haproxy")
         return 'h';
+    else if (theNodeType == "pgbouncer")
+        return 'b';
     else if (theNodeType == "garbd")
         return 'a';
     else if (theNodeType == "grouprepl")

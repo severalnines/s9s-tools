@@ -74,12 +74,12 @@ S9sRpcClient::S9sRpcClient(
  * Copy constructor. Nothing to see here.
  */
 S9sRpcClient::S9sRpcClient (
-		const S9sRpcClient &orig)
+        const S9sRpcClient &orig)
 {
-	m_priv = orig.m_priv;
+    m_priv = orig.m_priv;
 
-	if (m_priv) 
-		m_priv->ref();
+    if (m_priv) 
+        m_priv->ref();
 }
 
 /**
@@ -87,11 +87,11 @@ S9sRpcClient::S9sRpcClient (
  */
 S9sRpcClient::~S9sRpcClient()
 {
-	if (m_priv && m_priv->unRef() == 0)
+    if (m_priv && m_priv->unRef() == 0)
     {
         delete m_priv;
         m_priv = 0;
-	}
+    }
 }
 
 /**
@@ -99,24 +99,24 @@ S9sRpcClient::~S9sRpcClient()
  */
 S9sRpcClient &
 S9sRpcClient::operator= (
-		const S9sRpcClient &rhs)
+        const S9sRpcClient &rhs)
 {
-	if (this == &rhs)
-		return *this;
+    if (this == &rhs)
+        return *this;
 
-	if (m_priv && m_priv->unRef() == 0)
+    if (m_priv && m_priv->unRef() == 0)
     {
         delete m_priv;
         m_priv = 0;
-	}
+    }
 
-	m_priv = rhs.m_priv;
-	if (m_priv) 
+    m_priv = rhs.m_priv;
+    if (m_priv) 
     {
-		m_priv->ref ();
-	}
+        m_priv->ref ();
+    }
 
-	return *this;
+    return *this;
 }
 
 S9sString
@@ -2896,10 +2896,10 @@ S9sRpcClient::createCluster()
         success = createPostgreSql(
                 hosts, osUserName, osSudoPassword,
                 dbVersion);
-	} else if (options->clusterType() == "mongodb")
-	{
-		success = createMongoCluster(
-				hosts, osUserName, osSudoPassword, 
+    } else if (options->clusterType() == "mongodb")
+    {
+        success = createMongoCluster(
+                hosts, osUserName, osSudoPassword, 
                 vendor, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
@@ -6325,12 +6325,12 @@ S9sRpcClient::setContent()
             return false;
         }
     } else {
-    	std::string s; 
-    	while(std::getline(std::cin, s))
+        std::string s; 
+        while(std::getline(std::cin, s))
         {
-		    content += s;
+            content += s;
             content += "\n";
-    	}
+        }
     }
     
     fullPath = options->extraArgument(0u);
