@@ -4,7 +4,9 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
+
 LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -77,6 +79,7 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
             ;;
 
         --print-json)
@@ -164,7 +167,8 @@ EOF
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1;$CONTAINER_NAME2" \
         --containers="$CONTAINER_NAME1;$CONTAINER_NAME2" \
-        $LOG_OPTION 
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -206,7 +210,8 @@ function testAddNode()
         --cluster-id=$CLUSTER_ID \
         --nodes="$CONTAINER_NAME3" \
         --containers="$CONTAINER_NAME3" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
     end_verbatim
@@ -226,7 +231,8 @@ function testRollingRestart()
     mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
     
