@@ -7959,6 +7959,7 @@ S9sRpcReply::printJobListLong()
         S9sString      ended      = theMap["ended"].toString();
         S9sString      started    = theMap["started"].toString();
         S9sString      scheduled  = theMap["scheduled"].toString();
+        S9sString      recurrence = theMap["recurrence"].toString();
         int            clusterId  = theMap["cluster_id"].toInt();
         S9sString      bar;
         double         percent;
@@ -8153,6 +8154,12 @@ S9sRpcReply::printJobListLong()
             printf("%sScheduled :%s %s%19s%s\n", 
                     XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
                     XTERM_COLOR_LIGHT_GRAY, STR(scheduled), TERM_NORMAL);
+        }
+        else if (!recurrence.empty())
+        {
+            printf("%sRecurrence:%s %s%s%s\n", 
+                    XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                    XTERM_COLOR_LIGHT_GRAY, STR(recurrence), TERM_NORMAL);
         }
 
         printf("%sTags      :%s %s\n", 
