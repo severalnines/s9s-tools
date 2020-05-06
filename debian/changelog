@@ -1,3 +1,9 @@
+s9s-tools (1.7.20200506-release1) UNRELEASED; urgency=medium
+
+  * Version bump
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 06 May 2020 15:37:58 +0200
+
 s9s-tools (1.7.20200420-release1) UNRELEASED; urgency=medium
 
   * Version bump
