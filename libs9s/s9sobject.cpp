@@ -19,6 +19,19 @@
  */
 #include "s9sobject.h"
 
+/*
+ * Names for the properties that are used in more than one object classes.
+ */
+const char S9sObject::propClassName[]        = "class_name";
+const char S9sObject::propName[]             = "name";
+const char S9sObject::propPath[]             = "cdt_path";
+const char S9sObject::propOwnerId[]          = "owner_user_id";
+const char S9sObject::propOwnerName[]        = "owner_user_name";
+const char S9sObject::propGroupId[]          = "owner_group_id";
+const char S9sObject::propGroupName[]        = "owner_group_name";
+const char S9sObject::propAcl[]              = "acl";
+const char S9sObject::propTags[]             = "tags";
+
 S9sObject::S9sObject()
 {
     m_properties["class_name"] = className();

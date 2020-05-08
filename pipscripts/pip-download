@@ -288,6 +288,8 @@ ft_postgresqlstop.sh
 ft_mysqlreplicationconfig.sh
 ft_groupreplication.sh
 ft_cluster_error.sh
+ft_proxysql_connect.sh
+ft_registergalera.sh
 EOF
 }
 

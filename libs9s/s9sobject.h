@@ -77,6 +77,17 @@ class S9sObject
 
         virtual int stateAsChar() const;
 
+        static const char propClassName[];
+        static const char propName[];
+        static const char propPath[];
+        static const char propOwnerId[];
+        static const char propOwnerName[];
+        static const char propGroupId[];
+        static const char propGroupName[];
+        static const char propAcl[];
+
+        static const char propTags[];
+
     protected:
         S9sVariantMap    m_properties;
 };

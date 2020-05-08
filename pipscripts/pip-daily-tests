@@ -203,6 +203,8 @@ ft_user.sh
 ft_scripts.sh
 ft_postgresqlbackup.sh
 ft_mongodb.sh
+ft_ldapgroups.sh
+ft_ldapnogroups.sh
 EOF
 }
 
