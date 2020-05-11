@@ -269,6 +269,10 @@ EOF
             owner_user_name)
                 let found_names+=1
                 ;;
+            
+            tags)
+                let found_names+=1
+                ;;
 
             *)
                 failure "Unidentified property '$name'."
