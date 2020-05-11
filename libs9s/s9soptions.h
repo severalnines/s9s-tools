@@ -425,8 +425,12 @@ class S9sOptions
         bool isGetAclRequested() const;
         bool isCatRequested() const;
         bool isAccessRequested() const;
+
         bool isAddAclRequested() const;
         bool isRemoveAclRequested() const;
+        bool isAddTagRequested() const;
+        bool isRemoveTagRequested() const;
+
         bool isChOwnRequested() const;
         bool isMkdirRequested() const;
         bool isRmdirRequested() const;

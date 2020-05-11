@@ -466,6 +466,16 @@ S9sBusinessLogic::execute()
             success = client.addAcl();
             client.printMessages("Acl is added.", success);
             client.setExitStatus();
+        } else if (options->isAddTagRequested())
+        {
+            success = client.addTag();
+            client.printMessages("Tag is added.", success);
+            client.setExitStatus();
+        } else if (options->isRemoveTagRequested())
+        {
+            success = client.removeTag();
+            client.printMessages("Tag is removed.", success);
+            client.setExitStatus();
         } else if (options->isRemoveAclRequested())
         {
             success = client.removeAcl();

@@ -77,6 +77,15 @@ class S9sObject
 
         virtual int stateAsChar() const;
 
+        S9sVariantList tags() const;
+
+        S9sString 
+            tags(
+                bool            useSyntaxHightlight, 
+                const S9sString defaultValue) const;
+
+        bool hasTags(const S9sVariantList &requiredTags);
+
         static const char propClassName[];
         static const char propName[];
         static const char propPath[];

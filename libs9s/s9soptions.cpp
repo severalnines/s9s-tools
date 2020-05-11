@@ -237,6 +237,9 @@ enum S9sOptionType
     OptionCat,
     OptionAddAcl,
     OptionRemoveAcl,
+    OptionAddTag,
+    OptionTag,
+    OptionRemoveTag,
     OptionChOwn,
     OptionMkdir,
     OptionRmdir,
@@ -3801,6 +3804,24 @@ bool
 S9sOptions::isRemoveAclRequested() const
 {
     return getBool("remove_acl");
+}
+
+/**
+ * \returns True if the --add-tag command line option is provided.
+ */
+bool
+S9sOptions::isAddTagRequested() const
+{
+    return getBool("add_tag");
+}
+
+/**
+ * \returns True if the --remove-tag command line option is provided.
+ */
+bool
+S9sOptions::isRemoveTagRequested() const
+{
+    return getBool("remove_tag");
 }
 
 /**
@@ -13701,6 +13722,7 @@ S9sOptions::readOptionsTree(
         // Main Option
         { "access",           no_argument,       0, OptionAccess          },
         { "add-acl",          no_argument,       0, OptionAddAcl          },
+        { "add-tag",          no_argument,       0, OptionAddTag          },
         { "cat",              no_argument,       0, OptionCat             },
         { "chown",            no_argument,       0, OptionChOwn           },
         { "delete",           no_argument,       0, OptionDelete          },
@@ -13709,6 +13731,7 @@ S9sOptions::readOptionsTree(
         { "mkdir",            no_argument,       0, OptionMkdir           },
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
+        { "remove-tag",       no_argument,       0, OptionRemoveTag       },
         { "rmdir",            no_argument,       0, OptionRmdir           },
         { "save",             no_argument,       0, OptionSave            },
         { "stat",             no_argument,       0, OptionStat            },
@@ -13720,11 +13743,12 @@ S9sOptions::readOptionsTree(
         { "acl",              required_argument, 0, OptionAcl             },
         { "all",              no_argument,       0, OptionAll             },
         { "directory",        no_argument,       0, 'd'                   },
+        { "full-path",        no_argument,       0, OptionFullPath        },
         { "owner",            required_argument, 0, OptionOwner           },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "recursive",        no_argument,       0, 'R'                   },
         { "refresh",          no_argument,       0, OptionRefresh         },
-        { "full-path",        no_argument,       0, OptionFullPath        },
+        { "tag",              required_argument, 0, OptionTag             },
 
         { "log-file",         required_argument, 0, OptionLogFile         },
         { "input-file",       required_argument, 0, OptionInputFile       },
@@ -13906,10 +13930,20 @@ S9sOptions::readOptionsTree(
                 // --add-acl
                 m_options["add_acl"] = true;
                 break;
+            
+            case OptionAddTag:
+                // --add-tag
+                m_options["add_tag"] = true;
+                break;
 
             case OptionRemoveAcl:
                 // --remove-acl
                 m_options["remove_acl"] = true;
+                break;
+            
+            case OptionRemoveTag:
+                // --remove-tag
+                m_options["remove_tag"] = true;
                 break;
 
             case OptionChOwn:
@@ -13964,6 +13998,11 @@ S9sOptions::readOptionsTree(
             case OptionFullPath:
                 // --full-path
                 m_options["full_path"] = true;
+                break;
+            
+            case OptionTag:
+                // --tag
+                m_options["tag"] = optarg;
                 break;
 
             case OptionLogFile:
@@ -14309,6 +14348,12 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isStatRequested())
+        countOptions++;
+    
+    if (isAddTagRequested())
+        countOptions++;
+    
+    if (isRemoveTagRequested())
         countOptions++;
     
     if (countOptions > 1)

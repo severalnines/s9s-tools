@@ -117,6 +117,8 @@ class S9sRpcClient
         bool getAcl();
         bool addAcl();
         bool removeAcl();
+        bool addTag();
+        bool removeTag();
         bool chOwn();
 
         bool mkdir();

@@ -6083,6 +6083,66 @@ S9sRpcClient::addAcl()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::addTag()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      tagString = options->getString("tag");
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --add-tag option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (tagString.empty())
+    {
+        PRINT_ERROR("The --add-tag requires the --tag=STRING option.");
+        return false;
+    }
+
+    request["operation"]      = "appendTag";
+    request["path"]           = options->extraArgument(0u);
+    request["tag"]            = tagString;
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::removeTag()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      tagString = options->getString("tag");
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --remove-tag option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (tagString.empty())
+    {
+        PRINT_ERROR("The --remove-tag requires the --tag=STRING option.");
+        return false;
+    }
+
+    request["operation"]      = "removeTag";
+    request["path"]           = options->extraArgument(0u);
+    request["tag"]            = tagString;
+
+    return executeRequest(uri, request);
+}
+
 /**
  * FIXME: This is not fully imlemented.
  */
