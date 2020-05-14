@@ -31,7 +31,7 @@ s9s tree \\
 .fi
 
 .TP
-.B \-\^\-add\-acl
+.B --add-acl
 Add an ACL entry to an object in the tree. Overwrites the ACL if the given type
 of ACL already exists.
 
@@ -44,7 +44,20 @@ s9s tree \\
 .fi
 
 .TP
-.B \-\^\-cat
+.B --add-tag
+This main option can be used to add a new tag to the tag list of an existing
+object.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --add-tag \\
+    --tag="newCluster" \\
+    /ft_postgresqlsimple_21475 
+.fi
+
+.TP
+.B --cat
 This option can be used to print the content of a CDT file entry similar way the
 cat(1) standard utility is used to print normal files.
 
@@ -127,7 +140,7 @@ s9s tree \\
 .fi
 
 .TP
-.B \-\^\-remove\-acl
+.B --remove-acl
 Remove an ACL entry from the ACL of an object.
 
 .B EXAMPLE
@@ -139,7 +152,19 @@ s9s tree \\
 .fi
 
 .TP
-.B \-\^\-rmdir
+.B --remove-tag
+Remove a tag from the tag list of an existing object.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --remove-tag \\
+    --tag="newTag" \\
+    /ft_postgresqlsimple_21475
+.fi
+
+.TP
+.B --rmdir
 Remove an empty folder from the tree.
 
 .B EXAMPLE
@@ -281,9 +306,22 @@ Use only ASCII characters in the output.
 .SS Other Options
 
 .TP
-.BI \-\^\-acl= ACLSTRING
+.BI --acl= ACLSTRING
 An ACL entry in string format as it is defined in acl(5) "long text format" and
 "short text format".
+
+.TP
+.BI --tag= TAGSTRING
+This command line option is used to specify one single tag when adding or
+removing tags of a tag list that belongs to an object.
+
+.B EXAMPLE
+.nf
+s9s tree \\
+    --add-tag \\
+    --tag="newTag" \\
+    /ft_postgresqlsimple_21475
+.fi
 
 .TP
 .BI \-\^\-all

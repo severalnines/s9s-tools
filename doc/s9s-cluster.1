@@ -885,11 +885,48 @@ s9s cluster \\
     --backup-id=214
 .fi
 
+.TP 
+.BI --without-tags= LIST
+When listing the existing clusters this option can be used to limit the list of
+clusters for those that has none of the enlisted tags set. 
+
+.B EXAMPLE
+.nf
+s9s cluster --list --long --without-tags="myTag;atCreate"
+s9s cluster --stat --without-tags=myTag
+.fi
+
 .TP
-.B \-\^\-with\-timescaledb
+.BI --with-tags= LIST
+When printing the list of clusters this option can be used to limit the list of
+clusters to those that have at least one of the given tags. When creating a new
+cluster this option can be used to set tags for the newly created cluster.
+
+.B EXAMPLE
+.nf
+ s9s cluster \\
+    --create \\
+    --job-tags="createCluster" \\
+    --cluster-type="postgresql" \\
+    --nodes="192.168.0.227:8089;" \\
+    --cluster-name="ft_postgresqlsimple_21475" \\
+    --db-admin="postmaster" \\
+    --db-admin-passwd="passwd12" \\
+    --provider-version="9.6" \\
+    --with-tags="atCreate;myTag" \\
+    --wait 
+.fi
+
+.TP
+.B --with-timescaledb
 Install the TimescaleDB option when creating a new cluster. This is currently
 only supported on PostgreSQL systems.
 
+
+
+\"
+\"
+\"
 .SH LOAD BALANCER OPTIONS
 The following command line options are closely related to load balancers. Please
 note that the controller may not interpret all these options for all the load

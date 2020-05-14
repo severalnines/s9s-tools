@@ -5803,6 +5803,8 @@ S9sOptions::printHelpUser()
 "  --title=TITLE              The prefix title for the user.\n"
 "  --token=TOKEN              Password reset token as received in email.\n"
 "  --user-format=FORMAT       The format string used to print users.\n"
+"  --without-tags=LIST        Limit the list of printed users by tags.\n"
+"  --with-tags=LIST           Limit the list of printed users by tags.\n"
 "\n");
 }
 
@@ -5925,6 +5927,8 @@ S9sOptions::printHelpCluster()
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
+"  --without-tags=LIST        Limit the list of printed clusters by tags.\n"
+"  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "\n"
 "Load balancer related options\n"
@@ -9808,6 +9812,8 @@ S9sOptions::readOptionsUser(
         { "title",            required_argument, 0, OptionTitle           },
         { "token",            required_argument, 0, OptionToken           }, 
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
+        { "without-tags",     required_argument, 0, OptionWithoutTags     },
+        { "with-tags",        required_argument, 0, OptionWithTags        },
 
         { 0, 0, 0, 0 }
     };
@@ -10055,6 +10061,16 @@ S9sOptions::readOptionsUser(
             case OptionPublicKeyName:
                 // --public-key-name=FILE
                 m_options["public_key_name"] = optarg;
+                break;
+            
+            case OptionWithTags:
+                // --with-tags=one;two
+                setWithTags(optarg);
+                break;
+            
+            case OptionWithoutTags:
+                // --without-tags=one;two
+                setWithoutTags(optarg);
                 break;
             
             case '?':
@@ -11150,7 +11166,6 @@ S9sOptions::readOptionsCluster(
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
 
-
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
@@ -11181,6 +11196,8 @@ S9sOptions::readOptionsCluster(
         { "vendor",           required_argument, 0, OptionVendor          },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "without-tags",     required_argument, 0, OptionWithoutTags     },
+        { "with-tags",        required_argument, 0, OptionWithTags        },
 
         // Options for ProxySql.
         { "admin-user",       required_argument, 0, OptionAdminUser       },
@@ -11598,6 +11615,16 @@ S9sOptions::readOptionsCluster(
             case OptionWithTimescaleDb:
                 // --with-timescaledb
                 m_options["with_timescaledb"] = true;
+                break;
+            
+            case OptionWithTags:
+                // --with-tags=one;two
+                setWithTags(optarg);
+                break;
+            
+            case OptionWithoutTags:
+                // --without-tags=one;two
+                setWithoutTags(optarg);
                 break;
 
             case OptionDbName:

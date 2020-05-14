@@ -155,6 +155,7 @@ EOF
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version=$PROVIDER_VERSION \
+        --with-tags="atCreate;myTag" \
         $LOG_OPTION \
         $DEBUG_OPTION
 

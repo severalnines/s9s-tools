@@ -637,8 +637,8 @@ S9sRpcClient::getClusters(
     S9sOptions    *options     = S9sOptions::instance();
     S9sString      clusterName = options->clusterName();
     int            clusterId   = options->clusterId();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sVariantMap  request     = composeRequest();
+    S9sString      uri         = "/v2/clusters/";
     bool           retval;
    
     if (options->hasClusterIdOption())
@@ -7754,8 +7754,8 @@ S9sRpcClient::removeFromGroup()
 bool
 S9sRpcClient::getUsers()
 {
-    S9sString      uri = "/v2/users/";
-    S9sVariantMap  request;
+    S9sString      uri          = "/v2/users/";
+    S9sVariantMap  request      = composeRequest();
     bool           retval;
 
     request["operation"] = "getUsers";
@@ -8430,6 +8430,12 @@ S9sRpcClient::composeRequest()
     if (!clusterName.empty())
         request["cluster_name"] = clusterName;
 
+    if (!options->withTags().empty())
+        request["with_tags"] = options->withTags();
+    
+    if (!options->withoutTags().empty())
+        request["without_tags"] = options->withoutTags();
+
     return request;
 }
 
@@ -8561,9 +8567,10 @@ S9sRpcClient::composeJob() const
     if (!options->recurrence().empty())
         job["recurrence"]  = options->recurrence(); 
 
+    // The tags of the job.
     if (options->hasJobTags())
         job["tags"] = options->jobTags();
-    
+
     if (!options->jobTitle().empty())
         job["title"] = options->jobTitle();
 
@@ -8749,6 +8756,10 @@ S9sRpcClient::composeJobData(
         jobData["import_accounts"]  = 
             !options->getBool("dont_import_accounts");
     }
+    
+    // The tags of the thing we do, not the tags of the job.
+    if (!options->withTags().empty())
+        jobData["with_tags"] = options->withTags();
 
     return jobData;
 }

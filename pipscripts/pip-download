@@ -319,6 +319,7 @@ function email_body()
         subject="Daily s9s test results ($N_TESTS_FAILED failures)."
     fi
 
+    echo -en "From: pipas@borgcollective.eu\r\n"
     echo -en "Subject: ${subject}.\r\n"
     echo -en "Mime-Version: 1.0\r\n"
     echo -en "Subject: Subject_heading\r\n"
