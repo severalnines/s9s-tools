@@ -637,8 +637,8 @@ S9sRpcClient::getClusters(
     S9sOptions    *options     = S9sOptions::instance();
     S9sString      clusterName = options->clusterName();
     int            clusterId   = options->clusterId();
-    S9sString      uri = "/v2/clusters/";
-    S9sVariantMap  request;
+    S9sVariantMap  request     = composeRequest();
+    S9sString      uri         = "/v2/clusters/";
     bool           retval;
    
     if (options->hasClusterIdOption())
@@ -1392,8 +1392,8 @@ S9sRpcClient::getJobInstances(
     if (options->getBool("show_scheduled"))
         request["show_scheduled"] = true;
 
-    if (options->hasJobTags())
-        request["tags"] = options->jobTags();
+    if (!options->withTags().empty())
+        request["tags"] = options->withTags();
 
     retval = executeRequest(uri, request);
     return retval;
@@ -6083,6 +6083,66 @@ S9sRpcClient::addAcl()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::addTag()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      tagString = options->getString("tag");
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --add-tag option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (tagString.empty())
+    {
+        PRINT_ERROR("The --add-tag requires the --tag=STRING option.");
+        return false;
+    }
+
+    request["operation"]      = "appendTag";
+    request["path"]           = options->extraArgument(0u);
+    request["tag"]            = tagString;
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::removeTag()
+{
+    S9sString      uri = "/v2/tree/";
+    S9sVariantMap  request;
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      tagString = options->getString("tag");
+
+    if (options->nExtraArguments() != 1)
+    {
+        PRINT_ERROR(
+                "The --remove-tag option requires one command line argument: "
+                "the path of the object.");
+
+        return false;
+    }
+   
+    if (tagString.empty())
+    {
+        PRINT_ERROR("The --remove-tag requires the --tag=STRING option.");
+        return false;
+    }
+
+    request["operation"]      = "removeTag";
+    request["path"]           = options->extraArgument(0u);
+    request["tag"]            = tagString;
+
+    return executeRequest(uri, request);
+}
+
 /**
  * FIXME: This is not fully imlemented.
  */
@@ -7694,8 +7754,8 @@ S9sRpcClient::removeFromGroup()
 bool
 S9sRpcClient::getUsers()
 {
-    S9sString      uri = "/v2/users/";
-    S9sVariantMap  request;
+    S9sString      uri          = "/v2/users/";
+    S9sVariantMap  request      = composeRequest();
     bool           retval;
 
     request["operation"] = "getUsers";
@@ -8370,6 +8430,12 @@ S9sRpcClient::composeRequest()
     if (!clusterName.empty())
         request["cluster_name"] = clusterName;
 
+    if (!options->withTags().empty())
+        request["with_tags"] = options->withTags();
+    
+    if (!options->withoutTags().empty())
+        request["without_tags"] = options->withoutTags();
+
     return request;
 }
 
@@ -8501,9 +8567,10 @@ S9sRpcClient::composeJob() const
     if (!options->recurrence().empty())
         job["recurrence"]  = options->recurrence(); 
 
+    // The tags of the job.
     if (options->hasJobTags())
         job["tags"] = options->jobTags();
-    
+
     if (!options->jobTitle().empty())
         job["title"] = options->jobTitle();
 
@@ -8689,6 +8756,10 @@ S9sRpcClient::composeJobData(
         jobData["import_accounts"]  = 
             !options->getBool("dont_import_accounts");
     }
+    
+    // The tags of the thing we do, not the tags of the job.
+    if (!options->withTags().empty())
+        jobData["with_tags"] = options->withTags();
 
     return jobData;
 }

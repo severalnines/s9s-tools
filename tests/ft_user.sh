@@ -269,6 +269,10 @@ EOF
             owner_user_name)
                 let found_names+=1
                 ;;
+            
+            tags)
+                let found_names+=1
+                ;;
 
             *)
                 failure "Unidentified property '$name'."
@@ -853,8 +857,10 @@ function testChangePassword()
     print_title "Testing the Changing of the Password"
 
     begin_verbatim
+
     #
-    # The 'system' user changes the password for nobody.
+    # The 'system' user changes the password for nobody. There is no old
+    # password passed here.
     #
     mys9s user \
         --change-password \

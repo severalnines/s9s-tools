@@ -237,6 +237,9 @@ enum S9sOptionType
     OptionCat,
     OptionAddAcl,
     OptionRemoveAcl,
+    OptionAddTag,
+    OptionTag,
+    OptionRemoveTag,
     OptionChOwn,
     OptionMkdir,
     OptionRmdir,
@@ -3804,6 +3807,24 @@ S9sOptions::isRemoveAclRequested() const
 }
 
 /**
+ * \returns True if the --add-tag command line option is provided.
+ */
+bool
+S9sOptions::isAddTagRequested() const
+{
+    return getBool("add_tag");
+}
+
+/**
+ * \returns True if the --remove-tag command line option is provided.
+ */
+bool
+S9sOptions::isRemoveTagRequested() const
+{
+    return getBool("remove_tag");
+}
+
+/**
  * \returns The command line option argument for the --acl option or the empty
  *   string if the option was not provided.
  */
@@ -5782,6 +5803,8 @@ S9sOptions::printHelpUser()
 "  --title=TITLE              The prefix title for the user.\n"
 "  --token=TOKEN              Password reset token as received in email.\n"
 "  --user-format=FORMAT       The format string used to print users.\n"
+"  --without-tags=LIST        Limit the list of printed users by tags.\n"
+"  --with-tags=LIST           Limit the list of printed users by tags.\n"
 "\n");
 }
 
@@ -5904,6 +5927,8 @@ S9sOptions::printHelpCluster()
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
+"  --without-tags=LIST        Limit the list of printed clusters by tags.\n"
+"  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "\n"
 "Load balancer related options\n"
@@ -6086,6 +6111,7 @@ S9sOptions::printHelpTree()
 "Options for the \"tree\" command:\n"
 "  --access                   Check access rights for a CDT entry.\n"
 "  --add-acl                  Adds a new ACL entry to the object.\n"
+"  --add-tag                  Add a new tag to the specified entry.\n"
 "  --cat                      Print the content of a CDT file.\n"
 "  --chown                    Change the ownership of an object.\n"
 "  --delete                   Remove a CDT entry.\n"
@@ -6094,6 +6120,7 @@ S9sOptions::printHelpTree()
 "  --mkdir                    Create a directory in the Cmon Directory Tree.\n"
 "  --move                     Move an object inside the tree.\n"
 "  --remove-acl               Removes an ACL entry from the object.\n"
+"  --remove-tag               Remove a tag from the tag list of the entry.\n"
 "  --rmdir                    Removes a directory in the Cmon Directory Tree.\n"
 "  --save                     Save a file in the CDT with content.\n"
 "  --touch                    Create a file in the Cmon Directory Tree.\n"
@@ -6105,6 +6132,7 @@ S9sOptions::printHelpTree()
 "  --owner=USER[:GROUP]       Owner and group of the CDT entry.\n"
 "  --recursive                Print/process also the tree sub-entries.\n"
 "  --refresh                  Recollect the data.\n"
+"  --tag=STRING               Specify the tag to add or to remove.\n"
 "\n"
     );
 }
@@ -9787,6 +9815,8 @@ S9sOptions::readOptionsUser(
         { "title",            required_argument, 0, OptionTitle           },
         { "token",            required_argument, 0, OptionToken           }, 
         { "user-format",      required_argument, 0, OptionUserFormat      }, 
+        { "without-tags",     required_argument, 0, OptionWithoutTags     },
+        { "with-tags",        required_argument, 0, OptionWithTags        },
 
         { 0, 0, 0, 0 }
     };
@@ -10034,6 +10064,16 @@ S9sOptions::readOptionsUser(
             case OptionPublicKeyName:
                 // --public-key-name=FILE
                 m_options["public_key_name"] = optarg;
+                break;
+            
+            case OptionWithTags:
+                // --with-tags=one;two
+                setWithTags(optarg);
+                break;
+            
+            case OptionWithoutTags:
+                // --without-tags=one;two
+                setWithoutTags(optarg);
                 break;
             
             case '?':
@@ -11129,7 +11169,6 @@ S9sOptions::readOptionsCluster(
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
 
-
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
         // https://docs.google.com/document/d/1hvPtdWJqLeu1bAk-ZiWsILtj5dLXSLmXUyJBiP7wKjk/edit#heading=h.xsnzbjxs2gss
@@ -11160,6 +11199,8 @@ S9sOptions::readOptionsCluster(
         { "vendor",           required_argument, 0, OptionVendor          },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "without-tags",     required_argument, 0, OptionWithoutTags     },
+        { "with-tags",        required_argument, 0, OptionWithTags        },
 
         // Options for ProxySql.
         { "admin-user",       required_argument, 0, OptionAdminUser       },
@@ -11577,6 +11618,16 @@ S9sOptions::readOptionsCluster(
             case OptionWithTimescaleDb:
                 // --with-timescaledb
                 m_options["with_timescaledb"] = true;
+                break;
+            
+            case OptionWithTags:
+                // --with-tags=one;two
+                setWithTags(optarg);
+                break;
+            
+            case OptionWithoutTags:
+                // --without-tags=one;two
+                setWithoutTags(optarg);
                 break;
 
             case OptionDbName:
@@ -13701,6 +13752,7 @@ S9sOptions::readOptionsTree(
         // Main Option
         { "access",           no_argument,       0, OptionAccess          },
         { "add-acl",          no_argument,       0, OptionAddAcl          },
+        { "add-tag",          no_argument,       0, OptionAddTag          },
         { "cat",              no_argument,       0, OptionCat             },
         { "chown",            no_argument,       0, OptionChOwn           },
         { "delete",           no_argument,       0, OptionDelete          },
@@ -13709,6 +13761,7 @@ S9sOptions::readOptionsTree(
         { "mkdir",            no_argument,       0, OptionMkdir           },
         { "move",             no_argument,       0, OptionMove            },
         { "remove-acl",       no_argument,       0, OptionRemoveAcl       },
+        { "remove-tag",       no_argument,       0, OptionRemoveTag       },
         { "rmdir",            no_argument,       0, OptionRmdir           },
         { "save",             no_argument,       0, OptionSave            },
         { "stat",             no_argument,       0, OptionStat            },
@@ -13720,11 +13773,12 @@ S9sOptions::readOptionsTree(
         { "acl",              required_argument, 0, OptionAcl             },
         { "all",              no_argument,       0, OptionAll             },
         { "directory",        no_argument,       0, 'd'                   },
+        { "full-path",        no_argument,       0, OptionFullPath        },
         { "owner",            required_argument, 0, OptionOwner           },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "recursive",        no_argument,       0, 'R'                   },
         { "refresh",          no_argument,       0, OptionRefresh         },
-        { "full-path",        no_argument,       0, OptionFullPath        },
+        { "tag",              required_argument, 0, OptionTag             },
 
         { "log-file",         required_argument, 0, OptionLogFile         },
         { "input-file",       required_argument, 0, OptionInputFile       },
@@ -13906,10 +13960,20 @@ S9sOptions::readOptionsTree(
                 // --add-acl
                 m_options["add_acl"] = true;
                 break;
+            
+            case OptionAddTag:
+                // --add-tag
+                m_options["add_tag"] = true;
+                break;
 
             case OptionRemoveAcl:
                 // --remove-acl
                 m_options["remove_acl"] = true;
+                break;
+            
+            case OptionRemoveTag:
+                // --remove-tag
+                m_options["remove_tag"] = true;
                 break;
 
             case OptionChOwn:
@@ -13964,6 +14028,11 @@ S9sOptions::readOptionsTree(
             case OptionFullPath:
                 // --full-path
                 m_options["full_path"] = true;
+                break;
+            
+            case OptionTag:
+                // --tag
+                m_options["tag"] = optarg;
                 break;
 
             case OptionLogFile:
@@ -14309,6 +14378,12 @@ S9sOptions::checkOptionsTree()
         countOptions++;
     
     if (isStatRequested())
+        countOptions++;
+    
+    if (isAddTagRequested())
+        countOptions++;
+    
+    if (isRemoveTagRequested())
         countOptions++;
     
     if (countOptions > 1)

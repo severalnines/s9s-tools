@@ -19,6 +19,23 @@
  */
 #include "s9sobject.h"
 
+/*
+ * Names for the properties that are used in more than one object classes.
+ */
+const char S9sObject::propClassName[]        = "class_name";
+const char S9sObject::propName[]             = "name";
+const char S9sObject::propPath[]             = "cdt_path";
+const char S9sObject::propOwnerId[]          = "owner_user_id";
+const char S9sObject::propOwnerName[]        = "owner_user_name";
+const char S9sObject::propGroupId[]          = "owner_group_id";
+const char S9sObject::propGroupName[]        = "owner_group_name";
+const char S9sObject::propAcl[]              = "acl";
+const char S9sObject::propTags[]             = "tags";
+
+//#define DEBUG
+//#define WARNING
+#include "s9sdebug.h"
+
 S9sObject::S9sObject()
 {
     m_properties["class_name"] = className();
@@ -358,3 +375,86 @@ S9sObject::stateAsChar() const
     return '\0';
 }
 
+/**
+ * \returns A list with all the tags associated with the object. 
+ */
+S9sVariantList
+S9sObject::tags() const
+{
+    return property("tags").toVariantList();
+}
+
+/**
+ * \param useSyntaxHightlight True to produce colored output.
+ * \param defaultValue The string to return if there are no tags.
+ * \returns The list of tags formatted into a string as it can be printed for
+ *   the user. 
+ */
+S9sString 
+S9sObject::tags(
+        bool            useSyntaxHightlight,
+        const S9sString defaultValue) const
+{
+    S9sString      retval;
+    S9sVariantList theList = property("tags").toVariantList();
+
+    for (uint idx = 0u; idx < theList.size(); ++idx)
+    {
+        S9sString tag = theList[idx].toString();
+
+        if (tag.empty())
+            continue;
+
+        if (useSyntaxHightlight)
+            tag = XTERM_COLOR_TAG + tag + TERM_NORMAL;
+
+        tag = "#" + tag;
+        if (!retval.empty())
+            retval += ", ";
+
+        retval += tag;
+    }
+
+    if (retval.empty())
+        retval = defaultValue;
+
+    return retval;
+}
+
+/**
+ * \param requiredTags Tags to be checked.
+ * \returns True if the job has all the required tags.
+ */
+bool
+S9sObject::hasTags(
+        const S9sVariantList &requiredTags)
+{
+    S9sVariantList myTags = tags();
+
+    S9S_DEBUG(" requiredTags : %s", STR(S9sVariant(requiredTags).toString()));
+    S9S_DEBUG("       myTags : %s", STR(S9sVariant(myTags).toString()));
+    for (uint idx1 = 0u; idx1 < requiredTags.size(); ++idx1)
+    {
+        S9sString requiredTag = requiredTags[idx1].toString();
+        bool      found = false;
+
+        if (requiredTag.empty())
+            continue;
+
+        for (uint idx2 = 0u; idx2 < myTags.size(); ++idx2)
+        {
+            S9sString myTag = myTags[idx2].toString();
+
+            if (requiredTag.toLower() == myTag.toLower())
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return false;
+    }
+
+    return true;
+}

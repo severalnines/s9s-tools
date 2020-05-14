@@ -7,6 +7,7 @@
 
 #include "S9sVariantList"
 #include "S9sJsonParseContext"
+#include "S9sObject"
 
 #define YY_EXTRA_TYPE S9sJsonParseContext *
 #include "json_parser.h"
@@ -198,37 +199,111 @@ S9sVariantMap::toJsonString(
         const S9sFormatFlags &formatFlags) const
 {
     S9sVector<S9sString> theKeys = keys();
+    S9sVector<S9sString> sortedKeys;
     S9sString            retval;
 
-    //retval += S9sVariant::indent(depth, formatFlags);
+    if (contains(S9sObject::propClassName))
+        sortedKeys << S9sObject::propClassName;
+    
+    if (contains(S9sObject::propName))
+        sortedKeys << S9sObject::propName;
+    
+    if (contains(S9sObject::propPath))
+        sortedKeys << S9sObject::propPath;
+    
+    if (contains(S9sObject::propOwnerId))
+        sortedKeys << S9sObject::propOwnerId;
+    
+    if (contains(S9sObject::propOwnerName))
+        sortedKeys << S9sObject::propOwnerName;
+    
+    if (contains(S9sObject::propGroupId))
+        sortedKeys << S9sObject::propGroupId;
+    
+    if (contains(S9sObject::propGroupName))
+        sortedKeys << S9sObject::propGroupName;
+    
+    if (contains(S9sObject::propAcl))
+        sortedKeys << S9sObject::propAcl;
+    
+    if (contains(S9sObject::propTags))
+        sortedKeys << S9sObject::propTags;
+    for (size_t idx = 0u; idx < theKeys.size(); ++idx)
+    {
+        const S9sString &key = theKeys[idx];
 
-    if (formatFlags & S9sFormatColor)
-        retval += TERM_NORMAL;
+        if (key == S9sObject::propClassName ||
+                key == S9sObject::propName ||
+                key == S9sObject::propPath ||
+                key == S9sObject::propOwnerId ||
+                key == S9sObject::propOwnerName ||
+                key == S9sObject::propGroupId ||
+                key == S9sObject::propGroupName ||
+                key == S9sObject::propAcl ||
+                key == S9sObject::propTags)
+        {
+            continue;
+        }
+
+        if (at(key).isVariantMap() || at(key).isVariantList())
+            continue;
+
+        sortedKeys << key;
+    }
+    
+    for (size_t idx = 0u; idx < theKeys.size(); ++idx)
+    {
+        const S9sString &key = theKeys[idx];
+
+        if (key == S9sObject::propClassName ||
+                key == S9sObject::propName ||
+                key == S9sObject::propPath ||
+                key == S9sObject::propOwnerId ||
+                key == S9sObject::propOwnerName ||
+                key == S9sObject::propGroupId ||
+                key == S9sObject::propGroupName ||
+                key == S9sObject::propAcl ||
+                key == S9sObject::propTags)
+        {
+            continue;
+        }
+
+        if (!at(key).isVariantMap() && !at(key).isVariantList())
+            continue;
+
+        sortedKeys << key;
+    }
+
+    /*
+     *
+     */
+    //if (formatFlags & S9sFormatColor)
+    //    retval += TERM_NORMAL;
 
     if (formatFlags & S9sFormatIndent)
         retval += "{\n";
     else
         retval += "{ ";
 
-    for (uint idx = 0; idx < theKeys.size(); ++idx)
+    for (uint idx = 0; idx < sortedKeys.size(); ++idx)
     {
         retval += S9sVariant::indent(depth + 1, formatFlags);
         
         if (formatFlags & S9sFormatColor)
             retval += "\033[38;5;63m";
 
-        retval += S9sVariant::quote(theKeys[idx], S9sFormatNormal);
+        retval += S9sVariant::quote(sortedKeys[idx], S9sFormatNormal);
 
         if (formatFlags & S9sFormatColor)
             retval += TERM_NORMAL;
 
         retval += ": ";
        
-        const S9sVariant &value = at(theKeys[idx]);
+        const S9sVariant &value = at(sortedKeys[idx]);
         
         retval += value.toJsonString(depth + 1, formatFlags);
         
-        if (idx + 1 < theKeys.size())
+        if (idx + 1 < sortedKeys.size())
             retval += ',';
 
         if (formatFlags & S9sFormatIndent)

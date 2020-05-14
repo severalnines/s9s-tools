@@ -547,6 +547,14 @@ S9sFormatter::printObjectStat(
     printf("%s", STR(object.aclShortString()));
 
     printf("\n");
+
+    //
+    // The tags.
+    //
+    printf("%s    Tags:%s ", greyBegin, greyEnd);
+    printf("%s", STR(object.tags(useSyntaxHighLight(), "-")));
+
+    printf("\n");
 }
 
 void 

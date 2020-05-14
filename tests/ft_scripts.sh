@@ -228,6 +228,9 @@ function testRunJsJob()
     files="imperative_001.js imperative_002.js imperative_003.js "
     files+="imperative_004.js imperative_009.js "
 
+    mys9s node --list --long
+    mys9s node --stat
+
     for file in $files; do
         print_title "Running CDT Script $file"
         cat <<EOF

@@ -441,14 +441,58 @@ The email address for the user.
 The new password when changing the password.
 
 .TP
-.BI \-\^\-old\-password= PASSWORD
+.BI --old-password= PASSWORD
 The old password when changing the password.
+
+Please note that a superuser can change the password for any users without
+providing the old password, but if the old password is provided it will be
+checked never the less. Should the old password fail the authentication the
+request will be rejected and an error message will be printed.
+
+The command line tool is somewhat different from GUI applications, because when
+a command is issued an authentication process will be performed (there is no
+open session for the command line program as it is for a GUI application). This
+means non-superuser requests already have the old password for authentication,
+so it is not necessary to repeat it in the command line, but the s9s program
+will send it as old password for the controller. Here is an example:
+
+.B EXAMPLE
+.nf
+# s9s user \\
+    --change-password \\
+    --cmon-user="myself" \\
+    --password="p" \\
+    --new-password="pp"
+.fi
+
+In this example the \fB\-\-password\fP will be used for authentication and also
+sent as "old password" for the password change request. This happens only when
+the user changes his/her own password. 
+
+Here is an other example when the \fBsystem\fP user changes the password for
+some other user:
+
+.B EXAMPLE
+.nf
+# s9s user \\
+    --change-password \\
+    --cmon-user="system" \\
+    --password="secret" \\
+    --new-password="p" \\
+    "otherUser" 
+.fi
+
+In this example the \fBsystem\fP user changes the password for the 
+\fBotherUser\fP user. The \fBsecret\fP is the password of the \fBsystem\fP user,
+the new password is \fBp\fP. The old password is not provided here, but that's
+not an issue because as normally, the \fBsystem\fP user is a superuser.
+
 
 .\"
 .\" The user format string.
 .\"
 .TP
-.BR \-\^\-user\-format [ =\fIFORMATSTRING\fP "]
+.BI --user-format= FORMATSTRING
 The string that controls the format of the printed information about the users.
 When this command line option is used the specified information will be printed
 instead of the default columns. The format string uses the '%' character to mark
@@ -527,6 +571,23 @@ The title of the user (e.g. "Dr.").
 
 .RE
 
+.TP
+.BI --without-tags= LIST
+When listing the users this option can be used to limit the list for those users
+that has none of the specified tags set.
+
+.TP
+.BI --with-tags= LIST
+When listing the users this option can be used to limit the list to those users
+that have at least one of the tags set.
+
+.B EXAMPLE
+.nf
+s9s user \\
+    --list \\
+    --long \\
+    --with-tags="ds9;tng"
+.fi
 
 .\"
 .\"

@@ -2030,6 +2030,16 @@ EOF
         success "  o Return code is 0, ok."
     fi
 
+    # Adding a tag to the user and checking if the tag is indeed added.
+    mys9s tree --add-tag --tag="testUser" /$USER
+    mys9s user --stat $USER
+
+    if s9s user --stat $USER | grep -q testUser; then
+        success "  o User $USER has the tag 'testUser' set, OK."
+    else
+        warning "  o User $USER has no tag 'testUser' set."
+    fi
+
     #
     # Adding the user's default SSH public key. This will come handy when we
     # create a container because this way the user will be able to log in with

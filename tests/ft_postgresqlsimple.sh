@@ -155,6 +155,7 @@ EOF
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version=$PROVIDER_VERSION \
+        --with-tags="atCreate;myTag" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -214,6 +215,35 @@ EOF
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
+
+    #
+    # Adding a tag to the cluster and checking if the tag is indeed added.
+    # Also: removing a tag and checking if the tag indeed was removed.
+    #
+    mys9s tree --add-tag    --tag="testCluster" /$CLUSTER_NAME
+    mys9s tree --add-tag    --tag="newCluster"  /$CLUSTER_NAME
+    mys9s tree --add-tag    --tag="newTag"      /$CLUSTER_NAME
+    mys9s tree --remove-tag --tag="newTag"      /$CLUSTER_NAME
+
+    mys9s cluster --stat $CLUSTER_NAME
+
+    if s9s cluster --stat $CLUSTER_NAME | grep -q testCluster; then
+        success "  o Cluster $CLUSTER_NAME has the tag 'testCluster' set, OK."
+    else
+        failure "Cluster $CLUSTER_NAME has no tag 'testCluster' set."
+    fi    
+    
+    if s9s cluster --stat $CLUSTER_NAME | grep -q newCluster; then
+        success "  o Cluster $CLUSTER_NAME has the tag 'newCluster' set, OK."
+    else
+        failure "Cluster $CLUSTER_NAME has no tag 'newCluster' set."
+    fi
+    
+    if s9s cluster --stat $CLUSTER_NAME | grep -q newTag; then
+        failure "Cluster $CLUSTER_NAME has tag 'newTag' set."
+    else
+        success "  o Cluster $CLUSTER_NAME has no tag 'newTag' set, OK."
+    fi
 
     end_verbatim
 }
