@@ -486,9 +486,9 @@ EOF
         --finished      2          \
         --running       0
 
-    mys9s job --list --job-tags=$tag
+    mys9s job --list --with-tags=$tag
 
-    state=$(s9s job --list --job-tags=$tag --batch | awk '{print $3}')
+    state=$(s9s job --list --with-tags=$tag --batch | awk '{print $3}')
     if [ "$state" == "SCHEDULED" ]; then
         success "  o The job is in scheduled state, ok."
     else
@@ -501,9 +501,9 @@ EOF
     # Waiting and checking if the job is triggered.
     #
     mysleep 30
-    mys9s job --list --job-tags=$tag
+    mys9s job --list --with-tags=$tag
     
-    state=$(s9s job --list --job-tags=$tag --batch | awk '{print $3}')
+    state=$(s9s job --list --with-tags=$tag --batch | awk '{print $3}')
     if [ "$state" == "FINISHED" ]; then
         success "  o The job is in finished state, ok."
     else
@@ -539,9 +539,9 @@ EOF
         --job-tags=$tag
 
     check_exit_code_no_job $?
-    mys9s job --list --job-tags=$tag
+    mys9s job --list --with-tags=$tag
 
-    state=$(s9s job --list --job-tags=$tag --batch | head -n 1 | awk '{print $3}')
+    state=$(s9s job --list --with-tags=$tag --batch | head -n 1 | awk '{print $3}')
     if [ "$state" == "SCHEDULED" ]; then
         success "  o The job is in scheduled state, ok."
     else
@@ -552,16 +552,16 @@ EOF
     # Waiting and checking if the job is triggered.
     #
     mysleep 180
-    mys9s job --list --job-tags="$tag,recurrence"
+    mys9s job --list --with-tags="$tag,recurrence"
     
-    state=$(s9s job --list --job-tags=$tag,recurrence --batch | head -n 1 | awk '{print $3}')
+    state=$(s9s job --list --with-tags=$tag,recurrence --batch | head -n 1 | awk '{print $3}')
     if [ "$state" == "FINISHED" ]; then
         success "  o The recurring job is in finished state, ok."
     else
         failure "The recurring job should be in finished state."
     fi
 
-    state=$(s9s job --list --job-tags=$tag --batch | grep SCHEDULED | awk '{print $3}')
+    state=$(s9s job --list --with-tags=$tag --batch | grep SCHEDULED | awk '{print $3}')
     if [ "$state" == "SCHEDULED" ]; then
         success "  o The original job is in scheduled state, ok."
     else
@@ -569,7 +569,7 @@ EOF
     fi
 
     mysleep 120
-    mys9s job --list --job-tags="$tag,recurrence" --long
+    mys9s job --list --with-tags="$tag,recurrence" --long
 
     end_verbatim
 }
@@ -690,7 +690,7 @@ EOF
         --recurrence="0 6 * * 5" \
         --job-tags="testMaintenanceJob5"
 
-    mys9s job --list --long --job-tags="testMaintenanceJob5"
+    mys9s job --list --long --with-tags="testMaintenanceJob5"
     mys9s maintenance --next --cluster-id=1 --nodes="$FIRST_NODENAME"
     mys9s maintenance --current --cluster-id=1 --nodes="$FIRST_NODENAME"
     end_verbatim
