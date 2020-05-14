@@ -6111,6 +6111,7 @@ S9sOptions::printHelpTree()
 "Options for the \"tree\" command:\n"
 "  --access                   Check access rights for a CDT entry.\n"
 "  --add-acl                  Adds a new ACL entry to the object.\n"
+"  --add-tag                  Add a new tag to the specified entry.\n"
 "  --cat                      Print the content of a CDT file.\n"
 "  --chown                    Change the ownership of an object.\n"
 "  --delete                   Remove a CDT entry.\n"
@@ -6119,6 +6120,7 @@ S9sOptions::printHelpTree()
 "  --mkdir                    Create a directory in the Cmon Directory Tree.\n"
 "  --move                     Move an object inside the tree.\n"
 "  --remove-acl               Removes an ACL entry from the object.\n"
+"  --remove-tag               Remove a tag from the tag list of the entry.\n"
 "  --rmdir                    Removes a directory in the Cmon Directory Tree.\n"
 "  --save                     Save a file in the CDT with content.\n"
 "  --touch                    Create a file in the Cmon Directory Tree.\n"
@@ -6130,6 +6132,7 @@ S9sOptions::printHelpTree()
 "  --owner=USER[:GROUP]       Owner and group of the CDT entry.\n"
 "  --recursive                Print/process also the tree sub-entries.\n"
 "  --refresh                  Recollect the data.\n"
+"  --tag=STRING               Specify the tag to add or to remove.\n"
 "\n"
     );
 }
