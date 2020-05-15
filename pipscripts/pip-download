@@ -237,6 +237,47 @@ function get_test_names_html()
     IFS="$oldifs"
 }
 
+function emit_test_case_xml()
+{
+    local html_file
+    local oldifs
+    local test_name
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            --test-name)
+                test_name="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    cat <<EOF
+
+    <!--
+          slice_file: $html_file
+    -->
+    <testcase 
+        classname="$test_name" 
+        name=""
+        time="">
+EOF
+
+    cat <<EOF
+    </testcase>
+EOF
+}
+
 function process_html_file_xml()
 {
     local test_name
@@ -303,18 +344,22 @@ function process_html_file_xml()
 -->
 <testsuite failures="$n_failures" tests="$n_cases">
 EOF
-    slice_file="/tmp/pip_download.$$"
+    slice_file="/tmp/pip_download.html"
 
     test_names=$(get_test_names_html --html-file "$html_file")
     for test_name in $test_names; do
-        echo "--> '$test_name'"
+        #echo "--> '$test_name'"
         cut_test_case_html \
             --html-file "$html_file" \
             --output-file "$slice_file" \
             --test-name "$test_name"
 
         #vim "$slice_file"
-        rm "$slice_file"
+        emit_test_case_xml \
+            --html-file "$slice_file" \
+            --test-name "$test_name"
+
+        #rm "$slice_file"
         #exit 0
     done
     exit 0

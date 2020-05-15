@@ -498,6 +498,7 @@ function failure
         echo -e  "${XTERM_COLOR_RED}$1${TERM_NORMAL}"
     fi
 
+    echo "p42err $1"
     let NUMBER_OF_PERFORMED_CHECKS+=1
     let NUMBER_OF_FAILED_CHECKS+=1
     FAILED="true"
