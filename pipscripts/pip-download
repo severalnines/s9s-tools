@@ -313,9 +313,9 @@ EOF
             --output-file "$slice_file" \
             --test-name "$test_name"
 
-        vim "$slice_file"
+        #vim "$slice_file"
         rm "$slice_file"
-        exit 0
+        #exit 0
     done
     exit 0
 #    -------------------------------------------------------------

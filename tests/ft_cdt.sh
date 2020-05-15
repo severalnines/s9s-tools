@@ -248,6 +248,7 @@ function testGroupsFolder()
         return 1
     fi
 
+    failure "This test forced to fail to test Jenkins."
     return 0
 }
 
