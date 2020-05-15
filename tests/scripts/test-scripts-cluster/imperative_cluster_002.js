@@ -37,7 +37,7 @@ function main()
             } else {
                 print("The port is ok.");
             }
-        } else if (role == "none")
+        } else if (role == "master")
         {
             if (port != 3306)
             {
