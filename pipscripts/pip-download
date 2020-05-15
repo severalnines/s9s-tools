@@ -168,6 +168,75 @@ function download_html_file()
     #ls -lha $html_file
 }
 
+function cut_test_case_html()
+{
+    local html_file
+    local output_file
+    local test_name
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            --output-file)
+                output_file="$2"
+                shift 2
+                ;;
+
+            --test-name)
+                test_name="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    [ -z "$html_file" ] && return 1
+    [ -z "$output_file" ] && return 1
+    [ -z "$test_name" ] && return 1
+
+    awk_command="/p42dc 200 $test_name/,/p42dc 201 $test_name/"
+    awk "$awk_command" "$html_file" >"$output_file"
+}
+
+function get_test_names_html()
+{
+    local html_file
+    local oldifs
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file=$2
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    [ -z "$html_file" ] && return 1
+    [ ! -f "$html_file" ] && return 1
+    
+    oldifs="$IFS"
+    IFS=$'\n'
+    for caseline in $(cat "$html_file" | grep "p42dc 200 "); do
+        my_name=$(echo "$caseline" | awk -F' ' '{print $3}')
+        printf "$my_name\n"
+    done
+    IFS="$oldifs"
+}
+
 function process_html_file_xml()
 {
     local test_name
@@ -220,10 +289,35 @@ function process_html_file_xml()
     echo ""
     cat <<EOF
 <?xml version="1.0" ?>
-<!-- Creted by pip-download $VERSION. -->
+<!-- 
+  Created by pip-download $VERSION. 
+
+      html_file: $PWD/$html_file
+      test_name: $test_name
+       git_date: $git_date
+       git_time: $git_time
+    gittimezone: $gittimezone
+       git_hash: $git_hash
+        elapsed: $elapsed
+         status: $status
+-->
 <testsuite failures="$n_failures" tests="$n_cases">
 EOF
+    slice_file="/tmp/pip_download.$$"
 
+    test_names=$(get_test_names_html --html-file "$html_file")
+    for test_name in $test_names; do
+        echo "--> '$test_name'"
+        cut_test_case_html \
+            --html-file "$html_file" \
+            --output-file "$slice_file" \
+            --test-name "$test_name"
+
+        vim "$slice_file"
+        rm "$slice_file"
+        exit 0
+    done
+    exit 0
 #    -------------------------------------------------------------
 #      html_file: $PWD/$html_file
 #      test_name: $test_name
@@ -258,8 +352,18 @@ EOF
                 ;;
         esac
 
+        my_time=$(cat "$html_file" | \
+            grep "p42dc 300 $my_name " | \
+            awk -F' ' '{print $4}')
+
+        [ -z "$my_time" ] && my_time="0.0000"
+
         cat <<EOF
-  <testcase classname="$test_name" name="$my_name" status="$my_status">
+  <testcase 
+      classname="$test_name" 
+      name="$my_name" 
+      time="$my_time"
+      status="$my_status">
   </testcase>
 EOF
     done

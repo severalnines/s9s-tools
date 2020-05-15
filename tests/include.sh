@@ -3304,6 +3304,8 @@ function runFunctionalTest ()
 
     TEST_NAME=$1
 
+    # This shows the beginning of the test.
+    echo ""
     echo "p42dc 200 $TEST_NAME"
 
     #
@@ -3339,7 +3341,6 @@ function runFunctionalTest ()
         fi
     fi
 
-    echo "p42dc 201 $TEST_NAME"
 
     if [ -n "$test_skipped" ]; then
         # Skipped
@@ -3353,6 +3354,9 @@ function runFunctionalTest ()
     fi
 
     echo "p42dc 300 $TEST_NAME $test_elapsed_time"
+    
+    # This marks the end of the test case.
+    echo "p42dc 201 $TEST_NAME"
 
     if [ -f "$client_log_file" ]; then
         echo -n "" >"$client_log_file"
