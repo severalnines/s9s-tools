@@ -3298,10 +3298,14 @@ function runFunctionalTest ()
 {
     local client_log_file="$HOME/s9s.log"
     local test_skipped=""
+    local test_start_time
+    local test_end_time
+
 
     TEST_NAME=$1
 
     echo "p42dc 200 $TEST_NAME"
+
     #
     # This is where we call the function that executes the test. Unless
     # wealready have some failed tests.
@@ -3312,8 +3316,16 @@ function runFunctionalTest ()
         fi
 
         test_skipped="true"
+        test_elapsed_time=0
     else
+        test_start_time="$(date +"%s")"
+        
         $TEST_NAME $*
+
+        test_end_time="$(date +"%s")"
+        test_elapsed_time=$test_end_time
+
+        let test_elapsed_time-=$test_start_time
     fi
 
     # This is when we have only a brief list.
@@ -3340,6 +3352,7 @@ function runFunctionalTest ()
         echo "p42dc 103 $TEST_NAME"
     fi
 
+    echo "p42dc 300 $TEST_NAME $test_elapsed_time"
 
     if [ -f "$client_log_file" ]; then
         echo -n "" >"$client_log_file"
