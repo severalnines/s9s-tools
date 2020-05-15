@@ -168,6 +168,136 @@ function download_html_file()
     #ls -lha $html_file
 }
 
+function process_html_file_xml()
+{
+    local test_name
+    local html_file
+    local git_date
+    local git_time
+    local git_timezone
+    local elapsed
+    local html_file
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file=$2
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    if [ -z "$html_file" ]; then
+        printError "process_html_file: No HTML file."
+        return 1
+    elif [ ! -f "$html_file" ]; then
+        printError "process_html_file: File '$html_file' was not found."
+        return 1
+    fi
+
+    #
+    # The downloaded file has these fields embedded in a HTML comment so that we
+    # can have everything in one single HTML file.
+    #
+    git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
+    git_time=$(cat $html_file | grep "^p42di 121" | awk '{print $3}')
+    gittimezone=$(cat $html_file | grep "^p42di 122" | awk '{print $3}')
+    git_hash=$(cat $html_file | grep "^p42di 130" | awk '{print $3}')
+    elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
+    status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
+    
+    test_name=$(basename "$html_file" .html)
+
+    n_failures=$(cat $html_file | grep 'p42dc 102' | wc -l)
+    n_cases=$(cat $html_file | grep 'p42dc 10' | wc -l)
+
+    echo ""
+    echo ""
+    cat <<EOF
+<?xml version="1.0" ?>
+<!-- Creted by pip-download $VERSION. -->
+<testsuite failures="$n_failures" tests="$n_cases">
+EOF
+
+#    -------------------------------------------------------------
+#      html_file: $PWD/$html_file
+#      test_name: $test_name
+#       git_date: $git_date
+#       git_time: $git_time
+#    gittimezone: $gittimezone
+#       git_hash: $git_hash
+#        elapsed: $elapsed
+#         status: $status
+
+  
+    oldifs="$IFS"
+    IFS=$'\n'
+    for caseline in $(cat "$html_file" | grep "p42dc 10"); do
+        my_status=$(echo "$caseline" | awk -F' ' '{print $2}')
+        my_name=$(echo "$caseline" | awk -F' ' '{print $3}')
+        case "$my_status" in 
+            101)
+                my_status="skipped"
+                ;;
+
+            102)
+                my_status="failure"
+                ;;
+
+            103)
+                my_status="success"
+                ;;
+
+            *)
+                my_status="invalid"
+                ;;
+        esac
+
+        cat <<EOF
+  <testcase classname="$test_name" name="$my_name" status="$my_status">
+  </testcase>
+EOF
+    done
+    IFS="$oldifs"
+
+    cat <<EOF
+</testsuite>
+EOF
+
+    return 0
+    if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
+        printVerbose "Git date for '$test_name' is '$git_date', not recent."
+        rm -f $html_file
+        return 0
+    fi
+
+    if [ "$status" == "SUCCESS" ]; then
+        let N_TESTS_PASSED+=1
+    elif [ "$status" == "FAILURE" ]; then
+        let N_TESTS_FAILED+=1
+    fi
+
+    printf "%32s "  "$test_name"   | tee --append $REPORT_FILE
+    printf "%-10s " "$status"      | tee --append $REPORT_FILE
+    printf "%10s "  "$git_date"    | tee --append $REPORT_FILE
+    printf "%8s "   "$git_time"    | tee --append $REPORT_FILE
+    printf "%5s "   "$gittimezone" | tee --append $REPORT_FILE
+    printf "%8s "   "$elapsed"     | tee --append $REPORT_FILE
+    printf "%12s "  "$git_hash"    | tee --append $REPORT_FILE
+
+    if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
+        rm -f $html_file
+        printf "OLD\n" | tee --append $REPORT_FILE
+        return 0
+    fi
+
+    printf "\n" | tee --append $REPORT_FILE
+}
 
 function process_html_file()
 {
@@ -225,7 +355,19 @@ function process_html_file()
         elapsed: $elapsed
          status: $status
 EOF
-   
+  
+    oldifs="$IFS"
+    IFS=$'\n'
+    for caseline in $(cat "$html_file" | grep "p42dc 10"); do
+        my_status=$(echo "$caseline" | awk -F' ' '{print $2}')
+        my_name=$(echo "$caseline" | awk -F' ' '{print $3}')
+        cat <<EOF
+             my_status: $my_status
+               my_name: $my_name
+EOF
+    done
+    IFS="$oldifs"
+
     return 0
     if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
         printVerbose "Git date for '$test_name' is '$git_date', not recent."
@@ -476,7 +618,7 @@ print_header | tee --append $REPORT_FILE
 
 for testname in $tests; do
     HTML_FILE=$(download_html_file "$testname")
-    process_html_file \
+    process_html_file_xml \
         --html-file $HTML_FILE
 done
 

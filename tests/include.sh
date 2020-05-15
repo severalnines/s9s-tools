@@ -3301,6 +3301,7 @@ function runFunctionalTest ()
 
     TEST_NAME=$1
 
+    echo "p42dc 200 $TEST_NAME"
     #
     # This is where we call the function that executes the test. Unless
     # wealready have some failed tests.
@@ -3326,7 +3327,8 @@ function runFunctionalTest ()
         fi
     fi
 
-    #echo "p42dc 100 $TEST_NAME"
+    echo "p42dc 201 $TEST_NAME"
+
     if [ -n "$test_skipped" ]; then
         # Skipped
         echo "p42dc 101 $TEST_NAME"
