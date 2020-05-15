@@ -237,11 +237,38 @@ function get_test_names_html()
     IFS="$oldifs"
 }
 
+function get_test_case_time()
+{
+    local html_file
+    local oldifs
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+        
+    my_time=$(cat "$html_file" | \
+            grep "p42dc 300 " | \
+            awk -F' ' '{print $4}')
+
+    echo "$my_time"
+}
+
 function emit_test_case_xml()
 {
     local html_file
     local oldifs
     local test_name
+    local test_time
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -262,6 +289,7 @@ function emit_test_case_xml()
         esac
     done
 
+    test_time=$(get_test_case_time --html-file "$html_file")
     cat <<EOF
 
     <!--

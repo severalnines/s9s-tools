@@ -120,6 +120,7 @@ function testCreateUser()
     local exitCode
 
     print_title "Creating a Superuser"
+    begin_verbatim
 
     mys9s user \
         --create \
@@ -150,6 +151,8 @@ function testCreateUser()
         failure "The exit code is ${exitCode} while registering key"
         exit 1
     fi
+
+    end_verbatim
 }
 
 function testRootFolder()
@@ -161,6 +164,7 @@ function testRootFolder()
     local required
 
     print_title "Testing the 'groups' Folder"
+    begin_verbatim
 
     #mys9s tree --tree --all 
     mys9s tree --list --directory --long /
@@ -203,7 +207,7 @@ function testRootFolder()
         return 1
     fi
 
-    return 0
+    end_verbatim
 }
 
 function testGroupsFolder()
@@ -215,7 +219,8 @@ function testGroupsFolder()
     local required
 
     print_title "Testing the Root Folder" 
-    
+    begin_verbatim
+
     mys9s tree --list --directory --long /groups
 
     lines=$(s9s tree --list --directory --batch --long /groups)
@@ -249,7 +254,7 @@ function testGroupsFolder()
     fi
 
     failure "This test forced to fail to test Jenkins."
-    return 0
+    end_verbatim
 }
 
 #
