@@ -138,15 +138,8 @@ EOF
 
 function download_html_file()
 {
-    local test_name
-    local html_file
-    local git_date
-    local git_time
-    local git_timezone
-    local elapsed
     local url
     local server="www"
-    # 89.133.67.120
 
     [ ! -d "$ymd" ] && mkdir "$ymd"
 
@@ -168,10 +161,45 @@ function download_html_file()
         --output-document=$html_file 2>/dev/null
 
     if [ $? -ne 0 ]; then 
-        exit 1
+        return 1
     fi
 
+    echo "$html_file"
     #ls -lha $html_file
+}
+
+
+function process_html_file()
+{
+    local test_name
+    local html_file
+    local git_date
+    local git_time
+    local git_timezone
+    local elapsed
+    local html_file
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file=$2
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    if [ -z "$html_file" ]; then
+        printError "process_html_file: No HTML file."
+        return 1
+    elif [ ! -f "$html_file" ]; then
+        printError "process_html_file: File '$html_file' was not found."
+        return 1
+    fi
 
     #
     # The downloaded file has these fields embedded in a HTML comment so that we
@@ -184,6 +212,21 @@ function download_html_file()
     elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
     
+    test_name=$(basename "$html_file" .html)
+
+    cat <<EOF
+    -------------------------------------------------------------
+      html_file: $PWD/$html_file
+      test_name: $test_name
+       git_date: $git_date
+       git_time: $git_time
+    gittimezone: $gittimezone
+       git_hash: $git_hash
+        elapsed: $elapsed
+         status: $status
+EOF
+   
+    return 0
     if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
         printVerbose "Git date for '$test_name' is '$git_date', not recent."
         rm -f $html_file
@@ -430,9 +473,13 @@ tests=$(test_names)
 echo "{code}"
 
 print_header | tee --append $REPORT_FILE
+
 for testname in $tests; do
-    download_html_file "$testname"
+    HTML_FILE=$(download_html_file "$testname")
+    process_html_file \
+        --html-file $HTML_FILE
 done
+
 print_footer | tee --append $REPORT_FILE
 echo "{code}"
 

@@ -3297,27 +3297,47 @@ function cmon_container_list()
 function runFunctionalTest ()
 {
     local client_log_file="$HOME/s9s.log"
+    local test_skipped=""
 
     TEST_NAME=$1
 
+    #
+    # This is where we call the function that executes the test. Unless
+    # wealready have some failed tests.
+    #
     if ! isSuccess; then
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             printf "  %-26s: SKIPPED\n" "$TEST_NAME"
         fi
 
-        return 1
+        test_skipped="true"
     else
-        # This is where we call the function that executes the test.
         $TEST_NAME $*
     fi
 
+    # This is when we have only a brief list.
     if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
-        if ! isSuccess; then
+        if [ -n "$test_skipped" ]; then
+            printf "  %-26s: SKIPPED\n" "$TEST_NAME"
+        elif ! isSuccess; then
             printf "  %-26s: FAILURE\n" "$TEST_NAME"
         else 
             printf "  %-26s: SUCCESS\n" "$TEST_NAME"
         fi
     fi
+
+    #echo "p42dc 100 $TEST_NAME"
+    if [ -n "$test_skipped" ]; then
+        # Skipped
+        echo "p42dc 101 $TEST_NAME"
+    elif ! isSuccess; then
+        # FAILURE
+        echo "p42dc 102 $TEST_NAME"
+    else 
+        # SUCCESS
+        echo "p42dc 103 $TEST_NAME"
+    fi
+
 
     if [ -f "$client_log_file" ]; then
         echo -n "" >"$client_log_file"
