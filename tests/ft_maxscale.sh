@@ -251,12 +251,12 @@ function testStartContainer()
     #
     #
     print_title "Starting Container"
-    begin_verbatim
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will re-start the container which holds the MaxScale process and
   check if the controller figures out the MaxScale is back again.
-
 EOF
+    
+    begin_verbatim
 
     mys9s container \
         --start \
@@ -266,6 +266,8 @@ EOF
 
     check_exit_code $?
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
+    mys9s node --list --long
+
     end_verbatim
 }
 
@@ -276,11 +278,11 @@ function unregisterMaxScale()
     local retcode
 
     print_title "Unregistering then Registering MaxScale Node"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will unregister the MaxScale node, then register the same node again
   and check if the node is properly re-added to the cluster.
-
 EOF
+
     begin_verbatim
     node_ip=$(maxscale_node_name)
    
