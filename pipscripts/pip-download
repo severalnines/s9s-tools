@@ -323,7 +323,13 @@ function emit_test_failures()
     oldifs="$IFS"
     IFS=$'\n'
     for caseline in $(cat "$html_file" | grep "p42err"); do
-        error_message=$(echo "$caseline" | sed -e 's/p42err //g')
+        error_message=$(\
+            echo "$caseline" | \
+                sed -e 's/p42err //g' \
+                    -e 's/&/\&amp;/g' \
+                    -e 's/</\&lt;/g' \
+                    -e 's/>/\&gt;/g')
+
         if [ -z "$error_message" ]; then
             continue
         fi
