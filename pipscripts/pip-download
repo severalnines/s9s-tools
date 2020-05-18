@@ -361,13 +361,15 @@ function emit_test_output()
 
     if [ -z "$OPTION_NO_HTML" ]; then
         echo "        <system-out>"
-        cat "$html_file" | \
-            grep -v "p42dc" | \
-            sed \
-                -e 's/&/\&amp;/g' \
-                -e 's/</\&lt;/g' \
-                -e 's/>/\&gt;/g' 
+        echo "<![CDATA["
+        cat "$html_file" | grep -v "p42dc"
+#        | \
+#            sed \
+#                -e 's/&/\&amp;/g' \
+#                -e 's/</\&lt;/g' \
+#                -e 's/>/\&gt;/g' 
 
+        echo "]]>"
         echo "        </system-out>"
     else
         echo "        <system-out></system-out>"
