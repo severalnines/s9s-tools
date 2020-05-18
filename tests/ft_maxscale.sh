@@ -267,6 +267,7 @@ EOF
     check_exit_code $?
     wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
     mys9s node --list --long
+    mys9s node --stat
 
     end_verbatim
 }
