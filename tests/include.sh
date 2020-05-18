@@ -3312,6 +3312,7 @@ function runFunctionalTest ()
     # wealready have some failed tests.
     #
     if ! isSuccess; then
+        print_title "Skipped Test $TEST_NAME"
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             printf "  %-26s: SKIPPED\n" "$TEST_NAME"
         fi
