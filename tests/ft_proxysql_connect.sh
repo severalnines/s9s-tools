@@ -423,7 +423,6 @@ EOF
     
     if [ "$reply" != "42" ]; then
         failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
-        exit 1
     fi
 }
 
@@ -470,7 +469,6 @@ EOF
     
     if [ "$reply" != "42" ]; then
         failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
-        exit 1
     fi
 }
 
