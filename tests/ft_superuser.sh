@@ -93,8 +93,6 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
-
-
 first=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f1)
 last=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2)  
 
@@ -185,8 +183,11 @@ function testAuth()
     end_verbatim
 }
 
-runFunctionalTest reset_config
+startTests
+reset_config
+
 runFunctionalTest testBoostrap
 runFunctionalTest testPrint 
 runFunctionalTest testAuth
-runFunctionalTest endTests
+
+endTests
