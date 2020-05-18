@@ -131,6 +131,7 @@ last=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2)
 function testBoostrap()
 {
     print_title "Bootstrapping by Creating a Superuser"
+    begin_verbatim
 
     mys9s user \
         --create \
@@ -146,6 +147,7 @@ function testBoostrap()
         "$USER"
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 #
@@ -157,9 +159,11 @@ function testPrint()
 {
     print_title "Printing the Users"
 
+    begin_verbatim
     mys9s user --list --long 
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 #
@@ -169,6 +173,7 @@ function testPrint()
 function testAuth()
 {
     print_title "Authenticating with Password"
+    begin_verbatim
 
     mys9s user \
         --list \
@@ -177,6 +182,7 @@ function testAuth()
         --password="admin"
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 runFunctionalTest reset_config
