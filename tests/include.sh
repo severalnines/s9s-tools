@@ -578,12 +578,13 @@ function check_exit_code()
                 --job-id="$jobId"
         fi
 
-        if [ "$do_not_exit" ]; then
+        # Because of Jenkins we can not exit!
+#        if [ "$do_not_exit" ]; then
             return 1
-        else
-            end_verbatim
-            exit $exitCode
-        fi
+#        else
+#            end_verbatim
+#            exit $exitCode
+#        fi
     else
         success "  o The exit code is $exitCode, ok"
     fi

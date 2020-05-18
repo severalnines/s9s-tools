@@ -167,7 +167,8 @@ function createCluster()
 function testAddProxySql()
 {
     print_title "Adding a ProxySql Node"
-    
+    begin_verbatim
+
     #
     # Adding ProxySql to the cluster.
     #
@@ -182,11 +183,14 @@ function testAddProxySql()
         $OPTION_POXYSQL_VERSION \
     
     check_exit_code $?
+    end_verbatim
 
     #
     #
     #
     print_title "Checking ProxySql State"
+    begin_verbatim
+
     PROXYSQL_IP=$(proxysql_node_name)
 
     wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
@@ -197,6 +201,8 @@ function testAddProxySql()
     else
         mys9s node --stat $PROXYSQL_IP
     fi
+
+    end_verbatim
 }
 
 function testStopProxySql()

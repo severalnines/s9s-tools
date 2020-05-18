@@ -11,7 +11,9 @@ COMMAND_LINE_OPTIONS="$0 $*"
 OPTION_MAIL_LIST=""
 OPTION_NO_MAIL=""
 OPTION_TESTS=""
-OPTION_OUTPUT_DIR="/home/pipas/Desktop/stuff/work/clustercontrol-enterprise"
+
+OPTION_OUTPUT_DIR="/home/pipas/Desktop/stuff/work/clustercontrol-enterprise/"
+OPTION_OUTPUT_DIR+="tests/s9s_test"
 
 MAIL_LIST_FILE=""
 
@@ -376,9 +378,15 @@ function emit_test_case_xml()
     local test_time
     local test_title
     local test_suite
-    
+    local report_file
+
     while [ -n "$1" ]; do
         case "$1" in 
+            --report-file)
+                report_file="$2"
+                shift 2
+                ;;
+
             --html-file)
                 html_file="$2"
                 shift 2
@@ -412,6 +420,7 @@ function emit_test_case_xml()
     
     if [ -z "$test_time" ]; then
         printWarning "No time for $test_name in $test_suite."
+        printWarning "Original report file is $report_file"
         return 1
     fi
 
@@ -515,9 +524,10 @@ EOF
 
         #vim "$slice_file"
         emit_test_case_xml \
-            --html-file  "$slice_file" \
-            --test-name  "$test_case_name" \
-            --test-suite "$test_name" 
+            --report-file "$PWD/$html_file" \
+            --html-file   "$slice_file" \
+            --test-name   "$test_case_name" \
+            --test-suite  "$test_name" 
 
         if [ $? -ne 0 ]; then
             return 1
@@ -871,6 +881,15 @@ for testscript in $mytests; do
     let NUMBER_OF_TEST_SCRIPTS+=1
 done
 
+for old_file in $OPTION_OUTPUT_DIR/*.xml; do
+    if [ ! -f "$old_file" ]; then
+        continue
+    fi
+
+    #printWarning "Removing $old_file..."
+    rm -f $old_file
+done
+
 for testscript in $mytests; do
     HTML_FILE=$(download_html_file "$testscript")
     if [ -z "$HTML_FILE" ]; then
@@ -884,7 +903,6 @@ for testscript in $mytests; do
     XML_FILE="/tmp/pip_download.xml"
 
     XML_FILE="$OPTION_OUTPUT_DIR/"
-    XML_FILE+="tests/s9s_test/"
     XML_FILE+="$(basename $HTML_FILE .html)"
     XML_FILE+=".xml"
 
