@@ -11,7 +11,7 @@ COMMAND_LINE_OPTIONS="$0 $*"
 OPTION_MAIL_LIST=""
 OPTION_NO_MAIL=""
 OPTION_TESTS=""
-
+OPTION_OUTPUT_DIR="/home/pipas/Desktop/stuff/work/clustercontrol-enterprise"
 
 MAIL_LIST_FILE=""
 
@@ -28,6 +28,7 @@ N_TESTS_FAILED=0
 N_MAILS_SENT=0
 
 REPORT_FILE="${ymd}.text"
+OPTION_NO_HTML=""
 
 source $MYDIR/utilityfunctions.sh
 
@@ -44,9 +45,12 @@ Usage:
   -v, --version           Print version information and exit.
   --verbose               Print more messages.
   --log-file=FILE         Store all the messages in the given file too.
+
   --mail-list=NAME        The name of the mail list.
   --no-mail               Do not send mail.
  
+  --no-html               Do not include html test report.
+
 EXAMPLES:
   PASSWORD="SSSSSSS" pip-download --verbose --no-mail
   PASSWORD="SSSSSSS" pip-download --verbose --mail-list=myself
@@ -60,7 +64,7 @@ ARGS=$(\
     getopt \
         -o hvj: \
         -l "help,verbose,version,log-file:,
-no-mail,mail-list:" \
+no-mail,no-html,mail-list:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -98,6 +102,11 @@ while true; do
 
         --no-mail)
             OPTION_NO_MAIL="true"
+            shift
+            ;;
+
+        --no-html)
+            OPTION_NO_HTML="true"
             shift
             ;;
 
@@ -161,11 +170,11 @@ function download_html_file()
         --output-document=$html_file 2>/dev/null
 
     if [ $? -ne 0 ]; then 
+        printError "Failed to download $url..."
         return 1
     fi
 
     echo "$html_file"
-    #ls -lha $html_file
 }
 
 function cut_test_case_html()
@@ -263,13 +272,111 @@ function get_test_case_time()
     echo "$my_time"
 }
 
+function get_test_case_title()
+{
+    local html_file
+    local my_title
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+        
+    my_title=$(cat "$html_file" | \
+        grep '^<h3>' | head -n 1 | \
+        sed -e 's#<h3>##g' -e 's#</h3>##g')
+
+    echo "$my_title"
+}
+
+
+function emit_test_failures()
+{
+    local html_file
+    local oldifs
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    oldifs="$IFS"
+    IFS=$'\n'
+    for caseline in $(cat "$html_file" | grep "p42err"); do
+        error_message=$(echo "$caseline" | sed -e 's/p42err //g')
+        if [ -z "$error_message" ]; then
+            continue
+        fi
+
+        printf "        <failure message=\"$error_message\"></failure>\n"
+    done
+    IFS="$oldifs"
+
+}
+
+function emit_test_output()
+{
+    local html_file
+    local oldifs
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    if [ -z "$OPTION_NO_HTML" ]; then
+        echo "        <system-out>"
+        cat "$html_file" | \
+            grep -v "p42dc" | \
+            sed \
+                -e 's/&/\&amp;/g' \
+                -e 's/</\&lt;/g' \
+                -e 's/>/\&gt;/g' 
+
+        echo "        </system-out>"
+    else
+        echo "        <system-out></system-out>"
+    fi
+
+    echo "        <system-err></system-err>"
+}
+
 function emit_test_case_xml()
 {
     local html_file
     local oldifs
     local test_name
     local test_time
-
+    local test_title
+    local test_suite
+    
     while [ -n "$1" ]; do
         case "$1" in 
             --html-file)
@@ -282,6 +389,11 @@ function emit_test_case_xml()
                 shift 2
                 ;;
 
+            --test-suite)
+                test_suite="$2"
+                shift 2
+                ;;
+
             *)
                 printError "process_html_file: Invalid option '$1'."
                 return 1
@@ -290,17 +402,35 @@ function emit_test_case_xml()
     done
 
     test_time=$(get_test_case_time --html-file "$html_file")
+    test_title=$(get_test_case_title --html-file "$html_file")
+    class_name="s9s.$test_suite"
+
+    if [ -z "$test_title" ]; then
+        printError "No title for test $test_suite."
+        return 1
+    fi
+    
+    if [ -z "$test_time" ]; then
+        printWarning "No time for $test_name in $test_suite."
+        return 1
+    fi
+
+    #
+    # Emitting the test case.
+    #
     cat <<EOF
 
-    <!--
-          slice_file: $html_file
+    <!-- 
+         slice_file: $html_file 
+          test_name: $test_name
     -->
     <testcase 
-        classname="$test_name" 
-        name=""
-        time="">
+            classname="$class_name" 
+            name="$test_title"
+            time="$test_time">
 EOF
-
+    emit_test_failures --html-file "$html_file"
+    emit_test_output --html-file "$html_file"
     cat <<EOF
     </testcase>
 EOF
@@ -354,8 +484,6 @@ function process_html_file_xml()
     n_failures=$(cat $html_file | grep 'p42dc 102' | wc -l)
     n_cases=$(cat $html_file | grep 'p42dc 10' | wc -l)
 
-    echo ""
-    echo ""
     cat <<EOF
 <?xml version="1.0" ?>
 <!-- 
@@ -374,106 +502,32 @@ function process_html_file_xml()
 EOF
     slice_file="/tmp/pip_download.html"
 
-    test_names=$(get_test_names_html --html-file "$html_file")
-    for test_name in $test_names; do
-        #echo "--> '$test_name'"
+    test_case_names=$(get_test_names_html --html-file "$html_file")
+    for test_case_name in $test_case_names; do
         cut_test_case_html \
             --html-file "$html_file" \
             --output-file "$slice_file" \
-            --test-name "$test_name"
+            --test-name "$test_case_name"
+        
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
 
         #vim "$slice_file"
         emit_test_case_xml \
-            --html-file "$slice_file" \
-            --test-name "$test_name"
+            --html-file  "$slice_file" \
+            --test-name  "$test_case_name" \
+            --test-suite "$test_name" 
 
-        #rm "$slice_file"
-        #exit 0
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
     done
-    exit 0
-#    -------------------------------------------------------------
-#      html_file: $PWD/$html_file
-#      test_name: $test_name
-#       git_date: $git_date
-#       git_time: $git_time
-#    gittimezone: $gittimezone
-#       git_hash: $git_hash
-#        elapsed: $elapsed
-#         status: $status
 
-  
-    oldifs="$IFS"
-    IFS=$'\n'
-    for caseline in $(cat "$html_file" | grep "p42dc 10"); do
-        my_status=$(echo "$caseline" | awk -F' ' '{print $2}')
-        my_name=$(echo "$caseline" | awk -F' ' '{print $3}')
-        case "$my_status" in 
-            101)
-                my_status="skipped"
-                ;;
-
-            102)
-                my_status="failure"
-                ;;
-
-            103)
-                my_status="success"
-                ;;
-
-            *)
-                my_status="invalid"
-                ;;
-        esac
-
-        my_time=$(cat "$html_file" | \
-            grep "p42dc 300 $my_name " | \
-            awk -F' ' '{print $4}')
-
-        [ -z "$my_time" ] && my_time="0.0000"
-
-        cat <<EOF
-  <testcase 
-      classname="$test_name" 
-      name="$my_name" 
-      time="$my_time"
-      status="$my_status">
-  </testcase>
-EOF
-    done
-    IFS="$oldifs"
-
-    cat <<EOF
+cat <<EOF
 </testsuite>
 EOF
-
     return 0
-    if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
-        printVerbose "Git date for '$test_name' is '$git_date', not recent."
-        rm -f $html_file
-        return 0
-    fi
-
-    if [ "$status" == "SUCCESS" ]; then
-        let N_TESTS_PASSED+=1
-    elif [ "$status" == "FAILURE" ]; then
-        let N_TESTS_FAILED+=1
-    fi
-
-    printf "%32s "  "$test_name"   | tee --append $REPORT_FILE
-    printf "%-10s " "$status"      | tee --append $REPORT_FILE
-    printf "%10s "  "$git_date"    | tee --append $REPORT_FILE
-    printf "%8s "   "$git_time"    | tee --append $REPORT_FILE
-    printf "%5s "   "$gittimezone" | tee --append $REPORT_FILE
-    printf "%8s "   "$elapsed"     | tee --append $REPORT_FILE
-    printf "%12s "  "$git_hash"    | tee --append $REPORT_FILE
-
-    if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
-        rm -f $html_file
-        printf "OLD\n" | tee --append $REPORT_FILE
-        return 0
-    fi
-
-    printf "\n" | tee --append $REPORT_FILE
 }
 
 function process_html_file()
@@ -544,8 +598,10 @@ EOF
 EOF
     done
     IFS="$oldifs"
+}
 
-    return 0
+function old_email_stuff()
+{
     if [ "$git_date" != "$today" -a "$git_date" != "$YESTERDAY" ]; then
         printVerbose "Git date for '$test_name' is '$git_date', not recent."
         rm -f $html_file
@@ -577,8 +633,24 @@ EOF
 
 function test_names()
 {
+    local test_dir
+
     if [ -n "$OPTION_TESTS" ]; then
         echo $OPTION_TESTS
+        return 0
+    fi
+
+    test_dir="/home/pipas/Desktop/stuff/work/s9s-tools/tests"
+
+    if [ -d "$test_dir" ]; then
+        for script_file in $test_dir/ft_*.sh; do
+            if [ ! -f "$script_file" ]; then
+                continue
+            fi
+
+            echo $(basename $script_file)
+        done
+
         return 0
     fi
 
@@ -785,7 +857,7 @@ if [ -z "$WWW_USER" ]; then
 fi
 
 
-tests=$(test_names)
+mytests=$(test_names)
 
 [ -f "$REPORT_FILE" ] && rm -f $REPORT_FILE
 
@@ -793,14 +865,46 @@ echo "{code}"
 
 print_header | tee --append $REPORT_FILE
 
-for testname in $tests; do
-    HTML_FILE=$(download_html_file "$testname")
+NUMBER_OF_TEST_SCRIPTS=0
+for testscript in $mytests; do
+    #echo "1 testscript: $testscript"
+    let NUMBER_OF_TEST_SCRIPTS+=1
+done
+
+for testscript in $mytests; do
+    HTML_FILE=$(download_html_file "$testscript")
+    if [ -z "$HTML_FILE" ]; then
+        continue
+    fi
+
+    if [ ! -f "$HTML_FILE" ]; then
+        continue
+    fi
+
+    XML_FILE="/tmp/pip_download.xml"
+
+    XML_FILE="$OPTION_OUTPUT_DIR/"
+    XML_FILE+="tests/s9s_test/"
+    XML_FILE+="$(basename $HTML_FILE .html)"
+    XML_FILE+=".xml"
+
+    printf "$HTML_FILE               \r"
     process_html_file_xml \
-        --html-file $HTML_FILE
+        --html-file $HTML_FILE >$XML_FILE
+
+    if [ $? -ne 0 ]; then
+        printWarning "Removing $XML_FILE..."
+        rm -f "$XML_FILE"
+    fi
+
+    cp $HTML_FILE $OPTION_OUTPUT_DIR
+    echo "I am trying to figure this out." >"$OPTION_OUTPUT_DIR/readme.txt"
 done
 
 print_footer | tee --append $REPORT_FILE
 echo "{code}"
+
+exit 0
 
 if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
     pip-say "Found no test results."
