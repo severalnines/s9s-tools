@@ -414,14 +414,15 @@ function emit_test_case_xml()
     class_name="s9s.$test_suite"
 
     if [ -z "$test_title" ]; then
-        printError "No title for test $test_suite."
-        return 1
+        printWarning "No title for $test_name in $test_suite."
+        printWarning "Original report file is $report_file"
+        test_title="Untitled Test"
     fi
     
     if [ -z "$test_time" ]; then
         printWarning "No time for $test_name in $test_suite."
         printWarning "Original report file is $report_file"
-        return 1
+        test_time=0
     fi
 
     #
@@ -493,11 +494,14 @@ function process_html_file_xml()
     n_failures=$(cat $html_file | grep 'p42dc 102' | wc -l)
     n_cases=$(cat $html_file | grep 'p42dc 10' | wc -l)
 
+    if [ "$n_cases" -eq 0 ]; then
+        printWarning "No test cases in $test_name..."
+    fi
+
     cat <<EOF
 <?xml version="1.0" ?>
 <!-- 
   Created by pip-download $VERSION. 
-
       html_file: $PWD/$html_file
       test_name: $test_name
        git_date: $git_date

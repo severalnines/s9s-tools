@@ -286,7 +286,7 @@ function testUserOperations()
     local output
     local expected
 
-    print_title "Testing user operations"
+    print_title "Testing the 'user' mode"
     expected="One of the main options is mandatory."
     output=$($S9S user 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -317,6 +317,8 @@ function testMaintenanceOperations()
 {
     local output
     local expected
+
+    print_title "Testing the 'maintenance' Mode"
 
     expected="One of the --list, --create and --delete options is mandatory."
     output=$($S9S maintenance 2>&1)
@@ -359,6 +361,8 @@ function testProcessOperations()
     local output
     local expected
 
+    print_title "Testing the 'process' mode"
+
     expected="One of the --list and --top options is mandatory."
     output=$($S9S process 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -388,6 +392,8 @@ function testProcessOperations()
 #
 function testInvalidUrl()
 {
+    print_title "Testing on an invalid URL"
+
     output=$($S9S cluster \
         --create \
         --cluster-type=postgresql \
@@ -414,8 +420,8 @@ function testInvalidUrl()
 #
 # Running the requested tests.
 #
-startTests
-grant_user
+runFunctionalTest startTests
+runFunctionalTest grant_user
 
 if [ "$1" ]; then
     for testName in $*; do

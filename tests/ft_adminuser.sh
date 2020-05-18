@@ -100,9 +100,11 @@ done
 
 function testConfig()
 {
+    print_title "Checking configuration"
     if [ -z "$S9S_SYSTEM_CONFIG" ]; then
         failure "The S9S_SYSTEM_CONFIG variable is not set."
-        return 1
+    else
+        success "  o The S9S_SYSTEM_CONFIG variable is set, OK."
     fi
 
     if [ ! -f "$S9S_SYSTEM_CONFIG" ]; then
