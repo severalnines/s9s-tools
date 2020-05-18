@@ -224,10 +224,10 @@ function testRegister()
 #
 # Running the requested tests.
 #
-startTests
+runFunctionalTest startTests
 
-reset_config
-grant_user
+runFunctionalTest reset_config
+runFunctionalTest grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster
@@ -241,6 +241,6 @@ else
     runFunctionalTest testRegister
 fi
 
-endTests
+runFunctionalTest endTests
 
 
