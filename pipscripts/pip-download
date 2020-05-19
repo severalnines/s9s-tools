@@ -420,6 +420,11 @@ function emit_test_case_xml()
     test_time=$(get_test_case_time --html-file "$html_file")
     test_title=$(get_test_case_title --html-file "$html_file")
     class_name="s9s.$test_suite"
+   
+    is_skipped=""
+    if grep -q 'p42dc 101' "$html_file"; then
+        is_skipped="true"
+    fi
 
     if [ -z "$test_title" ]; then
         printWarning "No title for $test_name in $test_suite."
@@ -447,6 +452,8 @@ function emit_test_case_xml()
             name="$test_title"
             time="$test_time">
 EOF
+    [ -n "$is_skipped" ] && echo "        <skipped/>"
+
     emit_test_failures --html-file "$html_file"
     emit_test_output --html-file "$html_file"
     cat <<EOF
@@ -463,6 +470,9 @@ function process_html_file_xml()
     local git_timezone
     local elapsed
     local html_file
+    local n_skipped
+    local n_failures
+    local n_cases
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -499,6 +509,7 @@ function process_html_file_xml()
     
     test_name=$(basename "$html_file" .html)
 
+    n_skipped=$(cat $html_file | grep 'p42dc 101' | wc -l)
     n_failures=$(cat $html_file | grep 'p42dc 102' | wc -l)
     n_cases=$(cat $html_file | grep 'p42dc 10' | wc -l)
 
@@ -519,7 +530,10 @@ function process_html_file_xml()
         elapsed: $elapsed
          status: $status
 -->
-<testsuite failures="$n_failures" tests="$n_cases">
+<testsuite 
+    tests="$n_cases"
+    failures="$n_failures" 
+    skipped="$n_skipped">
 EOF
     slice_file="/tmp/pip_download.html"
 

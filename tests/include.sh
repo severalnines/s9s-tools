@@ -3321,16 +3321,14 @@ function runFunctionalTest ()
         fi
 
         test_skipped="true"
-        test_elapsed_time=0
+        test_elapsed_time=0.0
     else
-        test_start_time="$(date +"%s")"
+        test_start_time="$(date +"%s.%N")"
         
         $TEST_NAME $*
 
-        test_end_time="$(date +"%s")"
-        test_elapsed_time=$test_end_time
-
-        let test_elapsed_time-=$test_start_time
+        test_end_time="$(date +"%s.%N")"
+        test_elapsed_time=$(echo "$res2 - $res1" | bc)
     fi
 
     # This is when we have only a brief list.
