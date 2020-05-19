@@ -182,6 +182,8 @@ function testCreateCluster()
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
+        end_verbatim
+        return 1
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME" 

@@ -15,7 +15,8 @@ LAST_CONTAINER_NAME=""
 N_CONTAINERS=0
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./include_lxc.sh
 
 #
 # Prints usage information and exits.
@@ -114,25 +115,6 @@ if [ -z "$CONTAINER_SERVER" ]; then
     printError "Use the --server command line option to set the server."
     exit 6
 fi
-
-#
-# This will register the container server. 
-#
-function registerServer()
-{
-    local class
-
-    print_title "Registering Container Server"
-
-    #
-    # Creating a container.
-    #
-    mys9s server \
-        --register \
-        --servers="lxc://$CONTAINER_SERVER" 
-
-    check_exit_code_no_job $?
-}
 
 # ubuntu_artful ubuntu_bionic ubuntu_trusty ubuntu_xenial ubuntu_zesty debian_buster debian_jessie debian_sid debian_stretch debian_wheezy alpine_3.4 alpine_3.5 alpine_3.6 alpine_3.7 alpine_edge centos_6 centos_7 fedora_25 fedora_26 fedora_27 opensuse_42.2 opensuse_42.3 oracle_6 oracle_7 plamo_5.x plamo_6.x archlinux_current gentoo_current
 function installCmonCloud()
