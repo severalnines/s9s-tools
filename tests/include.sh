@@ -1976,6 +1976,50 @@ function find_cluster_id()
 }
 
 #
+# $1: the name of the cluster
+#
+function get_mysql_root_password()
+{
+    local name="$1"
+    local retval
+    local nTry=0
+    local password_option=""
+
+    if [ -n "$CMON_USER_PASSWORD" ]; then
+        password_option="--password='$CMON_USER_PASSWORD'"
+    fi
+
+    while true; do
+        retval=$($S9S cluster \
+            --list-config \
+            --batch \
+            --color=none
+            $password_option \
+            --cluster-name="$name")
+
+        retval=$(echo "$retval" | \
+            grep monitored_mysql_root_password \
+            cut -d'"' -f2 )
+
+        if [ -z "$retval" ]; then
+            printVerbose "Cluster '$name' was not found."
+            let nTry+=1
+
+            if [ "$nTry" -gt 10 ]; then
+                echo "NOT-FOUND"
+                break
+            else
+                sleep 3
+            fi
+        else
+            printVerbose "Cluster '$name' was found with ID ${retval}."
+            echo "$retval"
+            break
+        fi
+    done
+}
+
+#
 # Just a normal createUser call we do all the time to register a user on the
 # controller so that we can actually execute RPC calls.
 #
