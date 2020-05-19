@@ -10,6 +10,7 @@ EXITCODE=0
 COMMAND_LINE_OPTIONS="$0 $*"
 
 GIT_HASH=""
+GIT_BRANCH=""
 GIT_AUTHOR=""
 GIT_SUBJECT=""
 START_EPOCH_TIME="$(date +%s)"
@@ -908,6 +909,7 @@ function generate_test_result_info()
 test_server="$(hostname)"
 testname="$test_name"
 githash="$GIT_HASH"
+gitbranch="$GIT_BRANCH"
 gitcommitdate="$GIT_COMMIT_DATE"
 githaslocalchanges="$git_has_local_changes"
 state="$test_state"
@@ -1243,6 +1245,7 @@ function main()
 
     prepare_source
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
