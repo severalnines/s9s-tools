@@ -25,7 +25,7 @@ LAST_ADDED_NODE=""
 TEST_USER_NAME="laszlo"
 
 cd $MYDIR
-source include.sh
+source ./include.sh
 
 #
 # Prints usage information and exits.

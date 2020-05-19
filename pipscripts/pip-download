@@ -2,7 +2,7 @@
 MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.7"
+VERSION="0.0.8"
 VERBOSE=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
@@ -150,6 +150,33 @@ Summary:
 EOF
 }
 
+function get_field_from_html()
+{
+    local html_file=""
+    local field_name=""
+    local value=""
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file=$2
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    field_name="$1"
+    value=$(cat $html_file | grep "$field_name")
+    value=$(echo "$value" | sed -e 's/<!--//g' -e 's/-->//g');
+    value=$(echo "$value" | awk '{print $3}')
+
+    echo "$value"
+}
+
 function download_html_file()
 {
     local url
@@ -216,7 +243,7 @@ function cut_test_case_html()
     [ -z "$output_file" ] && return 1
     [ -z "$test_name" ] && return 1
 
-    awk_command="/p42dc 200 $test_name/,/p42dc 201 $test_name/"
+    awk_command="/p42dc 200 $test_name\$/,/p42dc 201 $test_name\$/"
     awk "$awk_command" "$html_file" >"$output_file"
 }
 
@@ -346,10 +373,17 @@ function emit_test_failures()
 function emit_test_output()
 {
     local html_file
+    local report_file
     local oldifs
 
     while [ -n "$1" ]; do
         case "$1" in 
+            --report-file)
+                # The original file with the entire report.
+                report_file="$2"
+                shift 2
+                ;;
+
             --html-file)
                 html_file="$2"
                 shift 2
@@ -366,19 +400,24 @@ function emit_test_output()
         echo "        <system-out>"
         echo "<![CDATA["
         cat "$html_file" | grep -v "p42dc"
-#        | \
-#            sed \
-#                -e 's/&/\&amp;/g' \
-#                -e 's/</\&lt;/g' \
-#                -e 's/>/\&gt;/g' 
-
         echo "]]>"
         echo "        </system-out>"
     else
         echo "        <system-out></system-out>"
     fi
 
-    echo "        <system-err></system-err>"
+    git_branch=$(get_field_from_html --html-file "$report_file" "p42di 131")
+    git_hash=$(get_field_from_html --html-file "$report_file" "p42di 130")
+    git_date=$(get_field_from_html --html-file $report_file "p42di 120")
+    git_time=$(get_field_from_html --html-file $report_file "p42di 121")
+    
+    echo "        <system-err>"
+    echo "<![CDATA["
+    echo "  git_branch: $git_branch"
+    echo "    git_hash: $git_hash"
+    echo "    git_time: $git_date $git_time"
+    echo "]]>"
+    echo "        </system-err>"
 }
 
 function emit_test_case_xml()
@@ -394,11 +433,13 @@ function emit_test_case_xml()
     while [ -n "$1" ]; do
         case "$1" in 
             --report-file)
+                # The original file with the entire report.
                 report_file="$2"
                 shift 2
                 ;;
 
             --html-file)
+                # The html file with the slice of the html document.
                 html_file="$2"
                 shift 2
                 ;;
@@ -458,7 +499,8 @@ EOF
     [ -n "$is_skipped" ] && echo "        <skipped/>"
 
     emit_test_failures --html-file "$html_file"
-    emit_test_output --html-file "$html_file"
+    emit_test_output --html-file "$html_file" --report-file "$report_file"
+
     cat <<EOF
     </testcase>
 EOF
@@ -503,10 +545,11 @@ function process_html_file_xml()
     # The downloaded file has these fields embedded in a HTML comment so that we
     # can have everything in one single HTML file.
     #
-    git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
-    git_time=$(cat $html_file | grep "^p42di 121" | awk '{print $3}')
-    gittimezone=$(cat $html_file | grep "^p42di 122" | awk '{print $3}')
+    git_date=$(get_field_from_html --html-file $html_file "p42di 120")
+    git_time=$(get_field_from_html --html-file $html_file "p42di 121")
+    gittimezone=$(get_field_from_html --html-file $html_file "p42di 122")
     git_hash=$(cat $html_file | grep "^p42di 130" | awk '{print $3}')
+    git_branch=$(cat $html_file | grep "^p42di 131" | awk '{print $3}')
     test_hostname=$(cat $html_file | grep "^p42di 150" | awk '{print $3}')
     elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
@@ -533,6 +576,7 @@ function process_html_file_xml()
             <property name="source_html" value="$PWD/$html_file"/>            
             <property name="test_name" value="$test_name"/>
             <property name="elapsed_time" value="$elapsed"/>
+            <property name="git_branch" value="$git_branch"/>
             <property name="git_date" value="$git_date"/>
             <property name="git_time" value="$git_time"/>
             <property name="git_hash" value="$git_hash"/>
