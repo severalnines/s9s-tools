@@ -34,6 +34,9 @@ OPTION_NO_HTML=""
 
 source $MYDIR/utilityfunctions.sh
 
+# Some information:
+# https://stackoverflow.com/questions/4922867/what-is-the-junit-xml-format-specification-that-hudson-supports
+
 function printHelpAndExit()
 {
 cat <<EOF
@@ -504,6 +507,7 @@ function process_html_file_xml()
     git_time=$(cat $html_file | grep "^p42di 121" | awk '{print $3}')
     gittimezone=$(cat $html_file | grep "^p42di 122" | awk '{print $3}')
     git_hash=$(cat $html_file | grep "^p42di 130" | awk '{print $3}')
+    test_hostname=$(cat $html_file | grep "^p42di 150" | awk '{print $3}')
     elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
     status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
     
@@ -519,21 +523,22 @@ function process_html_file_xml()
 
     cat <<EOF
 <?xml version="1.0" ?>
-<!-- 
-  Created by pip-download $VERSION. 
-      html_file: $PWD/$html_file
-      test_name: $test_name
-       git_date: $git_date
-       git_time: $git_time
-    gittimezone: $gittimezone
-       git_hash: $git_hash
-        elapsed: $elapsed
-         status: $status
--->
 <testsuite 
     tests="$n_cases"
     failures="$n_failures" 
-    skipped="$n_skipped">
+    skipped="$n_skipped"
+    package="s9s">
+        <properties>
+            <property name="pip_download_version" value="$VERSION"/>
+            <property name="source_html" value="$PWD/$html_file"/>            
+            <property name="test_name" value="$test_name"/>
+            <property name="elapsed_time" value="$elapsed"/>
+            <property name="git_date" value="$git_date"/>
+            <property name="git_time" value="$git_time"/>
+            <property name="git_hash" value="$git_hash"/>
+            <property name="status" value="$status"/>
+            <property name="hostname" value="$test_hostname"/>
+        </properties>    
 EOF
     slice_file="/tmp/pip_download.html"
 

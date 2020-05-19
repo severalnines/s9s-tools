@@ -3328,7 +3328,7 @@ function runFunctionalTest ()
         $TEST_NAME $*
 
         test_end_time="$(date +"%s.%N")"
-        test_elapsed_time=$(echo "$res2 - $res1" | bc)
+        test_elapsed_time=$(echo "$test_start_time - $test_end_time" | bc)
     fi
 
     # This is when we have only a brief list.
