@@ -16,6 +16,7 @@ function registerServer()
         --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
+    end_verbatim    
 
     #
     # Checking the state and the class name... 
@@ -28,6 +29,5 @@ function registerServer()
 
     mys9s tree --cat /$CONTAINER_SERVER/.runtime/state
 
-    end_verbatim    
 }
 
