@@ -410,12 +410,14 @@ function emit_test_output()
     git_hash=$(get_field_from_html --html-file "$report_file" "p42di 130")
     git_date=$(get_field_from_html --html-file $report_file "p42di 120")
     git_time=$(get_field_from_html --html-file $report_file "p42di 121")
+    test_hostname=$(get_field_from_html --html-file $report_file "p42di 150")
     
     echo "        <system-err>"
     echo "<![CDATA["
     echo "  git_branch: $git_branch"
     echo "    git_hash: $git_hash"
     echo "    git_time: $git_date $git_time"
+    echo " test_server: $test_hostname"
     echo "]]>"
     echo "        </system-err>"
 }
