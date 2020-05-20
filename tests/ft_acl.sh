@@ -110,7 +110,8 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user through RPC"
-        exit 1
+    else
+        success "  o The exit code is 0, OK."
     fi
 
     print_title "Creating a Superuser"
@@ -129,6 +130,8 @@ function testCreateUsers()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating user through RPC"
+    else
+        success "  o The exit code is 0, OK."
     fi
 
     end_verbatim
@@ -151,7 +154,8 @@ function checkTree01()
     expected="^drwxrwxrwx     - system admins /$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
 
     # The admin user has a link that the admin will see
@@ -161,7 +165,8 @@ function checkTree01()
     expected="^urwxr--r--     - supervisor admins supervisor -> /supervisor$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
 
     # The non-admin user has a link too.
@@ -171,7 +176,8 @@ function checkTree01()
     expected="^urwxr--r--     - pipas  admins pipas -> /pipas$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
     
     # The user owns itself.
@@ -181,7 +187,8 @@ function checkTree01()
     expected="^urwxr--r--     - pipas  admins pipas$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
 
     end_verbatim
@@ -194,14 +201,16 @@ function checkTree02()
     begin_verbatim
     mys9s tree --access --privileges="rwx" --cmon-user="supervisor" /
     if [ $? -ne 0 ]; then
-        failure "User 'supervisor' ha no access to '/'"
-        exit 1
+        failure "User 'supervisor' ha no access to '/'."
+    else 
+        success "  o User 'supervisor' ha access to '/', OK."
     fi
 
     mys9s tree --access --privileges="rwx" --cmon-user="pipas" /
     if [ $? -ne 0 ]; then
         failure "User 'pipas' ha no access to '/'"
-        exit 1
+    else
+        success "  o User 'pipas' ha access to '/', OK."
     fi
 
     end_verbatim
@@ -225,7 +234,8 @@ function testMkdir()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while creating a folder"
-        exit 1
+    else
+        success "  o The exit code is 0, OK."
     fi
 
     # Checking the new folder.
@@ -235,7 +245,8 @@ function testMkdir()
     expected="^drwxrwxrwx     - pipas  users  home$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
 
     end_verbatim
@@ -262,24 +273,27 @@ function testAcl()
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
-        return 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
     
     expected="^group::rwx$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
-        return 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
     
     expected="^other::rwx$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
-        return 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
     
-    end_verbati
+    end_verbatim
 }
 
 function testAddAcl()
@@ -355,7 +369,8 @@ function testRmdir()
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while removing a folder."
-        exit 1
+    else
+        success "  o The exit code is 0, OK."
     fi
 
     end_verbatim
