@@ -172,7 +172,11 @@ function get_field_from_html()
     field_name="$1"
     value=$(cat $html_file | grep "$field_name")
     value=$(echo "$value" | sed -e 's/<!--//g' -e 's/-->//g');
-    value=$(echo "$value" | awk '{print $3}')
+    
+    value=$(echo "$value" | awk -F' ' '{print $4}')
+    if [ -z "$value" ]; then
+        value=$(echo "$value" | awk -F' ' '{print $3}')
+    fi
 
     echo "$value"
 }
@@ -297,9 +301,7 @@ function get_test_case_time()
         esac
     done
         
-    my_time=$(cat "$html_file" | \
-            grep "p42dc 300 " | \
-            awk -F' ' '{print $4}')
+    my_time=$(get_field_from_html --html-file "$html_file" "p42dc 300")
 
     echo "$my_time"
 }
@@ -550,11 +552,11 @@ function process_html_file_xml()
     git_date=$(get_field_from_html --html-file $html_file "p42di 120")
     git_time=$(get_field_from_html --html-file $html_file "p42di 121")
     gittimezone=$(get_field_from_html --html-file $html_file "p42di 122")
-    git_hash=$(cat $html_file | grep "^p42di 130" | awk '{print $3}')
-    git_branch=$(cat $html_file | grep "^p42di 131" | awk '{print $3}')
-    test_hostname=$(cat $html_file | grep "^p42di 150" | awk '{print $3}')
-    elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
-    status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
+    git_hash=$(get_field_from_html --html-file $html_file "p42di 130")
+    git_branch=$(get_field_from_html --html-file $html_file "p42di 131")
+    test_hostname=$(get_field_from_html --html-file $html_file "p42di 150")
+    elapsed=$(get_field_from_html --html-file $html_file "p42di 140")
+    status=$(get_field_from_html --html-file $html_file "p42di 110")
     
     test_name=$(basename "$html_file" .html)
 
@@ -653,12 +655,12 @@ function process_html_file()
     # The downloaded file has these fields embedded in a HTML comment so that we
     # can have everything in one single HTML file.
     #
-    git_date=$(cat $html_file | grep "^p42di 120" | awk '{print $3}')
-    git_time=$(cat $html_file | grep "^p42di 121" | awk '{print $3}')
-    gittimezone=$(cat $html_file | grep "^p42di 122" | awk '{print $3}')
-    git_hash=$(cat $html_file | grep "^p42di 130" | awk '{print $3}')
-    elapsed=$(cat $html_file | grep "^p42di 140" | awk '{print $3}')
-    status=$(cat $html_file | grep "^p42di 110" | awk '{print $3}')
+    git_date=$(get_field_from_html --html-file $html_file "p42di 120")
+    git_time=$(get_field_from_html --html-file $html_file "p42di 121")
+    gittimezone=$(get_field_from_html --html-file $html_file "p42di 122")
+    git_hash=$(get_field_from_html --html-file $html_file "p42di 130")
+    elapsed=$(get_field_from_html --html-file $html_file "p42di 140")
+    status=$(get_field_from_html --html-file "p42di 110")
     
     test_name=$(basename "$html_file" .html)
 
