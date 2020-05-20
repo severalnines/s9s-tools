@@ -153,8 +153,11 @@ EOF
     check_exit_code $?
     
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-    printVerbose "CLUSTER_ID: '$CLUSTER_ID'"
-    if [ "$CLUSTER_ID" -gt 0 ]; then
+    if [ "$CLUSTER_ID" == "NOT-FOUND" ]; then
+        failure "Cluster was not created."
+        end_verbatim
+        return 1
+    elif [ "$CLUSTER_ID" -gt 0 ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
