@@ -241,6 +241,7 @@ function createSlaveCluster()
     local cluster_name="slave_cluster"
     local nodes
     local master_cluster_id_option
+    local retcode
 
     print_title "Creating the Slave Cluster"
     begin_verbatim
@@ -268,7 +269,14 @@ function createSlaveCluster()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        failure "The return code is $retcode"
+        end_verbatim
+        return 1
+    else
+        success "  o The return code is 0, OK."
+    fi
 
     #
     # FIXME: I am not sure why I wrote this like this.
