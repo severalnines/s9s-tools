@@ -250,7 +250,15 @@ function cut_test_case_html()
     [ -z "$output_file" ] && return 1
     [ -z "$test_name" ] && return 1
 
-    awk_command="/p42dc 200 $test_name\$/,/p42dc 201 $test_name\$/"
+    # These mark the begin and the end of the output for one particular test
+    # case. We can now split this part out of the html file that holds the
+    # output of the whole test script.
+    if grep -q "^p42dc 200" "$html_file"; then
+        awk_command="/p42dc 200 $test_name\$/,/p42dc 201 $test_name\$/"
+    else
+        awk_command="/p42dc 200 $test_name /,/p42dc 201 $test_name /"
+    fi
+
     awk "$awk_command" "$html_file" >"$output_file"
 }
 

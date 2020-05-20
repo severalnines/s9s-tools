@@ -3352,7 +3352,7 @@ function runFunctionalTest ()
 
     # This shows the beginning of the test.
     echo ""
-    echo "p42dc 200 $TEST_NAME"
+    echo "<!-- p42dc 200 $TEST_NAME -->"
 
     #
     # This is where we call the function that executes the test. Unless
@@ -3402,7 +3402,7 @@ function runFunctionalTest ()
     echo "<!-- p42dc 300 $test_elapsed_time -->"
     
     # This marks the end of the test case.
-    echo "p42dc 201 $TEST_NAME"
+    echo "<!-- p42dc 201 $TEST_NAME -->"
 
     if [ -f "$client_log_file" ]; then
         echo -n "" >"$client_log_file"
