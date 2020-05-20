@@ -7,7 +7,7 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 
 cd $MYDIR
-source include.sh
+source ./include.sh
 
 #
 # Prints usage information and exits.
