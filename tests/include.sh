@@ -3399,7 +3399,7 @@ function runFunctionalTest ()
     fi
 
     # This shows how long it took to execute this particular test case.
-    echo "p42dc 300 $test_elapsed_time"
+    echo "<!-- p42dc 300 $test_elapsed_time -->"
     
     # This marks the end of the test case.
     echo "p42dc 201 $TEST_NAME"
