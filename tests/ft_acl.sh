@@ -254,7 +254,6 @@ function testAcl()
     #
     print_title "Checking Default ACL Entries"
 
-
     begin_verbatim
     mys9s tree --get-acl /home
     
@@ -263,31 +262,40 @@ function testAcl()
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
-        exit 1
+        return 1
     fi
     
     expected="^group::rwx$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
-        exit 1
+        return 1
     fi
     
     expected="^other::rwx$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s tree --get-acl /home
-        exit 1
+        return 1
     fi
+    
+    end_verbati
+}
 
+function testAddAcl()
+{
     # 
     # We are now adding a new ACL to the folder, a real ACL entry with a user.
     #
     print_title "Adding ACL Entry"
+    begin_verbatim
+
     mys9s tree --add-acl --acl="user:nobody:r-x" /home
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while adding ACL entry."
+    else
+        success "  o The exit code is 0, OK."
     fi
     
     mys9s tree --get-acl /home
@@ -295,17 +303,27 @@ function testAcl()
     expected="^user:nobody:r-x$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
     
+    end_verbatim
+}
+
+function testRetrictiveAcl()
+{
     #
     # Adding an ACL that actually removes some access rights.
     #
     print_title "Adding Restrictive ACL Entry"
+    begin_verbatim
+    
     mys9s tree --add-acl --acl="other::---" /home
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode} while adding ACL entry."
-        exit 1
+    else
+        success "  o The exit code is 0, OK."
     fi
 
     mys9s tree --get-acl /home
@@ -313,7 +331,8 @@ function testAcl()
     expected="^other::---$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
-        exit 1
+    else
+        success "  o Expected line '$expected' found, OK."
     fi
 
     end_verbatim
@@ -359,6 +378,8 @@ else
     runFunctionalTest checkTree02
     runFunctionalTest testMkdir
     runFunctionalTest testAcl
+    runFunctionalTest testAddAcl
+    runFunctionalTest testRetrictiveAcl
     runFunctionalTest testRmdir
 fi
 

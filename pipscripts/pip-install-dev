@@ -392,39 +392,34 @@ function install_mongodb()
     #
     #
     #
-    echo "Downloading the SASL library for MongoDb."
-    wget https://www.cyrusimap.org/releases/cyrus-sasl-2.1.26.tar.gz 
-    if [ $? -ne 0 ]; then
-        echo "Failed to download source"
-        return 1
+#
+# MongoC
+#
+if [ ! -f /opt/mongo-c/include/libmongoc-1.0/mongoc.h ]; then
+    if ! [ -f cyrus-sasl-2.1.27.tar.gz ]; then
+        echo "* downloading the SASL library for MongoDb."
+        wget https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-2.1.27/cyrus-sasl-2.1.27.tar.gz || exit $?
     fi
-    
-    echo "* installing the SASL library for MongoDb."
-    tar -xzpf cyrus-sasl-2.1.26.tar.gz || exit $?
 
-    pushd cyrus-sasl-2.1.26
-    ./configure --enable-scram --disable-gssapi --enable-static=yes --prefix=/opt/cyrus-sasl || exit $?
+    echo "* installing the SASL library for MongoDb."
+    tar -xzpf cyrus-sasl-2.1.27.tar.gz || exit $?
+    pushd cyrus-sasl-2.1.27
+    CFLAGS="-fPIC" ./configure --with-pic --enable-scram --disable-gssapi --enable-static=yes --prefix=/opt/cyrus-sasl || exit $?
     make -j3 || exit $?
     sudo make -j3 install || exit $?
     popd
 
-    if ! [ -f legacy-1.1.3.tar.gz ]; then
-        echo "* downloading mongodb-driver."
-        wget --no-check-certificate https://github.com/mongodb/mongo-cxx-driver/archive/legacy-1.1.3.tar.gz || exit $?
+    if [ ! -f mongo-c-driver-1.13.0.tar.gz ]; then
+        wget 'https://github.com/mongodb/mongo-c-driver/releases/download/1.13.0/mongo-c-driver-1.13.0.tar.gz' || exit $?
     fi
-
-    echo "* compiling mongodb-driver."
-    tar -xzpvf legacy-1.1.3.tar.gz || exit $?
-
-    pushd mongo-cxx-driver-legacy-1.1.3/
-    sudo mv -f /opt/mongo /opt/mongo.bak || true
-    sudo mkdir -p /opt/mongo;
-    sudo chown -R ${USER} /opt/mongo || exit $?;
-    #scons --prefix=/opt/mongo --ssl=on --dynamic-boost=off --opt=on install
-    CXXFLAGS='-std=c++0x' scons --prefix=/opt/mongo --c++11=off CXXFLAGS='-std=c++0x' --ssl=on --dynamic-boost=off --use-sasl-client=on --disable-warnings-as-errors=on --opt=on --cpppath=/opt/cyrus-sasl/include/ --libpath=/opt/cyrus-sasl/lib/ install;# || exit $? # FIXME CheckCXX(), c++ compiler test fails 
+    echo "* installing the new MongoC driver"
+    tar -xzpf mongo-c-driver-1.13.0.tar.gz || exit $?
+    pushd mongo-c-driver-1.13.0
+    cmake -DCMAKE_PREFIX_PATH=/opt/ssl102p/ -DCMAKE_PREFIX_PATH=/opt/cyrus-sasl/ -DCMAKE_INSTALL_PREFIX:PATH=/opt/mongo-c -DMONGOC_ENABLE_ICU=OFF -DENABLE_ICU=OFF
+    make -j3 || exit $?
+    sudo make -j3 install
     popd
-    
-    popd
+fi
 }
 
 function install_mongoc()
