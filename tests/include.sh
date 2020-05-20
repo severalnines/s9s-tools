@@ -1993,7 +1993,7 @@ function get_mysql_root_password()
         retval=$($S9S cluster \
             --list-config \
             --batch \
-            --color=none
+            --color=none \
             $password_option \
             --cluster-name="$name")
 
