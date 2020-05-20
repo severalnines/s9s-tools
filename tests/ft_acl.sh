@@ -380,7 +380,6 @@ function testRmdir()
 # Running the requested tests.
 #
 startTests
-
 reset_config
 
 if [ "$1" ]; then

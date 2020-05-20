@@ -456,8 +456,8 @@ function testDeleteUser()
 #
 # Running the requested tests.
 #
-runFunctionalTest startTests
-runFunctionalTest reset_config
+startTests
+reset_config
 
 if [ "$OPTION_INSTALL" ]; then
     if [ "$*" ]; then
