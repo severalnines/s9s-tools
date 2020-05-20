@@ -2747,6 +2747,7 @@ void
 S9sRpcReply::printExtendedConfigLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantMap   configMap = operator[]("configuration").toVariantMap();
     S9sVariantList  items = configMap["values"].toVariantList();
     S9sFormat       nameFormat;
@@ -2787,9 +2788,13 @@ S9sRpcReply::printExtendedConfigLong()
         if (!options->isStringMatchExtraArguments(name.toString()))
             continue;
 
-        ::printf("%s", "\033[38;5;4m");
+        if (syntaxHighlight)
+            ::printf("%s", "\033[38;5;4m");
+
         nameFormat.printf(name.toString());
-        ::printf("%s", TERM_NORMAL);
+
+        if (syntaxHighlight)
+            ::printf("%s", TERM_NORMAL);
         
         ::printf("%s", STR(value.toJsonString(0, S9sFormatColor)));
 
@@ -2798,10 +2803,16 @@ S9sRpcReply::printExtendedConfigLong()
 
     if (!options->isBatchRequested())
     {
-        printf("Total: %s%d%s values.\n", 
-                numberColorBegin(),
-                nValues,
-                numberColorEnd());
+        
+        if (syntaxHighlight)
+        {
+            printf("Total: %s%d%s values.\n", 
+                    numberColorBegin(),
+                    nValues,
+                    numberColorEnd());
+        } else {
+            printf("Total: %d values.\n", nValues);
+        }
     }
 }
 
@@ -2958,6 +2969,7 @@ void
 S9sRpcReply::printConfigLong()
 {
     S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
     int             terminalWidth = options->terminalWidth();
     S9sVariant      config   = operator[]("config");
     S9sVariantList  fileList = config["files"].toVariantList();
@@ -3045,25 +3057,30 @@ S9sRpcReply::printConfigLong()
                 section = "-";
 
             printf("%sFile    :%s %s%s%s:%d\n", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                syntaxHighlight ? XTERM_COLOR_DARK_GRAY : "", 
+                syntaxHighlight ? TERM_NORMAL : "",
                 XTERM_COLOR_ORANGE, STR(filePath), TERM_NORMAL,
                 line);
             
             printf("%sSection :%s %s\n", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                syntaxHighlight ? XTERM_COLOR_DARK_GRAY : "",
+                syntaxHighlight ? TERM_NORMAL : "",
                 STR(section));
             
             printf("%sName    :%s %s%s%s\n", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                syntaxHighlight ? XTERM_COLOR_DARK_GRAY : "",
+                syntaxHighlight ? TERM_NORMAL : "",
                 optNameColorBegin(), STR(name), optNameColorEnd());
             
             printf("%sValue   :%s %s\n", 
-                XTERM_COLOR_DARK_GRAY, TERM_NORMAL,
+                syntaxHighlight ? XTERM_COLOR_DARK_GRAY : "", 
+                syntaxHighlight ? TERM_NORMAL : "",
                 STR(valueMap["value"].toString()));
             
             // A horizontal line.
             for (int n = 0; n < terminalWidth; ++n)
                 printf("-");
+
             printf("\n");
         }
     }

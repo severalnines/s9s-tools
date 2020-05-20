@@ -881,7 +881,6 @@ else
     runFunctionalTest testCreateClusterFromBackup
     runFunctionalTest testRestore
     runFunctionalTest testDeleteBackup
-    runFunctionalTest testDelete
     runFunctionalTest testDeleteOld
 fi
 

@@ -486,6 +486,7 @@ function testLdapConfigDisabled()
 
     ls -lha /etc/cmon-ldap.cnf
     ldap_config_disabled | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
+
     check_exit_code_no_job $?
     
     #
