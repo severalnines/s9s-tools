@@ -3389,13 +3389,13 @@ function runFunctionalTest ()
 
     if [ -n "$test_skipped" ]; then
         # Skipped
-        echo "p42dc 101 $TEST_NAME"
+        echo "<!-- p42dc 101 $TEST_NAME -->"
     elif ! isSuccess; then
         # FAILURE
-        echo "p42dc 102 $TEST_NAME"
+        echo "<!-- p42dc 102 $TEST_NAME -->"
     else 
         # SUCCESS
-        echo "p42dc 103 $TEST_NAME"
+        echo "<!-- p42dc 103 $TEST_NAME -->"
     fi
 
     # This shows how long it took to execute this particular test case.
