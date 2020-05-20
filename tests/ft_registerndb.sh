@@ -106,6 +106,8 @@ function testCreateCluster()
     local nodeName
 
     print_title "Creating NDB Cluster"
+    begin_verbatim
+
     nodeName=$(create_node --autodestroy)
     NODES+="mysql://$nodeName;ndb_mgmd://$nodeName;"
 
@@ -138,6 +140,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    end_verbatim
 }
 
 #
@@ -146,6 +150,7 @@ function testCreateCluster()
 function testDrop()
 {
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -156,6 +161,7 @@ function testDrop()
         $LOG_OPTION
    
     check_exit_code $?
+    end_verbatim
 }
 
 function testRegister()
