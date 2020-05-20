@@ -371,7 +371,8 @@ function emit_test_failures()
                 sed -e 's/p42err //g' \
                     -e 's/&/\&amp;/g' \
                     -e 's/</\&lt;/g' \
-                    -e 's/>/\&gt;/g')
+                    -e 's/>/\&gt;/g' \
+                    | tr -d '"')
 
         if [ -z "$error_message" ]; then
             continue
