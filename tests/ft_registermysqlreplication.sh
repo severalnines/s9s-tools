@@ -177,6 +177,7 @@ function testDrop()
     local exitCode
 
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -191,6 +192,8 @@ function testDrop()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+
+    end_verbatim
 }
 
 function testRegister()
@@ -198,6 +201,7 @@ function testRegister()
     local exitCode 
 
     print_title "Registering the Cluster"
+    begin_verbatim
 
     #
     # Registering the cluester that we just created and dropped.
@@ -219,6 +223,7 @@ function testRegister()
     mys9s cluster --stat
     mys9s cluster --list --long
     mys9s node --list --long
+    end_verbatim
 }
 
 #
