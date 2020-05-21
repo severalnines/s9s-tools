@@ -11,6 +11,7 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+MYSQL_ROOT_PASSWORD=""
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -145,6 +146,8 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
+    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
+
     end_verbatim
 }
 
@@ -182,6 +185,7 @@ function testRegister()
         --register \
         --cluster-type=ndb \
         --nodes="$NODES" \
+        --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
         --cluster-name=my_cluster_$$ \
         $LOG_OPTION
 

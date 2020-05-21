@@ -10,6 +10,7 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+MYSQL_ROOT_PASSWORD=""
 
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
@@ -166,6 +167,9 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
+
     end_verbatim
 }
 
@@ -210,7 +214,7 @@ function testRegister()
         --register \
         --cluster-type=mysqlreplication \
         --nodes=$NODES \
-        --vendor=percona \
+        --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
         --cluster-name=my_cluster_$$ \
         $LOG_OPTION
 
