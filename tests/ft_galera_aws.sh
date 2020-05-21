@@ -130,7 +130,8 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+    begin_verbatim
+
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy "$node001")
 
@@ -153,6 +154,7 @@ function createServer()
         --cloud        "aws"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    end_verbatim
 }
 
 function createCluster()
@@ -164,6 +166,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -196,6 +199,7 @@ function createCluster()
     fi
 
     check_container_ids --galera-nodes
+    end_verbatim
 }
 
 #
@@ -210,6 +214,7 @@ function deleteContainer()
     containers+=" ft_galera_aws_02_$$"
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -226,18 +231,21 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 function unregisterServer()
 {
     if [ -n "$CMON_CLOUD_CONTAINER_SERVER" ]; then
         print_title "Unregistering Cmon-cloud server"
+        begin_verbatim
         
         mys9s server \
             --unregister \
             --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
 
         check_exit_code_no_job $?
+        end_verbatim
     fi
 
 }

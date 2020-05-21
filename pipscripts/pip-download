@@ -420,20 +420,38 @@ function emit_test_output()
         echo "        <system-out></system-out>"
     fi
 
+    #
+    # The extended data about the test.
+    #
+    test_status=$(get_field_from_html --html-file "$report_file" "p42di 110")
     git_branch=$(get_field_from_html --html-file "$report_file" "p42di 131")
     git_hash=$(get_field_from_html --html-file "$report_file" "p42di 130")
     git_date=$(get_field_from_html --html-file $report_file "p42di 120")
     git_time=$(get_field_from_html --html-file $report_file "p42di 121")
     test_hostname=$(get_field_from_html --html-file $report_file "p42di 150")
     
-    echo "        <system-err>"
-    echo "<![CDATA["
-    echo "  git_branch: $git_branch"
-    echo "    git_hash: $git_hash"
-    echo "    git_time: $git_date $git_time"
-    echo " test_server: $test_hostname"
-    echo "]]>"
-    echo "        </system-err>"
+    cat <<EOF
+            <system-err>
+    <![CDATA[
+    <h3>Debug information</h3>
+    <p>Here is some debug information about this test run created by the 
+    pip-download script</p>
+    <pre>
+     test_status: $test_status
+      git_branch: $git_branch
+        git_hash: $git_hash
+        git_time: $git_date $git_time
+     test_server: $test_hostname
+    </pre>
+EOF
+    
+    awk_command="/p42lg 200/,/p42lg 201/"
+    awk "$awk_command" "$report_file" 
+    
+    cat <<EOF
+    ]]>
+            </system-err>
+EOF
 }
 
 function emit_test_case_xml()
@@ -571,6 +589,7 @@ function process_html_file_xml()
     status=$(get_field_from_html --html-file $html_file "p42di 110")
     
     test_name=$(basename "$html_file" .html)
+    test_name=$(echo "$test_name" | tr '.' '_')
 
     n_skipped=$(cat $html_file | grep 'p42dc 101' | wc -l)
     n_failures=$(cat $html_file | grep 'p42dc 102' | wc -l)
