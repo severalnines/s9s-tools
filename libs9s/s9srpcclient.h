@@ -395,6 +395,7 @@ class S9sRpcClient
         bool demoteNode();
 
         bool upgradeCluster();
+        bool checkPkgUpgrades();
 
         bool createMaintenance();
 

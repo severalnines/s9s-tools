@@ -523,6 +523,7 @@ class S9sOptions
         bool isDeleteAccountRequested() const; 
         bool isCreateDatabaseRequested() const; 
         bool isUpgradeClusterRequested() const; 
+        bool isCheckPkgUpgradesRequested() const; 
         bool isListDatabasesRequested() const; 
         bool isListFilesRequested() const; 
         bool isDropRequested() const;
