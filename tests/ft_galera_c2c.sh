@@ -11,6 +11,7 @@ DEBUG_OPTION="--debug"
 CONTAINER_SERVER=""
 CONTAINER_IP=""
 CLUSTER_NAME=""
+MYSQL_ROOT_PASSWORD=""
 LAST_CONTAINER_NAME=""
 OPTION_VENDOR="mariadb"
 PROVIDER_VERSION="10.3"
@@ -226,6 +227,9 @@ function createMasterCluster()
     wait_for_cluster_started "$cluster_name"
     mys9s cluster --list --long
 
+    # query the mysql root password
+    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
+
     if [ -n "$master_cluster_id_option" ]; then
         mys9s replication --list
     fi
@@ -265,6 +269,7 @@ function createSlaveCluster()
         --provider-version="$PROVIDER_VERSION" \
         --vendor=$OPTION_VENDOR \
         --nodes="$nodes" \
+        --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
         --remote-cluster-id=1 \
         $LOG_OPTION \
         $DEBUG_OPTION

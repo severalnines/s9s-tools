@@ -1998,7 +1998,7 @@ function get_mysql_root_password()
             --cluster-name="$name")
 
         retval=$(echo "$retval" | \
-            grep monitored_mysql_root_password \
+            grep monitored_mysql_root_password | \
             cut -d'"' -f2 )
 
         if [ -z "$retval" ]; then
