@@ -394,6 +394,8 @@ class S9sRpcClient
         bool promoteSlave();
         bool demoteNode();
 
+        bool upgradeCluster();
+
         bool createMaintenance();
 
         bool createMaintenance(

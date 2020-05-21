@@ -161,6 +161,7 @@ enum S9sOptionType
     OptionCheckHosts,
     OptionDeleteAccount,
     OptionCreateDatabase,
+    OptionUpgradeCluster,
     OptionListDatabases,
     OptionListFiles,
     OptionAccount,
@@ -4672,6 +4673,16 @@ S9sOptions::isCreateDatabaseRequested() const
 }
 
 /**
+ * \returns true if the --upgrade-cluster command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isUpgradeClusterRequested() const
+{
+    return getBool("upgrade_cluster");
+}
+
+/**
  * \returns true if the --list-databases command line option was provided when
  *   the program was started.
  */
@@ -9007,6 +9018,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isCreateDatabaseRequested())
         countOptions++;
+
+    if (isUpgradeClusterRequested())
+        countOptions++;
     
     if (isListDatabasesRequested())
         countOptions++;
@@ -11124,6 +11138,7 @@ S9sOptions::readOptionsCluster(
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
+        { "upgrade-cluster",  no_argument,       0, OptionUpgradeCluster  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
@@ -11417,6 +11432,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateDatabase:
                 // --create-database
                 m_options["create_database"] = true;
+                break;
+
+            case OptionUpgradeCluster:
+                // --upgrade-cluster
+                m_options["upgrade_cluster"] = true;
                 break;
             
             case OptionListDatabases:
