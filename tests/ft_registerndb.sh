@@ -173,6 +173,7 @@ function testRegister()
     local exitCode 
 
     print_title "Registering the Cluster"
+    begin_verbatim
 
     #
     # Registering the cluester that we just created and dropped.
@@ -192,6 +193,7 @@ function testRegister()
 
     s9s cluster --list --long
     s9s node --list --long
+    end_verbatim
 }
 
 #
