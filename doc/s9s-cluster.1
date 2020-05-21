@@ -124,6 +124,19 @@ mys9s cluster \\
 .fi
 
 .TP
+.B \-\-create-database
+Upgrade cluster packages.
+
+.B EXAMPLE
+.nf
+mys9s cluster \\
+    --upgrade-cluster \\
+    --cluster-id=1 \\
+    --nodes="192.168.0.84:5433;192.168.0.85" \\
+    --wait
+.fi
+
+.TP
 .B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
