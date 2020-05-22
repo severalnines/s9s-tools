@@ -3,7 +3,7 @@ MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.8"
-VERBOSE=""
+VERBOSE="true"
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
 
@@ -296,7 +296,6 @@ function get_test_names_html()
 function get_test_case_time()
 {
     local html_file
-    local oldifs
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -315,6 +314,28 @@ function get_test_case_time()
     my_time=$(get_field_from_html --html-file "$html_file" "p42dc 300")
 
     echo "$my_time"
+}
+
+function get_test_status()
+{
+    local html_file
+    local oldifs
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "process_html_file: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    echo $(get_field_from_html --html-file "$html_file" "p42di 110")
 }
 
 function get_test_case_title()
@@ -423,7 +444,7 @@ function emit_test_output()
     #
     # The extended data about the test.
     #
-    test_status=$(get_field_from_html --html-file "$report_file" "p42di 110")
+    test_status=$(get_test_status --html-file "$report_file")
     git_branch=$(get_field_from_html --html-file "$report_file" "p42di 131")
     git_hash=$(get_field_from_html --html-file "$report_file" "p42di 130")
     git_date=$(get_field_from_html --html-file $report_file "p42di 120")
@@ -586,7 +607,7 @@ function process_html_file_xml()
     git_branch=$(get_field_from_html --html-file $html_file "p42di 131")
     test_hostname=$(get_field_from_html --html-file $html_file "p42di 150")
     elapsed=$(get_field_from_html --html-file $html_file "p42di 140")
-    status=$(get_field_from_html --html-file $html_file "p42di 110")
+    test_status=$(get_test_status --html-file $html_file)
     
     test_name=$(basename "$html_file" .html)
     test_name=$(echo "$test_name" | tr '.' '_')
@@ -594,6 +615,11 @@ function process_html_file_xml()
     n_skipped=$(cat $html_file | grep 'p42dc 101' | wc -l)
     n_failures=$(cat $html_file | grep 'p42dc 102' | wc -l)
     n_cases=$(cat $html_file | grep 'p42dc 10' | wc -l)
+
+    if [ "$test_status" == "PREPARING" -o "$test_status" == "RUNNING" ]; then
+        printDebug "Status of $test_name is $test_status, skipping..."
+        return 1
+    fi
 
     if [ "$n_cases" -eq 0 ]; then
         printWarning "No test cases in $test_name..."
@@ -615,7 +641,7 @@ function process_html_file_xml()
             <property name="git_date" value="$git_date"/>
             <property name="git_time" value="$git_time"/>
             <property name="git_hash" value="$git_hash"/>
-            <property name="status" value="$status"/>
+            <property name="status" value="$test_status"/>
             <property name="hostname" value="$test_hostname"/>
         </properties>    
 EOF

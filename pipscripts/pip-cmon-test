@@ -39,8 +39,6 @@ declare -A REMOTE_SERVER_STATE
 
 # This should come from config.
 TEST_REPORT_URL="www:/var/lib/test-ui/test-results"
-#TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
-#TEST_REPORT_URL="www:/var/www/html/ft_install/"
 
 source $MYDIR/utilityfunctions.sh
 
@@ -270,11 +268,17 @@ while true; do
     esac
 done
 
+#
+# This is how we log from this script. Every run truncates the log file.
+#
 echo "" >$LOGFILE
 printVerbose "Starting test runner script..."
+printVerbose "              hostname: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
+printVerbose "       TEST_REPORT_URL: $TEST_REPORT_URL"
+
 
 #
 # The basename of the pip-cmon-test log file on the server.
@@ -1007,7 +1011,6 @@ function run_test()
                 done
             else
                 pip-host-control --error "The ft_full/ft_full was not found."
-                #pip-host-control --error "  pwd: $PWD"
                 upload_slog_file
                 return 1
             fi
@@ -1193,6 +1196,19 @@ function run_test()
     upload_slog_file
 }
 
+function install_packages_on_test_server()
+{
+    if [ -z "$(psql --version)" ]; then
+        message "Installing postgresql..."
+        sudo apt-get -y --force-yes install postgresql
+    fi
+
+    if [ -z "$(bc --version)" ]; then
+        message "Installing bc..."
+        sudo apt-get -y --force-yes install bc
+    fi
+}
+
 #
 # $1: os
 # $2: test name
@@ -1205,15 +1221,12 @@ function main()
     local version="$3"
     local source_root
 
-
     pip-host-control \
         --testing \
         --log "Preparing test ($MYNAME ver. $VERSION)." \
         --status "Preparing test."
 
-    if [ -z "$(psql --version)" ]; then
-        sudo apt-get -y --force-yes install postgresql
-    fi
+    install_packages_on_test_server
 
     #
     # Finding the source root.
@@ -1543,8 +1556,7 @@ else
     checkOtherInstances
     echo "checkOtherInstances : $?"
 
-    main \
-        "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+    main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
 fi
 
 

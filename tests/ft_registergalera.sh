@@ -153,8 +153,8 @@ function testCreateCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
-    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
 
+    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
     end_verbatim
 }
 
