@@ -282,11 +282,11 @@ function get_test_class()
     done
 
     git_branch=$(get_field_from_html --html-file $html_file "p42di 131")
-    git_branch=$(basename $git_branch)
+    #git_branch=$(basename $git_branch)
     if [ -z "$git_branch" ]; then
         echo "s9s"
     else
-        echo "s9s.$git_branch"
+        echo "s9s_$git_branch"
     fi
 }
 
@@ -636,7 +636,7 @@ function process_html_file_xml()
     git_hash=$(get_field_from_html --html-file $html_file "p42di 130")
     
     git_branch=$(get_field_from_html --html-file $html_file "p42di 131")
-    git_branch=$(basename $git_branch)
+    #git_branch=$(basename $git_branch)
 
     #test_class=$(get_test_class --html-file "$html_file")
     
