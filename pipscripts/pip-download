@@ -262,6 +262,34 @@ function cut_test_case_html()
     awk "$awk_command" "$html_file" >"$output_file"
 }
 
+function get_test_class()
+{
+    local html_file
+    local git_branch
+    
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --html-file)
+                html_file=$2
+                shift 2
+                ;;
+
+            *)
+                printError "get_test_class: Invalid option '$1'."
+                return 1
+                ;;
+        esac
+    done
+
+    git_branch=$(get_field_from_html --html-file $html_file "p42di 131")
+    git_branch=$(basename $git_branch)
+    if [ -z "$git_branch" ]; then
+        echo "s9s"
+    else
+        echo "s9s.$git_branch"
+    fi
+}
+
 function get_test_names_html()
 {
     local html_file
@@ -518,7 +546,9 @@ function emit_test_case_xml()
 
     test_time=$(get_test_case_time --html-file "$html_file")
     test_title=$(get_test_case_title --html-file "$html_file")
-    class_name="s9s.$test_suite"
+
+    class_name=$(get_test_class --html-file "$report_file")
+    class_name="${class_name}.${test_suite}"
    
     is_skipped=""
     if grep -q 'p42dc 101' "$html_file"; then
@@ -604,7 +634,12 @@ function process_html_file_xml()
     git_time=$(get_field_from_html --html-file $html_file "p42di 121")
     gittimezone=$(get_field_from_html --html-file $html_file "p42di 122")
     git_hash=$(get_field_from_html --html-file $html_file "p42di 130")
+    
     git_branch=$(get_field_from_html --html-file $html_file "p42di 131")
+    git_branch=$(basename $git_branch)
+
+    #test_class=$(get_test_class --html-file "$html_file")
+    
     test_hostname=$(get_field_from_html --html-file $html_file "p42di 150")
     elapsed=$(get_field_from_html --html-file $html_file "p42di 140")
     test_status=$(get_test_status --html-file $html_file)

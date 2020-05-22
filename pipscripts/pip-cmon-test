@@ -28,6 +28,8 @@ OPTION_VENDOR=""
 OPTION_VERSION=""
 OPTION_PID=""
 OPTION_USER="$USER"
+OPTION_GIT_BRANCH=""
+
 S9S_OPTION=""
 
 current_test_name=""
@@ -68,6 +70,7 @@ Usage:
   --no-git-pull           Do not execute 'git pull' before the test.
   --no-compile            Do not compile the source, use as it is.
   --shut-down-after       Shut down the test server after the test.
+  --git-branch=BRANCH     The git branch to test.
 
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
@@ -97,7 +100,7 @@ ARGS=$(\
         -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
 pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
-no-git-pull,no-compile,shut-down-after,wait" \
+no-git-pull,no-compile,shut-down-after,wait,git-branch:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -256,12 +259,18 @@ while true; do
             WAIT_OPTION="--wait"
             ;;
 
+        --git-branch)
+            OPTION_GIT_BRANCH="$2"
+            shift 2
+            ;;
+
         --)
             shift
             break
             ;;
 
         *)
+            printVerbose "Unhandled option $1"
             printError "Unhandled option $1"
             exit 1
             ;;
@@ -278,7 +287,7 @@ printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
 printVerbose "       TEST_REPORT_URL: $TEST_REPORT_URL"
-
+printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 
 #
 # The basename of the pip-cmon-test log file on the server.
@@ -459,11 +468,32 @@ function print_title()
 #
 function prepare_source()
 {
-    pip-host-control \
-        --status "Preparing source." 
+    local package_name="unknown"
+    local current_branch
+    local requested_branch
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --package-name)
+                package_name=$2
+                shift 2
+                ;;
+
+            --requested-branch)
+                requested_branch="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+
+    pip-host-control --status "Preparing source." 
 
     if [ -z "$NO_GIT_PULL" ]; then
-        printVerbose "Pulling source."
+        printVerbose "Pulling source for $package_name."
         pip-host-control \
             --log "Pulling source." \
             --status "Pulling source." 
@@ -471,10 +501,27 @@ function prepare_source()
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
 
-        # This is temporary
-        git checkout master
-        git pull >/dev/null 2>/dev/null
-        
+        #
+        # Checking the branch.
+        #
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+        printVerbose "Current branch is '$current_branch'."
+       
+        if [ -z "$requested_branch" ]; then
+            printVerbose "Requested branch is not set."
+        else 
+            printVerbose "Requested branch is '$requested_branch'."
+        fi
+
+        if [ "$current_branch" != "$requested_branch" ]; then
+            printVerbose "Switching to branch '$requested_branch'."
+            git checkout "$requested_branch" >>$LOGFILE 2>>$LOGFILE
+            git pull >/dev/null 2>/dev/null
+        fi
+       
+        #
+        #
+        #
         pip-host-control --log "Pulled source."
 
         # Files are left everywhere... :(
@@ -507,6 +554,9 @@ function find_mysql()
     return 1
 }
 
+#
+# Expects to be in the source directory.
+#
 function compile_source_dir()
 {
     local source_root
@@ -550,7 +600,6 @@ function compile_source_dir()
 
     printVerbose "Entering directory '$source_root'..."
     pip-host-control --log "Entering directory '$source_root'..."
-    pushd "$source_root" >/dev/null 2>/dev/null
     retcode="$?"
 
     if [ "$retcode" -ne 0 ]; then
@@ -559,15 +608,12 @@ function compile_source_dir()
     fi
     
     upload_slog_file
-    prepare_source
-    upload_slog_file
 
     #
     # Not gonna compile the source when the --no-compile command line option is
     # provided.
     #
     if [ "$OPTION_NO_COMPILE" ]; then
-        popd >/dev/null 2>/dev/null
         return 0
     fi
     
@@ -633,23 +679,44 @@ function compile_source_dir()
 function compile_source()
 {
     local retcode
+    local directory
 
     printVerbose "Preparing clustercontrol"
+
+    #
+    # Compiling the controller.
+    # The source is already prepared in advance.
+    #
+    directory="$(find_clustercontrol_source_directory)"
+
+    pushd "$directory"
     compile_source_dir \
-        --source-root "$(find_clustercontrol_source_directory)"
+        --source-root "$directory"
 
     retcode=$?
+    popd 
+    
     if [ "$retcode" -ne 0 ]; then
         printVerbose "The return code is $retcode..."
         return "$retcode"
     fi
 
+    #
+    # Compiling the s9s-tools, the source is not yet prepared.
+    #
     if [ -n "$S9S_OPTION" ]; then
+        directory=$(find_s9s_source_directory)
+
+        pushd "$directory"
+        prepare_source \
+            --package-name "s9s-tools"
+
         compile_source_dir \
-            --source-root "$(find_s9s_source_directory)" \
+            --source-root "$directory" \
             --install 
 
         retcode="$?"
+        popd
     fi
 
     return "$retcode"
@@ -1221,6 +1288,7 @@ function main()
     local version="$3"
     local source_root
 
+    printVerbose "Starting main()."
     pip-host-control \
         --testing \
         --log "Preparing test ($MYNAME ver. $VERSION)." \
@@ -1251,12 +1319,16 @@ function main()
     fi
 
     #
-    # Preparing the source, generating a file holding the test results.
+    # Preparing the clustercontrol source, generating a file holding the test 
+    # results.
     #
     printVerbose "Entering directory '$source_root'..."
     pushd "$source_root" >/dev/null 2>/dev/null
 
-    prepare_source
+    prepare_source \
+        --package-name      "clustercontrol" \
+        --requested-branch  "$OPTION_GIT_BRANCH"
+
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
@@ -1467,6 +1539,7 @@ function run_tests_remote()
                             --vendor=$vendor \
                             --sqlversion=$version \
                             --test="$test_name" \
+                            --git-branch="$OPTION_GIT_BRANCH" \
                             >/dev/null 2>/dev/null &
 
                     if [ -n "$WAIT_OPTION" ]; then
@@ -1554,7 +1627,7 @@ elif [ "$SERVER" ]; then
     pip-host-control --idle --status="Idle."
 else
     checkOtherInstances
-    echo "checkOtherInstances : $?"
+    printVerbose "checkOtherInstances : $?"
 
     main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
 fi

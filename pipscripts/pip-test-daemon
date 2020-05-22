@@ -144,10 +144,10 @@ function start_test()
     let SUM_STARTED_TESTS+=1
 
     cat <<EOF
-    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user"
+    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user" --git-branch="$gitbranch"
 EOF
 
-    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user"
+    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user" --git-branch="$gitbranch"
 
     retcode=$?
     echo "pip-cmon-test retcode: $retcode"
