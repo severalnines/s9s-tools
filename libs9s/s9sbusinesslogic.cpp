@@ -242,6 +242,12 @@ S9sBusinessLogic::execute()
             success = client.createDatabase();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isAvailableUpgradesRequested())
+        {
+            success = client.availableUpgrades();
+	    //FIXME How to create a nice table of the result?
+            client.printMessages("Available upgrades received.", success);
+            client.setExitStatus();
         } else if (options->isUpgradeClusterRequested())
         {
             success = client.upgradeCluster();

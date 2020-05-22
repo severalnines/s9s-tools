@@ -5677,6 +5677,35 @@ S9sRpcClient::demoteNode()
 }
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::availableUpgrades()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sString      uri       = "/v2/clusters/";
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  database;
+    bool           retval;
+
+    request["operation"]      = "availableUpgrades";
+
+    request["clusterid"]      = clusterId;
+    if (hosts.size() != 0)
+    {
+	request["nodes"]      = nodesField(hosts);
+    }
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * This function will create and send a job to upgrade the
  * software packages for the cluster.
  */
