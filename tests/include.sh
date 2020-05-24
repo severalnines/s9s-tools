@@ -3369,7 +3369,7 @@ function runFunctionalTest ()
     else
         test_start_time="$(date +"%s.%N")"
         
-        $TEST_NAME $*
+        timeout 45m --kill-after=60m $TEST_NAME $*
 
         test_end_time="$(date +"%s.%N")"
         test_elapsed_time=$(echo "scale=4; $test_end_time - $test_start_time" | bc)
