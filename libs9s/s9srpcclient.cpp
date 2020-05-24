@@ -5677,6 +5677,35 @@ S9sRpcClient::demoteNode()
 }
 
 /**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::availableUpgrades()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sString      uri       = "/v2/clusters/";
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  database;
+    bool           retval;
+
+    request["operation"]      = "availableUpgrades";
+
+    request["clusterid"]      = clusterId;
+    if (hosts.size() != 0)
+    {
+	request["nodes"]      = nodesField(hosts);
+    }
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * This function will create and send a job to upgrade the
  * software packages for the cluster.
  */
@@ -5709,6 +5738,51 @@ S9sRpcClient::upgradeCluster()
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Upgrade Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * This function will create and send a job to check for
+ * pacakge versions and possible upgrades of the
+ * cluster softwares.
+ */
+bool
+S9sRpcClient::checkPkgUpgrades()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    if (hosts.size() != 0)
+    {
+	jobData["nodes"]      = nodesField(hosts);
+    }
+    if (options->force())
+        jobData["force"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "check_pkg_upgrades";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Check for package upgrades";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.

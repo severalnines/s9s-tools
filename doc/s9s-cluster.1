@@ -124,7 +124,33 @@ mys9s cluster \\
 .fi
 
 .TP
-.B \-\-create-database
+.B \-\-check-pkg-upgrades
+Check available cluster package upgrades.
+
+.B EXAMPLE
+.nf
+mys9s cluster \\
+    --check-pkg-upgrades \\
+    --cluster-id=1 \\
+    --nodes="192.168.0.84:5433;192.168.0.85" \\
+    --wait
+.fi
+
+.TP
+.B \-\-available-upgrades
+Shows the available packages to upgrade the cluster with.
+
+.B EXAMPLE
+.nf
+mys9s cluster \\
+    --available-upgrades \\
+    --cluster-id=1 \\
+    --nodes="192.168.0.84:5433;192.168.0.85" \\
+    --wait
+.fi
+
+.TP
+.B \-\-upgrade-cluster
 Upgrade cluster packages.
 
 .B EXAMPLE
