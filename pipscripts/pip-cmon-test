@@ -1352,6 +1352,13 @@ function main()
     compile_source
     if [ $? -ne 0 ]; then
         printVerbose "3487 Failed to compile source."
+        generate_test_result_info \
+            --test-name  "$OPTION_TEST_NAME" \
+            --test-state "FAILED" \
+            >$tmp_file
+
+        scp "$tmp_file" "$TEST_REPORT_URL"
+
         pip-host-control \
             --idle \
             --log    "Failed to compile, idle." \
