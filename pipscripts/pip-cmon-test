@@ -1351,7 +1351,7 @@ function main()
 
     compile_source
     if [ $? -ne 0 ]; then
-        printVerbose "Failed to compile source"
+        printVerbose "3487 Failed to compile source."
         pip-host-control \
             --idle \
             --log    "Failed to compile, idle." \
