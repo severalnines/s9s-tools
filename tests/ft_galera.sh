@@ -330,6 +330,12 @@ EOF
 function testSetupAudit()
 {
     print_title "Setting up Audit Logging"
+    if [ "$OPTION_VENDOR" == "codership" ]; then
+        cat <<EOF | paragraph
+  Audit logging is not supported with codership, this test is now skipped.
+EOF
+        return 0
+    fi
 
     begin_verbatim
     mys9s cluster \
