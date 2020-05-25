@@ -1,3 +1,3 @@
 #! /bin/bash
 
-./ft_galera.sh --vendor=mariadb $*
+./ft_galera.sh --vendor=mariadb --provider-version=10.4 $*
