@@ -144,6 +144,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -159,6 +160,7 @@ function createCluster()
         $DEBUG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -211,6 +213,7 @@ function testStopProxySql()
     #
     #
     print_title "Stopping ProxySQL Node"
+    begin_verbatim
 
     mys9s container --stop --wait "$CONTAINER_NAME9"
     check_exit_code $?
@@ -226,8 +229,11 @@ function testStopProxySql()
         mys9s node --list --long
         mys9s node --stat $PROXYSQL_IP
     else
+        success "  o ProxySql $PROXYSQL_IP is in CmonHostOffLine state, OK."
         mys9s node --stat $PROXYSQL_IP
     fi
+
+    end_verbatim
 }
 
 function testStartProxySql()
