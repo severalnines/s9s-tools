@@ -84,7 +84,8 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,number-of-nodes:,vendor:,leave-nodes,enable-ssl,image:" \
+provider-version:,number-of-nodes:,vendor:,leave-nodes,enable-ssl,\
+os-vendor:,os-release:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -160,8 +161,13 @@ while true; do
             OPTION_ENABLE_SSL="true"
             ;;
 
-        --image)
-            IMAGE_OPTION="--image=$2"
+        --os-vendor)
+            OPTION_OS_VENDOR="$2"
+            shift 2
+            ;;
+
+        --os-release)
+            OPTION_OS_RELEASE="$2"
             shift 2
             ;;
 
@@ -191,7 +197,10 @@ function testCreateCluster()
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
         echo "Creating node #$node_serial"
-        node_ip=$(create_node --autodestroy "$node_name")
+        node_ip=$(create_node \
+            --os-vendor   "$OPTION_OS_VENDOR"  \
+            --os-release  "$OPTION_OS_RELEASE" \
+            --autodestroy "$node_name")
 
         if [ -n "$nodes" ]; then
             nodes+=";"
@@ -217,7 +226,6 @@ function testCreateCluster()
         --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
-        $IMAGE_OPTION \
         $LOG_OPTION \
         $DEBUG_OPTION
 

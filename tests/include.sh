@@ -1681,12 +1681,14 @@ function create_node()
     local option_autodestroy=""
     local container_list_file="/tmp/${MYNAME}.containers"
     local template_option=""
+    local os_vendor_option=""
+    local os_release_option=""
     local container_name
     local args
 
     args=$(\
     getopt -o h \
-        -l "help,autodestroy,template:" \
+        -l "help,autodestroy,template:,os-vendor:,os-release:" \
         -- "$@")
 
     if [ $? -ne 0 ]; then
@@ -1710,6 +1712,20 @@ function create_node()
 
             --template)
                 template_option="--template=$2"
+                shift 2
+                ;;
+
+            --os-vendor)
+                if [ -n "$2" ]; then
+                    os_vendor_option="--vendor=$2"
+                fi
+                shift 2
+                ;;
+
+            --os-release)
+                if [ -n "$2" ]; then
+                    os_release_option="--release=$2"
+                fi
                 shift 2
                 ;;
 
@@ -1738,6 +1754,8 @@ function create_node()
 
     echo -n "Creating container..." >&2
     ip=$(pip-container-create \
+        $os_vendor_option \
+        $os_release_option \
         $template_option \
         $verbose_option \
         --server=$CONTAINER_SERVER $container_name)
