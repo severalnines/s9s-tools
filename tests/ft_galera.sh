@@ -397,6 +397,7 @@ function testSetConfig02()
     local newValue="64M"
     local name="max_heap_table_size"
 
+    print_title "Changing the configuration"
     begin_verbatim
     #
     # Changing a configuration value.
@@ -468,6 +469,7 @@ function testRestartNode()
 function testStopStartNode()
 {
     local exitCode
+    print_title "Stopping and starting node"
 
     begin_verbatim
     #
