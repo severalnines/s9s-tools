@@ -387,13 +387,11 @@ function createContainer()
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
-        exit 1
     fi
 
     if [ "$CONTAINER_IP" == "-" ]; then
         failure "The container got no IP."
         s9s container --list --long
-        exit 1
     fi
 
     owner=$(\

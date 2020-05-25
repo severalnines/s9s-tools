@@ -44,7 +44,6 @@ Usage:
 SUPPORTED TESTS:
   o createUser       Creates a user to work with.
   o registerServer   Registers a new container server. No software installed.
-  o createContainer  Creates a container.
   o createCluster    Creates a cluster.
   o removeCluster    Drops the cluster, removes containers.
 
@@ -147,6 +146,7 @@ function createUser()
     # Adding an extra user that we will use for testing.
     #
     print_title "Creating a New User"
+    begin_verbatim
 
     mys9s user \
         --create \
@@ -167,7 +167,11 @@ function createUser()
     if [ "$myself" != "sisko" ]; then
         mys9s user --whoami --password="$CMON_USER_PASSWORD"
         failure "Whoami returns $myself instead of sisko."
+    else
+        success "  o Whoami returned $myself, OK."
     fi
+
+    end_verbatim
 }
 
 #
@@ -178,6 +182,7 @@ function registerServer()
     local class
 
     print_title "Registering Container Server"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -211,18 +216,21 @@ function registerServer()
         --cat \
         --password="$CMON_USER_PASSWORD" \
         /$CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
+
+
 
 function createCluster()
 {
     local config_dir="$HOME/.s9s"
     local container_name1="${MYBASENAME}_11_$$"
-    #local container_name2="${MYBASENAME}_12_$$"
 
     #
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on LXC"
+    begin_verbatim
 
     # FIXME: If we set the username everything is ok until the Workflow
     # reports an error because we have this in the test:
@@ -244,17 +252,7 @@ function createCluster()
 
     # FIXME: check_exit_code do not support user password.
     check_exit_code_no_job $?
-    #check_container_ids --galera-nodes
-
-    #
-    #
-    #
-    print_title "Waiting and Printing Lists"
-    sleep 10
-    mys9s cluster   --list --long --password="$CMON_USER_PASSWORD"
-    mys9s node      --list --long --password="$CMON_USER_PASSWORD"
-    mys9s container --list --long --password="$CMON_USER_PASSWORD"
-    mys9s node      --stat --password="$CMON_USER_PASSWORD"
+    end_verbatim
 }
 
 function removeCluster()
@@ -281,7 +279,7 @@ function removeCluster()
     # Deleting containers.
     #
     print_title "Deleting Containers"
-    
+    begin_verbatim
     mys9s container \
         --delete \
         --password="$CMON_USER_PASSWORD" \
@@ -289,14 +287,7 @@ function removeCluster()
         "$container_name1"
 
     check_exit_code $?
-    
-#    mys9s container \
-#        --delete \
-#        $LOG_OPTION \
-#        --password="$CMON_USER_PASSWORD" \
-#        "$container_name2"
-#
-#    check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -321,7 +312,6 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createUser
     runFunctionalTest registerServer
-    runFunctionalTest createContainer
     runFunctionalTest createCluster
     runFunctionalTest removeCluster
 fi
