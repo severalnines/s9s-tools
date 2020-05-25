@@ -260,7 +260,6 @@ function testStopDaemon()
 {
     local state
 
-    return 0
     print_title "Stopping the Daemon Manually"
 
     #
@@ -332,7 +331,7 @@ else
 
     runFunctionalTest testStopSlave
     runFunctionalTest testStartSlave
-    runFunctionalTest testStopDaemon
+    #runFunctionalTest testStopDaemon
     
     runFunctionalTest testDrop
 fi
