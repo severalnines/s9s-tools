@@ -84,7 +84,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,number-of-nodes:,vendor:,leave-nodes,enable-ssl" \
+provider-version:,number-of-nodes:,vendor:,leave-nodes,enable-ssl,image:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -160,6 +160,11 @@ while true; do
             OPTION_ENABLE_SSL="true"
             ;;
 
+        --image)
+            IMAGE_OPTION="--image=$2"
+            shift 2
+            ;;
+
         --)
             shift
             break
@@ -177,6 +182,7 @@ function testCreateCluster()
     local exitCode
     local node_serial=1
     local node_name
+    local exitCode
 
     print_title "Creating a Galera Cluster"
 
@@ -211,10 +217,16 @@ function testCreateCluster()
         --vendor="$OPTION_VENDOR" \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=$PROVIDER_VERSION \
+        $IMAGE_OPTION \
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    exitCode=$?
+    check_exit_code $exitCode
+    if [ "$exitCode" -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
