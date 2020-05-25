@@ -656,7 +656,8 @@ function compile_source_dir()
         pip-host-control \
             --tail "$PWD/make.log" \
             --error "The make -j10 returned an error ($retcode)."
-        exit 6
+
+        return 1
     fi
 
     if [ -n "$do_install" ]; then
@@ -1356,6 +1357,7 @@ function main()
             --log    "Failed to compile, idle." \
             --status "Idle."
 
+        upload_slog_file
         return 1
     fi
 
