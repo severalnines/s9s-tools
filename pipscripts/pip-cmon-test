@@ -653,6 +653,8 @@ function compile_source_dir()
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         printVerbose "Program 'make' failed."
+        tail -n 12 >>$LOGFILE
+
         pip-host-control \
             --tail "$PWD/make.log" \
             --error "The make -j10 returned an error ($retcode)."
@@ -1351,10 +1353,13 @@ function main()
 
     compile_source
     if [ $? -ne 0 ]; then
+        current_test_name="$OPTION_TEST_NAME"
+        
         printVerbose "3487 Failed to compile source."
+
         generate_test_result_info \
             --test-name  "$OPTION_TEST_NAME" \
-            --test-state "FAILED" \
+            --test-state "FAILURE" \
             >$tmp_file
 
         scp "$tmp_file" "$TEST_REPORT_URL"
