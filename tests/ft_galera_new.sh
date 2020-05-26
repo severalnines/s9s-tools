@@ -161,6 +161,7 @@ function testCreateCluster()
   creation installed.
 
 EOF
+    begin_verbatim
 
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy $node1)
@@ -239,6 +240,7 @@ EOF
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 function testCreateClusterFail1()
@@ -255,6 +257,7 @@ function testCreateClusterFail1()
   co-locate MySQL servers on the same computer.
 
 EOF
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -271,6 +274,7 @@ EOF
     else
         success "  o Cluster that re-using a node failed, ok."
     fi
+    end_verbatim
 }
 
 function testCreateClusterDupl1()
@@ -289,6 +293,7 @@ function testCreateClusterDupl1()
   but renamed to CLUSTERNAME~1 on the fly.
 
 EOF
+    begin_verbatim
 
     echo "Creating node #1"
     nodeName=$(create_node --autodestroy $node1)
@@ -320,6 +325,7 @@ EOF
     fi
     
     wait_for_cluster_started "$newClusterName"
+    end_verbatim
 }
 
 function testCreateClusterDupl2()
@@ -335,8 +341,8 @@ function testCreateClusterDupl2()
     cat <<EOF
   Yet another cluster with the same name. This should be renamed to
   CLUSTERNAME~2 of course.
-
 EOF
+    begin_verbatim
 
     echo "Creating node #2"
     nodeName=$(create_node --autodestroy $node1)
@@ -369,6 +375,7 @@ EOF
     
     wait_for_cluster_started "$newClusterName"
 
+    end_verbatim
 }
 
 function testRemoveClusterFail()
@@ -378,8 +385,8 @@ function testRemoveClusterFail()
     print_title "Removing Cluster 0"
     cat <<EOF
   This test will try to remove cluster 0 and checks that this actually fails.
-
 EOF
+    begin_verbatim
 
     mys9s cluster \
         --drop \
@@ -393,6 +400,8 @@ EOF
     else
         success "  o Removing cluster 0 failed, ok."
     fi
+
+    end_verbatim
 }
 
 #
