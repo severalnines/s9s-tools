@@ -70,7 +70,8 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,log,server:,print-commands,install,reset-config,\
-provider-version:,number-of-nodes:,vendor:,leave-nodes" \
+provider-version:,number-of-nodes:,vendor:,leave-nodes,\
+os-vendor:,os-release:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -136,6 +137,16 @@ while true; do
             shift
             ;;
 
+        --os-vendor)
+            OPTION_OS_VENDOR="$2"
+            shift 2
+            ;;
+
+        --os-release)
+            OPTION_OS_RELEASE="$2"
+            shift 2
+            ;;
+
         --)
             shift
             break
@@ -180,13 +191,25 @@ function createMasterCluster()
     # Composing a list of container names.
     #
     node_name1=$(printf "%s_11_%06d" "${MYBASENAME}" "$$")
-    node_ip11=$(create_node --autodestroy --template="ubuntu" $node_name1)
+    node_ip11=$(create_node \
+        --autodestroy \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        $node_name1)
 
     node_name2=$(printf "%s_12_%06d" "${MYBASENAME}" "$$")
-    node_ip12=$(create_node --autodestroy --template="ubuntu" $node_name2)
+    node_ip12=$(create_node \
+        --autodestroy \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        $node_name2)
 
     node_name3=$(printf "%s_13_%06d" "${MYBASENAME}" "$$")
-    node_ip13=$(create_node --autodestroy --template="ubuntu" $node_name3)
+    node_ip13=$(create_node \
+        --autodestroy \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        $node_name3)
 
     nodes="$node_ip11;$node_ip12;$node_ip13"
 
@@ -261,7 +284,11 @@ function createSlaveCluster()
     # Composing a list of container names.
     #
     node_name1=$(printf "%s_21_%06d" "${MYBASENAME}" "$$")
-    node_ip21=$(create_node --autodestroy --template="ubuntu" $node_name1)
+    node_ip21=$(create_node \
+        --autodestroy \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        $node_name1)
     
     nodes="$node_ip21"
     
