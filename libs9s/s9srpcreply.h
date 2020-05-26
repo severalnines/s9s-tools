@@ -147,6 +147,10 @@ class S9sRpcReply : public S9sVariantMap
         void printControllersBrief();
         void printControllersStat();
 
+        void printUpgrades();
+        void printUpgradesLong();
+        void printUpgradesBrief();
+
         void printSupportedClusterListBrief();
         void printSupportedClusterListLong();
 

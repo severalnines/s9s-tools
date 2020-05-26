@@ -244,9 +244,11 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else if (options->isAvailableUpgradesRequested())
         {
+            S9sRpcReply reply;
+
             success = client.availableUpgrades();
-	    //FIXME How to create a nice table of the result?
-            client.printMessages("Available upgrades received.", success);
+            reply = client.reply();
+            reply.printUpgrades();
             client.setExitStatus();
         } else if (options->isUpgradeClusterRequested())
         {
