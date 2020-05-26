@@ -117,6 +117,7 @@ function testCreateCluster()
     local nodeName
 
     print_title "Creating an NDB Cluster"
+    begin_verbatim
 
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy)
@@ -151,12 +152,13 @@ function testCreateCluster()
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 #
@@ -167,6 +169,7 @@ function testCreateAccount()
     local userName
 
     print_title "Testing account creation."
+    begin_verbatim
 
     #
     # This command will create a new account on the cluster.
@@ -191,8 +194,9 @@ function testCreateAccount()
     userName="$(s9s account --list --cluster-id=1 "$DATABASE_USER")"
     if [ "$userName" != "$DATABASE_USER" ]; then
         failure "Failed to create user '$DATABASE_USER'."
-        exit 1
     fi
+
+    end_verbatim
 }
 
 #
@@ -203,6 +207,7 @@ function testCreateDatabase()
     local userName
 
     print_title "Creating Database"
+    begin_verbatim
 
     #
     # This command will create a new database on the cluster.
@@ -216,7 +221,6 @@ function testCreateDatabase()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while creating a database."
-        exit 1
     fi
 
     mys9s cluster \
@@ -239,11 +243,10 @@ function testCreateDatabase()
     printVerbose "exitCode = $exitCode"
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is $exitCode while granting privileges."
-        exit 1
     fi
 
     mys9s account --list --cluster-id=1 --long "$DATABASE_USER"
-    return 0
+    end_verbatim
 }
 
 #
@@ -255,6 +258,7 @@ function testCreateBackup01()
     local value
 
     print_title "Creating a Backup"
+    begin_verbatim
 
     #
     # Creating the backup.
@@ -284,7 +288,6 @@ function testCreateBackup01()
     value=$(s9s backup --list --backup-id=1 | wc -l)
     if [ "$value" != 1 ]; then
         failure "There should be 1 backup in the output."
-        return 1
     else
         success "  o There is 1 backup, ok."
     fi
@@ -300,7 +303,6 @@ function testCreateBackup01()
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
     if [ "$value" != "$USER" ]; then
         failure "The owner of the backup should be '$USER'"
-        return 1
     else
         success "  o The owner of the backup is $USER, ok."
     fi
@@ -308,7 +310,6 @@ function testCreateBackup01()
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
     if [ "$value" != "1" ]; then
         failure "The cluster ID for the backup should be '1'."
-        return 1
     else
         success "  o The cluster ID of the backup 1, ok."
     fi
@@ -326,21 +327,7 @@ function testCreateBackup01()
         success "  o There are at least two files, ok"
     fi
 
-    #
-    # MySQLCluster.cpp:1071 : FAILURE Not implemented in 
-    #   MySQLCluster::restoreBackup()
-    #
-#    print_title "Verifying Backup 1"
-#    node=$(create_node --autodestroy)
-#
-#    mys9s backup \
-#        --verify \
-#        --cluster-id=$CLUSTER_ID \
-#        --backup-id=1 \
-#        --test-server="$node" \
-#        $LOG_OPTION
-#
-#    check_exit_code $?
+    end_verbatim
 }
 
 #
