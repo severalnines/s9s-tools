@@ -131,6 +131,7 @@ function createUser()
     #
     #
     print_title "Creating a User"
+    begin_verbatim
 
     mys9s user \
         --create \
@@ -152,18 +153,24 @@ function createUser()
 
     if [ ! -f "$config_dir/sisko.key" ]; then
         failure "Secret key file 'sisko.key' was not found."
-        exit 0
+    else
+        success "  o Secret key file 'sisko.key' was found."
     fi
 
     if [ ! -f "$config_dir/sisko.pub" ]; then
         failure "Public key file 'sisko.pub' was not found."
-        exit 0
+    else
+        success "  o Public key file 'sisko.pub' was found."
     fi
 
     myself=$(s9s user --whoami)
     if [ "$myself" != "$USER" ]; then
         failure "Whoami returns $myself instead of $USER."
+    else
+        failure "  o Whoami returns $myself, OK."
     fi
+
+    end_verbatim
 }
 
 #
@@ -176,6 +183,7 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
+    begin_verbatim
     
     echo "Creating node #0"
     #nodeName=$(create_node --autodestroy $containerName)
@@ -206,6 +214,7 @@ function createServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 #
@@ -219,6 +228,7 @@ function createContainer()
     local owner
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -256,7 +266,7 @@ function createContainer()
     if [ $? -ne 0 ]; then
         failure "User $USER can not log in to $CONTAINER_IP"
     else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+        success "  o SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
     
     #
@@ -269,8 +279,10 @@ function createContainer()
     if [ $? -ne 0 ]; then
         failure "User 'sisko' can not log in to $CONTAINER_IP"
     else
-        echo "SSH access granted for user 'sisko' on $CONTAINER_IP."
+        success "  o SSH access granted for user 'sisko' on $CONTAINER_IP."
     fi
+    
+    end_verbatim
 
     #
     # Deleting the container we just created.
@@ -284,6 +296,7 @@ function createContainer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 function createCluster()
@@ -298,6 +311,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on GCE"
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -316,17 +330,7 @@ function createCluster()
     check_exit_code $?
     check_container_ids --galera-nodes
 
-    #
-    #
-    #
-    print_title "Waiting and Printing Lists"
-    sleep 60
-    mys9s cluster   --list --long
-    mys9s node      --list --long
-    mys9s container --list --long
-    s9s tree --list --long --recursive --cmon-user=system --password=secret
-
-    return 0
+    end_verbatim
 }
 
 function deleteContainers()
@@ -338,6 +342,8 @@ function deleteContainers()
     # Dropping and deleting.
     #
     print_title "Dropping Cluster"
+    begin_verbatim
+
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
     mys9s cluster \
@@ -364,6 +370,7 @@ function deleteContainers()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 #
