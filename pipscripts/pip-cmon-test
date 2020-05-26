@@ -1092,7 +1092,7 @@ function run_test()
             # 
             message "Running '$test_name'..."
 
-            ./$test_name \
+            timeout --kill-after=65m 60m ./$test_name \
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
