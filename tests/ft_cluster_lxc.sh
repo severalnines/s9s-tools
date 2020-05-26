@@ -14,6 +14,7 @@ cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
 source ./include_lxc.sh
+source ./include_user.sh
 
 #
 # Prints usage information and exits.
