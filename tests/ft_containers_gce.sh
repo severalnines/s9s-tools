@@ -319,6 +319,8 @@ function createFail()
     # Creating a container with invalid provider.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
+
     mys9s container \
         --create \
         --cloud="no_such_cloud" \
