@@ -406,16 +406,23 @@ function createCluster()
 
     check_exit_code $?
 
+    counter=0
     while true; do 
         CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
         
         if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
             break;
         fi
+        
+        if [ "$counter" -gt '6' ]; then
+            break;
+        fi
 
         echo "Cluster '$CLUSTER_NAME' not found."
+
+        let counter+=1
         s9s cluster --list --long
-        sleep 5
+        sleep 10
     done
 
     if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
