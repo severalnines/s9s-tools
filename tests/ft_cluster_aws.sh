@@ -167,6 +167,8 @@ function createUser()
     if [ "$myself" != "$USER" ]; then
         failure "Whoami returns $myself instead of $USER."
     fi
+
+    end_verbatim
 }
 
 #
