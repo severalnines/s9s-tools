@@ -130,7 +130,8 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+    begin_verbatim
+
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy "$node001")
 
@@ -156,6 +157,7 @@ function createServer()
         --cloud        "gce"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    end_verbatim
 }
 
 #
@@ -170,12 +172,14 @@ function registerServer()
     # Unregistering the server.
     #
     print_title "Unregistering Container Server"
+    begin_verbatim
 
     mys9s server \
         --unregister \
         --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
 
     check_exit_code_no_job $?
+    end_verbatim
 
 
     #
@@ -196,6 +200,7 @@ function registerServer()
         --class        CmonCloudServer \
         --server-name  "$CMON_CLOUD_CONTAINER_SERVER"     \
         --cloud        "gce"
+    end_verbatim
 }
 
 #
@@ -209,6 +214,7 @@ function createContainer()
     local template
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container on GCE.
@@ -234,13 +240,15 @@ function createContainer()
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
-        exit 1
+    else
+        success "  o The container was created, OK."
     fi
 
     if [ "$CONTAINER_IP" == "-" ]; then
         failure "The container got no IP."
         s9s container --list --long
-        exit 1
+    else
+        success "  o The container got IP, OK."
     fi
 
     owner=$(\
@@ -249,7 +257,8 @@ function createContainer()
 
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
-        exit 1
+    else
+        success "  o The owner of '$container_name' is '$owner', OK."
     fi
    
     #
@@ -259,9 +268,8 @@ function createContainer()
 
     if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
         failure "User $owner can not log in to $CONTAINER_IP"
-        exit 1
     else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+        success "  o SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
 
     #mys9s container --list --print-json
@@ -270,6 +278,7 @@ function createContainer()
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME=$container_name
+    end_verbatim
 }
 
 #
@@ -288,6 +297,8 @@ function createFail()
     # Creating a container.
     #
     print_title "Creating Container with Duplicate Name"
+    begin_verbatim
+
     mys9s container \
         --create \
         --cloud=gce \
@@ -298,8 +309,11 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with duplicate name should have failed."
-        exit 1
+    else
+        success "  o Creating container with duplicate name failed, OK."
     fi
+
+    end_verbatim
     
     #
     # Creating a container with invalid provider.
@@ -315,13 +329,17 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid cloud should have failed."
-        exit 1
+    else
+        success "  o Creating container with invalid cloud failed, OK."
     fi
+
+    end_verbatim
     
     #
     # Creating a container with invalid subnet.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --subnet-id="no_such_subnet" \
@@ -333,13 +351,17 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid subnet should have failed."
-        exit 1
+    else
+        success "  o Creating container with invalid subnet failed, OK."
     fi
+
+    end_verbatim
 
     #
     # Creating a container with invalid image.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --image="no_such_image" \
@@ -351,28 +373,11 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid image should have failed."
-        exit 1
+    else
+        success "  o Creating container with invalid image failed, OK."
     fi
-    
-    #
-    # Creating a container with invalid firewall.
-    # FIXME: Well, is it possible to create a container with invalid firewall?
-    #  Maybe, I disabled this.
-    #
-    #print_title "Creating Container with Invalid Firewall"
-    #mys9s container \
-    #    --create \
-    #    --firewalls="nosuchfirewall" \
-    #    --cloud=gce \
-    #    $LOG_OPTION \
-    #    "ft-containers-gce"
-    # 
-    #exitCode=$?
-    #
-    #if [ "$exitCode" == "0" ]; then
-    #    failure "Creating container with invalid firewall should have failed."
-    #    exit 1
-    #fi
+
+    end_verbatim
 }
 
 function createCluster()
@@ -384,6 +389,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -411,12 +417,13 @@ function createCluster()
     done
 
     if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
     check_container_ids --galera-nodes
+    end_verbatim
 
     #
     # Adding a proxysql node.
@@ -426,6 +433,7 @@ function createCluster()
     # are.
     #
     print_title "Adding a ProxySql Node"
+    begin_verbatim
 
     mys9s cluster \
         --add-node \
@@ -436,6 +444,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -453,6 +462,7 @@ function deleteContainer()
     containers+=" ft-containers-gce-02-$$"
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -469,6 +479,7 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 function unregisterServer()
