@@ -386,6 +386,7 @@ function createCluster()
 {
     local node001="ft-containers-gce-01-$$"
     local node002="ft-containers-gce-02-$$"
+    local exitCode
 
     #
     # Creating a Cluster.
@@ -404,7 +405,12 @@ function createCluster()
         --region="europe-west2-b" \
         $LOG_OPTION
 
-    check_exit_code $?
+    exitCode=$?
+    check_exit_code $exitCode
+    if [ $exitCode -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     counter=0
     while true; do 
@@ -414,7 +420,7 @@ function createCluster()
             break;
         fi
         
-        if [ "$counter" -gt '6' ]; then
+        if [ "$counter" -gt '2' ]; then
             break;
         fi
 
