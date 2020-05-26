@@ -37,7 +37,7 @@ Usage:
  --server=SERVER  Use the given server to create containers.
 
 SUPPORTED TESTS:
-  o createUser         Creates a user to work with.
+  o createUserSisko    Creates a user to work with.
   o testCreateOutsider Creates an outsider user for access right checks.
   o registerServer     Registers a new container server. No software installed.
   o createContainer    Creates a container.
@@ -122,50 +122,6 @@ if [ -z "$CONTAINER_SERVER" ]; then
     printError "Use the --server command line option to set the server."
     exit 6
 fi
-
-function createUser()
-{
-    local config_dir="$HOME/.s9s"
-    local myself
-
-    #
-    # Adding an extra user that we will use for testing.
-    #
-    print_title "Creating a New User"
-
-    mys9s user \
-        --create \
-        --cmon-user=system \
-        --password=secret \
-        --title="Captain" \
-        --first-name="Benjamin" \
-        --last-name="Sisko"   \
-        --email-address="sisko@ds9.com" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch \
-        "sisko"
-    
-    check_exit_code_no_job $?
-
-    ls -lha $HOME/.s9s/sisko*
-
-    if [ ! -f "$config_dir/sisko.key" ]; then
-        failure "Secret key file 'sisko.key' was not found."
-        exit 0
-    fi
-
-    if [ ! -f "$config_dir/sisko.pub" ]; then
-        failure "Public key file 'sisko.pub' was not found."
-        exit 0
-    fi
-
-    myself=$(s9s user --whoami)
-    if [ "$myself" != "$USER" ]; then
-        failure "Whoami returns $myself instead of $USER."
-    fi
-}
 
 #
 # Creates then destroys a cluster on lxc.
@@ -443,7 +399,7 @@ grant_user
 #EVENT_HANDLER_PID=$!
 
 if [ "$OPTION_INSTALL" ]; then
-    runFunctionalTest createUser
+    runFunctionalTest createUserSisko
     runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createCluster
@@ -453,7 +409,7 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest createUser
+    runFunctionalTest createUserSisko
     runFunctionalTest testCreateOutsider
     runFunctionalTest registerServer
     runFunctionalTest createContainer
