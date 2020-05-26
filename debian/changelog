@@ -1,3 +1,9 @@
+s9s-tools (1.7.20200526-release1) UNRELEASED; urgency=medium
+
+  * Creating a new build
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 26 May 2020 12:30:59 +0200
+
 s9s-tools (1.7.20200506-release1) UNRELEASED; urgency=medium
 
   * Version bump
