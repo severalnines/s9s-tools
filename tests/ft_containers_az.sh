@@ -132,7 +132,8 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+    begin_verbatim
+
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy "$node001")
 
@@ -155,6 +156,7 @@ function createServer()
         --cloud        "az"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    end_verbatim
 }
 
 #
@@ -168,6 +170,7 @@ function registerServer()
     # Unregistering the server.
     #
     print_title "Unregistering Container Server"
+    begin_verbatim
 
     mys9s server \
         --unregister \
@@ -175,12 +178,14 @@ function registerServer()
         $LOG_OPTION
 
     check_exit_code_no_job $?
+    end_verbatim
 
 
     #
     # Unregistering the server.
     #
     print_title "Registering Container Server"
+    begin_verbatim
 
     mys9s server \
         --register \
@@ -196,6 +201,8 @@ function registerServer()
         --class        CmonCloudServer \
         --server-name  "$CMON_CLOUD_CONTAINER_SERVER" \
         --cloud        "az"
+    
+    end_verbatim
 }
 
 #
@@ -209,6 +216,7 @@ function createContainer()
     local template
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -247,8 +255,9 @@ function createContainer()
 
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
-        exit 1
+        return 1
     fi
+    end_verbatim
    
     #
     # Checking if the user can actually log in through ssh.
@@ -266,6 +275,7 @@ function createContainer()
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME="$container_name"
+    end_verbatim
 }
 
 #
@@ -284,6 +294,7 @@ function createFail()
     # Creating a container.
     #
     print_title "Creating Container with Duplicate Name"
+    begin_verbatim
     mys9s container \
         --create \
         --cloud=az \
@@ -298,11 +309,13 @@ function createFail()
         failure "Creating container with duplicate name should have failed."
         exit 1
     fi
+    end_verbatim
     
     #
     # Creating a container with invalid provider.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --cloud="no_such_cloud" \
@@ -316,11 +329,13 @@ function createFail()
         failure "Creating container with invalid cloud should have failed."
         exit 1
     fi
+    end_verbatim
     
     #
     # Creating a container with invalid subnet.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --cloud=az \
@@ -336,11 +351,13 @@ function createFail()
         failure "Creating container with invalid subnet should have failed."
         exit 1
     fi
+    end_verbatim
 
     #
     # Creating a container with invalid image.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --cloud=az \
@@ -353,14 +370,16 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid image should have failed."
-        exit 1
+        return 1
     fi
+    end_verbatim
 
     #
     # Deleting the container we already created because we have very limited
     # resources.
     #
     print_title "Deleting Container"
+    begin_verbatim
 
     mys9s container --delete $LOG_OPTION "$LAST_CONTAINER_NAME"
     exitCode=$?
@@ -372,6 +391,7 @@ function createFail()
     check_exit_code $?
 
     LAST_CONTAINER_NAME=""
+    end_verbatim
 }
 
 function createCluster()
@@ -383,6 +403,8 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+    begin_verbatim
+
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -395,7 +417,11 @@ function createCluster()
         --containers="$node001" \
         $LOG_OPTION
 
+    exitCode=$?
     check_exit_code $?
+    if [ "$exitCode" -ne 0 ]; then
+        return 1
+    fi
 
     while true; do 
         CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -414,12 +440,13 @@ function createCluster()
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+    end_verbatim
 
     #
     # Adding a proxysql node.
     #
     print_title "Adding a ProxySql Node"
-
+    begin_verbatim
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -429,6 +456,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -439,6 +467,7 @@ function dropCluster()
     local exitCode
 
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # Starting the cluster.
@@ -453,6 +482,7 @@ function dropCluster()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
     fi
+    end_verbatim
 }
 
 function deleteContainer()
@@ -465,6 +495,7 @@ function deleteContainer()
     containers+=" ftcontainersaz02$$"
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -479,6 +510,7 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 #
