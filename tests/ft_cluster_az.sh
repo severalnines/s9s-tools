@@ -252,6 +252,7 @@ a lot of issues. I am trying to make the controller and s9s more robust using
 Azure issues tests.
 </p>
 EOF
+    begin_verbatim
 
     mys9s cluster \
         --create \
@@ -269,14 +270,18 @@ EOF
     if ! check_exit_code --do-not-exit $?; then
         mys9s container --delete --wait "$container_name1"
         mys9s container --delete --wait "$container_name2"
-        exit 1
+        return 1
     fi
+
+    end_verbatim
 
     #
     #
     #
     print_title "Waiting and Printing Lists"
-    sleep 60
+    begin_verbatim
+
+    mysleep 60
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
@@ -293,12 +298,14 @@ EOF
         $LOG_OPTION
     
     #check_exit_code $?
+    end_verbatim
 
     #
     # Deleting containers.
     #
     print_title "Deleting Containers"
-    
+    begin_verbatim
+
     mys9s container --delete $LOG_OPTION "$container_name1"
     check_exit_code $?
     
@@ -311,6 +318,7 @@ EOF
     # Checking the state... TBD
     #
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 #
