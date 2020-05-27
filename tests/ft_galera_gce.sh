@@ -146,7 +146,9 @@ function createServer()
     check_exit_code_no_job $?
 
     while s9s server --list --long | grep refused; do
-        sleep 10
+        warning "There is a 'refused' thing is going on."
+        mys9s server --list --long
+        mysleep 10
     done
 
     mys9s server --list --long
@@ -161,7 +163,9 @@ function createServer()
 
     if [ "$class" != "CmonCloudServer" ]; then
         failure "Created server has a '$class' class and not 'CmonLxcServer'."
-        exit 1
+        return 1
+    else
+        success "  o Created server has a '$class' class, OK."
     fi
     
     #
@@ -179,6 +183,7 @@ function createCluster()
 {
     local node001="ft-galera-gce-01-$$"
     local node002="ft-galera-gce-02-$$"
+    local exitCode
 
     #
     # Creating a Cluster.
@@ -200,7 +205,11 @@ function createCluster()
         --template="n1-highcpu-4" \
         $LOG_OPTION
 
-    check_exit_code $?
+    exitCode=$?
+    check_exit_code $exitCode
+    if [ $exitCode -ne 0 ]; then
+        return 1
+    fi
 
     counter=0    
     while true; do 
