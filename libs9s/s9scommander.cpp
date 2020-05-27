@@ -173,7 +173,6 @@ S9sCommander::main()
 void
 S9sCommander::updateTree()
 {
-    S9sMutexLocker   locker(m_networkMutex);    
     S9sRpcReply      getTreeReply;
 
     // Updating the screen.
@@ -185,8 +184,10 @@ S9sCommander::updateTree()
     m_communicating   = true;
     m_reloadRequested = false;
 
+    m_networkMutex.lock();
     m_client.getTree(true);
     getTreeReply = m_client.reply();
+    m_networkMutex.unlock();
     
     // Updating the screen.
     m_mutex.lock();
@@ -359,13 +360,15 @@ S9sCommander::loadObject(
         const S9sString &path,
         S9sVariantMap   &object)
 {
-    S9sMutexLocker locker(m_networkMutex);    
     S9sRpcReply    reply;
 
     object.clear();
+
+    m_networkMutex.lock();
     m_client.getObject(path);
-    
-    reply = m_client.reply();    
+    reply = m_client.reply();
+    m_networkMutex.unlock();
+
     if (reply.isOk())
     {
         object = reply.getObject();
@@ -427,7 +430,6 @@ S9sCommander::updateObject(
         const S9sString &path,
         S9sInfoPanel    &target)
 {
-    S9sMutexLocker locker(m_networkMutex);    
     S9sVariantMap  theMap;
     S9sRpcReply    reply;
    
@@ -447,8 +449,10 @@ S9sCommander::updateObject(
     /*
      *
      */
+    m_networkMutex.lock();
     m_client.getObject(path);
     reply = m_client.reply();
+    m_networkMutex.unlock();
     theMap = reply.getObject();
    
     /*
@@ -471,8 +475,7 @@ S9sCommander::updateObject(
         const S9sString &path,
         S9sEditor       &target)
 {
-    S9sMutexLocker locker(m_networkMutex);    
-    S9sMutexLocker locker1(m_mutex);
+    S9sMutexLocker locker(m_mutex);
 
     S9sVariantMap  theMap;
     S9sRpcReply    reply;
@@ -488,8 +491,10 @@ S9sCommander::updateObject(
         {
             S9sString path = target.objectPath();
             
+            m_networkMutex.lock();
             m_client.getObject(path);
             reply = m_client.reply();
+            m_networkMutex.unlock();
 
             if (reply.isOk())
             {
