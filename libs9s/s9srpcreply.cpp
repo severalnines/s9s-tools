@@ -6073,7 +6073,7 @@ S9sRpcReply::printUpgradesBrief()
         if (!options->isStringMatchExtraArguments(hostName))
             continue;
 
-        printf("%s%d:%s%s\n", hostColorBegin, idx, STR(hostName), hostColorEnd);
+        printf("%s%s%s\n", hostColorBegin, STR(hostName), hostColorEnd);
     }
 }
 
