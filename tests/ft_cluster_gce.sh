@@ -178,7 +178,7 @@ function createContainer()
     local template
     local owner
 
-    print_title "Creating Container"
+    print_title "Creating Container on GCE"
     begin_verbatim
 
     #
@@ -206,12 +206,19 @@ function createContainer()
     if [ -z "$CONTAINER_IP" -o "$CONTAINER_IP" == "-" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
+    else
+        success "  o Container has IP $CONTAINER_IP, OK."
     fi
- 
+}
+
+function checkContainer()
+{
     #
     # Checking if the owner can actually log in through ssh.
     #
     print_title "Checking SSH Access for '$USER'"
+    begin_verbatim
+
     is_server_running_ssh "$CONTAINER_IP" "$USER"
 
     if [ $? -ne 0 ]; then
@@ -220,10 +227,14 @@ function createContainer()
         success "  o SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
     
+    end_verbatim
+
     #
     # Checking that sisko can log in.
     #
     print_title "Checking SSH Access for 'sisko'"
+    begin_verbatim
+
     is_server_running_ssh \
         --current-user "$CONTAINER_IP" "sisko" "$config_dir/sisko.key"
 
@@ -234,12 +245,15 @@ function createContainer()
     fi
     
     end_verbatim
+}
 
+function deleteContainer()
+{
     #
     # Deleting the container we just created.
     #
-    print_title "Deleting Container"
-
+    print_title "Deleting Container on GCE"
+    begin_verbatim
     mys9s container --delete $LOG_OPTION "$container_name"
     check_exit_code $?
     
@@ -339,6 +353,8 @@ else
     runFunctionalTest createUserSisko
     runFunctionalTest createServer
     runFunctionalTest createContainer
+    runFunctionalTest checkContainer
+    runFunctionalTest deleteContainer
     runFunctionalTest createCluster
 
     if [ -z "$OPTION_INSTALL" ]; then
