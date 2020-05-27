@@ -12,7 +12,8 @@ CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./include_user.sh
 
 #
 # Prints usage information and exits.
@@ -114,50 +115,6 @@ if [ -z "$CONTAINER_SERVER" ]; then
     printError "Use the --server command line option to set the server."
     exit 6
 fi
-
-function createUser()
-{
-    local config_dir="$HOME/.s9s"
-    local myself
-
-    #
-    #
-    #
-    print_title "Creating a User"
-
-    mys9s user \
-        --create \
-        --cmon-user=system \
-        --password=secret \
-        --title="Captain" \
-        --first-name="Benjamin" \
-        --last-name="Sisko"   \
-        --email-address="sisko@ds9.com" \
-        --generate-key \
-        --group=ds9 \
-        --create-group \
-        --batch \
-        "sisko"
-    
-    check_exit_code_no_job $?
-
-    ls -lha "$config_dir"
-
-    if [ ! -f "$config_dir/sisko.key" ]; then
-        failure "Secret key file 'sisko.key' was not found."
-        exit 0
-    fi
-
-    if [ ! -f "$config_dir/sisko.pub" ]; then
-        failure "Public key file 'sisko.pub' was not found."
-        exit 0
-    fi
-
-    myself=$(s9s user --whoami)
-    if [ "$myself" != "$USER" ]; then
-        failure "Whoami returns $myself instead of $USER."
-    fi
-}
 
 #
 # This will install a new cmon-cloud server. 
@@ -367,7 +324,7 @@ reset_config
 grant_user
 
 if [ -n "$OPTION_INSTALL" ]; then
-    runFunctionalTest createUser
+    runFunctionalTest createUserSisko
     runFunctionalTest createServer
     runFunctionalTest createCluster
 elif [ "$1" ]; then
@@ -375,7 +332,7 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest createUser
+    runFunctionalTest createUserSisko
     runFunctionalTest createServer
     runFunctionalTest createContainer
     runFunctionalTest createCluster
