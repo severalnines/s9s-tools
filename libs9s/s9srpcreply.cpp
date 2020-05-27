@@ -39,6 +39,7 @@
 #include "S9sGroup"
 #include "S9sReport"
 #include "S9sServer"
+#include "S9sPkgInfo"
 #include "S9sController"
 #include "S9sJob"
 #include "S9sContainer"
@@ -5904,6 +5905,175 @@ S9sRpcReply::printControllersBrief()
             continue;
 
         printf("%s%s%s\n", hostColorBegin, STR(hostName), hostColorEnd);
+    }
+}
+
+void
+S9sRpcReply::printUpgrades()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isLongRequested()) 
+    {
+        printUpgradesLong();
+    } else {
+        printUpgradesBrief();
+    }
+}
+
+/**
+ * Prints the packages to upgrade in the long format.
+ */
+void 
+S9sRpcReply::printUpgradesLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  theList = operator[]("packages").toVariantList();
+    int             total   = operator[]("total").toInt();
+    int             nLines = 0;
+
+    S9sFormat       nameFormat;
+    S9sFormat       packageTypeFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       lastUpdatedFormat;
+    S9sFormat       installedVersionFormat;
+    S9sFormat       availableVersionFormat;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap           = theList[idx].toVariantMap();
+        S9sPkgInfo     package          = theMap;
+        S9sString      name             = package.name();
+        S9sString      packageType      = package.packageType();
+        S9sString      hostName         = package.hostName();
+        S9sString      lastUpdated      = package.lastUpdated().toString(
+                                                  S9sDateTime::CompactFormat);
+        S9sString      installedVersion = package.installedVersion();
+        S9sString      availableVersion = package.availableVersion();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        nameFormat.widen(name);
+        packageTypeFormat.widen(packageType);
+        hostNameFormat.widen(hostName);
+        lastUpdatedFormat.widen(lastUpdated);
+        installedVersionFormat.widen(installedVersion);
+        availableVersionFormat.widen(availableVersion);
+        ++nLines;
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        ::printf("%s", headerColorBegin());
+        hostNameFormat.printHeader("HOSTNAME");
+        nameFormat.printHeader("NAME");
+        packageTypeFormat.printHeader("PACKAGE TYPE");
+        installedVersionFormat.printHeader("INSTALLED VERSION");
+        availableVersionFormat.printHeader("AVAILABLE VERSION");
+        lastUpdatedFormat.printHeader("LAST UPDATED");
+        printf("%s\n", headerColorEnd());
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sPkgInfo  package = theMap;
+        S9sString      name             = package.name();
+        S9sString      packageType      = package.packageType();
+        S9sString      hostName         = package.hostName();
+        S9sString      lastUpdated      = package.lastUpdated().toString(
+                                                  S9sDateTime::CompactFormat);
+        S9sString      installedVersion = package.installedVersion();
+        S9sString      availableVersion = package.availableVersion();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        hostNameFormat.setColor(
+                package.colorBegin(syntaxHighlight),
+                package.colorEnd(syntaxHighlight));
+
+        hostNameFormat.printf(hostName);
+        nameFormat.printf(name);
+        packageTypeFormat.printf(packageType);
+        installedVersionFormat.printf(installedVersion);
+        availableVersionFormat.printf(availableVersion);
+        lastUpdatedFormat.printf(lastUpdated);
+
+        printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+        printf("Total: %d package(s)\n", total);
+}
+
+/**
+ * Prints the packages to upgrade in the brief format.
+ */
+void 
+S9sRpcReply::printUpgradesBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    //S9sString       formatString = "";
+    S9sVariantList  theList = operator[]("packages").toVariantList();
+    const char     *hostColorBegin = "";
+    const char     *hostColorEnd = "";
+
+    // TODO introduce command line option instead of --log-format
+#if 0
+    /*
+     * If there is a format string we simply print the list using that format.
+     */
+
+    if (options->hasLogFormat())
+        formatString = options->logFormat();
+
+    if (!formatString.empty())
+    {
+        for (uint idx = 0; idx < theList.size(); ++idx)
+        {
+            S9sVariantMap theMap  = theList[idx].toVariantMap();
+            S9sPkgInfo    pkgInfo = theMap;
+
+            printf("%s", STR(pkgInfo.toString(syntaxHighlight, formatString)));
+        }
+
+        return;
+    }
+#endif
+
+    /*
+     * Otherwise go on with a default format
+     */
+
+    if (syntaxHighlight)
+    {
+        hostColorBegin  = XTERM_COLOR_GREEN;
+        hostColorEnd    = TERM_NORMAL;
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap  theMap   = theList[idx].toVariantMap();
+        S9sPkgInfo     pkg      = theMap;
+        S9sString      hostName = pkg.hostName();
+
+        if (!options->isStringMatchExtraArguments(hostName))
+            continue;
+
+        printf("%s%d:%s%s\n", hostColorBegin, idx, STR(hostName), hostColorEnd);
     }
 }
 
