@@ -175,6 +175,7 @@ function testAddMaxScale()
             --cluster-id=1 \
             --nodes="maxscale://$CONTAINER_NAME9" \
             --containers="$CONTAINER_NAME9" \
+            --template="ubuntu" \
             $LOG_OPTION \
             $DEBUG_OPTION
     
