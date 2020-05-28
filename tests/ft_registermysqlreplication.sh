@@ -246,6 +246,6 @@ else
     runFunctionalTest testRegister
 fi
 
-runFunctionalTest endTests
+endTests
 
 
