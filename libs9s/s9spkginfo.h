@@ -44,7 +44,7 @@ class S9sPkgInfo : public S9sObject
                 const S9sString &formatString) const;
 
         virtual S9sString name() const;
-        S9sString packageType() const;
+        S9sString hostClassName() const;
         S9sString hostName() const;
         S9sDateTime lastUpdated() const;
         S9sString installedVersion() const;

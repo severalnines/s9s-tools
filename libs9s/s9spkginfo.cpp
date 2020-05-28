@@ -163,7 +163,7 @@ S9sPkgInfo::toString(
                 case 'T':
                     // The type of the server.
                     partFormat += "s";
-                    retval.aprintf(STR(partFormat), STR(packageType()));
+                    retval.aprintf(STR(partFormat), STR(hostClassName()));
                     break;
 
                 case 'H':
@@ -237,9 +237,9 @@ S9sPkgInfo::name() const
 }
 
 S9sString 
-S9sPkgInfo::packageType() const
+S9sPkgInfo::hostClassName() const
 {
-    return property("package_type").toString();
+    return property("host_class_name").toString();
 }
 
 S9sString
