@@ -420,8 +420,8 @@ function testInvalidUrl()
 #
 # Running the requested tests.
 #
-runFunctionalTest startTests
-runFunctionalTest grant_user
+startTests
+grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
