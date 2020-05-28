@@ -179,11 +179,12 @@ S9sPkgInfo::toString(
                         retval += TERM_NORMAL;
                     break;
 
-		case 'D':
-		    // DateTime of last check for available versions
+                case 'D':
+                // DateTime of last check for available versions
                     partFormat += "s";
-		    retval.aprintf(STR(partFormat), lastUpdated().toString(S9sDateTime::CompactFormat));
-		    break;
+                    retval.aprintf(STR(partFormat),
+                        STR(lastUpdated().toString(S9sDateTime::CompactFormat)));
+                    break;
 
                 case 'v':
                     // The installed version.
