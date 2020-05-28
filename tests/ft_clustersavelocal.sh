@@ -306,17 +306,19 @@ EOF
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
+        end_verbatim
         return 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    end_verbatim
 }
 
 function testSaveClusterFail()
