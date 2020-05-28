@@ -478,7 +478,7 @@ function emit_test_output()
     git_date=$(get_field_from_html --html-file $report_file "p42di 120")
     git_time=$(get_field_from_html --html-file $report_file "p42di 121")
     test_hostname=$(get_field_from_html --html-file $report_file "p42di 150")
-    
+   
     cat <<EOF
             <system-err>
     <![CDATA[
@@ -652,13 +652,24 @@ function process_html_file_xml()
     n_cases=$(cat $html_file | grep 'p42dc 10' | wc -l)
 
     if [ "$test_status" == "PREPARING" -o "$test_status" == "RUNNING" ]; then
-        printDebug "Status of $test_name is $test_status, skipping..."
+        printWarning "Status of $test_name is $test_status, skipping..."
         return 1
     fi
 
     if [ "$n_cases" -eq 0 ]; then
         printWarning "No test cases in $test_name..."
     fi
+
+    #printError "status: $test_status for $html_file"
+    case "$test_status" in 
+        SUCCESS)
+            let N_TESTS_PASSED+=1
+            ;;
+
+        FAILURE)
+            let N_TESTS_FAILED+=1
+            ;;
+    esac
 
     cat <<EOF
 <?xml version="1.0" ?>

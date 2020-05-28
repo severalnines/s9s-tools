@@ -176,14 +176,19 @@ function testCreateGalera()
     local node_name
     local config_file
 
-    if [ "$CLUSTER_TYPE" != "galera" ]; then
-        return 0
-    fi
-
     #
     #
     #
     print_title "Creating a Galera Cluster"
+
+    if [ "$CLUSTER_TYPE" != "galera" ]; then
+        cat <<EOF | paragraph
+  This test is not executed, an other cluster type is tested here.
+EOF
+        return 0
+    fi
+
+    begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
@@ -223,12 +228,12 @@ function testCreateGalera()
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
-        exit 1
+        return 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
@@ -236,8 +241,10 @@ function testCreateGalera()
     wait_for_cluster_started "$CLUSTER_NAME"
 
     config_file="/tmp/cmon_1.cnf"
-    print_subtitle "Cluster Config in $config_file"
-    cat $config_file
+    end_verbatim
+
+    #print_subtitle "Cluster Config in $config_file"
+    #cat $config_file
 }
 
 
@@ -249,14 +256,17 @@ function testCreatePostgre()
     local node_serial=1
     local node_name
 
-    if [ "$CLUSTER_TYPE" != "postgresql" ]; then
-        return 0
-    fi
-
     #
     #
     #
     print_title "Creating a PostgreSQL Cluster"
+    if [ "$CLUSTER_TYPE" != "postgresql" ]; then
+        cat <<EOF | paragraph
+  This test is not executed, an other cluster type is tested here.
+EOF
+    fi
+
+    begin_verbatim
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
         node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
 
@@ -296,7 +306,7 @@ function testCreatePostgre()
         failure "Exit code is $exitCode while creating cluster."
         mys9s job --list
         mys9s job --log --job-id=1
-        exit 1
+        return 1
     fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
@@ -319,9 +329,9 @@ function testSaveClusterFail()
   This test will try to save a cluster while not passing the cluster ID as a 
   command line option. We had a segfault reported in the controller, so we
   have this test to check.
-
 EOF
 
+    begin_verbatim
     mys9s backup \
         --save-cluster-info \
         --backup-directory=$OUTPUT_DIR \
@@ -341,6 +351,8 @@ EOF
     else
         failure "File '$tgz_file' was created with no cluster ID."
     fi
+
+    end_verbatim
 }
 
 function testSaveCluster()
@@ -348,6 +360,8 @@ function testSaveCluster()
     local tgz_file="$OUTPUT_DIR/$OUTPUT_FILE"
 
     print_title "Saving Cluster"
+
+    begin_verbatim
     mys9s backup \
         --save-cluster-info \
         --cluster-id=1 \
@@ -362,15 +376,16 @@ function testSaveCluster()
     else
         success "  o File '$tgz_file' was created, ok"
     fi
+    end_verbatim
 }
 
 function testDropCluster()
 {
     print_title "Dropping Original Cluster"
+    begin_verbatim
     cat <<EOF
   Dropping the original cluster from the controller so that we can restore it
   from the saved file.
-
 EOF
 
     mys9s cluster \
@@ -379,6 +394,7 @@ EOF
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 function testRestoreCluster()
@@ -388,6 +404,7 @@ function testRestoreCluster()
     local config_file
 
     print_title "Restoring Cluster"
+    begin_verbatim
 
     # Restoring the cluster on the remote controller.
     s9s backup \
@@ -398,12 +415,13 @@ function testRestoreCluster()
         --log
 
     check_exit_code $?
-
+    end_verbatim
 
     #
     # Checking the cluster state after it is restored.
     #
     print_title "Waiting until Cluster $CLUSTER_NAME is Started"
+    begin_verbatim
 
     mysleep 10
     wait_for_cluster_started --system "$CLUSTER_NAME"
@@ -426,12 +444,15 @@ function testRestoreCluster()
         success "  o The cluster is in started state, ok"
     fi
 
+    end_verbatim
+
     #
     # Checking the configuration file.
     #
     config_file="/tmp/cmon_2.cnf"
-
     print_subtitle "Cluster Config in $config_file"
+
+    begin_verbatim
     if [ -f "$config_file" ]; then
         success "  o The '$config_file' file exists, ok."
     else
@@ -439,15 +460,18 @@ function testRestoreCluster()
     fi
 
     cat $config_file | print_ini_file
+    end_verbatim
 }
 
 function cleanup()
 {
     print_title "Cleaning Up"
 
+    begin_verbatim
     if [ -f "$OUTPUT_DIR/$OUTPUT_FILE" ]; then
         rm -f "$OUTPUT_DIR/$OUTPUT_FILE"
     fi
+    end_verbatim
 }
 
 #
