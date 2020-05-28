@@ -130,6 +130,11 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
+    cat <<EOF | paragraph
+  This test will create a new container and install the cmon-cloud software on
+  it. Then the newly created cloud server is checked.
+EOF
+
     begin_verbatim
 
     echo "Creating node #0"
@@ -143,10 +148,11 @@ function createServer()
         --servers="cmon-cloud://$nodeName" \
         $LOG_OPTION
 
-    check_exit_code_no_job $?
+    check_exit_code $?
 
     mys9s server --list --long
     check_exit_code_no_job $?
+    end_verbatim
 
     #
     # Checking the state and the class name... 
@@ -157,13 +163,12 @@ function createServer()
         --cloud        "gce"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
-    end_verbatim
 }
 
 #
 # Unregisters a server and registers it again.
 #
-function registerServer()
+function testUnregister()
 {
     local class
     local lines
@@ -172,6 +177,10 @@ function registerServer()
     # Unregistering the server.
     #
     print_title "Unregistering Container Server"
+    cat <<EOF | paragraph
+  Unregistering the container server we just created so that we can check if
+  it can be registered again.
+EOF
     begin_verbatim
 
     mys9s server \
@@ -180,18 +189,27 @@ function registerServer()
 
     check_exit_code_no_job $?
     end_verbatim
+}
 
-
+function testRegister()
+{
     #
     # Registering the server.
     #
     print_title "Registering Container Server"
+    cat <<EOF | paragraph
+  Registering the server we just unregistered. Everything is there, we just need
+  to register, not create.
+EOF
+    begin_verbatim
 
     mys9s server \
         --register \
         --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
+
+    end_verbatim
 
     #
     # Checking the state... 
@@ -531,7 +549,10 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest createServer
-    runFunctionalTest registerServer
+    
+    runFunctionalTest testUnregister
+    runFunctionalTest testRegister
+
     runFunctionalTest createContainer
     runFunctionalTest createFail
     runFunctionalTest createCluster
