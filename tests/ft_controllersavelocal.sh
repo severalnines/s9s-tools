@@ -178,14 +178,18 @@ function testCreateGalera()
     local node_serial=1
     local node_name
 
-    if [ -z "$WITH_CLUSTER_GALERA" ]; then
-        return 0
-    fi
-
     #
     #
     #
     print_title "Creating a Galera Cluster"
+    if [ -z "$WITH_CLUSTER_GALERA" ]; then
+        cat <<EOF | paragraph
+  Not creating a Galera cluster here, this test was executed for other cluster
+  type.
+EOF
+        return 0
+    fi
+
     begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
@@ -248,14 +252,18 @@ function testCreatePostgre()
     local node_serial=1
     local node_name
 
-    if [ -z "$WITH_CLUSTER_POSTGRE" ]; then
-        return 0
-    fi
-
     #
     #
     #
     print_title "Creating a PostgreSQL Cluster"
+    if [ -z "$WITH_CLUSTER_POSTGRE" ]; then
+        cat <<EOF | paragraph
+  Not creating a PostgreSql cluster here, this test was executed for other 
+  cluster type.
+EOF
+        return 0
+    fi
+
     begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
