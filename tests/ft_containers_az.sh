@@ -146,6 +146,7 @@ function createServer()
         $LOG_OPTION
 
     check_exit_code_no_job $?
+    end_verbatim
 
     #
     # Checking the state and the class name... 
@@ -156,7 +157,6 @@ function createServer()
         --cloud        "az"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
-    end_verbatim
 }
 
 #
@@ -193,6 +193,7 @@ function registerServer()
         $LOG_OPTION
 
     check_exit_code_no_job $?
+    end_verbatim
 
     #
     # Checking the state and the class name... 
@@ -200,9 +201,7 @@ function registerServer()
     check_container_server \
         --class        CmonCloudServer \
         --server-name  "$CMON_CLOUD_CONTAINER_SERVER" \
-        --cloud        "az"
-    
-    end_verbatim
+        --cloud        "az" 
 }
 
 #
@@ -314,7 +313,7 @@ function createFail()
     #
     # Creating a container with invalid provider.
     #
-    print_title "Creating Container with Invalid Provider"
+    print_title "Creating Container with Invalid Cloud"
     begin_verbatim
     mys9s container \
         --create \
@@ -334,7 +333,7 @@ function createFail()
     #
     # Creating a container with invalid subnet.
     #
-    print_title "Creating Container with Invalid Provider"
+    print_title "Creating Container with Invalid Subnet"
     begin_verbatim
     mys9s container \
         --create \
@@ -356,7 +355,7 @@ function createFail()
     #
     # Creating a container with invalid image.
     #
-    print_title "Creating Container with Invalid Provider"
+    print_title "Creating Container with Invalid Image"
     begin_verbatim
     mys9s container \
         --create \

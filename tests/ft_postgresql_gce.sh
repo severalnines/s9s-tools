@@ -171,8 +171,15 @@ function createCluster()
     check_exit_code $?
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-    if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+    if [  "$CLUSTER_ID" == 'NOT-FOUND' ]; then
+        failure "The cluster '$CLUSTER_NAME' was not found."
+        mys9s cluster --list --long
+        jobId=$(s9s job --list --batch | tail -n 1 | awk '{print $1}')
+        if [ -n "$jobId" ]; then
+            mys9s job --log --job-id=$jobId --debug
+        fi
+    elif [ "$CLUSTER_ID" -gt 0 ]; then
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid."
     fi
