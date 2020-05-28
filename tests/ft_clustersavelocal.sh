@@ -264,6 +264,7 @@ function testCreatePostgre()
         cat <<EOF | paragraph
   This test is not executed, an other cluster type is tested here.
 EOF
+        return 0
     fi
 
     begin_verbatim
