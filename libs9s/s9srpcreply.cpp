@@ -5940,7 +5940,7 @@ S9sRpcReply::printUpgradesLong()
     int             nLines = 0;
 
     S9sFormat       nameFormat;
-    S9sFormat       packageTypeFormat;
+    S9sFormat       hostClassNameFormat;
     S9sFormat       hostNameFormat;
     S9sFormat       lastUpdatedFormat;
     S9sFormat       installedVersionFormat;
@@ -5951,7 +5951,7 @@ S9sRpcReply::printUpgradesLong()
         S9sVariantMap  theMap           = theList[idx].toVariantMap();
         S9sPkgInfo     package          = theMap;
         S9sString      name             = package.name();
-        S9sString      packageType      = package.packageType();
+        S9sString      hostClassName      = package.hostClassName();
         S9sString      hostName         = package.hostName();
         S9sString      lastUpdated      = package.lastUpdated().toString(
                                                   S9sDateTime::CompactFormat);
@@ -5962,7 +5962,7 @@ S9sRpcReply::printUpgradesLong()
             continue;
 
         nameFormat.widen(name);
-        packageTypeFormat.widen(packageType);
+        hostClassNameFormat.widen(hostClassName);
         hostNameFormat.widen(hostName);
         lastUpdatedFormat.widen(lastUpdated);
         installedVersionFormat.widen(installedVersion);
@@ -5978,7 +5978,7 @@ S9sRpcReply::printUpgradesLong()
         ::printf("%s", headerColorBegin());
         hostNameFormat.printHeader("HOSTNAME");
         nameFormat.printHeader("NAME");
-        packageTypeFormat.printHeader("PACKAGE TYPE");
+        hostClassNameFormat.printHeader("HOST CLASS NAME");
         installedVersionFormat.printHeader("INSTALLED VERSION");
         availableVersionFormat.printHeader("AVAILABLE VERSION");
         lastUpdatedFormat.printHeader("LAST UPDATED");
@@ -5990,7 +5990,7 @@ S9sRpcReply::printUpgradesLong()
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
         S9sPkgInfo  package = theMap;
         S9sString      name             = package.name();
-        S9sString      packageType      = package.packageType();
+        S9sString      hostClassName    = package.hostClassName();
         S9sString      hostName         = package.hostName();
         S9sString      lastUpdated      = package.lastUpdated().toString(
                                                   S9sDateTime::CompactFormat);
@@ -6006,7 +6006,7 @@ S9sRpcReply::printUpgradesLong()
 
         hostNameFormat.printf(hostName);
         nameFormat.printf(name);
-        packageTypeFormat.printf(packageType);
+        hostClassNameFormat.printf(hostClassName);
         installedVersionFormat.printf(installedVersion);
         availableVersionFormat.printf(availableVersion);
         lastUpdatedFormat.printf(lastUpdated);

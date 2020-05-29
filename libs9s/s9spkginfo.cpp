@@ -163,7 +163,7 @@ S9sPkgInfo::toString(
                 case 'T':
                     // The type of the server.
                     partFormat += "s";
-                    retval.aprintf(STR(partFormat), STR(packageType()));
+                    retval.aprintf(STR(partFormat), STR(hostClassName()));
                     break;
 
                 case 'H':
@@ -179,11 +179,12 @@ S9sPkgInfo::toString(
                         retval += TERM_NORMAL;
                     break;
 
-		case 'D':
-		    // DateTime of last check for available versions
+                case 'D':
+                // DateTime of last check for available versions
                     partFormat += "s";
-		    retval.aprintf(STR(partFormat), lastUpdated().toString(S9sDateTime::CompactFormat));
-		    break;
+                    retval.aprintf(STR(partFormat),
+                        STR(lastUpdated().toString(S9sDateTime::CompactFormat)));
+                    break;
 
                 case 'v':
                     // The installed version.
@@ -237,9 +238,9 @@ S9sPkgInfo::name() const
 }
 
 S9sString 
-S9sPkgInfo::packageType() const
+S9sPkgInfo::hostClassName() const
 {
-    return property("package_type").toString();
+    return property("host_class_name").toString();
 }
 
 S9sString
