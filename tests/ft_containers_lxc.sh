@@ -570,11 +570,15 @@ function createFail()
     else
         success "  o Container creation failed, ok."
     fi
-    
+
+    end_verbatim
+
     #
     # Creating a container with invalid provider.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
+
     mys9s container \
         --create \
         --cloud="no_such_cloud" \
@@ -664,8 +668,8 @@ function createCentos6()
         "$container_name"
     
     check_exit_code $?
-    remember_cmon_container "$container_name2"
-    check_container "$container_name2"
+    remember_cmon_container "$container_name"
+    check_container "$container_name"
     end_verbatim
 }
 
@@ -688,8 +692,8 @@ function createCentos7()
         "$container_name"
     
     check_exit_code $?
-    remember_cmon_container "$container_name2"
-    check_container "$container_name2"
+    remember_cmon_container "$container_name"
+    check_container "$container_name"
 
     end_verbatim
 }
@@ -713,8 +717,8 @@ function createDebianStretch()
         "$container_name"
     
     check_exit_code $?
-    remember_cmon_container "$container_name4"
-    check_container "$container_name4"
+    remember_cmon_container "$container_name"
+    check_container "$container_name"
 
     end_verbatim
 }
@@ -982,7 +986,7 @@ else
     runFunctionalTest createAsSystem
     runFunctionalTest createFail
 
-    #runFunctionalTest createCentos6
+    runFunctionalTest createCentos6
     runFunctionalTest createCentos7
     runFunctionalTest createDebianStretch
 
