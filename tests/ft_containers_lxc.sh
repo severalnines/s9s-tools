@@ -643,36 +643,9 @@ function createFail()
 # This will create a container and check if the user can actually log in through
 # ssh.
 #
-function createContainers()
+function createCentos6()
 {
-    local container_name1="ft_containers_lxc_10_$$"
-    local container_name2="ft_containers_lxc_11_$$"
-    local container_name3="ft_containers_lxc_12_$$"
-    local container_name4="ft_containers_lxc_13_$$"
-    local owner
-    local template
-    local container_ip
-
-    # Ubuntu after some upgrades have several terrible problems.
-    return 0
-
-    #
-    # Creating a container Centos 7.
-    #
-#    print_title "Creating Centos 7 Container"
-#
-#    begin_verbatim
-#    mys9s container \
-#        --create \
-#        --image=centos_7 \
-#        --servers=$CONTAINER_SERVER \
-#        $LOG_OPTION \
-#        $DEBUG_OPTION \
-#        "$container_name1"
-#   
-#    check_exit_code $?
-#    remember_cmon_container "$container_name1"
-#    check_container "$container_name1"
+    local container_name="ft_containers_lxc_11_$$"
 
     #
     # Creating a container Centos 6.
@@ -684,11 +657,37 @@ function createContainers()
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         $DEBUG_OPTION \
-        "$container_name2"
+        "$container_name"
     
     check_exit_code $?
     remember_cmon_container "$container_name2"
     check_container "$container_name2"
+}
+
+function createCentos7()
+{
+    local container_name="ft_containers_lxc_12_$$"
+
+    #
+    # Creating a container Centos 6.
+    #
+    print_title "Creating Centos 7 Container"
+    mys9s container \
+        --create \
+        --image=centos_7 \
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$container_name"
+    
+    check_exit_code $?
+    remember_cmon_container "$container_name2"
+    check_container "$container_name2"
+}
+
+function createDebianStretch()
+{
+    local container_name="ft_containers_lxc_13_$$"
  
     #
     # Creating a container Debian Stretch.
@@ -700,7 +699,7 @@ function createContainers()
         --servers=$CONTAINER_SERVER \
         $LOG_OPTION \
         $DEBUG_OPTION \
-        "$container_name4"
+        "$container_name"
     
     check_exit_code $?
     remember_cmon_container "$container_name4"
@@ -971,7 +970,11 @@ else
     runFunctionalTest createContainer
     runFunctionalTest createAsSystem
     runFunctionalTest createFail
-    runFunctionalTest createContainers
+
+    runFunctionalTest createCentos6
+    runFunctionalTest createCentos7
+    runFunctionalTest createDebianStretch
+
     runFunctionalTest restartContainer
     runFunctionalTest createServer
     runFunctionalTest failOnContainers

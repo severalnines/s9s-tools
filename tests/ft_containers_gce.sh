@@ -231,7 +231,7 @@ function createContainer()
     local container_name="ft-containers-gce-00-$$"
     local template
 
-    print_title "Creating Container"
+    print_title "Creating a Container on GCE"
     begin_verbatim
 
     #
