@@ -362,7 +362,7 @@ function createContainer()
     local container_name="ft_containers_lxc_00_$$"
     local template
 
-    print_title "Creating Container"
+    print_title "Creating Container from Template"
     begin_verbatim
 
     #
@@ -425,7 +425,9 @@ function createContainer()
         awk '{print $3}')
 
     if [ "$template" != "ubuntu" ]; then
-        failure "The template is '$template', should be 'ubuntu'"
+        failure "The template is '$template', should be 'ubuntu'."
+    else
+        success "  o The template is $template, OK."
     fi
 
     #
@@ -651,6 +653,8 @@ function createCentos6()
     # Creating a container Centos 6.
     #
     print_title "Creating Centos 6 Container"
+    begin_verbatim
+
     mys9s container \
         --create \
         --image=centos_6 \
@@ -662,6 +666,7 @@ function createCentos6()
     check_exit_code $?
     remember_cmon_container "$container_name2"
     check_container "$container_name2"
+    end_verbatim
 }
 
 function createCentos7()
@@ -672,6 +677,8 @@ function createCentos7()
     # Creating a container Centos 6.
     #
     print_title "Creating Centos 7 Container"
+    begin_verbatim
+
     mys9s container \
         --create \
         --image=centos_7 \
@@ -683,6 +690,8 @@ function createCentos7()
     check_exit_code $?
     remember_cmon_container "$container_name2"
     check_container "$container_name2"
+
+    end_verbatim
 }
 
 function createDebianStretch()
@@ -693,6 +702,8 @@ function createDebianStretch()
     # Creating a container Debian Stretch.
     #
     print_title "Creating Debian Stretch Container"
+    begin_verbatim
+
     mys9s container \
         --create \
         --image=debian_stretch \
@@ -705,7 +716,7 @@ function createDebianStretch()
     remember_cmon_container "$container_name4"
     check_container "$container_name4"
 
-    begin_verbatim
+    end_verbatim
 }
 
 #
@@ -971,7 +982,7 @@ else
     runFunctionalTest createAsSystem
     runFunctionalTest createFail
 
-    runFunctionalTest createCentos6
+    #runFunctionalTest createCentos6
     runFunctionalTest createCentos7
     runFunctionalTest createDebianStretch
 
