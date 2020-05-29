@@ -3337,7 +3337,9 @@ S9sRpcClient::registerMaxScaleHost(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
-   
+    S9sVariantList  nodes;
+
+    nodes << node;
     if (options->hasClusterIdOption())
     {
         clusterId = options->clusterId();
@@ -3349,7 +3351,9 @@ S9sRpcClient::registerMaxScaleHost(
     }
 
     jobData["action"] = "register";
-    jobData["server_address"] = node.hostName();
+    jobData["nodes"] = nodesField(nodes);
+    
+    //jobData["server_address"] = node.hostName();
     
     // The jobspec describing the command.
     jobSpec["command"]    = "maxscale";
