@@ -110,6 +110,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateReplication,   retval);
     PERFORM_TEST(testCreateNdbCluster,    retval);
     PERFORM_TEST(testAddNode,             retval);
+    PERFORM_TEST(testCreateHaproxy,       retval);
     PERFORM_TEST(testComposeBackupJob,    retval);
     PERFORM_TEST(testBackup,              retval);
     PERFORM_TEST(testBackupSchedule,      retval);
@@ -642,6 +643,19 @@ UtS9sRpcClient::testAddNode()
     S9S_VERIFY(payload.contains("\"install_software\": true"));
     //S9S_VERIFY(payload.contains("\"user_name\": \"pipas\""));
 
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateHaproxy()
+{
+    // FIXME: I will have to write some tests...
+#if 0
+    S9sOptions         *options = S9sOptions::instance();    
+    S9sRpcClientTester  client;
+    
+    options->setNodes("node1?rw_port=42&ro_port=45");
+#endif
     return true;
 }
 

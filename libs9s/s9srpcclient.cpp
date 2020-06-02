@@ -4468,7 +4468,6 @@ S9sRpcClient::addReplicationSlave(
 }
 
 /**
- * \param clusterId The ID of the cluster.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *

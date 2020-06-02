@@ -50,6 +50,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateReplication();
         bool testCreateNdbCluster();
         bool testAddNode();
+        bool testCreateHaproxy();
         bool testComposeBackupJob();
         bool testBackup();
         bool testBackupSchedule();

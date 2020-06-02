@@ -21,6 +21,13 @@ CONTAINER_NAME2="${MYBASENAME}_12_$$"
 CONTAINER_NAME3="${MYBASENAME}_13_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
+OPTION_RO_PORT=""
+OPTION_RW_PORT=""
+PROVIDER_VERSION="5.6"
+OPTION_VENDOR="percona"
+
+export S9S_DEBUG_PRINT_REQUEST="true"
+
 cd $MYDIR
 source ./include.sh
 source ./include_lxc.sh
@@ -46,6 +53,11 @@ Usage:
   --reset-config      Remove and re-generate the ~/.s9s directory.
   --server=SERVER     Use the given server to create containers.
 
+  --vendor=STRING  Use the given Galera vendor.
+  --provider-version=VERSION The SQL server provider version.
+  --ro-port=INTEGER   The read-only port for the haproxy server.
+  --rw-port=INTEGER   The read-write port for the haproxy server.
+
 EOF
     exit 1
 }
@@ -53,7 +65,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,debug,print-commands,install,\
-reset-config,server:" \
+reset-config,server:,vendor:,provider-version:,ro-port:,rw-port:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -111,6 +123,28 @@ while true; do
             shift
             ;;
 
+        --provider-version)
+            shift
+            PROVIDER_VERSION="$1"
+            shift
+            ;;
+
+        --vendor)
+            shift
+            OPTION_VENDOR="$1"
+            shift
+            ;;
+
+        --ro-port)
+            OPTION_RO_PORT="$2"
+            shift 2
+            ;;
+
+        --rw-port)
+            OPTION_RW_PORT="$2"
+            shift 2
+            ;;
+
         --)
             shift
             break
@@ -148,8 +182,8 @@ EOF
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
-        --vendor=percona \
+        --provider-version="$PROVIDER_VERSION" \
+        --vendor=$OPTION_VENDOR \
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \
         --containers="$CONTAINER_NAME1" \
@@ -194,6 +228,8 @@ EOF
 #
 function testAddHaProxy()
 {
+    local nodes_option
+
     print_title "Adding a HaProxy Node"
     cat <<EOF | paragraph
   In this test we add a HaProxy node to the previously created cluster. The
@@ -205,10 +241,15 @@ EOF
     #
     # Adding haproxy to the cluster.
     #
+    nodes_option="haProxy://$CONTAINER_NAME9"
+    if [ -n "$OPTION_RO_PORT" -a -n "$OPTION_RW_PORT" ]; then
+        nodes_option+="?rw_port=$OPTION_RW_PORT&ro_port=$OPTION_RO_PORT"
+    fi
+
     mys9s cluster \
         --add-node \
         --cluster-id=1 \
-        --nodes="haProxy://$CONTAINER_NAME9" \
+        --nodes="$nodes_option" \
         --containers="$CONTAINER_NAME9" \
         $LOG_OPTION $DEBUG_OPTION
     
@@ -243,6 +284,8 @@ EOF
 
 function testHaProxyConnect()
 {
+    local rw_port
+
     print_title "Testing the HaProxy Server"
 
     begin_verbatim
@@ -254,10 +297,15 @@ function testHaProxyConnect()
         failure "No HaProxy address."
     fi
 
+    rw_port="3307"
+    if [ -n "$OPTION_RW_PORT" ]; then
+        rw_port="$OPTION_RW_PORT" 
+    fi
+
     for HAPROXY_IP in $HAPROXY_IPS; do
         check_mysql_account \
             --hostname          "$HAPROXY_IP" \
-            --port              "3307" \
+            --port              "$rw_port" \
             --account-name      "pipas" \
             --account-password  "pipas" \
             --database-name     "testdatabase" \
@@ -272,9 +320,6 @@ function testHaProxyConnect()
 
 function testStopHaProxy()
 {
-    #
-    #
-    #
     print_title "Stopping HaProxy Node"
     cat <<EOF | paragraph
   In this test we stop the HapRoxy node and check the the node status is changed
