@@ -5,8 +5,8 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
 
-LOG_OPTION="--wait"
-DEBUG_OPTION=""
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
