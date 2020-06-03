@@ -372,6 +372,8 @@ function get_power()
     local topic="stat/$pdu_name/STATUS10"
     local message
 
+    [ -z "$power" ] && power="0"
+    [ -z "$current" ] && current="0"
     message="{\"StatusSNS\":{\"ENERGY\":{\"Power\":$power,\"Current\":$current}}}"
     
     echo "------------------------------------"
