@@ -1685,6 +1685,8 @@ function create_node()
     local os_release_option=""
     local container_name
     local args
+    local os_release=""
+    local os_vendor=""
 
     args=$(\
     getopt -o h \
@@ -1718,6 +1720,7 @@ function create_node()
             --os-vendor)
                 if [ -n "$2" ]; then
                     os_vendor_option="--vendor=$2"
+                    os_release="$2 "
                 fi
                 shift 2
                 ;;
@@ -1725,6 +1728,7 @@ function create_node()
             --os-release)
                 if [ -n "$2" ]; then
                     os_release_option="--release=$2"
+                    os_vendor="$2 "
                 fi
                 shift 2
                 ;;
@@ -1752,7 +1756,7 @@ function create_node()
 
     container_name=$1
 
-    echo -n "Creating container..." >&2
+    echo -n "Creating container... $os_vendor$os_release" >&2
     ip=$(pip-container-create \
         $os_vendor_option \
         $os_release_option \
