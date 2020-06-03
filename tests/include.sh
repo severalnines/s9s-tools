@@ -1720,7 +1720,7 @@ function create_node()
             --os-vendor)
                 if [ -n "$2" ]; then
                     os_vendor_option="--vendor=$2"
-                    os_release="$2 "
+                    os_vendor="$2 "
                 fi
                 shift 2
                 ;;
@@ -1728,7 +1728,7 @@ function create_node()
             --os-release)
                 if [ -n "$2" ]; then
                     os_release_option="--release=$2"
-                    os_vendor="$2 "
+                    os_release="$2 "
                 fi
                 shift 2
                 ;;
