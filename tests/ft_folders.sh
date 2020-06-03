@@ -110,6 +110,8 @@ function testMkdir1()
     local expected
 
     print_title "Creating Folders"
+    begin_verbatim
+
     cat <<EOF
   This test will create a nested folder structure in one step. Then it will
 check if the folders are there and the hidden entries are indeed not shown
@@ -132,9 +134,6 @@ EOF
         --acl          "drwxrwxrwx" \
         "/home/pipas"
 
-    #mys9s tree --tree
-    #mys9s tree --list
-
     lines=$(s9s tree --list)
 
     lines=$(s9s tree --list --recursive --full-path --all)
@@ -152,6 +151,7 @@ EOF
 
     mys9s tree --rmdir "/home/pipas/.config"
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testMkdir2()
@@ -160,10 +160,10 @@ function testMkdir2()
     local retcode
 
     print_title "Creating Folders with Failures"
+    begin_verbatim
     cat <<EOF
   In this test we try to create a that already exists. Creating a folder that
 already exists should fail.
-
 EOF
 
     mys9s tree --mkdir "/$folder_name"
@@ -187,8 +187,7 @@ EOF
 
     mys9s tree --rmdir "/$folder_name"
     mys9s tree --tree --all
-
-    return 0
+    end_verbatim
 }
 
 function testTouch()
@@ -201,12 +200,13 @@ function testTouch()
     local retcode 
 
     print_title "Creating a File"
+    begin_verbatim
+
     cat <<EOF
   In this test we create a file and check its properties. Then we rename a file
 and check if the file name has been changed. Then we try if the creating of the
 file failes if the path is invalid or points to a folder where the user has no
 write access.
-
 EOF
 
     mys9s tree --touch "$path"
@@ -258,15 +258,17 @@ EOF
     fi
 
     mys9s tree --tree --all
+    end_verbatim
 }
 
-function testUser()
+function testCreateUser()
 {
     print_title "Creating a User"
+    begin_verbatim
+
     cat <<EOF
   In this test we create a new user that we can rename with its group to test
 the effects of renaming users and groups.
-
 EOF
 
     mys9s user \
@@ -306,15 +308,21 @@ EOF
         --acl          "drwxrwxrwx" \
         "/home/kirk"
    
-    #
-    # Renaming a group should have immediate effect all over the filesystem, the
-    # group owner of the files should follow the change.
-    #
+    end_verbatim
+}
+
+#
+# Renaming a group should have immediate effect all over the filesystem, the
+# group owner of the files should follow the change.
+#
+function testRenameGroup()
+{
     print_title "Renaming a Group"
+    begin_verbatim
+
     cat <<EOF
   Renaming a user group should have immediate effect in the whole filesystem.
 The group owner of the CDT entries should follow the change.
-
 EOF
 
     mys9s tree --move /groups/tos TOS
@@ -331,16 +339,22 @@ EOF
         --group        "TOS"        \
         --acl          "drwxrwxrwx" \
         "/home/kirk"
+    
+    end_verbatim
+}
 
-    #
-    # Renaming a user should have immediate effect on the file onwers.
-    #
+#
+# Renaming a user should have immediate effect on the file onwers.
+#
+function testRenameUser()
+{
     print_title "Renaming a User"
+    begin_verbatim
+
     cat <<EOF
   Renaming a user should have immediate effect on the file onwers. This test
 will rename a user and check if the CDT entries owned by the given user are 
 indeed showing the new name.
-
 EOF
 
     mys9s tree --move /kirk Kirk
@@ -367,7 +381,7 @@ EOF
         --group        "TOS"        \
         --acl          "drwxrwxrwx" \
         "/home/kirk"
-
+    end_verbatim
 }
 
 #
@@ -385,7 +399,9 @@ else
     runFunctionalTest testMkdir1
     runFunctionalTest testMkdir2
     runFunctionalTest testTouch
-    runFunctionalTest testUser
+    runFunctionalTest testCreateUser
+    runFunctionalTest testRenameGroup
+    runFunctionalTest testRenameUser
 fi
 
 endTests
