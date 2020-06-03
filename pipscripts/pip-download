@@ -13,6 +13,12 @@ OPTION_NO_MAIL=""
 OPTION_TESTS=""
 
 #
+# The name of the configuration.
+#
+#OPTION_CONFIG_NAME="s9s-test-release"
+OPTION_CONFIG_NAME="s9s-test"
+
+#
 # This is where the XML and HTML files are placed before we upload them to the
 # Jenkins server.
 #
@@ -974,9 +980,18 @@ fi
 #
 #
 #pip-say "Downloading daily test results."
-
 export WWW_PASSWORD="$PASSWORD"
 export WWW_USER="pipas"
+
+if [ ! -d "$OPTION_OUTPUT_DIR" ]; then
+    OPTION_OUTPUT_DIR="$HOME/clustercontrol-enterprise/tests/s9s_test"
+fi
+
+CONFIG_FILE_NAME="${OPTION_OUTPUT_DIR}/${OPTION_CONFIG_NAME}.conf"
+if [ ! -f "$CONFIG_FILE_NAME" ]; then
+    printError "File '$CONFIG_FILE_NAME' was not found."
+    exit 6
+fi
 
 if [ -z "$WWW_PASSWORD" ]; then
     pip-say "The 'PASSWORD' environment variable should be present."
