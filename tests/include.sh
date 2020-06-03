@@ -2398,7 +2398,7 @@ function check_node()
         tmp=$(s9s node --list --batch --node-format "%C\n" "$hostname")
         tmp=$(basename "$tmp")
 
-        if [ "$tmp" == "$config" ]; then
+        if [ "$tmp" == "$config_basename" ]; then
             success "  o The basename of config file of the node is $tmp, ok."
         else
             failure "The basename of config file should not be '$tmp'."
