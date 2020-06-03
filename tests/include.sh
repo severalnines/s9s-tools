@@ -2257,6 +2257,7 @@ function check_node()
     local cdt_path
     local status
     local config
+    local config_basename
     local no_maintenance
     local tmp
 
@@ -2299,6 +2300,11 @@ function check_node()
 
             --config)
                 config="$2"
+                shift 2
+                ;;
+
+            --config-basename)
+                config_basename="$2"
                 shift 2
                 ;;
 
@@ -2385,6 +2391,17 @@ function check_node()
             success "  o The config file of the node is $tmp, ok."
         else
             failure "The config file of the node should not be '$tmp'."
+        fi
+    fi
+    
+    if [ -n "$config_basename" ]; then
+        tmp=$(s9s node --list --batch --node-format "%C\n" "$hostname")
+        tmp=$(basename "$tmp")
+
+        if [ "$tmp" == "$config" ]; then
+            success "  o The basename of config file of the node is $tmp, ok."
+        else
+            failure "The basename of config file should not be '$tmp'."
         fi
     fi
     

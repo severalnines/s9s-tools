@@ -270,14 +270,14 @@ function testCreateCluster()
     
     for node in $(echo "$nodes" | tr ';' ' '); do
         check_node \
-            --node       "$node" \
-            --ip-address "$node" \
-            --port       "3306" \
-            --config     "/etc/mysql/my.cnf" \
-            --owner      "pipas" \
-            --group      "testgroup" \
-            --cdt-path   "/$CLUSTER_NAME" \
-            --status     "CmonHostOnline" \
+            --node             "$node" \
+            --ip-address       "$node" \
+            --port             "3306" \
+            --config-basename  "/etc/mysql/my.cnf" \
+            --owner            "pipas" \
+            --group            "testgroup" \
+            --cdt-path         "/$CLUSTER_NAME" \
+            --status           "CmonHostOnline" \
             --no-maint
     done
 
@@ -760,7 +760,10 @@ function testAddNode()
     print_title "Adding a node"
     begin_verbatim
 
-    LAST_ADDED_NODE=$(create_node --autodestroy "$node_name")
+    LAST_ADDED_NODE=$(create_node \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        --autodestroy "$node_name")
     nodes+="$LAST_ADDED_NODE"
 
     #
