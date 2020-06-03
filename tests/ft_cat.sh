@@ -297,6 +297,8 @@ function checkList()
     echo "n_object_found: $n_object_found"
     if [ "$n_object_found" -lt 10 ]; then
         failure "Some special files were not found."
+    else
+        success "All special files were found."
     fi
 
     end_verbatim
@@ -308,6 +310,8 @@ function testClusterManager()
     local file="/.runtime/cluster_manager"
 
     print_title "Checking $file"
+    begin_verbatim
+
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -327,6 +331,8 @@ function testClusterManager()
         [ -z "$name" ]  && failure "Name is empty."
         [ -z "$value" ] && failure "Value is empty for $name."
     done 
+
+    end_verbatim
 }
 
 function testHostManager()

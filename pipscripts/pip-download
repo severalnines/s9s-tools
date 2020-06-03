@@ -12,6 +12,16 @@ OPTION_MAIL_LIST=""
 OPTION_NO_MAIL=""
 OPTION_TESTS=""
 
+#
+# The name of the configuration.
+#
+#OPTION_CONFIG_NAME="s9s-test-release"
+OPTION_CONFIG_NAME="s9s-test"
+
+#
+# This is where the XML and HTML files are placed before we upload them to the
+# Jenkins server.
+#
 OPTION_OUTPUT_DIR="/home/pipas/Desktop/stuff/work/clustercontrol-enterprise/"
 OPTION_OUTPUT_DIR+="tests/s9s_test"
 
@@ -823,6 +833,9 @@ function old_email_stuff()
     printf "\n" | tee --append $REPORT_FILE
 }
 
+#
+# This function prints the names of the tests that we process.
+#
 function test_names()
 {
     local test_dir
@@ -832,7 +845,10 @@ function test_names()
         return 0
     fi
 
-    test_dir="/home/pipas/Desktop/stuff/work/s9s-tools/tests"
+    test_dir="$HOME/Desktop/stuff/work/s9s-tools/tests"
+    if [ ! -d "$test_dir" ]; then
+        test_dir="$HOME/s9s-tools/tests"
+    fi
 
     if [ -d "$test_dir" ]; then
         for script_file in $test_dir/ft_*.sh; do
@@ -846,77 +862,7 @@ function test_names()
         return 0
     fi
 
-    cat <<EOF
-ft_access.sh 
-ft_acl.sh 
-ft_adminuser.sh 
-ft_cat.sh 
-ft_cdt.sh 
-ft_galerasimple.sh
-ft_jobs.sh
-ft_maintenance.sh
-ft_postgresqlsimple_11.sh
-ft_postgresqlsimple.sh
-ft_postgresql_9.4.sh
-ft_postgresql_9.5.sh
-ft_postgresql_9.6.sh
-ft_postgresql_10.sh
-ft_postgresql_11.sh
-ft_postgresqlbackup.sh
-ft_postgresqlfailover.sh
-ft_reports.sh
-ft_tree.sh
-ft_user.sh 
-ft_scripts.sh
-ft_galera.sh
-ft_galera_mariadb_10.4.sh
-ft_cmonhabasic
-ft_cmonhabasic1
-ft_cmonhabasic3
-ft_cmonhadaemon
-ft_cmonhadaemon3
-ft_cmonhagalera
-ft_cmonhalxc1
-ft_cmonhadaemon2
-ft_cmonhadaemonbasic
-ft_cmonhadaemonping	
-ft_cmonhalxc
-ft_cmonhalxc2
-ft_cmonhalxc3
-ft_cmonhalxc4	
-ft_cmonhalxc5
-ft_cmonhapostgres
-ft_cmonhasimple
-ft_haproxy.sh
-ft_ldap.sh
-ft_ldaperror.sh
-ft_ldapgroups.sh
-ft_ldapnogroups.sh
-ft_ndb.sh
-ft_replication_aws.sh
-ft_galerakill.sh
-ft_galerassl.sh
-ft_galera_lxc.sh
-ft_installserver.sh
-ft_galera_c2c.sh
-ft_containers_lxc.sh
-ft_errors.sh
-ft_metatype.sh
-ft_controllersave.sh
-ft_controllersavemulti.sh
-ft_controllersavelocal.sh
-ft_controllersavelocalmulti.sh
-ft_mongodb_3.4.sh
-ft_mongodb.sh
-ft_multiserver.sh
-ft_postgresqlslave.sh
-ft_postgresqlstop.sh
-ft_mysqlreplicationconfig.sh
-ft_groupreplication.sh
-ft_cluster_error.sh
-ft_proxysql_connect.sh
-ft_registergalera.sh
-EOF
+    return 1
 }
 
 function plural_test()
@@ -1034,9 +980,18 @@ fi
 #
 #
 #pip-say "Downloading daily test results."
-
 export WWW_PASSWORD="$PASSWORD"
 export WWW_USER="pipas"
+
+if [ ! -d "$OPTION_OUTPUT_DIR" ]; then
+    OPTION_OUTPUT_DIR="$HOME/clustercontrol-enterprise/tests/s9s_test"
+fi
+
+CONFIG_FILE_NAME="${OPTION_OUTPUT_DIR}/${OPTION_CONFIG_NAME}.conf"
+if [ ! -f "$CONFIG_FILE_NAME" ]; then
+    printError "File '$CONFIG_FILE_NAME' was not found."
+    exit 6
+fi
 
 if [ -z "$WWW_PASSWORD" ]; then
     pip-say "The 'PASSWORD' environment variable should be present."
@@ -1050,10 +1005,13 @@ fi
 
 
 mytests=$(test_names)
+if [ -z "$mytests" ]; then
+    printError "No tests found."
+    exit 6
+fi
+
 
 [ -f "$REPORT_FILE" ] && rm -f $REPORT_FILE
-
-echo "{code}"
 
 print_header | tee --append $REPORT_FILE
 
@@ -1102,27 +1060,29 @@ for testscript in $mytests; do
 done
 
 print_footer | tee --append $REPORT_FILE
-echo "{code}"
 
-exit 0
+#exit 0
 
-if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
-    pip-say "Found no test results."
-    exit 6
-else
-    pip-say "Download succeeded, $(plural_test $N_TESTS_PASSED) passed, \
-        $(plural_test $N_TESTS_FAILED) failed."
-fi
-
-tar czf "${gzfile}" "$ymd"
-send_mail_to_list
-
-if [ "$N_MAILS_SENT" -eq 0 ]; then
-    pip-say "Download program finished, no notification was sent."
-elif [ "$N_MAILS_SENT" -eq 1 ]; then
-    pip-say "Download program finished, one notification was sent."
-else
-    pip-say "Download program finished, $N_MAILS_SENT notifications were sent."
-fi
+#
+# Not sending emails...
+#
+#if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
+#    pip-say "Found no test results."
+#    exit 6
+#else
+#    pip-say "Download succeeded, $(plural_test $N_TESTS_PASSED) passed, \
+#        $(plural_test $N_TESTS_FAILED) failed."
+#fi
+#
+#tar czf "${gzfile}" "$ymd"
+#send_mail_to_list
+#
+#if [ "$N_MAILS_SENT" -eq 0 ]; then
+#    pip-say "Download program finished, no notification was sent."
+#elif [ "$N_MAILS_SENT" -eq 1 ]; then
+#    pip-say "Download program finished, one notification was sent."
+#else
+#    pip-say "Download program finished, $N_MAILS_SENT notifications were sent."
+#fi
 
 

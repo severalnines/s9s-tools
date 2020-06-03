@@ -336,6 +336,7 @@ function testAddProxySql()
     #
     #
     print_title "Adding a ProxySQL Node"
+    begin_verbatim
 
     nodeName=$(create_node --autodestroy "ft_proxysql_connect_proxy00_$$")
     PROXY_SERVER="$nodeName"
@@ -351,6 +352,7 @@ function testAddProxySql()
         --log --debug
     
     check_exit_code $?
+    end_verbatim
 }
 
 function testAddProxySql1()
@@ -363,6 +365,7 @@ function testAddProxySql1()
     #
     #
     print_title "Adding a ProxySQL Node"
+    begin_verbatim
 
     nodeName=$(create_node --autodestroy "ft_proxysql_connect_proxy01_$$")
     PROXY_SERVER="$nodeName"
@@ -378,6 +381,7 @@ function testAddProxySql1()
         --log --debug
     
     check_exit_code $?
+    end_verbatim
 }
 
 function testConnect01()
@@ -390,7 +394,7 @@ function testConnect01()
     local reply
 
     print_title "Testing Connection ${sql_user}@${sql_host}."
-    #sql_host="$FIRST_ADDED_NODE"
+    begin_verbatim
 
     #
     # Executing a simple SQL statement using the account we created.
@@ -424,6 +428,8 @@ EOF
     if [ "$reply" != "42" ]; then
         failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
     fi
+
+    end_verbatim
 }
 
 function testConnect02()
@@ -436,7 +442,7 @@ function testConnect02()
     local reply
 
     print_title "Testing Connection ${sql_user}@${sql_host}."
-    #sql_host="$FIRST_ADDED_NODE"
+    begin_verbatim
 
     #
     # Executing a simple SQL statement using the account we created.
@@ -470,6 +476,8 @@ EOF
     if [ "$reply" != "42" ]; then
         failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
     fi
+
+    end_verbatim
 }
 
 function testUploadData()

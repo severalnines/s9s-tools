@@ -128,6 +128,7 @@ function testJobOperations()
     local expected
 
     print_title "Testing job operations"
+    begin_verbatim
 
     expected="One of the main options is mandatory."
     output=$($S9S job --job-id=5 2>&1)
@@ -149,7 +150,7 @@ function testJobOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -161,6 +162,8 @@ function testBackupOperations()
     local expected
 
     print_title "Testing backup operations"
+    begin_verbatim
+
     expected="One of the main options is mandatory."
     output=$($S9S backup 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -191,7 +194,7 @@ function testBackupOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -203,6 +206,8 @@ function testClusterOperations()
     local expected
 
     print_title "Testing cluster operations"
+    begin_verbatim
+
     expected="One of the main options is mandatory."
     output=$($S9S cluster 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -223,7 +228,7 @@ function testClusterOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -235,6 +240,8 @@ function testNodeOperations()
     local expected
 
     print_title "Testing node operations"
+    begin_verbatim
+
     expected="One main option is required."
     output=$($S9S node 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -275,7 +282,7 @@ function testNodeOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -287,6 +294,8 @@ function testUserOperations()
     local expected
 
     print_title "Testing the 'user' mode"
+    begin_verbatim
+
     expected="One of the main options is mandatory."
     output=$($S9S user 2>&1)
     if [ "$output" != "$expected" ]; then
@@ -307,7 +316,7 @@ function testUserOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -319,6 +328,7 @@ function testMaintenanceOperations()
     local expected
 
     print_title "Testing the 'maintenance' Mode"
+    begin_verbatim
 
     expected="One of the --list, --create and --delete options is mandatory."
     output=$($S9S maintenance 2>&1)
@@ -350,7 +360,7 @@ function testMaintenanceOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -362,6 +372,7 @@ function testProcessOperations()
     local expected
 
     print_title "Testing the 'process' mode"
+    begin_verbatim
 
     expected="One of the --list and --top options is mandatory."
     output=$($S9S process 2>&1)
@@ -383,7 +394,7 @@ function testProcessOperations()
         success "  o String '$expected' is found, OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
@@ -393,6 +404,7 @@ function testProcessOperations()
 function testInvalidUrl()
 {
     print_title "Testing on an invalid URL"
+    begin_verbatim
 
     output=$($S9S cluster \
         --create \
@@ -406,15 +418,17 @@ function testInvalidUrl()
 
     if [ $? -eq 0 ]; then
         failure "Return value is true when passing invalid url."
-        return 1
+    else
+        success "  o Returned non zero for invalid URL, OK."
     fi
 
     if [[ ! "$output" =~ "Expected" ]]; then
         failure "Error string is not what it is expected."
-        return 1
+    else
+        success "  o Output is '$output', OK."
     fi
 
-    return 0
+    end_verbatim
 }
 
 #
