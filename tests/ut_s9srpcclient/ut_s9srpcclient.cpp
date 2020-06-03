@@ -387,11 +387,11 @@ UtS9sRpcClient::testRegisterServers()
     S9S_COMPARE(payload["operation"], "registerServers");
     S9S_COMPARE(payload["servers"][0]["class_name"], "CmonLxcServer");
     S9S_COMPARE(payload["servers"][0]["hostname"],   "10.10.2.3");
-    S9S_COMPARE(payload["servers"][0]["protocol"],   "lxc");
+    //S9S_COMPARE(payload["servers"][0]["protocol"],   "lxc");
     
     S9S_COMPARE(payload["servers"][1]["class_name"], "CmonCloudServer");
     S9S_COMPARE(payload["servers"][1]["hostname"],   "10.10.2.4");
-    S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
+    //S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
 
     S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
@@ -415,11 +415,11 @@ UtS9sRpcClient::testUnregisterServers()
     S9S_COMPARE(payload["operation"], "unregisterServers");
     S9S_COMPARE(payload["servers"][0]["class_name"], "CmonLxcServer");
     S9S_COMPARE(payload["servers"][0]["hostname"],   "10.10.2.3");
-    S9S_COMPARE(payload["servers"][0]["protocol"],   "lxc");
+    //S9S_COMPARE(payload["servers"][0]["protocol"],   "lxc");
     
     S9S_COMPARE(payload["servers"][1]["class_name"], "CmonCloudServer");
     S9S_COMPARE(payload["servers"][1]["hostname"],   "10.10.2.4");
-    S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
+    //S9S_COMPARE(payload["servers"][1]["protocol"],   "cmon-cloud");
 
     S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 
@@ -454,7 +454,7 @@ UtS9sRpcClient::testCreateServer()
 
     S9S_COMPARE(jobData["server"]["class_name"], "CmonLxcServer");
     S9S_COMPARE(jobData["server"]["hostname"],   "10.10.2.3");
-    S9S_COMPARE(jobData["server"]["protocol"],   "lxc");
+    //S9S_COMPARE(jobData["server"]["protocol"],   "lxc");
     
     S9S_VERIFY(payload["request_created"].toString().startsWith("202"));
 

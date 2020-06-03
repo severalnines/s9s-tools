@@ -350,7 +350,7 @@ UtS9sCluster::testCreate()
     S9sCluster cluster;
 
     S9S_COMPARE(cluster.name(),      "");
-    S9S_COMPARE(cluster.ownerName(), "");
+    S9S_COMPARE(cluster.ownerName(), "-");
     return true;
 }
 
