@@ -1750,7 +1750,7 @@ function create_node()
     fi
 
     if [ -z "$CONTAINER_SERVER" ]; then
-        printError "The container server is not set."
+        failure "The container server is not set."
         return 1
     fi
 
@@ -1766,7 +1766,7 @@ function create_node()
 
     retval=$?
     if [ "$retval" -ne 0 ]; then
-        printError "pip-container-create returned ${retval}."
+        failure "pip-container-create returned ${retval}."
         tail $HOME/pip-container-create.log >&2
     fi
 
