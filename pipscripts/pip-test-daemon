@@ -118,6 +118,7 @@ function start_test()
     test_server=$(pip-server-control --list --idle)
     while [ -z "$test_server" ]; do
         test_server=$(pip-server-control --list --idle)
+       [ -z "$test_server" ] && sleep 10
     done
     
     if [ -z "$user" ]; then
