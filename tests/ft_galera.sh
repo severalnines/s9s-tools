@@ -273,7 +273,7 @@ function testCreateCluster()
             --node             "$node" \
             --ip-address       "$node" \
             --port             "3306" \
-            --config-basename  "/etc/mysql/my.cnf" \
+            --config-basename  "my.cnf" \
             --owner            "pipas" \
             --group            "testgroup" \
             --cdt-path         "/$CLUSTER_NAME" \
