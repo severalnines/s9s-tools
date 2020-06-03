@@ -306,14 +306,14 @@ function wait_for_server_ssh()
             return 0
         fi
 
-        # 120 x 5 = 10 minutes
-        if [ "$nTry" -gt 120 ]; then
+        # 3 minutes
+        if [ "$nTry" -gt 180 ]; then
             printVerbose "Server '$serverName' did not came alive."
             return 1
         fi
 
         printVerbose "Server '$owner@$serverName' is not yet SSH ready."
-        sleep 5
+        sleep 1
         let nTry+=1
     done
 
