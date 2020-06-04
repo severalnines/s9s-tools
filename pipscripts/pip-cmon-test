@@ -744,11 +744,10 @@ function ft_test_ended()
             continue
         fi
 
-        ls -lha $core_file
+        pip-host-control --log "Core file found: $core_file"
     done
 
-
-    if [ $exit_code -eq 0 ]; then
+    if [ ! -f "$core_file" -a "$exit_code" -eq 0 ]; then
         return 0
     fi
 
@@ -757,23 +756,29 @@ function ft_test_ended()
         sudo apt-get -y --force-yes install gdb
     fi
 
-    pip-host-control --log "Saving backtrace"
                 
-    echo "<h2>Backtrace</h2>" 
-    echo "<hr>" 
+    #echo "<h2>Backtrace</h2>" 
+    #echo "<hr>" 
 
-
-    if [ -n "$backend_pid" ]; then
-        echo "The controller did not crash, however failed, so here " \
-            "is the current trace." 
-
-        sudo gdb -p $backend_pid -batch \
+    if [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
+        pip-host-control --log "Saving backtrace (no crash)"
+        sudo gdb \
+            -p $backend_pid -batch \
             -ex "thread apply all back" \
-            -ex "quit" 
+            -ex "quit" \
+            >>$LOGFILE 2>>$LOGFILE
     
         #sudo gdb -p $backend_pid -batch \
         #    -ex "thread apply all back" \
         #    -ex "quit" 
+    elif [ -f "$core_file" ]; then
+        pip-host-control --log "Saving backtrace (crash)"
+        sudo gdb \
+            -batch \
+            -ex "thread apply all back" \
+            -ex "quit" \
+            ft_full/ft_full "$core_file" \
+            >>$LOGFILE 2>>$LOGFILE 
     fi
 }
 
@@ -1045,6 +1050,14 @@ function run_test()
 
     message "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern
+    if [ $? -ne 0 ]; then
+        message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
+    fi
+
+    ulimit -c unlimited
+    if [ $? -ne 0 ]; then
+        message "Failed: ulimit -c unlimited"
+    fi
 
     #
     # Running the actual test.
