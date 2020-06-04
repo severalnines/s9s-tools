@@ -523,16 +523,12 @@ function create_container()
         fi
 
         return 1
-    else
-        if [ -f "$temp_file" ]; then
-            rm -f "$temp_file"
-        fi
     fi
 
     # 
     # Starting the container. 
     #
-    lxc-start -n "$new_name"
+    lxc-start -n "$new_name" >>$temp_file 2>>$temp_file
     
     #
     # Waiting for IP.
@@ -560,6 +556,10 @@ function create_container()
             return 1
         fi
     done
+
+    if [ -f "$temp_file" ]; then
+        rm -f "$temp_file"
+    fi
    
     #
     # Checking and installing packages.
