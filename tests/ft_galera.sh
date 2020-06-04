@@ -202,6 +202,13 @@ function testCreateCluster()
             --os-vendor   "$OPTION_OS_VENDOR"  \
             --os-release  "$OPTION_OS_RELEASE" \
             --autodestroy "$node_name")
+    
+        exitCode=$?
+        check_exit_code $exitCode
+        if [ "$exitCode" -ne 0 ]; then
+            end_verbatim
+            return 1
+        fi
 
         if [ -n "$nodes" ]; then
             nodes+=";"
