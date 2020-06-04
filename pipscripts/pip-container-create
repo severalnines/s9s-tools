@@ -543,7 +543,7 @@ function create_container()
 
         if [ -z "$ip" ]; then
             if [ "$counter" == 0 ]; then
-                printVerbose "Waiting for $new_name to get an IP."
+                printVerbose "Waiting for $new_name to get an IP ($counter)."
             fi
             sleep 1
         fi
