@@ -488,6 +488,8 @@ function create_container()
         return 1
     fi
 
+    temp_file=$(mktemp)
+
     # 
     # Creating the container. We either copy an existing container that we use
     # as template or we download a distribution. 
@@ -500,8 +502,6 @@ function create_container()
         # The network configuration is in 
         # /etc/lxc/default.conf
         #
-        temp_file=$(mktemp)
-
         printVerbose "Creating cointainer with $vendor_name $release_name."
         lxc-create \
             -t download --name="$new_name" \
@@ -528,7 +528,7 @@ function create_container()
     # 
     # Starting the container. 
     #
-    lxc-start -n "$new_name" >>$temp_file 2>>$temp_file
+    lxc-start -n "$new_name" >>"$temp_file" 2>>"$temp_file"
     
     #
     # Waiting for IP.
