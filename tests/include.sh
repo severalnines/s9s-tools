@@ -1773,8 +1773,8 @@ function create_node()
     if [ "$retval" -ne 0 ]; then
         failure "pip-container-create returned ${retval}."
         #tail $HOME/pip-container-create.log >&2
-    else
-        success "pip-container-create returned ${retval}."
+    #else
+    #    success "pip-container-create returned ${retval}."
     fi
 
     printVerbose "Created '$ip'."
