@@ -1,6 +1,6 @@
 #! /bin/bash
 MYNAME=$(basename $0)
-MYBASENAME=$(basename $0 .sh)
+MYBASENAME="ftgalera" #$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
