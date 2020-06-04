@@ -1045,6 +1045,14 @@ function run_test()
 
     message "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern
+    if [ $? -ne 0 ]; then
+        message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
+    fi
+
+    ulimit -c unlimited
+    if [ $? -ne 0 ]; then
+        message "Failed: ulimit -c unlimited"
+    fi
 
     #
     # Running the actual test.
