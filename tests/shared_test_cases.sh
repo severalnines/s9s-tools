@@ -263,7 +263,7 @@ function testRegisterServer()
 #
 function testAddRemoveProxySql()
 {
-    local node_name="${MYBASENAME}_proxysql_$$"
+    local node_name="${MYBASENAME}proxysql$$"
     local node
     local numberOfNodes
 
@@ -318,7 +318,7 @@ EOF
 #
 function testAddRemoveHaProxy()
 {
-    local node_name="${MYBASENAME}_haproxy_$$"
+    local node_name="${MYBASENAME}haproxy$$"
     local node
     
     print_title "Adding and Removing HaProxy node"
@@ -365,7 +365,7 @@ EOF
 
 function testAddRemoveMaxScale()
 {
-    local node_name="${MYBASENAME}_maxscale_$$"
+    local node_name="${MYBASENAME}maxscale$$"
     local node
     
     print_title "Adding and Removing MaxScale node"
