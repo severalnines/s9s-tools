@@ -1644,7 +1644,7 @@ function wait_for_server_ssh()
             printVerbose "Server '$serverName' is not reachable."
             let nSuccess=0
 
-            # 120 x 5 = 10 minutes
+            # 
             if [ "$nTry" -gt 180 ]; then
                 printVerbose "Server '$serverName' did not came alive."
                 return 1
@@ -1733,6 +1733,11 @@ function create_node()
                 shift 2
                 ;;
 
+            --verbose)
+                verbose_option="--verbose"
+                shift
+                ;;
+
             --)
                 shift
                 break
@@ -1767,7 +1772,9 @@ function create_node()
     retval=$?
     if [ "$retval" -ne 0 ]; then
         failure "pip-container-create returned ${retval}."
-        tail $HOME/pip-container-create.log >&2
+        #tail $HOME/pip-container-create.log >&2
+    else
+        success "pip-container-create returned ${retval}."
     fi
 
     printVerbose "Created '$ip'."
@@ -1775,14 +1782,14 @@ function create_node()
     #
     # Waiting until the server is up and accepts SSH connections.
     #
-    wait_for_server_ssh "$ip" "$USER"
-    retval=$?
-    if [ "$retval" -ne 0 ]; then
-        echo -e " $XTERM_COLOR_RED[FAILURE]$TERM_NORMAL" >&2
-        echo "Could not reach created server at ip '$ip'." >&2
-    else
-        echo -e " $XTERM_COLOR_GREEN[SUCCESS]$TERM_NORMAL" >&2
-    fi
+#    wait_for_server_ssh "$ip" "$USER"
+#    retval=$?
+#    if [ "$retval" -ne 0 ]; then
+#        echo -e " $XTERM_COLOR_RED[FAILURE]$TERM_NORMAL" >&2
+#        echo "Could not reach created server at ip '$ip'." >&2
+#    else
+#        echo -e " $XTERM_COLOR_GREEN[SUCCESS]$TERM_NORMAL" >&2
+#    fi
 
     if [ "$option_autodestroy" ]; then
         echo "$ip" >>$container_list_file

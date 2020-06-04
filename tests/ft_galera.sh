@@ -198,6 +198,7 @@ function testCreateCluster()
 
         echo "Creating node #$node_serial"
         node_ip=$(create_node \
+            --verbose     \
             --os-vendor   "$OPTION_OS_VENDOR"  \
             --os-release  "$OPTION_OS_RELEASE" \
             --autodestroy "$node_name")
