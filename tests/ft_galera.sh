@@ -194,7 +194,7 @@ function testCreateCluster()
 
     begin_verbatim
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
-        node_name=$(printf "${MYBASENAME}_node%03d_$$" "$node_serial")
+        node_name=$(printf "${MYBASENAME}node%03d$$" "$node_serial")
 
         echo "Creating node #$node_serial"
         node_ip=$(create_node \
@@ -762,7 +762,7 @@ function testUploadData()
 #
 function testAddNode()
 {
-    local node_name="${MYBASENAME}_addednode_$$"
+    local node_name="${MYBASENAME}addednode$$"
     local nodes
 
     print_title "Adding a node"
