@@ -16,7 +16,7 @@ OPTION_TESTS=""
 # The name of the configuration.
 #
 #OPTION_CONFIG_NAME="s9s-test-release"
-OPTION_CONFIG_NAME="s9s-test"
+OPTION_CONFIG_NAME="s9s-tests"
 
 #
 # This is where the XML and HTML files are placed before we upload them to the
