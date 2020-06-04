@@ -797,7 +797,7 @@ function testRemoveNode()
         printVerbose "Skipping test."
     fi
     
-    print_title "The test to remove node is starting now."
+    print_title "Removing Node"
     begin_verbatim
 
     #
@@ -821,7 +821,7 @@ function testRemoveNode()
 function testRollingRestart()
 {
     local ret_code
-    print_title "The test of rolling restart is starting now."
+    print_title "Testing Rolling Restart"
     cat <<EOF
   This test will try to execute a rollingrestart job on the cluster. If the
   number of nodes is less than 3 this should fail, if it is at least 3 it should
