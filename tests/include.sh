@@ -1690,7 +1690,7 @@ function create_node()
 
     args=$(\
     getopt -o h \
-        -l "help,autodestroy,template:,os-vendor:,os-release:" \
+        -l "help,verbose,autodestroy,template:,os-vendor:,os-release:" \
         -- "$@")
 
     if [ $? -ne 0 ]; then
