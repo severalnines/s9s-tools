@@ -419,6 +419,7 @@ function create_container()
     local ip
     local retval
     local temp_file
+    local counter
 
     #
     # Checking the command line options.
@@ -536,6 +537,7 @@ function create_container()
     #
     # Waiting for IP.
     #
+    counter=0
     while [ -z $ip ]; do
         ip=$(lxc-info -n "$new_name" -i | awk '{print $2}')
 
@@ -544,8 +546,18 @@ function create_container()
         fi
 
         if [ -z "$ip" ]; then
-            printVerbose "Waiting for $new_name to get an IP."
+            if [ "$counter" == 0 ]; then
+                printVerbose "Waiting for $new_name to get an IP."
+            fi
             sleep 1
+        fi
+
+        let counter+=1
+        if [ "$counter" -gt 60 ]; then
+            printError "Container did not get an IP."
+            cat "$temp_file" >&2
+            rm -f "$temp_file"
+            return 1
         fi
     done
    
