@@ -517,6 +517,7 @@ function prepare_source()
         if [ "$current_branch" != "$requested_branch" ]; then
             printVerbose "Switching to branch '$requested_branch'."
             git checkout "$requested_branch" >>$LOGFILE 2>>$LOGFILE
+            printVerbose "Running git pull again."
             git pull >/dev/null 2>/dev/null
         fi
        
