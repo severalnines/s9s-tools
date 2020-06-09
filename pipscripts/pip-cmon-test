@@ -1115,6 +1115,7 @@ function run_test()
             # Running the test script itself.
             # 
             message "Running '$test_name'..."
+            upload_slog_file
 
             timeout --kill-after=60m 60m ./$test_name \
                 --print-commands \
