@@ -508,7 +508,8 @@ function prepare_source()
         printVerbose "Current branch is '$current_branch'."
        
         if [ -z "$requested_branch" ]; then
-            printVerbose "Requested branch is not set."
+            printVerbose "Requested branch is not set, using 'master'."
+            requested_branch="master"
         else 
             printVerbose "Requested branch is '$requested_branch'."
         fi
