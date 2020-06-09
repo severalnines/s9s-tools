@@ -846,6 +846,7 @@ function upload_result_file()
     local unit_test_option
     local functional_test_option
     local pid_to_watch
+    local counter
 
     while true; do
         case "$1" in 
@@ -882,6 +883,8 @@ function upload_result_file()
     # If we have a PID we do the uploading until that ends. If not, we just
     # upload once.
     #
+    counter=0
+
     while true; do
         if [ -f "$log_file" ]; then
             #pip-host-control --log "Uploading '$log_file'."
@@ -918,7 +921,14 @@ function upload_result_file()
             break
         fi
 
-        sleep 5
+        # We are not gonna run indefinitely, that is a huge disaster.
+        let counter+=10
+        if [ $counter -gt 3600 ]; then
+            message "One hour elapsed, the watcher will abort now."
+            break
+        fi
+
+        sleep 10
     done
 
     rm -f "$tmp_file"
@@ -1078,13 +1088,14 @@ function run_test()
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
-                printVerbose "Running 'ft_full'..."
+                message "Running 'ft_full'..."
 
                 echo "Starting controller: './ft_full/ft_full'" >ft_full.log
 
                 ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                 backend_pid=$!
-                
+                message "Backend PID is ${backend_pid}."
+
                 for delay in $(seq 1 100); do
                     if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
                         break
@@ -1105,14 +1116,18 @@ function run_test()
             # 
             message "Running '$test_name'..."
 
-            timeout --kill-after=65m 60m ./$test_name \
+            timeout --kill-after=60m 60m ./$test_name \
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
                 >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
+            message "Test script PID is ${test_pid}."
 
+            #
+            # Starting a watcher that keeps uploading the output...
+            #
             upload_result_file \
                 --functional-test \
                 --pid "$test_pid" \
@@ -1120,10 +1135,16 @@ function run_test()
             
             watcher_pid=$!
 
+            #
+            # Waiting for the test to be ended.
+            #
+            message "Waiting until the test script ends..."
             wait "$test_pid"
             return_code=$?
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
+
+            message "Waiting for test watcher to end..."
             wait "$watcher_pid"
 
             pushd "$(find_clustercontrol_source_directory)/tests"
