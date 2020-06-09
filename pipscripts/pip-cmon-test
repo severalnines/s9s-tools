@@ -1135,6 +1135,8 @@ function run_test()
                 "$test_name" "RUNNING" $logfile &
             
             watcher_pid=$!
+            message "Watcher PID is ${watcher_pid}."
+            upload_slog_file
 
             #
             # Waiting for the test to be ended.
