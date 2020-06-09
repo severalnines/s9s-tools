@@ -2102,6 +2102,15 @@ EOF
         success "  o Return code is 0, ok."
     fi
 
+    mys9s user --stat "$USER"
+    if [ $? -eq 0 ]; then
+        success "  o Could stat the user $USER, OK."
+    else
+        failure "Exit code is not 0 when stat-ing the new user $USER."
+        end_verbatim
+        return 0
+    fi
+
     # Adding a tag to the user and checking if the tag is indeed added.
     mys9s tree --add-tag --tag="testUser" /$USER
     mys9s user --stat $USER

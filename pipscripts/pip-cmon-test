@@ -1143,13 +1143,13 @@ function run_test()
             # Waiting for the test to be ended.
             #
             message "Waiting until the test script ends..."
-            wait "$test_pid"
+            wait "$test_pid" 2>/dev/null
             return_code=$?
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
 
             message "Waiting for test watcher to end..."
-            wait "$watcher_pid"
+            wait "$watcher_pid" 2>/dev/null
 
             pushd "$(find_clustercontrol_source_directory)/tests"
             ft_test_ended \
@@ -1161,6 +1161,7 @@ function run_test()
             #
             # Cleaning up after.
             #
+            message "Stopping the ft_full backend."
             kill $backend_pid
             sleep 3
             kill -9 $backend_pid
