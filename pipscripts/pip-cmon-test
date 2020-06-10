@@ -925,8 +925,8 @@ function upload_result_file()
 
         # We are not gonna run indefinitely, that is a huge disaster.
         let counter+=10
-        if [ $counter -gt 3600 ]; then
-            message "One hour elapsed, the watcher will abort now."
+        if [ $counter -gt 5400 ]; then
+            message "One and a half hour elapsed, the watcher will abort now."
             break
         fi
 
@@ -1119,7 +1119,7 @@ function run_test()
             message "Running '$test_name'..."
             upload_slog_file
 
-            timeout --kill-after=60m 60m ./$test_name \
+            timeout --kill-after=92m 90m ./$test_name \
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
