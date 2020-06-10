@@ -325,7 +325,7 @@ function upload_slog_file()
 function message()
 {
     printVerbose "$1"
-    pip-host-control --status="$1"
+    #pip-host-control --status="$1"
 }
 
 function test_name_to_test()

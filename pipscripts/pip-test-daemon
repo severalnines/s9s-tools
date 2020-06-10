@@ -106,6 +106,7 @@ function start_test()
     local project=""
     local option_s9s=""
     local retcode
+    local counter
 
     printVerbose "Loading '$config_file'..."
     source "$config_file"
@@ -115,10 +116,20 @@ function start_test()
     #
     printVerbose "Getting idle test servers"
 
-    test_server=$(pip-server-control --list --idle)
+    let counter=0
+    #test_server=$(pip-server-control --list --idle)
     while [ -z "$test_server" ]; do
         test_server=$(pip-server-control --list --idle)
-       [ -z "$test_server" ] && sleep 10
+        if [ -n "$test_server" ]; then
+            echo ""
+            echo "  Idle server: $test_server"
+            pip-server-control --list --long --idle 
+        else
+            echo -ne "  Waiting for idle server $counter\r"
+        fi
+
+        [ -z "$test_server" ] && sleep 3
+        let counter+=1
     done
     
     if [ -z "$user" ]; then
@@ -153,6 +164,9 @@ EOF
     retcode=$?
     echo "pip-cmon-test retcode: $retcode"
 
+    # Here is a peculiar thing, the script needs some time to make this host
+    # busy...
+    sleep 8
     return $retcode
 }
 
