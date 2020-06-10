@@ -1518,9 +1518,9 @@ function find_idle_server()
                 -o LogLevel=quiet \
                 "$server" -- pip-cmon-test --pid)
 
-        #printVerbose "server     : '$server'"
-        #printVerbose "lock_file  : '$lock_file'"
-        #printVerbose "other_pid  : '$other_pid'"
+        printVerbose "server     : '$server'"
+        printVerbose "lock_file  : '$lock_file'"
+        printVerbose "other_pid  : '$other_pid'"
         if [ "$other_pid" ]; then
             REMOTE_SERVER_STATE[$server]="TESTING "
             continue
