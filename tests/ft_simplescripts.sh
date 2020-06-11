@@ -152,7 +152,7 @@ EOF
     mys9s tree --cat /tests/test01.js
     check_exit_code_no_job $?
 
-    mys9s script --run --log /tests/test01.js
+    mys9s script --run --log --print-json --verbose /tests/test01.js
     check_exit_code_no_job $?
 
     rm -f $tmp_file
