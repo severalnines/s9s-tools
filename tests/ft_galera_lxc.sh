@@ -130,6 +130,7 @@ function createCluster()
 {
     local node001="ft_galera_lxc_01_$$"
     local node002="ft_galera_lxc_02_$$"
+    local exit_code
 
     #
     # Creating a Cluster.
@@ -148,8 +149,14 @@ function createCluster()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    exit_code=$?
+    check_exit_code $exit_code
+    if [ $exit_code -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
+    counter=0
     while true; do 
         CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
         
@@ -159,7 +166,9 @@ function createCluster()
 
         echo "Cluster '$CLUSTER_NAME' not found."
         s9s cluster --list --long
+        [ "$counter" -gt 5 ] && break
         sleep 5
+        let counter+=1
     done
 
     if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
