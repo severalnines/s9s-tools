@@ -2072,7 +2072,6 @@ function grant_user()
 
   After the initial user created we also register a public key so that the Cmon
   user account can be used without password. 
-
 EOF
 
     begin_verbatim
@@ -2082,7 +2081,7 @@ EOF
 
     mys9s user \
         --create \
-        --group="testgroup" \
+        --group="users" \
         --create-group \
         --generate-key \
         --controller="https://localhost:$cmon_port" \

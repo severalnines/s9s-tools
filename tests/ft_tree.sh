@@ -584,6 +584,23 @@ EOF
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
+        --cmon-user=grumio \
+        --password=p \
+        --wait
+
+    if [ $? -eq 0 ]; then
+        failure "The user grumio/plebs should not be able to create a cluster."
+    else
+        success "  o User 'grumio' is not able to create a cluster, OK."
+    fi
+
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$CONTAINER_IP" \
+        --vendor=percona \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=5.6 \
         --wait
 
     check_exit_code $?
