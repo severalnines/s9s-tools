@@ -2081,7 +2081,7 @@ EOF
 
     mys9s user \
         --create \
-        --group="users" \
+        --group="testgroup" \
         --create-group \
         --generate-key \
         --controller="https://localhost:$cmon_port" \
@@ -2109,6 +2109,13 @@ EOF
         end_verbatim
         return 0
     fi
+
+    mys9s tree \
+        --add-acl \
+        --acl="user:$USER:r-x" \
+        --cmon-user="system" \
+        --password="secret" \
+        /.runtime/jobs/jobExecutor
 
     # Adding a tag to the user and checking if the tag is indeed added.
     mys9s tree --add-tag --tag="testUser" /$USER
