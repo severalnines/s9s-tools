@@ -255,8 +255,8 @@ else
     runFunctionalTest createUserSisko
     runFunctionalTest registerServer
     runFunctionalTest createCluster1
-    runFunctionalTest createCluster2
-    runFunctionalTest createCluster3
+    #runFunctionalTest createCluster2
+    #runFunctionalTest createCluster3
 fi
 
 #kill $EVENT_HANDLER_PID
