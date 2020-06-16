@@ -1421,6 +1421,9 @@ environment.
 EOF
 
     begin_verbatim
+    
+    s9s tree --list --long --recursive --full-path --batch
+
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
     mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
@@ -1436,7 +1439,6 @@ EOF
     IFS=$'\n'
     for line in $(s9s tree --list --long --recursive --full-path --batch)
     do
-        #echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         line=$(echo "$line" | sed 's/3, 1/   -/g')
         name=$(echo "$line" | awk '{print $5}')
@@ -1444,6 +1446,7 @@ EOF
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
 
+        success "  o Line is: $line"
         case "$name" in 
             /$CLUSTER_NAME)
                 [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
