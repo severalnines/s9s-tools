@@ -1410,6 +1410,117 @@ function testAccountAccess()
     end_verbatim
 }
 
+function _my_check()
+{
+    local old_ifs="$IFS"
+    local n_object_found
+
+    mys9s tree --list --long --recursive --full-path
+
+    n_object_found=0
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --recursive --full-path --batch)
+    do
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        line=$(echo "$line" | sed 's/3, 1/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        success "  o Line is: $line"
+        case "$name" in 
+            /$CLUSTER_NAME)
+                if [ "$owner" != "pipas" ]; then 
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "crwxrwx---" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o Mode is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+
+            /$CLUSTER_NAME/databases/domain_names_diff)
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "brwxrwx---" ]; then 
+                    failure "Mode of $name is '$mode'." 
+                else
+                    success "  o Mode of $name is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+
+            /$CONTAINER_SERVER)
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then 
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "srwxrwx---" ]; then
+                    failure "Mode of $name is '$mode'." 
+                else
+                    success "  o Mode of $name is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+
+            /$CONTAINER_SERVER/containers)
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "drwxr--r--" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o Mode is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+        esac
+    done
+}
+
 #
 # Moving some objects into a sub-folder. The user is moving itself at the last
 # step, so this is a chroot environment.
@@ -1437,62 +1548,21 @@ environment.
 EOF
 
     begin_verbatim
-    
-    mys9s tree --list --long --recursive --full-path --batch
+   
+    _my_check
+    #mys9s tree --list --long --recursive --full-path 
 
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
     mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
     mys9s tree --move "/pipas" "$TEST_PATH"
 
-    mys9s tree --tree 
-    
+    mysleep 60
+
     #
     #
     #
-    mys9s tree --list --long --recursive --full-path
-
-    IFS=$'\n'
-    for line in $(s9s tree --list --long --recursive --full-path --batch)
-    do
-        line=$(echo "$line" | sed 's/1, 0/   -/g')
-        line=$(echo "$line" | sed 's/3, 1/   -/g')
-        name=$(echo "$line" | awk '{print $5}')
-        mode=$(echo "$line" | awk '{print $1}')
-        owner=$(echo "$line" | awk '{print $3}')
-        group=$(echo "$line" | awk '{print $4}')
-
-        success "  o Line is: $line"
-        case "$name" in 
-            /$CLUSTER_NAME)
-                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
-                [ "$group" != "users" ] && failure "Group of $name is '$group'."
-                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
-                let n_object_found+=1
-                ;;
-
-            /$CLUSTER_NAME/databases/domain_names_diff)
-                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
-                [ "$group" != "users" ] && failure "Group of $name is '$group'."
-                [ "$mode"  != "brwxrwx---" ] && failure "Mode of $name is '$mode'." 
-                let n_object_found+=1
-                ;;
-
-            /$CONTAINER_SERVER)
-                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
-                [ "$group" != "users" ] && failure "Group of $name is '$group'."
-                [ "$mode"  != "srwxrwx---" ] && failure "Mode of $name is '$mode'." 
-                let n_object_found+=1
-                ;;
-
-            /$CONTAINER_SERVER/containers)
-                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
-                [ "$group" != "users" ] && failure "Group of $name is '$group'."
-                [ "$mode"  != "drwxr--r--" ] && failure "Mode is '$mode'." 
-                let n_object_found+=1
-                ;;
-        esac
-    done
+    _my_check
 
     #echo "n_object_found: $n_object_found"
     mys9s tree --list --long --recursive --full-path --cmon-user=system --password=secret
