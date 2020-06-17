@@ -106,6 +106,8 @@ fi
 function testCreateUser()
 {
     print_title "Creating a user with normal privileges."
+    begin_verbatim
+
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -130,6 +132,7 @@ function testCreateUser()
     check_exit_code_no_job $?
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #####
@@ -138,6 +141,7 @@ function testCreateUser()
 function testMoveUser()
 {
     print_title "The user moves itself in CDT"
+    begin_verbatim
 
     TEST_PATH="/home/pipas"
     mys9s tree --mkdir "$TEST_PATH"
@@ -146,6 +150,7 @@ function testMoveUser()
     check_exit_code $?
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #
@@ -154,6 +159,7 @@ function testMoveUser()
 function testRegisterServer()
 {
     print_title "Registering a Server in Chroot"
+    begin_verbatim
     mys9s server \
         --register \
         --cmon-user=pipas \
@@ -179,6 +185,7 @@ function testRegisterServer()
     fi
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #####
@@ -189,6 +196,8 @@ function testCreateContainer()
     local container_name="ft_treechroot_$$"
 
     print_title "Creating a Container in Chroot"
+    
+    begin_verbatim
     mys9s container \
         --create \
         --template=ubuntu \
@@ -217,6 +226,7 @@ function testCreateContainer()
     node_created "$CONTAINER_IP"
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #####
@@ -236,6 +246,7 @@ function testCreateCluster()
     # Creating a cluster 
     #
     print_title "Creating a Cluster in Chroot"
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-type=galera \
@@ -280,6 +291,8 @@ function testCreateCluster()
     if [ "$n_object_found" -ne 1 ]; then
         failure "Some objects were not found or duplicate."
     fi
+
+    end_verbatim
 }
 
 function dropCluster()
@@ -292,6 +305,8 @@ function dropCluster()
     # Dropping the cluster.
     #
     print_title "Dropping Cluster"
+    
+    begin_verbatim
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
@@ -316,6 +331,8 @@ function dropCluster()
         esac
     done
     IFS=$old_ifs  
+    
+    end_verbatim
 }
 
 #
@@ -327,6 +344,7 @@ function deleteContainers()
     local container
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -343,6 +361,7 @@ function deleteContainers()
     done
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 
