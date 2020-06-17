@@ -1428,9 +1428,10 @@ function _my_check()
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
 
-        success "  o Line is: $line"
+        #success "  o Line is: $line"
         case "$name" in 
             /$CLUSTER_NAME)
+                echo ""
                 if [ "$owner" != "pipas" ]; then 
                     failure "Owner of $name is '$owner'."
                 else
@@ -1453,6 +1454,7 @@ function _my_check()
                 ;;
 
             /$CLUSTER_NAME/databases/domain_names_diff)
+                echo ""
                 if [ "$owner" != "pipas" ]; then
                     failure "Owner of $name is '$owner'."
                 else
@@ -1475,6 +1477,7 @@ function _my_check()
                 ;;
 
             /$CONTAINER_SERVER)
+                echo ""
                 if [ "$owner" != "pipas" ]; then
                     failure "Owner of $name is '$owner'."
                 else
@@ -1497,6 +1500,7 @@ function _my_check()
                 ;;
 
             /$CONTAINER_SERVER/containers)
+                echo ""
                 if [ "$owner" != "pipas" ]; then
                     failure "Owner of $name is '$owner'."
                 else
