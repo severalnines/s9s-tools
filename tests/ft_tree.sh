@@ -769,6 +769,8 @@ function testConfigWrite()
   should of course be able to change the configuration while the outsider should
   not.
 EOF
+    
+    begin_verbatim
 
     mys9s cluster \
         --change-config \
@@ -1463,29 +1465,29 @@ EOF
         success "  o Line is: $line"
         case "$name" in 
             /$CLUSTER_NAME)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
+                [ "$group" != "users" ] && failure "Group of $name is '$group'."
                 [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /$CLUSTER_NAME/databases/domain_names_diff)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
+                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
+                [ "$group" != "users" ] && failure "Group of $name is '$group'."
+                [ "$mode"  != "brwxrwx---" ] && failure "Mode of $name is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /$CONTAINER_SERVER)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
+                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
+                [ "$group" != "users" ] && failure "Group of $name is '$group'."
+                [ "$mode"  != "srwxrwx---" ] && failure "Mode of $name is '$mode'." 
                 let n_object_found+=1
                 ;;
 
             /$CONTAINER_SERVER/containers)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
+                [ "$owner" != "pipas" ] && failure "Owner of $name is '$owner'."
+                [ "$group" != "users" ] && failure "Group of $name is '$group'."
                 [ "$mode"  != "drwxr--r--" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
