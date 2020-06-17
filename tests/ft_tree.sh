@@ -38,7 +38,8 @@ SUPPORTED TESTS:
   o testCreateUser       Creates a user with normal user privileges.
   o testCreateSuperuser  Creates a user with superuser privileges.
   o testCreateOutsider   Creates an outsider user who should not have access.
-  o testLicenseDevice    Reading and writing the license through CDT.
+  o testLicense          Reading the license through CDT.
+  o testLicenseUpload    Uploading the license through CDT.
   o testRegisterServer   Registers a container server.
   o testCreateContainer  Creates a container.
   o testCreateCluster    Creates a cluster on the container.
@@ -51,7 +52,8 @@ SUPPORTED TESTS:
   o testStats
   o testAclChroot
   o testCreateFolder
-  o testManipulate
+  o testAddAcl           Adds an ACL entry to a CDT entry.
+  o testChangeOwner      Changes the owner of a CDT entry.
   o testTree
   o testMoveBack
   o deleteContainers
@@ -245,7 +247,7 @@ EOF
     end_verbatim
 }
 
-function testLicenseDevice()
+function testLicense()
 {
     local retCode
 
@@ -279,6 +281,13 @@ function testLicenseDevice()
         failure "Superuser should be able to read the license."
     fi
 
+    end_verbatim
+}
+
+function testLicenseUpload()
+{
+    local retCode
+
     print_title "Uploading License"
     cat <<EOF
   This test will try to upload a license to the controller. Both valid and
@@ -292,6 +301,8 @@ function testLicenseDevice()
             "/.runtime/cmon_license"
 
 EOF
+
+    begin_verbatim
 
     # 
     # Trying with an invalid license. 
@@ -691,7 +702,7 @@ EOF
     end_verbatim
 }
 
-function testConfigAccess()
+function testConfigRead()
 {
     print_title "Checking Who has Read Access to Configuration"
 
@@ -744,15 +755,19 @@ function testConfigAccess()
         failure "The system user should have no access to cluster 0."
     fi
 
+    end_verbatim
+}
+
+function testConfigWrite()
+{
     #
     # The write access.
     #
     print_title "Checking Who has Write Access to Cluster Configuration"
-    cat <<EOF
+    cat <<EOF | paragraph
   New we check who has write access to the cluster configuration. The owner
   should of course be able to change the configuration while the outsider should
   not.
-
 EOF
 
     mys9s cluster \
@@ -1413,16 +1428,15 @@ function testMoveObjects()
     #
     #
     print_title "Moving Objects into Subfolder"
-    cat <<EOF
+    cat <<EOF | paragraph
 In this scenario the user moves some objects into a subfolder, then moves the
 user object itself. All the objects should remain visible in a chroot
 environment.
-
 EOF
 
     begin_verbatim
     
-    s9s tree --list --long --recursive --full-path --batch
+    mys9s tree --list --long --recursive --full-path --batch
 
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
@@ -1563,6 +1577,7 @@ function testAclChroot()
     print_title "Checking getAcl replies"
 
     begin_verbatim
+    s9s tree --get-acl --print-json /
 
     THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
@@ -1634,7 +1649,7 @@ function testCreateFolder()
 #####
 # Adding an ACL.
 #
-function testManipulate()
+function testAddAcl()
 {
     print_title "Adding an ACL Entry"
 
@@ -1642,10 +1657,18 @@ function testManipulate()
     mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
     check_exit_code_no_job $?
 
+    mys9s tree --get-acl /tmp
+    end_verbatim
+}
+
+function testChangeOwner()
+{
     #
     # Changing the owner
     #
     print_title "Changing the Owner"
+
+    begin_verbatim
     mys9s tree --chown --owner=admin:admins /tmp
     check_exit_code_no_job $?
 
@@ -1841,7 +1864,8 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
         runFunctionalTest testPingAccess
-        runFunctionalTest testConfigAccess
+        runFunctionalTest testConfigRead
+        runFunctionalTest testConfigWrite
         runFunctionalTest testJobAccess
         runFunctionalTest testLogAccess
         runFunctionalTest testAccountAccess
@@ -1858,13 +1882,15 @@ else
     runFunctionalTest testCreateUser
     runFunctionalTest testCreateSuperuser
     runFunctionalTest testCreateOutsider
-    runFunctionalTest testLicenseDevice
+    runFunctionalTest testLicense
+    runFunctionalTest testLicenseUpload
 
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
     runFunctionalTest testPingAccess
-    runFunctionalTest testConfigAccess
+    runFunctionalTest testConfigRead
+    runFunctionalTest testConfigWrite
     runFunctionalTest testJobAccess
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
@@ -1878,7 +1904,8 @@ else
     runFunctionalTest testStats
     runFunctionalTest testAclChroot
     runFunctionalTest testCreateFolder
-    runFunctionalTest testManipulate
+    runFunctionalTest testAddAcl
+    runFunctionalTest testChangeOwner
     runFunctionalTest testTree
     runFunctionalTest testMoveBack
     runFunctionalTest deleteContainers
