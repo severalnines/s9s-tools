@@ -126,7 +126,8 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+    begin_verbatim
+
     echo "Creating node #0"
     #nodeName=$(create_node --autodestroy $containerName)
     nodeName=$(create_node --autodestroy $containerName)
@@ -169,6 +170,7 @@ function createContainer()
     local owner
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -195,11 +197,13 @@ function createContainer()
         failure "The container was not created or got no IP."
         s9s container --list --long
     fi
+    end_verbatim
  
     #
     # Checking if the owner can actually log in through ssh.
     #
     print_title "Checking SSH Access for '$USER'"
+    begin_verbatim
     is_server_running_ssh "$CONTAINER_IP" "$USER"
 
     if [ $? -ne 0 ]; then
@@ -207,6 +211,7 @@ function createContainer()
     else
         echo "SSH access granted for user '$USER' on $CONTAINER_IP."
     fi
+    end_verbatim
     
     #
     # Checking that sisko can log in.
@@ -225,6 +230,7 @@ function createContainer()
     # Deleting the container we just created.
     #
     print_title "Deleting Container"
+    begin_verbatim
 
     mys9s container --delete $LOG_OPTION "$container_name"
     check_exit_code $?
@@ -233,6 +239,7 @@ function createContainer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 function createCluster()
