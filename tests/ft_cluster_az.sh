@@ -349,7 +349,8 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createUserSisko
     runFunctionalTest createServer
-    runFunctionalTest createContainer
+    # Azure is very slow, this takes too much time.
+    #runFunctionalTest createContainer
     runFunctionalTest createCluster
 fi
 #fi
