@@ -213,6 +213,16 @@ function testStat()
     end_verbatim
 }
 
+function testTree()
+{
+    print_title "Testing the Tree"
+
+    begin_verbatim
+    mys9s tree --list --long --recursive --full-path
+    end_verbatim
+
+}
+
 function testCmonGroup()
 {
     local old_ifs="$IFS"
@@ -1708,6 +1718,7 @@ else
     runFunctionalTest testPing
     runFunctionalTest testUser
     runFunctionalTest testStat
+    runFunctionalTest testTree
     runFunctionalTest testCmonGroup
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser
