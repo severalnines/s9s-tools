@@ -192,14 +192,17 @@ function testCreateGalera()
     local node_serial=1
     local node_name
 
+    print_title "Creating a Galera Cluster"
     if [ -z "$WITH_CLUSTER_GALERA" ]; then
+        cat <<EOF
+  The test is now executed for a non-galera cluster, skipping this step.
+EOF
         return 0
     fi
 
     #
     #
     #
-    print_title "Creating a Galera Cluster"
     begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
@@ -257,14 +260,17 @@ function testCreatePostgre()
     local node_serial=1
     local node_name
 
+    print_title "Creating a PostgreSQL Cluster"
     if [ -z "$WITH_CLUSTER_POSTGRE" ]; then
+        cat <<EOF
+  The test is now executed for a non-postgresql cluster, skipping this step.
+EOF
         return 0
     fi
 
     #
     #
     #
-    print_title "Creating a PostgreSQL Cluster"
     begin_verbatim
 
     while [ "$node_serial" -le "$OPTION_NUMBER_OF_NODES" ]; do
