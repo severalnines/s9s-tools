@@ -272,7 +272,7 @@ EOF
         --server       "localhost"  \
         --prot         "cmon-cloud" \
         --group        "testgroup"  \
-        --acl          "rwxrw---- " \
+        --acl          "rwxrwx--- " \
         "$container_name"
 
     check_container_server \
