@@ -130,6 +130,8 @@ function installCmonCloud()
     local DOWNLOAD_URL='http://www.severalnines.com/downloads/cmon'
 
     print_title "Installing cmon-cloud"
+    begin_verbatim
+
     if [ -f "$binaryFile" ]; then
         failure "File '$binaryFile' already exists."
         return 1
@@ -158,18 +160,23 @@ function installCmonCloud()
     sudo apt -y --force-yes install clustercontrol-cloud
     if [ $? -ne 0 ]; then
         failure "Failed to install 'clustercontrol-cloud'"
+        end_verbatim
         return 1
     fi
 
     if [ ! -f "$binaryFile" ]; then
         failure "File '$binaryFile' does not exist."
+        end_verbatim
         return 1
     fi
+
+    end_verbatim
 
     #
     #
     #
     print_title "Starting cmon-cloud"
+    begin_verbatim
     echo "# sudo systemctl start cmon-cloud"
     sudo systemctl start cmon-cloud
 
@@ -179,12 +186,14 @@ function installCmonCloud()
 
     echo "# ps axu | grep cmon-cloud"
     ps axu | grep cmon-cloud
+    end_verbatim
 
 }
 
 function removeCmonCloud()
 {
     print_title "Removing cmon-cloud"
+    begin_verbatim
 
     echo "# sudo systemctl stop cmon-cloud"
     sudo systemctl stop cmon-cloud
@@ -207,6 +216,7 @@ function removeCmonCloud()
 
     echo "# sudo apt -y --force-yes remove clustercontrol-cloud"
     sudo apt -y --force-yes remove clustercontrol-cloud
+    end_verbatim
 }
 
 #
@@ -221,6 +231,7 @@ function createContainer()
     local retCode
 
     print_title "Creating Container"
+    begin_verbatim
     cat <<EOF
   This test will create a container before any container server is created or
 registered manually. The controller has an installed and started cmon-cloud 
@@ -273,6 +284,7 @@ EOF
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME="$container_name"
+    end_verbatim
 }
 
 function deleteContainer()
@@ -283,6 +295,7 @@ function deleteContainer()
     containers="$LAST_CONTAINER_NAME"
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -297,6 +310,7 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 #
