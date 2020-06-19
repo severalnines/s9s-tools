@@ -775,6 +775,8 @@ S9sOptions::checkController()
 
     if (!tmp.empty())
         setController(tmp);
+    else
+        setController("https://localhost:9501");
 }
 
 /**
@@ -847,6 +849,7 @@ S9sOptions::controllerPort()
 S9sString
 S9sOptions::controllerPath()
 {
+    checkController();
     return getString("controller_path");
 }
 
