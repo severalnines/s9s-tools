@@ -4172,7 +4172,10 @@ S9sRpcClient::createMongoCluster(
     return retval;
 }
 
-
+/**
+ * This method is executed when the --add-node option is used like in 
+ * s9s cluster --add-node --cluster-id=X --nodes=
+ */
 bool 
 S9sRpcClient::createNode()
 {

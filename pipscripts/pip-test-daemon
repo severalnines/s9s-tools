@@ -166,7 +166,7 @@ EOF
 
     # Here is a peculiar thing, the script needs some time to make this host
     # busy...
-    sleep 8
+    sleep 3
     return $retcode
 }
 
@@ -236,7 +236,7 @@ function process_scheduled_tests()
     done
         
     print_report
-    sleep 1
+    #sleep 1
 }
 
 if [ "$OPTION_CONTINUOUS" ]; then
