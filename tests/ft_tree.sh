@@ -1650,6 +1650,7 @@ function testStats()
 #
 function testAclChroot()
 {
+    clusterPath="/home/$USER/galera_001"
     print_title "Checking getAcl replies"
 
     begin_verbatim
@@ -1659,7 +1660,7 @@ function testAclChroot()
     THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
     if [ "$THE_PATH" != '"/"' ]; then
         s9s tree --get-acl --print-json / | jq .
-        failure "The path should be '/' in getAcl reply not '$THE_PATH'."
+        failure "The object_path should be '/' in getAcl reply not '$THE_PATH'."
     else
         success "  o path is '$THE_PATH', ok"
     fi
@@ -1671,33 +1672,33 @@ function testAclChroot()
         success "The name is '$THE_NAME', ok"
     fi
 
-    THE_NAME=$(s9s tree --get-acl --print-json /galera_001 | jq .object_name)
-    THE_PATH=$(s9s tree --get-acl --print-json /galera_001 | jq .object_path)
-    if [ "$THE_PATH" != '"/"' ]; then
-        s9s tree --get-acl --print-json /galera_001 | jq .
-        failure "The path should be '/' in getAcl reply, not '$THE_PATH'."
+    THE_NAME=$(s9s tree --get-acl --print-json $clusterPath | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json $clusterPath | jq .object_path)
+    if [ "$THE_PATH" != '"/home/pipas"' ]; then
+        s9s tree --get-acl --print-json $clusterPath | jq .
+        failure "The path should be '/home/pipas' in getAcl reply, not '$THE_PATH'."
     else
         success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '"galera_001"' ]; then
-        s9s tree --get-acl --print-json /galera_001 | jq .
+        s9s tree --get-acl --print-json $clusterPath | jq .
         failure "The object name should be 'galera_001' in getAcl reply."
     else
         success "The name is '$THE_NAME', ok"
     fi
 
-    THE_NAME=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_name)
-    THE_PATH=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_path)
-    if [ "$THE_PATH" != '"/galera_001"' ]; then
-        s9s tree --get-acl --print-json /galera_001/databases | jq .
-        failure "The path should be '/galera_001' in getAcl reply."
+    THE_NAME=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_path)
+    if [ "$THE_PATH" != '"/home/pipas/galera_001"' ]; then
+        s9s tree --get-acl --print-json $clusterPath/databases | jq .
+        failure "The path should be '/home/pipas/galera_001' in getAcl reply."
     else
         success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '"databases"' ]; then
-        s9s tree --get-acl --print-json /galera_001/databases | jq .
+        s9s tree --get-acl --print-json $clusterPath/databases | jq .
         failure "The object name should be 'databases' in getAcl reply."
     else
         success "The name is '$THE_NAME', ok"
@@ -1711,12 +1712,14 @@ function testAclChroot()
 #
 function testCreateFolder()
 {
+    local folder_name="/home/pipas/tmp"
+
     print_title "Creating directory"
 
     begin_verbatim
     mys9s tree \
         --mkdir \
-        /tmp
+        $folder_name
 
     check_exit_code_no_job $?
     end_verbatim
@@ -1727,30 +1730,34 @@ function testCreateFolder()
 #
 function testAddAcl()
 {
+    local folder_name="/home/pipas/tmp"
+
     print_title "Adding an ACL Entry"
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
+    mys9s tree --add-acl --acl="user:pipas:rwx" $folder_name
     check_exit_code_no_job $?
 
-    mys9s tree --get-acl /tmp
+    mys9s tree --get-acl $folder_name
     end_verbatim
 }
 
 function testChangeOwner()
 {
+    local folder_name="/home/pipas/tmp"
+
     #
     # Changing the owner
     #
     print_title "Changing the Owner"
 
     begin_verbatim
-    mys9s tree --chown --owner=admin:admins /tmp
+    mys9s tree --chown --owner=admin:admins $folder_name
     check_exit_code_no_job $?
 
-    mys9s tree --list --directory --long /tmp
-    OWNER=$(s9s tree --list --directory --batch --long /tmp | awk '{print $3}')
-    GROUP=$(s9s tree --list --directory --batch --long /tmp | awk '{print $4}')
+    mys9s tree --list --directory --long $folder_name
+    OWNER=$(s9s tree --list --directory --batch --long $folder_name | awk '{print $3}')
+    GROUP=$(s9s tree --list --directory --batch --long $folder_name | awk '{print $4}')
     if [ "$OWNER" != 'admin' ]; then
         failure "The owner should be 'admin' not '$OWNER'."
     else 
@@ -1777,10 +1784,10 @@ function testTree()
     print_title "Printing and Checking Tree"
     
     begin_verbatim
-    mys9s tree --list 
-    mys9s tree --list --long
+    mys9s tree --list /home/pipas
+    mys9s tree --list --long /home/pipas
 
-    for name in $(s9s tree --list); do
+    for name in $(s9s tree --list /home/pipas); do
         case "$name" in
             $CLUSTER_NAME)
                 let n_object_found+=1
@@ -1846,47 +1853,6 @@ EOF
     else
         failure "The superuser does not see the cluster."
         mys9s cluster --list --long --cmon-user=system --password=secret
-    fi
-
-    if $(s9s cluster --list --long | grep -q "$CLUSTER_NAME"); then
-        failure "The user should not see the cluster."
-        mys9s cluster --list --long
-    else
-        success "  o the user does not see the cluster, ok"
-    fi
-
-    #
-    # Checking the visibility of the nodes.
-    #
-    if $(s9s node --list --long | grep -q "$CLUSTER_NAME"); then
-        failure "The user should not see the nodes."
-        mys9s node --list --long 
-    else
-        success "  o the user does not see the nodes, ok"
-    fi
-
-    if $(s9s node --list --long --cmon-user=system --password=secret | grep -q "$CLUSTER_NAME"); then
-        success "  o the nodes are visible for the system user, ok"
-    else
-        failure "The nodes should be visible for the system user."
-        mys9s node --list --long --cmon-user=system --password=secret
-    fi
-
-    #
-    # Checking the visibility of the server.
-    #
-    if $(s9s server --list --long | grep -q "$CONTAINER_SERVER"); then
-        failure "The user should not see the server."
-        mys9s server --list --long 
-    else
-        success "  o the user does not see the server, ok"
-    fi
-
-    if $(s9s server --list --long --cmon-user=system --password=secret | grep -q "$CONTAINER_SERVER"); then
-        success "  o the server is visible for the system user, ok"
-    else
-        failure "The server should be visible for the system user."
-        mys9s server --list --long --cmon-user=system --password=secret
     fi
 
     end_verbatim
