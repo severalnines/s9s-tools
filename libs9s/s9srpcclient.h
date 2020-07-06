@@ -140,6 +140,7 @@ class S9sRpcClient
         bool unregisterHost();
         bool registerHost();
         bool registerMaxScaleHost(const S9sNode &node);
+        bool registerPgBouncerHost(const S9sNode &node);
 
         bool getContainers();
         bool getServers();
