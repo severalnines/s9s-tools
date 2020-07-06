@@ -226,7 +226,7 @@ function testCreateCluster()
     local node_serial=1
     local node_name
 
-    print_title "Creating a Galera Cluster"
+    print_title "Creating a Galera Cluster of $OPTION_NUMBER_OF_NODES node(s)"
     cat <<EOF
   This test will create a Galera cluster that we use for testing the controller.
   After creating the cluster the test will wait until the cluster goes into
@@ -367,6 +367,39 @@ EOF
     fi
 }
 
+function testCreateAccounts()
+{
+    local n
+    local account_name
+
+    print_title "Creating a number of accounts"
+
+
+    n=0
+    while [ "$n" -lt 25 ]; do
+        account_name=$(printf "test_account%03d" "$n")
+    
+        mys9s account \
+            --create \
+            --cluster-id=$CLUSTER_ID \
+            --account="$account_name:password@1.2.3.4" 
+
+        if [ $? -ne 0 ]; then
+            failure "Return code is not 0."
+            break
+        else
+            success "  o Return code is 0, OK."
+        fi
+
+        let n+=1
+    done
+
+    mys9s account --list --long --cluster-id=$CLUSTER_ID
+    mys9s account --list --long --cluster-id=$CLUSTER_ID --limit=10
+    mys9s account --list --long --cluster-id=$CLUSTER_ID --limit=10 --offset=10
+}
+
+
 function testStopNode()
 {
     local exitCode
@@ -443,6 +476,7 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testCreateCluster
+        runFunctionalTest testCreateAccounts
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -450,6 +484,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
+    runFunctionalTest testCreateAccounts
     runFunctionalTest testStopNode
     #runFunctionalTest testCreateBackup
 fi

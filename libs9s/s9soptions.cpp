@@ -10370,8 +10370,10 @@ S9sOptions::readOptionsAccount(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
        
-        // Options about the user.
+        // Options about the account(s).
         { "account",          required_argument, 0, OptionAccount,        },
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
         { "private",          no_argument,       0, OptionPrivate         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
@@ -10578,6 +10580,16 @@ S9sOptions::readOptionsAccount(
             case OptionPrivileges:
                 // --privileges=PRIVILEGES
                 m_options["privileges"] = optarg;
+                break;
+            
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
             
             case '?':
