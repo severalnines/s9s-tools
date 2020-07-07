@@ -371,10 +371,13 @@ function testCreateAccounts()
 {
     local n
     local account_name
+    local ln
 
     print_title "Creating a number of accounts"
 
-
+    #
+    # Creating a number of accounts.
+    #
     n=0
     while [ "$n" -lt 25 ]; do
         account_name=$(printf "test_account%03d" "$n")
@@ -394,9 +397,33 @@ function testCreateAccounts()
         let n+=1
     done
 
+
+    #
+    # Reading back the accounts.
+    #
     mys9s account --list --long --cluster-id=$CLUSTER_ID
+    ln=$(s9s account --list --long --cluster-id=$CLUSTER_ID --batch | wc -l)
+    if [ $ln -gt 20 ]; then
+        success "  o Seems to have all the accounts, OK."
+    else
+        failure "Only received $ln accounts."
+    fi
+
     mys9s account --list --long --cluster-id=$CLUSTER_ID --limit=10
+    ln=$(s9s account --list --long --cluster-id=$CLUSTER_ID --limit=10 --batch | wc -l)
+    if [ $ln -eq 10 ]; then
+        success "  o Got 10 accounts, OK."
+    else
+        failure "Received $ln accounts instead of 10."
+    fi
+
     mys9s account --list --long --cluster-id=$CLUSTER_ID --limit=10 --offset=10
+    ln=$(s9s account --list --long --cluster-id=$CLUSTER_ID --limit=10 --offset=10 --batch | wc -l)
+    if [ $ln -eq 10 ]; then
+        success "  o Got 10 accounts, OK."
+    else
+        failure "Received $ln accounts instead of 10."
+    fi
 }
 
 
