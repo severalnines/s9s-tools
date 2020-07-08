@@ -328,6 +328,8 @@ class S9sOptions
 
         bool useInternalRepos() const;
 
+        bool uninstall() const;
+
         S9sString tempDirPath() const;
         bool keepTempDir() const;
         

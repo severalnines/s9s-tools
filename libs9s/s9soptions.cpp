@@ -131,6 +131,7 @@ enum S9sOptionType
     OptionRestart,
     OptionEnd,
     OptionReason,
+    OptionUninstall,
     OptionUuid,
     OptionDateFormat,
     OptionFullUuid,
@@ -2936,6 +2937,19 @@ S9sOptions::useInternalRepos() const
             retval = m_systemConfig.variableValue(
                     "use_internal_repos").toBoolean();
         }
+    }
+
+    return retval;
+}
+
+bool
+S9sOptions::uninstall() const
+{
+    bool retval = false;
+
+    if (m_options.contains("uninstall"))
+    {
+        retval = m_options.at("uninstall").toBoolean();
     }
 
     return retval;
@@ -11292,6 +11306,10 @@ S9sOptions::readOptionsCluster(
         // Options for maintenance
         { "maintenance-minutes", required_argument, 0, OptionMinutes       },
         { "reason",              required_argument, 0, OptionReason        },
+       
+        // Options for remove cluster/node.
+        { "uninstall",           no_argument,    0, OptionUninstall        },
+
         { 0, 0, 0, 0 }
     };
 
@@ -11913,6 +11931,11 @@ S9sOptions::readOptionsCluster(
             case OptionReason:
                 // --reason=STRING
                 m_options["reason"] = optarg;
+                break;
+            
+            case OptionUninstall:
+                // --uninstall
+                m_options["uninstall"] = true;
                 break;
 
             case '?':
