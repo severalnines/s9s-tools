@@ -6730,9 +6730,7 @@ S9sRpcReply::printObjectTreeBrief(
 
     if (options->isLongRequested())
     {
-        if (!node.linkTarget().empty())
-            printf(" -> %s", STR(node.linkTarget()));
-        else if (!node.spec().empty())
+        if (!node.spec().empty())
             printf(" (%s)", STR(node.spec()));
     }
 
@@ -6927,9 +6925,6 @@ S9sRpcReply::printObjectListLong(
         printf("%s", STR(name));
     }
 
-    if (!node.linkTarget().empty())
-        printf(" -> %s", STR(node.linkTarget()));
-
     printf("\n");
 
 recursive_print:
@@ -6965,7 +6960,6 @@ S9sRpcReply::printObjectListBrief(
     S9sString       owner     = entry["owner_user_name"].toString();
     S9sString       group     = entry["owner_group_name"].toString();
     S9sString       acl       = entry["item_acl"].toString();
-    S9sString       linkTarget = entry["link_target"].toString();
     S9sString       fullPath;
     S9sString       name;
     S9sString       sizeString;
@@ -7060,9 +7054,6 @@ S9sRpcReply::printObjectListBrief(
     } else {
         printf("%s", STR(name));
     }
-
-    if (!linkTarget.empty())
-        printf(" -> %s", STR(linkTarget));
 
     printf("\n");
 

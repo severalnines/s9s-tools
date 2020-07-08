@@ -132,12 +132,6 @@ S9sTreeNode::spec() const
 }
 
 S9sString
-S9sTreeNode::linkTarget() const
-{
-    return property("link_target").toString();
-}
-
-S9sString
 S9sTreeNode::ownerUserName() const
 {
     S9sString retval;
