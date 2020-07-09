@@ -4975,14 +4975,15 @@ S9sRpcClient::removeNode()
 
     // The job_data...
     jobData["nodes"]      = nodesField(hosts);
+    jobData["enable_uninstall"] = options->uninstall();
      
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["title"]          = title;
-    job["job_spec"]       = jobSpec;
+    job["title"]            = title;
+    job["job_spec"]         = jobSpec;
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
