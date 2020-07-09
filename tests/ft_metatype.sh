@@ -176,6 +176,7 @@ function testProperties()
     begin_verbatim
 
     mys9s metatype --list-properties --type=CmonFile
+    check_exit_code_no_job $?
 
     output=$(s9s metatype --list-properties --type=CmonFile)
     for propertyName in $output; do
@@ -191,6 +192,8 @@ function testProperties()
 
     if [ -z "$userFound" ]; then
         failure "The property 'user' was not found."
+    else
+        success "  o The property 'user' was found."
     fi
     
     if [ -z "$hostNameFound" ]; then
@@ -202,7 +205,29 @@ function testProperties()
     output=$(s9s metatype --list-properties --type=CmonFile --long --batch user)
     if ! echo "$output" | grep -q "The name of the owner"; then
         failure "Property long list does not match."
+    else
+        success "  o Output seems to be OK."
     fi
+
+    end_verbatim
+}
+
+function testClusterTypes()
+{
+    local output
+
+    print_title "Checking the Supported Cluster Types"
+    begin_verbatim
+    mys9s metatype --list-cluster-types --long
+    check_exit_code_no_job $?
+
+    output=$(s9s metatype --list-cluster-types --long --batch)
+    if ! echo "$output" | grep -q "The name of the owner"; then
+        failure "Property long list does not match."
+    else
+        success "  o Output seems to be OK."
+    fi
+    
 
     end_verbatim
 }
@@ -222,7 +247,7 @@ else
     #runFunctionalTest testPing
     runFunctionalTest testTypes
     runFunctionalTest testProperties
-
+    runFunctionalTest testClusterTypes
 fi
 
 endTests
