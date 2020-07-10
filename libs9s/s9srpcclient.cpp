@@ -8766,9 +8766,9 @@ S9sRpcClient::composeJobData(
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
     S9sVariantList volumes      = options->volumes();
-    S9sString      osUserName   = options->osUser(false);
-    S9sString      osKeyFile    = options->osKeyFile();
-    S9sString      osPassword   = options->osPassword();
+    //S9sString      osUserName   = options->osUser(false);
+    //S9sString      osKeyFile    = options->osKeyFile();
+    //S9sString      osPassword   = options->osPassword();
     S9sVariantList servers      = options->servers();
 
     S9sVariantMap  jobData;
@@ -8867,14 +8867,14 @@ S9sRpcClient::composeJobData(
     if (!containers.empty())
         jobData["containers"]   = containers;
     
-    if (!osUserName.empty())
-        jobData["ssh_user"]     = osUserName;
+    //if (!osUserName.empty())
+    //    jobData["ssh_user"]     = osUserName;
     
-    if (!osKeyFile.empty())
-        jobData["ssh_keyfile"]  = osKeyFile;
+    //if (!osKeyFile.empty())
+    //    jobData["ssh_keyfile"]  = osKeyFile;
     
-    if (!osPassword.empty())
-        jobData["ssh_password"] = osPassword;
+    //if (!osPassword.empty())
+    //    jobData["ssh_password"] = osPassword;
 
     if (options->dry())
         jobData["dry_run"] = true;
