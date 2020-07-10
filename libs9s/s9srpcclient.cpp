@@ -9410,8 +9410,12 @@ S9sRpcClient::printRequestForDebug(
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            isBatch = options->isBatchRequested();
+    bool     isPrintRequest = options->isJsonRequestRequested();
 
-    if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL && !isBatch)
+    if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL)
+	    isPrintRequest = true;
+
+    if (isPrintRequest && !isBatch)
     {
         bool            syntaxHighlight = options->useSyntaxHighlight();
         S9sFormatFlags  format  = S9sFormatIndent;

@@ -54,6 +54,7 @@ enum S9sOptionType
 {
     OptionRpcTls     = 1000,
     OptionPrintJson,
+    OptionPrintRequest,
     OptionColor,
     OptionConfigFile,
     OptionTop,
@@ -4757,6 +4758,16 @@ S9sOptions::isJsonRequested() const
 }
 
 /**
+ * \returns true if the --print-request command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isJsonRequestRequested() const
+{
+    return getBool("print_request");
+}
+
+/**
  * \returns true if the --top command line option was provided when starting the
  *   program.
  */
@@ -5641,6 +5652,7 @@ S9sOptions::printHelpGeneric()
 "  --no-header                Do not print headers.\n"
 "  --only-ascii               Do not use UTF8 characters.\n"
 "  --print-json               Print the sent/received JSon messages.\n"
+"  --print-request            Print the sent JSon request message.\n"
 "\n"
 "Job related options:\n"
 "  --job-tags=LIST            Set job tags when creating a new job.\n"
@@ -6343,6 +6355,7 @@ S9sOptions::readOptionsNode(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
@@ -6613,6 +6626,11 @@ S9sOptions::readOptionsNode(
                 m_options["print_json"] = true;
                 break;
 
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
             case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
@@ -6736,6 +6754,7 @@ S9sOptions::readOptionsBackup(
         { "long",             no_argument,       0, 'l'                   },
         { "password",         required_argument, 0, 'p'                   }, 
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "time-style",       required_argument, 0, OptionTimeStyle       },
@@ -7004,6 +7023,11 @@ S9sOptions::readOptionsBackup(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
 
             case OptionRpcTls:
@@ -7463,6 +7487,7 @@ S9sOptions::readOptionsLog(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
@@ -7600,6 +7625,11 @@ S9sOptions::readOptionsLog(
                 m_options["print_json"] = true;
                 break;
 
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
             case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
@@ -7701,6 +7731,7 @@ S9sOptions::readOptionsEvent(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
@@ -7869,6 +7900,11 @@ S9sOptions::readOptionsEvent(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
 
             case OptionRpcTls:
@@ -8078,6 +8114,7 @@ S9sOptions::readOptionsAlarm(
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "password",         required_argument, 0, 'p'                   }, 
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "verbose",          no_argument,       0, 'v'                   },
@@ -8198,6 +8235,11 @@ S9sOptions::readOptionsAlarm(
                 m_options["print_json"] = true;
                 break;
 
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
             case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
@@ -8290,6 +8332,7 @@ S9sOptions::readOptionsReport(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
@@ -8411,6 +8454,11 @@ S9sOptions::readOptionsReport(
                 m_options["print_json"] = true;
                 break;
 
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
             case OptionRpcTls:
                 // --rpc-tls
                 m_options["rpc_tls"] = true;
@@ -8515,6 +8563,7 @@ S9sOptions::readOptionsReplication(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
         { "no-header",        no_argument,       0, OptionNoHeader        },
@@ -8649,6 +8698,11 @@ S9sOptions::readOptionsReplication(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
 
             case OptionRpcTls:
@@ -9579,6 +9633,7 @@ S9sOptions::readOptionsProcess(
         { "offset",           required_argument, 0, OptionOffset          },
         { "password",         required_argument, 0, 'p'                   }, 
         { "print-json",       no_argument,       0,  OptionPrintJson      },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "sort-by-memory",   no_argument,       0, OptionSortByMemory    },
@@ -9732,6 +9787,11 @@ S9sOptions::readOptionsProcess(
                 // --print-json
                 m_options["print_json"] = true;
                 break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
             
             case OptionTop:
                 // --top
@@ -9836,6 +9896,7 @@ S9sOptions::readOptionsUser(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -9955,6 +10016,11 @@ S9sOptions::readOptionsUser(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case OptionRpcTls:
@@ -10185,6 +10251,7 @@ S9sOptions::readOptionsGroup(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -10274,6 +10341,11 @@ S9sOptions::readOptionsGroup(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case OptionRpcTls:
@@ -10367,6 +10439,7 @@ S9sOptions::readOptionsAccount(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -10384,10 +10457,8 @@ S9sOptions::readOptionsAccount(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
        
-        // Options about the account(s).
+        // Options about the user.
         { "account",          required_argument, 0, OptionAccount,        },
-        { "limit",            required_argument, 0, OptionLimit           },
-        { "offset",           required_argument, 0, OptionOffset          },
         { "private",          no_argument,       0, OptionPrivate         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
@@ -10470,6 +10541,11 @@ S9sOptions::readOptionsAccount(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case OptionRpcTls:
@@ -10596,16 +10672,6 @@ S9sOptions::readOptionsAccount(
                 m_options["privileges"] = optarg;
                 break;
             
-            case OptionLimit:
-                // --limit=NUMBER
-                m_options["limit"] = optarg;
-                break;
-            
-            case OptionOffset:
-                // --offset=NUMBER
-                m_options["offset"] = optarg;
-                break;
-            
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -10657,6 +10723,7 @@ S9sOptions::readOptionsMaintenance(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -10793,6 +10860,11 @@ S9sOptions::readOptionsMaintenance(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case OptionCreate:
@@ -10951,6 +11023,7 @@ S9sOptions::readOptionsMetaType(
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -11065,6 +11138,11 @@ S9sOptions::readOptionsMetaType(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case 'L': 
@@ -11182,6 +11260,7 @@ S9sOptions::readOptionsCluster(
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
@@ -11568,6 +11647,11 @@ S9sOptions::readOptionsCluster(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case OptionWait:
@@ -11989,6 +12073,7 @@ S9sOptions::readOptionsContainer(
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
@@ -12119,6 +12204,11 @@ S9sOptions::readOptionsContainer(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case OptionWait:
@@ -12349,6 +12439,7 @@ S9sOptions::readOptionsJob(
         { "rpc-tls",          no_argument,       0,  6                    },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0,  OptionPrintJson      },
+        { "print-request",    no_argument,       0,  OptionPrintRequest   },
         { "config-file",      required_argument, 0,  OptionConfigFile     },
         { "color",            optional_argument, 0,  OptionColor          },
         { "date-format",      required_argument, 0,  OptionDateFormat     },
@@ -12511,6 +12602,11 @@ S9sOptions::readOptionsJob(
                 // --print-json
                 m_options["print_json"] = true;
                 break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
             
             case OptionBatch:
                 // --batch
@@ -12664,6 +12760,7 @@ S9sOptions::readOptionsScript(
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -12783,6 +12880,11 @@ S9sOptions::readOptionsScript(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
            
             /*
@@ -12928,6 +13030,7 @@ S9sOptions::readOptionsSheet(
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "batch",            no_argument,       0, OptionBatch           },
@@ -13046,6 +13149,11 @@ S9sOptions::readOptionsSheet(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
            
             /*
@@ -13180,6 +13288,7 @@ S9sOptions::readOptionsServer(
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
@@ -13333,6 +13442,11 @@ S9sOptions::readOptionsServer(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case 'i':
@@ -13574,6 +13688,7 @@ S9sOptions::readOptionsController(
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
@@ -13720,6 +13835,11 @@ S9sOptions::readOptionsController(
                 // --print-json
                 m_options["print_json"] = true;
                 break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
             
             /*
              * Main options.
@@ -13840,6 +13960,7 @@ S9sOptions::readOptionsTree(
         { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
+        { "print-request",    no_argument,       0, OptionPrintRequest    },
         { "color",            optional_argument, 0, OptionColor           },
         { "human-readable",   no_argument,       0, 'h'                   },
         { "config-file",      required_argument, 0, OptionConfigFile      },
@@ -13984,6 +14105,11 @@ S9sOptions::readOptionsTree(
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
                 break;
             
             case 'i':
