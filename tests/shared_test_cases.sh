@@ -66,10 +66,6 @@ EOF
     ssh_to_controller "cd $sdir && ./autogen.sh >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to configure."
-        while true; do 
-            sleep 1000
-        done
-
         return 1
     fi
     end_verbatim
