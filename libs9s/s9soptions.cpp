@@ -726,6 +726,12 @@ S9sOptions::setController(
     S9sString myUrl = url;
     S9sRegExp regexp;
 
+    /*
+     * to work around an old bug (config has: controller=http://)
+     */
+    if (myUrl == "http://" || myUrl == "https://")
+        return;
+
     S9S_DEBUG("              myUrl  : '%s'", STR(myUrl));
     regexp = "([a-zA-Z]+):\\/\\/(.+)";
     if (regexp == myUrl)
@@ -800,6 +806,9 @@ S9sOptions::controllerHostName()
             retval = m_systemConfig.variableValue("controller_host_name");
     }
 
+    if (retval.empty())
+        retval = "localhost";
+
     return retval;
 }
 
@@ -845,6 +854,9 @@ S9sOptions::controllerPort()
             retval = m_systemConfig.variableValue("controller_port").toInt();
     }
 
+    if (retval < 1)
+        retval = 9501;
+
     return retval;
 }
 
@@ -871,11 +883,8 @@ S9sOptions::controllerUrl()
 
         if (!retval.endsWith("://"))
             retval += "://";
-    } else if (useTls())
-    {
-        retval = "https://";
     } else {
-        retval += "http://";
+        retval = "https://";
     }
 
     /*
