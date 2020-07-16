@@ -4286,6 +4286,8 @@ S9sRpcClient::createNode()
         {
         } else if (protocol == "mysql")
         {
+        } else if (protocol == "postgresql")
+        {
         } else if (protocol.empty())
         {
         } else {
