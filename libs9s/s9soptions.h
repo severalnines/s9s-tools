@@ -328,6 +328,8 @@ class S9sOptions
 
         bool useInternalRepos() const;
 
+        bool uninstall() const;
+
         S9sString tempDirPath() const;
         bool keepTempDir() const;
         
@@ -536,6 +538,7 @@ class S9sOptions
 
         bool isLongRequested() const;
         bool isJsonRequested() const;
+        bool isJsonRequestRequested() const;
         bool isTopRequested() const;
         bool isWaitRequested() const;
         bool isBatchRequested() const;

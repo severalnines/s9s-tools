@@ -2072,7 +2072,6 @@ function grant_user()
 
   After the initial user created we also register a public key so that the Cmon
   user account can be used without password. 
-
 EOF
 
     begin_verbatim
@@ -2110,6 +2109,19 @@ EOF
         end_verbatim
         return 0
     fi
+
+    for file in \
+        "/.runtime/jobs/jobExecutor" \
+        "/.runtime/jobs/jobExecutorCreateCluster" \
+        "/.runtime/jobs/jobExecutorDeleteOldJobs"
+    do
+        mys9s tree \
+            --add-acl \
+            --acl="user:$USER:r-x" \
+            --cmon-user="system" \
+            --password="secret" \
+            $file
+    done
 
     # Adding a tag to the user and checking if the tag is indeed added.
     mys9s tree --add-tag --tag="testUser" /$USER

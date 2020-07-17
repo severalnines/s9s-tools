@@ -37,48 +37,55 @@ function createController()
     cat <<EOF
 Creating a secondary controller in a container. For this we need to pull and
 compile the controller source. This may take some time.
-
 EOF
 
+    begin_verbatim
     node_ip=$(create_node --autodestroy --template "ubuntu-s9s" "$node_name") 
     SECONDARY_CONTROLLER_IP="$node_ip"
     SECONDARY_CONTROLLER_URL="https://$SECONDARY_CONTROLLER_IP:9556"
+    end_verbatim
+
 
     print_title "Pulling Source on $SECONDARY_CONTROLLER_IP"
+    begin_verbatim
     ssh_to_controller "cd $sdir && git pull"
     if [ $? -ne 0 ]; then
         failure "Failed to git pull."
         return 1
     fi
-    
+    end_verbatim
+
     print_title "Installing Packages on $SECONDARY_CONTROLLER_IP"
+    begin_verbatim
     ssh_to_controller "sudo apt install pkg-config"
-    
+    end_verbatim
+
     print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
+    begin_verbatim
     ssh_to_controller "cd $sdir && env | grep PATH"
     ssh_to_controller "cd $sdir && ./autogen.sh >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to configure."
-        while true; do 
-            sleep 1000
-        done
-
         return 1
     fi
+    end_verbatim
 
     print_title "Compiling Source"
+    begin_verbatim
     ssh_to_controller "cd $sdir && make -j15 >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to compile."
         return 1
     fi
-    
+    end_verbatim
+
     ssh_to_controller "rm -rvf /var/tmp/cmon* /tmp/cmon*"
 
     #
     # Starting the secondary controller.
     #
     print_title "Starting Secondary Controller"
+    begin_verbatim
     rm -f nohup.out
 
     nohup ssh \
@@ -104,8 +111,10 @@ EOF
     done
 
     cat "nohup.out"
-    
+    end_verbatim
+
     print_title "Testing Connection to the New Controller"
+    begin_verbatim
     mys9s user \
         --list --long \
         --controller=$SECONDARY_CONTROLLER_URL \
@@ -113,6 +122,7 @@ EOF
         --password=secret
     
     check_exit_code_no_job $?
+    end_verbatim
 
     return 0
     while true; do

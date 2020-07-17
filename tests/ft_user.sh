@@ -213,6 +213,16 @@ function testStat()
     end_verbatim
 }
 
+function testTree()
+{
+    print_title "Testing the Tree"
+
+    begin_verbatim
+    mys9s tree --list --long --recursive --full-path
+    end_verbatim
+
+}
+
 function testCmonGroup()
 {
     local old_ifs="$IFS"
@@ -1303,6 +1313,7 @@ EOF
     my_command  s9s user --whoami --print-json \| jq .user_extended_privileges
     s9s user --whoami --print-json | jq .user_extended_privileges
 
+    
     #
     # Defaults.
     #
@@ -1343,18 +1354,31 @@ EOF
     #
     print_subtitle "Denying by a Group ACL Entry"
     begin_verbatim
+
+    mys9s tree \
+        --add-acl \
+        --acl="other::r-x" \
+        "/.runtime/jobs/jobExecutor"
+    
+    mys9s tree \
+        --add-acl \
+        --acl="other::r-x" \
+        "/.runtime/jobs/jobExecutorCreateCluster"
+
     check_extended_privileges \
         --cmon-user          "worf"  \
         --can-execute-job            \
         --can-create-cluster
     
-    mys9s tree --add-acl --acl="group:ds9:---" \
+    mys9s tree \
+        --add-acl \
+        --acl="group:ds9:---" \
         /.runtime/jobs/jobExecutor
     
     mys9s tree --add-acl --acl="group:ds9:---" \
         /.runtime/jobs/jobExecutorCreateCluster
     
-    mys9s tree --get-acl /.runtime/jobs/jobExecutorCreateCluster
+    mys9s tree --get-acl /.runtime/jobs/jobExecutor
     mys9s tree --get-acl /.runtime/jobs/jobExecutorCreateCluster
 
     check_extended_privileges \
@@ -1694,6 +1718,7 @@ else
     runFunctionalTest testPing
     runFunctionalTest testUser
     runFunctionalTest testStat
+    runFunctionalTest testTree
     runFunctionalTest testCmonGroup
     runFunctionalTest testSetUser
     runFunctionalTest testSetOtherUser

@@ -775,6 +775,18 @@ S9sNode::role() const
 }
 
 /**
+ * \returns The "member_role" property (e.g. "Primary", "Secondary", "Arbiter", etc).
+ */
+S9sString
+S9sNode::memberRole() const
+{
+    if (m_properties.contains("member_role"))
+        return m_properties.at("member_role").toString();
+
+    return S9sString();
+}
+
+/**
  * \returns True if the class name suggests this is a container server.
  */
 bool
@@ -854,6 +866,16 @@ S9sNode::roleFlag() const
         return 'U';
     else if (theRole == "controller")
         return 'C';
+    else if (theRole == "arbiter")
+        return 'A';
+    else if (theRole == "shardsvr")
+    {
+        S9sString mRole = memberRole();
+        if (mRole == "Primary")
+            return 'M';
+        else if (mRole == "Secondary")
+            return 'S';
+    }
 
     return '-';
 }

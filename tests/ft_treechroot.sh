@@ -106,6 +106,8 @@ fi
 function testCreateUser()
 {
     print_title "Creating a user with normal privileges."
+    begin_verbatim
+
     mys9s user \
         --create \
         --cmon-user="system" \
@@ -130,6 +132,7 @@ function testCreateUser()
     check_exit_code_no_job $?
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #####
@@ -138,6 +141,7 @@ function testCreateUser()
 function testMoveUser()
 {
     print_title "The user moves itself in CDT"
+    begin_verbatim
 
     TEST_PATH="/home/pipas"
     mys9s tree --mkdir "$TEST_PATH"
@@ -146,6 +150,7 @@ function testMoveUser()
     check_exit_code $?
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #
@@ -153,7 +158,11 @@ function testMoveUser()
 #
 function testRegisterServer()
 {
+    local rootPath="/home/$USER"
+
     print_title "Registering a Server in Chroot"
+
+    begin_verbatim
     mys9s server \
         --register \
         --cmon-user=pipas \
@@ -161,24 +170,29 @@ function testRegisterServer()
 
     check_exit_code $?
 
+    mys9s tree --tree
+
     #
     # Checking.
     #
-    OWNER=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
-    GROUP=$(s9s tree --list /$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
+    OWNER=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
+    GROUP=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
+
     if [ "$OWNER" != 'pipas' ]; then
         s9s tree --list /$CONTAINER_SERVER 
-        failure "The owner should be 'pipas'."
-        exit 1
+        failure "The owner is '$OWNER' should be '$USER'."
+    else
+        success "  o The owner is $OWNER, OK."
     fi
 
     if [ "$GROUP" != 'users' ]; then
         s9s tree --list /$CONTAINER_SERVER 
-        failure "The group should be 'users'."
-        exit 1
+        failure "The group is '$GROUP' should be 'users'."
+    else
+        success "  o The gtoup is '$GROUP', OK."
     fi
 
-    mys9s tree --list --long
+    end_verbatim
 }
 
 #####
@@ -189,6 +203,8 @@ function testCreateContainer()
     local container_name="ft_treechroot_$$"
 
     print_title "Creating a Container in Chroot"
+    
+    begin_verbatim
     mys9s container \
         --create \
         --template=ubuntu \
@@ -206,17 +222,20 @@ function testCreateContainer()
 
     if [ -z "$CONTAINER_IP" ]; then
         failure "Container IP could not be found."
-        exit 1
+    else
+        success "  o Container IP is $CONTAINER_IP, OK."
     fi
 
     if [ "$CONTAINER_IP" == "-" ]; then
         failure "Container IP is invalid."
-        exit 1
+    else
+        success "  o Container IP seemt to be valid."
     fi
 
     node_created "$CONTAINER_IP"
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 #####
@@ -236,6 +255,7 @@ function testCreateCluster()
     # Creating a cluster 
     #
     print_title "Creating a Cluster in Chroot"
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-type=galera \
@@ -249,7 +269,7 @@ function testCreateCluster()
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "Cluster ID is $CLUSTER_ID"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
@@ -258,7 +278,7 @@ function testCreateCluster()
     # Checking the cluster in the tree.
     #
     IFS=$'\n'
-    for line in $(s9s tree --list --long --batch); do
+    for line in $(s9s tree --list --long --batch /home/$USER); do
         echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
@@ -268,18 +288,41 @@ function testCreateCluster()
 
         case "$name" in
             $CLUSTER_NAME)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
+                success "  o Cluster $CLUSTER_NAME found, OK."
+
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner is '$owner'."
+                else
+                    success "  o The owner is $owner, OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group is '$group'."
+                else
+                    success "  o The group is $group, OK."
+                fi
+
+                if [ "$mode"  != "crwxrwx---" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o The mode is $mode, OK."
+                fi
+
                 let n_object_found+=1
                 ;;
         esac
     done
     IFS=$old_ifs
 
-    if [ "$n_object_found" -ne 1 ]; then
+    if [ "$n_object_found" -lt 1 ]; then
+        failure "Some objects were not found."
+    elif [ "$n_object_found" -ne 1 ]; then
         failure "Some objects were not found or duplicate."
+    else
+        success "Objects found."
     fi
+
+    end_verbatim
 }
 
 function dropCluster()
@@ -292,6 +335,8 @@ function dropCluster()
     # Dropping the cluster.
     #
     print_title "Dropping Cluster"
+    
+    begin_verbatim
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
@@ -316,6 +361,8 @@ function dropCluster()
         esac
     done
     IFS=$old_ifs  
+    
+    end_verbatim
 }
 
 #
@@ -327,6 +374,7 @@ function deleteContainers()
     local container
 
     print_title "Deleting Containers"
+    begin_verbatim
 
     #
     # Deleting all the containers we created.
@@ -343,6 +391,7 @@ function deleteContainers()
     done
 
     mys9s tree --list --long
+    end_verbatim
 }
 
 

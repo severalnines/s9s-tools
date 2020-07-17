@@ -38,7 +38,8 @@ SUPPORTED TESTS:
   o testCreateUser       Creates a user with normal user privileges.
   o testCreateSuperuser  Creates a user with superuser privileges.
   o testCreateOutsider   Creates an outsider user who should not have access.
-  o testLicenseDevice    Reading and writing the license through CDT.
+  o testLicense          Reading the license through CDT.
+  o testLicenseUpload    Uploading the license through CDT.
   o testRegisterServer   Registers a container server.
   o testCreateContainer  Creates a container.
   o testCreateCluster    Creates a cluster on the container.
@@ -51,7 +52,8 @@ SUPPORTED TESTS:
   o testStats
   o testAclChroot
   o testCreateFolder
-  o testManipulate
+  o testAddAcl           Adds an ACL entry to a CDT entry.
+  o testChangeOwner      Changes the owner of a CDT entry.
   o testTree
   o testMoveBack
   o deleteContainers
@@ -245,7 +247,7 @@ EOF
     end_verbatim
 }
 
-function testLicenseDevice()
+function testLicense()
 {
     local retCode
 
@@ -279,6 +281,13 @@ function testLicenseDevice()
         failure "Superuser should be able to read the license."
     fi
 
+    end_verbatim
+}
+
+function testLicenseUpload()
+{
+    local retCode
+
     print_title "Uploading License"
     cat <<EOF
   This test will try to upload a license to the controller. Both valid and
@@ -292,6 +301,8 @@ function testLicenseDevice()
             "/.runtime/cmon_license"
 
 EOF
+
+    begin_verbatim
 
     # 
     # Trying with an invalid license. 
@@ -584,6 +595,23 @@ EOF
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
         --provider-version=5.6 \
+        --cmon-user=grumio \
+        --password=p \
+        --wait
+
+    if [ $? -eq 0 ]; then
+        failure "The user grumio/plebs should not be able to create a cluster."
+    else
+        success "  o User 'grumio' is not able to create a cluster, OK."
+    fi
+
+    mys9s cluster \
+        --create \
+        --cluster-type=galera \
+        --nodes="$CONTAINER_IP" \
+        --vendor=percona \
+        --cluster-name="$CLUSTER_NAME" \
+        --provider-version=5.6 \
         --wait
 
     check_exit_code $?
@@ -674,7 +702,7 @@ EOF
     end_verbatim
 }
 
-function testConfigAccess()
+function testConfigRead()
 {
     print_title "Checking Who has Read Access to Configuration"
 
@@ -727,16 +755,22 @@ function testConfigAccess()
         failure "The system user should have no access to cluster 0."
     fi
 
+    end_verbatim
+}
+
+function testConfigWrite()
+{
     #
     # The write access.
     #
     print_title "Checking Who has Write Access to Cluster Configuration"
-    cat <<EOF
+    cat <<EOF | paragraph
   New we check who has write access to the cluster configuration. The owner
   should of course be able to change the configuration while the outsider should
   not.
-
 EOF
+    
+    begin_verbatim
 
     mys9s cluster \
         --change-config \
@@ -1376,6 +1410,121 @@ function testAccountAccess()
     end_verbatim
 }
 
+function _my_check()
+{
+    local old_ifs="$IFS"
+    local n_object_found
+
+    mys9s tree --list --long --recursive --full-path
+
+    n_object_found=0
+    IFS=$'\n'
+    for line in $(s9s tree --list --long --recursive --full-path --batch)
+    do
+        line=$(echo "$line" | sed 's/1, 0/   -/g')
+        line=$(echo "$line" | sed 's/3, 1/   -/g')
+        name=$(echo "$line" | awk '{print $5}')
+        mode=$(echo "$line" | awk '{print $1}')
+        owner=$(echo "$line" | awk '{print $3}')
+        group=$(echo "$line" | awk '{print $4}')
+
+        #success "  o Line is: $line"
+        case "$name" in 
+            /$CLUSTER_NAME)
+                echo ""
+                if [ "$owner" != "pipas" ]; then 
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "crwxrwx---" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o Mode is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+
+            /$CLUSTER_NAME/databases/domain_names_diff)
+                echo ""
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "brwxrwx---" ]; then 
+                    failure "Mode of $name is '$mode'." 
+                else
+                    success "  o Mode of $name is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+
+            /$CONTAINER_SERVER)
+                echo ""
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then 
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "srwxrwx---" ]; then
+                    failure "Mode of $name is '$mode'." 
+                else
+                    success "  o Mode of $name is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+
+            /$CONTAINER_SERVER/containers)
+                echo ""
+                if [ "$owner" != "pipas" ]; then
+                    failure "Owner of $name is '$owner'."
+                else
+                    success "  o Owner of $name is '$owner', OK."
+                fi
+
+                if [ "$group" != "users" ]; then
+                    failure "Group of $name is '$group'."
+                else
+                    success "  o Group of $name is '$group', OK."
+                fi
+
+                if [ "$mode"  != "drwxr--r--" ]; then
+                    failure "Mode is '$mode'." 
+                else
+                    success "  o Mode is '$mode', OK." 
+                fi
+
+                let n_object_found+=1
+                ;;
+        esac
+    done
+}
+
 #
 # Moving some objects into a sub-folder. The user is moving itself at the last
 # step, so this is a chroot environment.
@@ -1396,67 +1545,28 @@ function testMoveObjects()
     #
     #
     print_title "Moving Objects into Subfolder"
-    cat <<EOF
+    cat <<EOF | paragraph
 In this scenario the user moves some objects into a subfolder, then moves the
 user object itself. All the objects should remain visible in a chroot
 environment.
-
 EOF
 
     begin_verbatim
+   
+    _my_check
+    #mys9s tree --list --long --recursive --full-path 
+
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
     mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
     mys9s tree --move "/pipas" "$TEST_PATH"
 
-    mys9s tree --tree 
-    
+    mysleep 60
+
     #
     #
     #
-    mys9s tree --list --long --recursive --full-path
-
-    IFS=$'\n'
-    for line in $(s9s tree --list --long --recursive --full-path --batch)
-    do
-        #echo "  checking line: $line"
-        line=$(echo "$line" | sed 's/1, 0/   -/g')
-        line=$(echo "$line" | sed 's/3, 1/   -/g')
-        name=$(echo "$line" | awk '{print $5}')
-        mode=$(echo "$line" | awk '{print $1}')
-        owner=$(echo "$line" | awk '{print $3}')
-        group=$(echo "$line" | awk '{print $4}')
-
-        case "$name" in 
-            /$CLUSTER_NAME)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
-                let n_object_found+=1
-                ;;
-
-            /$CLUSTER_NAME/databases/domain_names_diff)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
-                let n_object_found+=1
-                ;;
-
-            /$CONTAINER_SERVER)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
-                let n_object_found+=1
-                ;;
-
-            /$CONTAINER_SERVER/containers)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                [ "$group" != "users" ] && failure "Group is '$group'."
-                [ "$mode"  != "drwxr--r--" ] && failure "Mode is '$mode'." 
-                let n_object_found+=1
-                ;;
-        esac
-    done
+    _my_check
 
     #echo "n_object_found: $n_object_found"
     mys9s tree --list --long --recursive --full-path --cmon-user=system --password=secret
@@ -1540,15 +1650,17 @@ function testStats()
 #
 function testAclChroot()
 {
+    clusterPath="/home/$USER/galera_001"
     print_title "Checking getAcl replies"
 
     begin_verbatim
+    s9s tree --get-acl --print-json /
 
     THE_NAME=$(s9s tree --get-acl --print-json / | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json / | jq .object_path)
     if [ "$THE_PATH" != '"/"' ]; then
         s9s tree --get-acl --print-json / | jq .
-        failure "The path should be '/' in getAcl reply not '$THE_PATH'."
+        failure "The object_path should be '/' in getAcl reply not '$THE_PATH'."
     else
         success "  o path is '$THE_PATH', ok"
     fi
@@ -1560,33 +1672,33 @@ function testAclChroot()
         success "The name is '$THE_NAME', ok"
     fi
 
-    THE_NAME=$(s9s tree --get-acl --print-json /galera_001 | jq .object_name)
-    THE_PATH=$(s9s tree --get-acl --print-json /galera_001 | jq .object_path)
-    if [ "$THE_PATH" != '"/"' ]; then
-        s9s tree --get-acl --print-json /galera_001 | jq .
-        failure "The path should be '/' in getAcl reply, not '$THE_PATH'."
+    THE_NAME=$(s9s tree --get-acl --print-json $clusterPath | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json $clusterPath | jq .object_path)
+    if [ "$THE_PATH" != '"/home/pipas"' ]; then
+        s9s tree --get-acl --print-json $clusterPath | jq .
+        failure "The path should be '/home/pipas' in getAcl reply, not '$THE_PATH'."
     else
         success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '"galera_001"' ]; then
-        s9s tree --get-acl --print-json /galera_001 | jq .
+        s9s tree --get-acl --print-json $clusterPath | jq .
         failure "The object name should be 'galera_001' in getAcl reply."
     else
         success "The name is '$THE_NAME', ok"
     fi
 
-    THE_NAME=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_name)
-    THE_PATH=$(s9s tree --get-acl --print-json /galera_001/databases | jq .object_path)
-    if [ "$THE_PATH" != '"/galera_001"' ]; then
-        s9s tree --get-acl --print-json /galera_001/databases | jq .
-        failure "The path should be '/galera_001' in getAcl reply."
+    THE_NAME=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_name)
+    THE_PATH=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_path)
+    if [ "$THE_PATH" != '"/home/pipas/galera_001"' ]; then
+        s9s tree --get-acl --print-json $clusterPath/databases | jq .
+        failure "The path should be '/home/pipas/galera_001' in getAcl reply."
     else
         success "  o path is '$THE_PATH', ok"
     fi
 
     if [ "$THE_NAME" != '"databases"' ]; then
-        s9s tree --get-acl --print-json /galera_001/databases | jq .
+        s9s tree --get-acl --print-json $clusterPath/databases | jq .
         failure "The object name should be 'databases' in getAcl reply."
     else
         success "The name is '$THE_NAME', ok"
@@ -1600,12 +1712,14 @@ function testAclChroot()
 #
 function testCreateFolder()
 {
+    local folder_name="/home/pipas/tmp"
+
     print_title "Creating directory"
 
     begin_verbatim
     mys9s tree \
         --mkdir \
-        /tmp
+        $folder_name
 
     check_exit_code_no_job $?
     end_verbatim
@@ -1614,24 +1728,36 @@ function testCreateFolder()
 #####
 # Adding an ACL.
 #
-function testManipulate()
+function testAddAcl()
 {
+    local folder_name="/home/pipas/tmp"
+
     print_title "Adding an ACL Entry"
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:pipas:rwx" /tmp
+    mys9s tree --add-acl --acl="user:pipas:rwx" $folder_name
     check_exit_code_no_job $?
+
+    mys9s tree --get-acl $folder_name
+    end_verbatim
+}
+
+function testChangeOwner()
+{
+    local folder_name="/home/pipas/tmp"
 
     #
     # Changing the owner
     #
     print_title "Changing the Owner"
-    mys9s tree --chown --owner=admin:admins /tmp
+
+    begin_verbatim
+    mys9s tree --chown --owner=admin:admins $folder_name
     check_exit_code_no_job $?
 
-    mys9s tree --list --directory --long /tmp
-    OWNER=$(s9s tree --list --directory --batch --long /tmp | awk '{print $3}')
-    GROUP=$(s9s tree --list --directory --batch --long /tmp | awk '{print $4}')
+    mys9s tree --list --directory --long $folder_name
+    OWNER=$(s9s tree --list --directory --batch --long $folder_name | awk '{print $3}')
+    GROUP=$(s9s tree --list --directory --batch --long $folder_name | awk '{print $4}')
     if [ "$OWNER" != 'admin' ]; then
         failure "The owner should be 'admin' not '$OWNER'."
     else 
@@ -1658,10 +1784,10 @@ function testTree()
     print_title "Printing and Checking Tree"
     
     begin_verbatim
-    mys9s tree --list 
-    mys9s tree --list --long
+    mys9s tree --list /home/pipas
+    mys9s tree --list --long /home/pipas
 
-    for name in $(s9s tree --list); do
+    for name in $(s9s tree --list /home/pipas); do
         case "$name" in
             $CLUSTER_NAME)
                 let n_object_found+=1
@@ -1729,47 +1855,6 @@ EOF
         mys9s cluster --list --long --cmon-user=system --password=secret
     fi
 
-    if $(s9s cluster --list --long | grep -q "$CLUSTER_NAME"); then
-        failure "The user should not see the cluster."
-        mys9s cluster --list --long
-    else
-        success "  o the user does not see the cluster, ok"
-    fi
-
-    #
-    # Checking the visibility of the nodes.
-    #
-    if $(s9s node --list --long | grep -q "$CLUSTER_NAME"); then
-        failure "The user should not see the nodes."
-        mys9s node --list --long 
-    else
-        success "  o the user does not see the nodes, ok"
-    fi
-
-    if $(s9s node --list --long --cmon-user=system --password=secret | grep -q "$CLUSTER_NAME"); then
-        success "  o the nodes are visible for the system user, ok"
-    else
-        failure "The nodes should be visible for the system user."
-        mys9s node --list --long --cmon-user=system --password=secret
-    fi
-
-    #
-    # Checking the visibility of the server.
-    #
-    if $(s9s server --list --long | grep -q "$CONTAINER_SERVER"); then
-        failure "The user should not see the server."
-        mys9s server --list --long 
-    else
-        success "  o the user does not see the server, ok"
-    fi
-
-    if $(s9s server --list --long --cmon-user=system --password=secret | grep -q "$CONTAINER_SERVER"); then
-        success "  o the server is visible for the system user, ok"
-    else
-        failure "The server should be visible for the system user."
-        mys9s server --list --long --cmon-user=system --password=secret
-    fi
-
     end_verbatim
 }
 
@@ -1821,7 +1906,8 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
         runFunctionalTest testPingAccess
-        runFunctionalTest testConfigAccess
+        runFunctionalTest testConfigRead
+        runFunctionalTest testConfigWrite
         runFunctionalTest testJobAccess
         runFunctionalTest testLogAccess
         runFunctionalTest testAccountAccess
@@ -1838,13 +1924,15 @@ else
     runFunctionalTest testCreateUser
     runFunctionalTest testCreateSuperuser
     runFunctionalTest testCreateOutsider
-    runFunctionalTest testLicenseDevice
+    runFunctionalTest testLicense
+    runFunctionalTest testLicenseUpload
 
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
     runFunctionalTest testPingAccess
-    runFunctionalTest testConfigAccess
+    runFunctionalTest testConfigRead
+    runFunctionalTest testConfigWrite
     runFunctionalTest testJobAccess
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
@@ -1858,7 +1946,8 @@ else
     runFunctionalTest testStats
     runFunctionalTest testAclChroot
     runFunctionalTest testCreateFolder
-    runFunctionalTest testManipulate
+    runFunctionalTest testAddAcl
+    runFunctionalTest testChangeOwner
     runFunctionalTest testTree
     runFunctionalTest testMoveBack
     runFunctionalTest deleteContainers

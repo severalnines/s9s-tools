@@ -126,7 +126,8 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+    begin_verbatim
+
     echo "Creating node #0"
     #nodeName=$(create_node --autodestroy $containerName)
     nodeName=$(create_node --autodestroy $containerName)
@@ -158,88 +159,12 @@ function createServer()
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
 }
 
-#
-# Creates then destroys a cluster on Azure.
-#
-function createContainer()
-{
-    local config_dir="$HOME/.s9s"
-    local container_name="ftclusteraz01$$"
-    local template
-    local owner
-
-    print_title "Creating Container"
-
-    #
-    # Creating a container.
-    #
-    mys9s container \
-        --create \
-        --servers=$CMON_CLOUD_CONTAINER_SERVER \
-        --cloud=az \
-        --os-user=sisko \
-        --os-key-file="$config_dir/sisko.key" \
-        $LOG_OPTION \
-        "$container_name"
-    
-    check_exit_code $?
-    
-    mys9s container --list --long
-
-    #
-    # Checking the ip and the owner.
-    #
-    CONTAINER_IP=$(get_container_ip "$container_name")
-    
-    if [ -z "$CONTAINER_IP" -o "$CONTAINER_IP" == "-" ]; then
-        failure "The container was not created or got no IP."
-        s9s container --list --long
-    fi
- 
-    #
-    # Checking if the owner can actually log in through ssh.
-    #
-    print_title "Checking SSH Access for '$USER'"
-    is_server_running_ssh "$CONTAINER_IP" "$USER"
-
-    if [ $? -ne 0 ]; then
-        failure "User $USER can not log in to $CONTAINER_IP"
-    else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
-    fi
-    
-    #
-    # Checking that sisko can log in.
-    #
-    print_title "Checking SSH Access for 'sisko'"
-    is_server_running_ssh \
-        --current-user "$CONTAINER_IP" "sisko" "$config_dir/sisko.key"
-
-    if [ $? -ne 0 ]; then
-        failure "User 'sisko' can not log in to $CONTAINER_IP"
-    else
-        echo "SSH access granted for user 'sisko' on $CONTAINER_IP."
-    fi
-
-    #
-    # Deleting the container we just created.
-    #
-    print_title "Deleting Container"
-
-    mys9s container --delete $LOG_OPTION "$container_name"
-    check_exit_code $?
-    
-    #
-    # Checking the state... TBD
-    #
-    mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
-}
-
 function createCluster()
 {
     local config_dir="$HOME/.s9s"
     local container_name1="ftclusteraz11$$"
     local container_name2="ftclusteraz12$$"
+    local returnCode
 
     #
     # Creating a Cluster.
@@ -267,14 +192,19 @@ EOF
         --os-key-file="$config_dir/sisko.key" \
         --log
 
-    if ! check_exit_code --do-not-exit $?; then
+    returnCode=$?
+    check_exit_code $returnCode
+
+    if [ $returnCode -ne 0 ]; then
         mys9s container --delete --wait "$container_name1"
         mys9s container --delete --wait "$container_name2"
-        return 1
     fi
 
     end_verbatim
+}
 
+function checkCluster()
+{
     #
     #
     #
@@ -285,11 +215,17 @@ EOF
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
+    end_verbatim
+}
 
+function dropCluster()
+{
     #
-    # Dropping and deleting.
+    # Dropping the previously created cluster.
     #
     print_title "Dropping Cluster"
+    begin_verbatim
+
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
     mys9s cluster \
@@ -299,6 +235,12 @@ EOF
     
     #check_exit_code $?
     end_verbatim
+}
+
+function deleteContainers()
+{
+    local container_name1="ftclusteraz11$$"
+    local container_name2="ftclusteraz12$$"
 
     #
     # Deleting containers.
@@ -325,9 +267,6 @@ EOF
 # Running the requested tests.
 #
 startTests
-echo "Test is disabled, because the cmon-cloud is unreliable."
-if false; then
-
 reset_config
 grant_user
 
@@ -342,8 +281,9 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createUserSisko
     runFunctionalTest createServer
-    runFunctionalTest createContainer
     runFunctionalTest createCluster
-fi
+    runFunctionalTest checkCluster
+    runFunctionalTest dropCluster
+    runFunctionalTest deleteContainers
 fi
 endTests

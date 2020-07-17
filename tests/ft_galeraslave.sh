@@ -142,6 +142,7 @@ function testCreateCluster()
     local n
     
     print_title "Creating a Galera Cluster"
+    begin_verbatim
 
     for ((n=0;n<nNodes;++n)); do
         echo "Creating node #$n"
@@ -153,7 +154,7 @@ function testCreateCluster()
             nodes+=";"
         fi
           
-        nodes+="$nodeName;"
+        nodes+="$nodeName"
 
         if [ -z "$FIRST_ADDED_NODE" ]; then
             FIRST_ADDED_NODE="$nodeName"
@@ -178,7 +179,7 @@ function testCreateCluster()
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [ "$CLUSTER_ID" -gt 0 ]; then
-        printVerbose "Cluster ID is $CLUSTER_ID"
+        success "  o Cluster ID is $CLUSTER_ID, OK"
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
@@ -186,21 +187,64 @@ function testCreateCluster()
     wait_for_cluster_started "$CLUSTER_NAME"
     mys9s node --list --long
     mys9s cluster --stat
+    end_verbatim
 }
 
 function testDemoteNode()
 {
-    print_title "Demoting Node $LAST_ADDED_NODE"
+    local retCode=""
 
+    print_title "Demoting Node $LAST_ADDED_NODE"
+    begin_verbatim
+        
     mys9s cluster \
         --demote-node \
         --cluster-id=1 \
         --nodes=$LAST_ADDED_NODE \
         --log
     
+    retCode=$?
+    if [ "$retCode" -ne 0 ]; then
+        warning "Return code is $retCode."
+    fi
     #check_exit_code $?
 
     mys9s node --stat
+    end_verbatim
+}
+
+#
+# This test will add one new node to the cluster.
+#
+function testAddSlave()
+{
+    local container_name
+
+    print_title "Adding a New Node as Slave"
+    cat <<EOF
+This test will add a new node as slave to the cluster created in the previous
+test as a single node postgresql cluster.
+EOF
+
+    container_name="$(printf "ft_galeraslave_%08d_slave%02d" "$$" "$n")"
+    nodeName=$(create_node --autodestroy $container_name)
+
+    mys9s node --list --long
+
+    #
+    # Adding a node to the cluster.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-id=$CLUSTER_ID \
+        --nodes="$FIRST_ADDED_NODE?master;$nodeName?slave" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+   
+    check_exit_code $? 
+
+    mys9s node --list --long
+    mys9s node --stat    
 }
 
 #
@@ -213,7 +257,7 @@ grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest testCreateCluster
-    runFunctionalTest testDemoteNode
+    runFunctionalTest testAddSlave
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
@@ -221,7 +265,8 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testCreateCluster
-    runFunctionalTest testDemoteNode
+    #runFunctionalTest testDemoteNode
+    runFunctionalTest testAddSlave
 fi
 
 endTests

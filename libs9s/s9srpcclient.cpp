@@ -3289,6 +3289,7 @@ S9sRpcClient::registerHost()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts = options->nodes();
     bool           hasMaxScale = false;
+    bool           hasPgBouncer = false;
 
     if (hosts.empty())
     {
@@ -3312,12 +3313,18 @@ S9sRpcClient::registerHost()
 
         if (protocol == "maxscale")
             hasMaxScale = true;
+
+	if (protocol == "pgbouncer")
+            hasPgBouncer = true;
     }
    
     if (hasMaxScale)
     {
         S9sNode node = hosts[0u].toNode();
         return registerMaxScaleHost(node);
+    } else if (hasPgBouncer) {
+        S9sNode node = hosts[0u].toNode();
+        return registerPgBouncerHost(node);
     } else {
         PRINT_ERROR("Registering this type of node is not supported.");
         return false;
@@ -3361,6 +3368,51 @@ S9sRpcClient::registerMaxScaleHost(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Register MaxScale Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::registerPgBouncerHost(
+        const S9sNode &node)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    int             clusterId;
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    S9sVariantList  nodes;
+
+    nodes << node;
+    if (options->hasClusterIdOption())
+    {
+        clusterId = options->clusterId();
+    } else {
+        PRINT_ERROR("Cluster ID is missing.");
+        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["action"] = "register";
+    jobData["nodes"] = nodesField(nodes);
+    
+    //jobData["server_address"] = node.hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pgbouncer";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Register PgBouncer Node";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -4172,7 +4224,10 @@ S9sRpcClient::createMongoCluster(
     return retval;
 }
 
-
+/**
+ * This method is executed when the --add-node option is used like in 
+ * s9s cluster --add-node --cluster-id=X --nodes=
+ */
 bool 
 S9sRpcClient::createNode()
 {
@@ -4230,6 +4285,8 @@ S9sRpcClient::createNode()
         } else if (protocol == "mgmd" || protocol == "ndb_mgmd")
         {
         } else if (protocol == "mysql")
+        {
+        } else if (protocol == "postgresql")
         {
         } else if (protocol.empty())
         {
@@ -4920,14 +4977,15 @@ S9sRpcClient::removeNode()
 
     // The job_data...
     jobData["nodes"]      = nodesField(hosts);
+    jobData["enable_uninstall"] = options->uninstall();
      
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["title"]          = title;
-    job["job_spec"]       = jobSpec;
+    job["title"]            = title;
+    job["job_spec"]         = jobSpec;
 
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
@@ -8710,9 +8768,9 @@ S9sRpcClient::composeJobData(
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
     S9sVariantList volumes      = options->volumes();
-    S9sString      osUserName   = options->osUser(false);
-    S9sString      osKeyFile    = options->osKeyFile();
-    S9sString      osPassword   = options->osPassword();
+    //S9sString      osUserName   = options->osUser(false);
+    //S9sString      osKeyFile    = options->osKeyFile();
+    //S9sString      osPassword   = options->osPassword();
     S9sVariantList servers      = options->servers();
 
     S9sVariantMap  jobData;
@@ -8811,14 +8869,14 @@ S9sRpcClient::composeJobData(
     if (!containers.empty())
         jobData["containers"]   = containers;
     
-    if (!osUserName.empty())
-        jobData["ssh_user"]     = osUserName;
+    //if (!osUserName.empty())
+    //    jobData["ssh_user"]     = osUserName;
     
-    if (!osKeyFile.empty())
-        jobData["ssh_keyfile"]  = osKeyFile;
+    //if (!osKeyFile.empty())
+    //    jobData["ssh_keyfile"]  = osKeyFile;
     
-    if (!osPassword.empty())
-        jobData["ssh_password"] = osPassword;
+    //if (!osPassword.empty())
+    //    jobData["ssh_password"] = osPassword;
 
     if (options->dry())
         jobData["dry_run"] = true;
@@ -9354,8 +9412,12 @@ S9sRpcClient::printRequestForDebug(
 {
     S9sOptions     *options = S9sOptions::instance();
     bool            isBatch = options->isBatchRequested();
+    bool     isPrintRequest = options->isJsonRequestRequested();
 
-    if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL && !isBatch)
+    if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL)
+	    isPrintRequest = true;
+
+    if (isPrintRequest && !isBatch)
     {
         bool            syntaxHighlight = options->useSyntaxHighlight();
         S9sFormatFlags  format  = S9sFormatIndent;

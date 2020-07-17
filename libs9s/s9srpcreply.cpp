@@ -1302,11 +1302,33 @@ S9sRpcReply::printSupportedClusterList()
         printSupportedClusterListBrief();
 }
 
+/**
+ * Lists the supported cluster types as it is returned by the controller.
+ * Something like this:
+ *
+ * \code
+ * # s9s metatype --list-cluster-types --long
+ * CLUSTER TYPE     VENDOR     VERSION DESCRIPTION              
+ * galera           mariadb        5.5 Galera Cluster for MySQL 
+ * galera           mariadb       10.1 Galera Cluster for MySQL 
+ * galera           mariadb       10.2 Galera Cluster for MySQL 
+ * galera           mariadb       10.3 Galera Cluster for MySQL 
+ * galera           mariadb       10.4 Galera Cluster for MySQL 
+ * \endcode
+ *
+ * The request looks like this:
+ * \begin{.js}
+ * {
+ *     "operation": "getSupportedClusterTypes",
+ *     "request_created": "2020-07-08T07:33:31.127Z",
+ *     "request_id": 3
+ * }
+ * \end
+ */
 void
 S9sRpcReply::printSupportedClusterListLong()
 {
     S9sOptions    *options = S9sOptions::instance();
-    //bool           syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList names = operator[]("cluster_type_names").toVariantList();
     S9sVariantMap  types = operator[]("cluster_type_properties").toVariantMap();
     S9sFormat      nameFormat("\033[95m", TERM_NORMAL);
@@ -1381,7 +1403,7 @@ S9sRpcReply::printSupportedClusterListLong()
     }
     
     if (!options->isBatchRequested())
-        printf("Total: %d cluster types\n", (int)names.size()); 
+        printf("Total: %d cluster types.\n", (int)names.size()); 
 }
 
 void
@@ -6730,9 +6752,7 @@ S9sRpcReply::printObjectTreeBrief(
 
     if (options->isLongRequested())
     {
-        if (!node.linkTarget().empty())
-            printf(" -> %s", STR(node.linkTarget()));
-        else if (!node.spec().empty())
+        if (!node.spec().empty())
             printf(" (%s)", STR(node.spec()));
     }
 
@@ -6927,9 +6947,6 @@ S9sRpcReply::printObjectListLong(
         printf("%s", STR(name));
     }
 
-    if (!node.linkTarget().empty())
-        printf(" -> %s", STR(node.linkTarget()));
-
     printf("\n");
 
 recursive_print:
@@ -6965,7 +6982,6 @@ S9sRpcReply::printObjectListBrief(
     S9sString       owner     = entry["owner_user_name"].toString();
     S9sString       group     = entry["owner_group_name"].toString();
     S9sString       acl       = entry["item_acl"].toString();
-    S9sString       linkTarget = entry["link_target"].toString();
     S9sString       fullPath;
     S9sString       name;
     S9sString       sizeString;
@@ -7060,9 +7076,6 @@ S9sRpcReply::printObjectListBrief(
     } else {
         printf("%s", STR(name));
     }
-
-    if (!linkTarget.empty())
-        printf(" -> %s", STR(linkTarget));
 
     printf("\n");
 

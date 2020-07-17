@@ -162,23 +162,25 @@ function checkTree01()
     lines=$(s9s tree --cmon-user=supervisor --list --long groups/admins)
     mys9s tree --cmon-user=supervisor --list --long groups/admins
 
-    expected="^urwxr--r--     - supervisor admins supervisor -> /supervisor$"
-    if ! find_line "$lines" "$expected"; then
-        failure "Expected line not found: '$expected'"
-    else
-        success "  o Expected line '$expected' found, OK."
-    fi
+    # Symlinks are not created any more.
+#    expected="^urwxr--r--     - supervisor admins supervisor -> /supervisor$"
+#    if ! find_line "$lines" "$expected"; then
+#        failure "Expected line not found: '$expected'"
+#    else
+#        success "  o Expected line '$expected' found, OK."
+#    fi
 
+    # Symlinks are not created any more.
     # The non-admin user has a link too.
-    lines=$(s9s tree --cmon-user=supervisor --list --long groups/users)
-    mys9s tree --cmon-user=supervisor --list --long groups/users
-
-    expected="^urwxr--r--     - pipas  admins pipas -> /pipas$"
-    if ! find_line "$lines" "$expected"; then
-        failure "Expected line not found: '$expected'"
-    else
-        success "  o Expected line '$expected' found, OK."
-    fi
+#    lines=$(s9s tree --cmon-user=supervisor --list --long groups/users)
+#    mys9s tree --cmon-user=supervisor --list --long groups/users
+#
+#    expected="^urwxr--r--     - pipas  admins pipas -> /pipas$"
+#    if ! find_line "$lines" "$expected"; then
+#        failure "Expected line not found: '$expected'"
+#    else
+#        success "  o Expected line '$expected' found, OK."
+#    fi
     
     # The user owns itself.
     lines=$(s9s tree --cmon-user=supervisor --list --long)

@@ -22,7 +22,7 @@ OPTION_CONFIG_NAME="s9s-tests"
 # This is where the XML and HTML files are placed before we upload them to the
 # Jenkins server.
 #
-OPTION_OUTPUT_DIR="/home/pipas/Desktop/stuff/work/clustercontrol-enterprise/"
+OPTION_OUTPUT_DIR="$HOME/clustercontrol-enterprise/"
 OPTION_OUTPUT_DIR+="tests/s9s_test"
 
 MAIL_LIST_FILE=""
@@ -984,7 +984,8 @@ export WWW_PASSWORD="$PASSWORD"
 export WWW_USER="pipas"
 
 if [ ! -d "$OPTION_OUTPUT_DIR" ]; then
-    OPTION_OUTPUT_DIR="$HOME/clustercontrol-enterprise/tests/s9s_test"
+    printError "The output directory '$OPTION_OUTPUT_DIR' was not found."
+    exit 1
 fi
 
 CONFIG_FILE_NAME="${OPTION_OUTPUT_DIR}/${OPTION_CONFIG_NAME}.conf"
