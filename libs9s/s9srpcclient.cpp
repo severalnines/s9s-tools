@@ -4286,6 +4286,8 @@ S9sRpcClient::createNode()
         {
         } else if (protocol == "mysql")
         {
+        } else if (protocol == "postgresql")
+        {
         } else if (protocol.empty())
         {
         } else {
@@ -8922,7 +8924,7 @@ S9sRpcClient::composeJobData(
             options->getString("admin_user", "proxysql-admin");
 
         jobData["admin_password"]   = 
-            options->getString("admin_user", "proxysql-admin");
+            options->getString("admin_password", "proxysql-admin");
     
         jobData["monitor_user"]     = 
              options->getString("monitor_user", "proxysql-monitor");
