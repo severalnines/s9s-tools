@@ -2937,11 +2937,9 @@ function check_container_server()
     if [ -n "$expected_class_name" ]; then
         if [ "$class" != "$expected_class_name" ]; then
             failure "Server $container_server has '$class' class."
-            return 1
         fi
     elif [ -z "$class" ]; then
         failure "Server $container_server has empty class name."
-        return 1
     fi
 
     #
@@ -2950,7 +2948,8 @@ function check_container_server()
     echo ""
     file="/$container_server/.runtime/state"
     n_names_found=0
-    #mys9s tree --cat $file
+    
+    mys9s tree --cat $file
     
     IFS=$'\n'
     for line in $(s9s tree --cat --batch $file)

@@ -144,6 +144,7 @@ function createServer()
         $LOG_OPTION
 
     check_exit_code_no_job $?
+    end_verbatim
 
     #
     # Checking the state and the class name... 
@@ -154,7 +155,6 @@ function createServer()
         --cloud        "aws"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
-    end_verbatim
 }
 
 #
