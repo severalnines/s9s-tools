@@ -131,7 +131,7 @@ function createServer()
     local nodeName
 
     print_title "Creating Container Server"
-    
+    begin_verbatim
     echo "Creating node #0"
     nodeName=$(create_node --autodestroy "$node001")
 
@@ -154,6 +154,7 @@ function createServer()
         --cloud        "aws"
 
     CMON_CLOUD_CONTAINER_SERVER="$nodeName"
+    end_verbatim
 }
 
 #
@@ -168,7 +169,7 @@ function registerServer()
     # Unregistering the server.
     #
     print_title "Unregistering Container Server"
-
+    begin_verbatim
     mys9s server \
         --unregister \
         --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
@@ -193,6 +194,7 @@ function registerServer()
         --class        CmonCloudServer \
         --server-name  "$CMON_CLOUD_CONTAINER_SERVER" \
         --cloud        "aws"
+    end_verbatim
 }
 
 #
@@ -206,6 +208,7 @@ function createContainer()
     local template
 
     print_title "Creating Container"
+    begin_verbatim
 
     #
     # Creating a container.
@@ -264,6 +267,7 @@ function createContainer()
     # We will manipulate this container in other tests.
     #
     LAST_CONTAINER_NAME=$container_name
+    end_verbatim
 }
 
 #
@@ -278,7 +282,7 @@ function containerImages()
     local n=0
 
     print_title "Creating Containers with Images"
-
+    begin_verbatim
     for image in "ubuntu16.04" "debian8" "centos7"; do
         container_name=$(printf "ft_containers_aws_2%d_$$" "$n")
 
@@ -329,6 +333,7 @@ function containerImages()
 
         let n+=1
     done
+    end_verbatim
 }
 
 #
@@ -347,6 +352,7 @@ function createFail()
     # Creating a container.
     #
     print_title "Creating Container with Duplicate Name"
+    begin_verbatim
     mys9s container \
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
@@ -357,15 +363,16 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with duplicate name should have failed."
-        exit 1
     else 
-        echo "Yes, this expected to fail."
+        success "Yes, this expected to fail."
     fi
+    end_verbatim
     
     #
     # Creating a container with invalid provider.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --cloud="no_such_cloud" \
@@ -377,15 +384,16 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid cloud should have failed."
-        exit 1
     else 
-        echo "Yes, this expected to fail."
+        success "Yes, this expected to fail."
     fi
+    end_verbatim
     
     #
     # Creating a container with invalid subnet.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --subnet-id="no_such_subnet" \
@@ -397,15 +405,16 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid subnet should have failed."
-        exit 1
     else 
-        echo "Yes, this expected to fail."
+        success "Yes, this expected to fail."
     fi
+    end_verbatim
 
     #
     # Creating a container with invalid image.
     #
     print_title "Creating Container with Invalid Provider"
+    begin_verbatim
     mys9s container \
         --create \
         --image="no_such_image" \
@@ -417,15 +426,16 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid image should have failed."
-        exit 1
     else 
-        echo "Yes, this expected to fail."
+        success "Yes, this expected to fail."
     fi
-    
+    end_verbatim
+
     #
     # Creating a container with invalid firewall.
     #
     print_title "Creating Container with Invalid Firewall"
+    begin_verbatim
     mys9s container \
         --create \
         --firewalls="nosuchfirewall" \
@@ -437,10 +447,11 @@ function createFail()
 
     if [ "$exitCode" == "0" ]; then
         failure "Creating container with invalid firewall should have failed."
-        exit 1
     else 
-        echo "Yes, this expected to fail."
+        success "Yes, this expected to fail."
     fi
+
+    end_verbatim
 }
 
 function createCluster()
@@ -452,6 +463,7 @@ function createCluster()
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+    begin_verbatim
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -483,12 +495,13 @@ function createCluster()
     fi
 
     check_container_ids --galera-nodes
+    end_verbatim
 
     #
     # Adding a proxysql node.
     #
     print_title "Adding a ProxySql Node"
-
+    begin_verbatim
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
@@ -497,6 +510,7 @@ function createCluster()
         $LOG_OPTION
 
     check_exit_code $?
+    end_verbatim
 }
 
 #
@@ -514,7 +528,7 @@ function deleteContainer()
     containers+=" ft_containers_aws_02_$$"
 
     print_title "Deleting Containers"
-
+    begin_verbatim
     #
     # Deleting all the containers we created.
     #
@@ -530,18 +544,20 @@ function deleteContainer()
     done
 
     s9s job --list
+    end_verbatim
 }
 
 function unregisterServer()
 {
     if [ -n "$CMON_CLOUD_CONTAINER_SERVER" ]; then
         print_title "Unregistering Cmon-cloud server"
-        
+        begin_verbatim
         mys9s server \
             --unregister \
             --servers="cmon-cloud://$CMON_CLOUD_CONTAINER_SERVER"
 
         check_exit_code_no_job $?
+        end_verbatim
     fi
 
 }
