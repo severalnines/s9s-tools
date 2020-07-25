@@ -471,6 +471,7 @@ function prepare_source()
     local package_name="unknown"
     local current_branch
     local requested_branch
+    local prompt="$USER@$HOSTNAME:$dirname\$"
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -515,17 +516,17 @@ function prepare_source()
         fi
 
         if [ "$current_branch" != "$requested_branch" ]; then
-            printVerbose "# git checkout $requested_branch"
+            printVerbose "$prompt git checkout $requested_branch"
             git checkout "$requested_branch" >>$LOGFILE 2>>$LOGFILE
         fi
         
-        printVerbose "# git fetch --all"
+        printVerbose "$prompt git fetch --all"
         git fetch --all >>$LOGFILE 2>>$LOGFILE
 
-        printVerbose "# git reset --hard origin/$requested_branch"
+        printVerbose "$prompt git reset --hard origin/$requested_branch"
         git reset --hard origin/$requested_branch >>$LOGFILE 2>>$LOGFILE
 
-        printVerbose "# git pull"
+        printVerbose "$prompt git pull"
         git pull >>$LOGFILE 2>>$LOGFILE
        
         #
