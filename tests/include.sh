@@ -1575,6 +1575,9 @@ function is_server_running_ssh()
     local keyOption
     local isOK
     local option_current_user
+    local logfile="/tmp/is_server_running_ssh.log"
+    local timeout=3
+    local commandline
 
     while true; do
         case "$1" in 
@@ -1588,6 +1591,8 @@ function is_server_running_ssh()
         esac
     done
 
+    [ -f "$logfile" ] && rm -f "$logfile"
+
     serverName="$1"
     owner="$2"
     keyfile="$3"
@@ -1597,28 +1602,45 @@ function is_server_running_ssh()
     fi
 
     if [ "$option_current_user" ]; then
-        isOk=$(\
-            ssh -o ConnectTimeout=1 \
+        commandline="ssh -o ConnectTimeout=$timeout -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $keyOption \"$owner@$serverName\" 2>\"$logfile\" -- echo OK"
+        isOk=$(ssh -o ConnectTimeout=$timeout \
                 -o UserKnownHostsFile=/dev/null \
                 -o StrictHostKeyChecking=no \
                 -o LogLevel=quiet \
                 $keyOption \
                 "$owner@$serverName" \
-                2>/dev/null -- echo OK)
+                2>"$logfile" -- echo OK)
     else
+        commandline="sudo -u $owner -- ssh -o ConnectTimeout=$timeout -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $keyOption \"$serverName\" 2>\"$logfile\" -- echo OK"
         isOk=$(sudo -u $owner -- \
-            ssh -o ConnectTimeout=1 \
+            ssh -o ConnectTimeout=$timeout \
                 -o UserKnownHostsFile=/dev/null \
                 -o StrictHostKeyChecking=no \
                 -o LogLevel=quiet \
                 $keyOption \
                 "$serverName" \
-                2>/dev/null -- echo OK)
+                2>"$logfile" -- echo OK)
     fi
 
+    #
+    # If we got the OK, we are finished here.
+    #
     if [ "$isOk" == "OK" ]; then
+        [ -f "$logfile" ] && rm -f "$logfile"
         return 0
     fi
+
+    #
+    # Otherwise print the error message and the command.
+    #
+    echo "SSH command failed."
+    echo "  command: $commandline"
+    echo "   stderr: "
+    echo "----------------------8<--------------------8<-------------------"
+    if [ -f "$logfile" ]; then
+        cat $logfile
+    fi
+    echo "----------------------8<--------------------8<-------------------"
 
     return 1
 }
