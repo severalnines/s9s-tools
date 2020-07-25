@@ -515,10 +515,10 @@ function prepare_source()
             printVerbose "Requested branch is '$requested_branch'."
         fi
 
-        if [ "$current_branch" != "$requested_branch" ]; then
-            printVerbose "$prompt git checkout $requested_branch"
-            git checkout "$requested_branch" >>$LOGFILE 2>>$LOGFILE
-        fi
+        #if [ "$current_branch" != "$requested_branch" ]; then
+        #    printVerbose "$prompt git checkout $requested_branch"
+        #    git checkout "$requested_branch" >>$LOGFILE 2>>$LOGFILE
+        #fi
         
         printVerbose "$prompt git fetch --all"
         git fetch --all >>$LOGFILE 2>>$LOGFILE
@@ -526,8 +526,8 @@ function prepare_source()
         printVerbose "$prompt git reset --hard origin/$requested_branch"
         git reset --hard origin/$requested_branch >>$LOGFILE 2>>$LOGFILE
 
-        printVerbose "$prompt git pull"
-        git pull >>$LOGFILE 2>>$LOGFILE
+        #printVerbose "$prompt git pull"
+        #git pull >>$LOGFILE 2>>$LOGFILE
        
         #
         #
