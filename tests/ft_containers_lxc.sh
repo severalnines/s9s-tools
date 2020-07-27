@@ -508,21 +508,26 @@ EOF
     else
         success "  o The owner is $OWNER, ok."
     fi
-   
+    
+    end_verbatim
+
     #
     # Checking if the user can actually log in through ssh.
     #
     print_title "Checking SSH Access"
+    begin_verbatim
     if ! is_server_running_ssh "$CONTAINER_IP" "$USER"; then
         failure "User $USER can not log in to $CONTAINER_IP"
-        return 1
     else
         success "  o SSH access granted for user '$USER' on $CONTAINER_IP, ok."
     fi
+    end_verbatim
 
     #
     # Checking the template.
     #
+    print_title "Checking the template"
+    begin_verbatim
     template=$(\
         s9s container --list --long --batch \
         --cmon-user=system --password=secret \

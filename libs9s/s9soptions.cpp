@@ -10471,6 +10471,8 @@ S9sOptions::readOptionsAccount(
         { "private",          no_argument,       0, OptionPrivate         },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
 
         { 0, 0, 0, 0 }
     };
@@ -10679,6 +10681,16 @@ S9sOptions::readOptionsAccount(
             case OptionPrivileges:
                 // --privileges=PRIVILEGES
                 m_options["privileges"] = optarg;
+                break;
+            
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+            
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
             
             case '?':
