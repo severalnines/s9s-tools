@@ -222,7 +222,7 @@ function testClusterTypes()
     check_exit_code_no_job $?
 
     output=$(s9s metatype --list-cluster-types --long --batch)
-    if ! echo "$output" | grep -q "The name of the owner"; then
+    if ! echo "$output" | grep -q "Galera Cluster"; then
         failure "Property long list does not match."
     else
         success "  o Output seems to be OK."
