@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.3"
-LOG_OPTION="--wait"
+LOG_OPTION="--wait --print-request"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -70,7 +70,7 @@ while true; do
 
         --log)
             shift
-            LOG_OPTION="--log"
+            LOG_OPTION="--log --print-request"
             ;;
 
         --server)

@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-LOG_OPTION="--wait"
+LOG_OPTION="--wait --print-request"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -62,7 +62,7 @@ while true; do
 
         --log)
             shift
-            LOG_OPTION="--log"
+            LOG_OPTION="--log --print-request"
             ;;
 
         --print-commands)
