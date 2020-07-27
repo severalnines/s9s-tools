@@ -1233,6 +1233,13 @@ function haproxy_node_name()
         awk '{print $5 }'
 }
 
+function pgbouncer_node_name()
+{
+    s9s node --list --long --batch |\
+        grep '^b' | \
+        awk '{print $5 }'
+}
+
 function check_number_of_haproxy_nodes()
 {
     local numberOfNodes
