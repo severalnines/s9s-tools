@@ -209,10 +209,13 @@ function createContainer()
     else
         success "  o Container has IP $CONTAINER_IP, OK."
     fi
+    end_verbatim
 }
 
 function checkContainer()
 {
+    local config_dir="$HOME/.s9s"
+
     #
     # Checking if the owner can actually log in through ssh.
     #
