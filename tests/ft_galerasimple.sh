@@ -374,6 +374,7 @@ function testCreateAccounts()
     local ln
 
     print_title "Creating a number of accounts"
+    begin_verbatim
 
     #
     # Creating a number of accounts.
@@ -424,6 +425,8 @@ function testCreateAccounts()
     else
         failure "Received $ln accounts instead of 10."
     fi
+
+    end_verbatim
 }
 
 
