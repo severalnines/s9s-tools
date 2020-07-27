@@ -3100,6 +3100,8 @@ S9sRpcClient::createGaleraCluster(
         PRINT_ERROR("Missing node list while creating Galera cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     // 
     // The job_data describing the cluster.
@@ -3108,7 +3110,6 @@ S9sRpcClient::createGaleraCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
-    jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (options->hasRemoteClusterIdOption())
@@ -3129,9 +3130,6 @@ S9sRpcClient::createGaleraCluster(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]      = options->osKeyFile();
-
     // 
     // The jobspec describing the command.
     //
@@ -3172,6 +3170,8 @@ S9sRpcClient::createMySqlSingleCluster(
         PRINT_ERROR("Missing node list while creating Galera cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     // 
     // The job_data describing the cluster.
@@ -3180,7 +3180,6 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
-    jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (options->hasRemoteClusterIdOption())
@@ -3198,9 +3197,6 @@ S9sRpcClient::createMySqlSingleCluster(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]      = options->osKeyFile();
-
     // 
     // The jobspec describing the command.
     //
@@ -3244,6 +3240,8 @@ S9sRpcClient::registerGaleraCluster(
                 "Nodes are not specified while registering existing cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     // 
     // The job_data describing the cluster.
@@ -3251,13 +3249,9 @@ S9sRpcClient::registerGaleraCluster(
     jobData["cluster_type"]     = "galera";
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = options->vendor();
-    jobData["ssh_user"]         = osUserName;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]  = options->osKeyFile();
-
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
@@ -3452,6 +3446,8 @@ S9sRpcClient::createMySqlReplication(
         PRINT_ERROR("Missing node list while creating Galera cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     // 
     // The job_data describing the cluster.
@@ -3462,15 +3458,11 @@ S9sRpcClient::createMySqlReplication(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
-    jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
    
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]      = options->osKeyFile();
-    
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -3525,6 +3517,8 @@ S9sRpcClient::registerMySqlReplication(
                 "Nodes are not specified while registering existing cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     // 
     // The job_data describing the cluster.
@@ -3532,13 +3526,9 @@ S9sRpcClient::registerMySqlReplication(
     jobData["cluster_type"]     = "replication";
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = options->vendor();
-    jobData["ssh_user"]         = osUserName;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]  = options->osKeyFile();
-
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
@@ -3593,6 +3583,8 @@ S9sRpcClient::createGroupReplication(
         PRINT_ERROR("Missing node list while creating Galera cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
@@ -3611,7 +3603,6 @@ S9sRpcClient::createGroupReplication(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
-    jobData["ssh_user"]         = osUserName;
     jobData["mysql_password"]   = options->dbAdminPassword();
     
     if (options->noInstall())
@@ -3625,9 +3616,6 @@ S9sRpcClient::createGroupReplication(
    
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
-
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]      = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
@@ -3668,6 +3656,8 @@ S9sRpcClient::registerGroupReplication(
                 "Nodes are not specified while registering existing cluster.");
         return false;
     }
+
+    addCredentialsToJobData(jobData);
     
     // 
     // The job_data describing the cluster.
@@ -3675,12 +3665,8 @@ S9sRpcClient::registerGroupReplication(
     jobData["cluster_type"]     = "group_replication";
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = options->vendor();
-    jobData["ssh_user"]         = osUserName;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
-    
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]  = options->osKeyFile();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3728,6 +3714,8 @@ S9sRpcClient::createNdbCluster(
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
+
+    addCredentialsToJobData(jobData);
     
     for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
     {
@@ -3759,7 +3747,6 @@ S9sRpcClient::createNdbCluster(
     jobData["mysql_hostnames"]  = mySqlHostNames;
     jobData["mgmd_hostnames"]   = mgmdHostNames;
     jobData["ndbd_hostnames"]   = ndbdHostNames;
-    jobData["ssh_user"]         = osUserName;
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
@@ -3779,9 +3766,6 @@ S9sRpcClient::createNdbCluster(
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
-
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"] = options->osKeyFile();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "create_cluster";
@@ -3820,6 +3804,8 @@ S9sRpcClient::registerNdbCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+
+    addCredentialsToJobData(jobData);
     
     for (uint idx = 0; idx < mySqlHosts.size(); ++idx)
     {
@@ -3851,12 +3837,8 @@ S9sRpcClient::registerNdbCluster(
     jobData["mysql_hostnames"]  = mySqlHostNames;
     jobData["mgmd_hostnames"]   = mgmdHostNames;
     jobData["ndbd_hostnames"]   = ndbdHostNames;
-    jobData["ssh_user"]         = osUserName;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
-    
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"] = options->osKeyFile();
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3908,13 +3890,14 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
+    addCredentialsToJobData(jobData);
+
     // 
     // The job_data describing the cluster.
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["nodes"]            = nodesField(hosts);
-    jobData["ssh_user"]         = osUserName;
     jobData["sudo_password"]    = osSudoPassword;
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
@@ -3941,9 +3924,6 @@ S9sRpcClient::createPostgreSql(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"] = options->osKeyFile();
-    
     // 
     // The jobspec describing the command.
     //
@@ -3986,16 +3966,14 @@ S9sRpcClient::registerPostgreSql(
                 "Nodes are not specified while registering existing cluster.");
         return false;
     }
-    
+
+    addCredentialsToJobData(jobData);
+
     // 
     // The job_data describing the cluster.
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["nodes"]            = nodesField(hosts);
-    jobData["ssh_user"]         = osUserName;
-    
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"]  = options->osKeyFile();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -4177,20 +4155,18 @@ S9sRpcClient::createMongoCluster(
         replSets.push_back(replSet);
     }
 
+    addCredentialsToJobData(jobData);
+
     jobData["replica_sets"] = replSets;
 
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "mongodb";
     jobData["vendor"]           = vendor;
     jobData["mongodb_version"]  = mongoVersion;
-    jobData["ssh_user"]         = osUserName;
     jobData["sudo_password"]    = osSudoPassword;
     
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
-
-    if (!options->osKeyFile().empty())
-        jobData["ssh_keyfile"] = options->osKeyFile();
 
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
@@ -6769,6 +6745,8 @@ S9sRpcClient::createContainerWithJob()
     S9sContainer   container;
     S9sString      uri = "/v2/jobs/";
   
+    addCredentialsToJobData(jobData);
+
     /*
      * Setting up a container object from the command line options.
      */
@@ -8768,9 +8746,6 @@ S9sRpcClient::composeJobData(
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
     S9sVariantList volumes      = options->volumes();
-    //S9sString      osUserName   = options->osUser(false);
-    //S9sString      osKeyFile    = options->osKeyFile();
-    //S9sString      osPassword   = options->osPassword();
     S9sVariantList servers      = options->servers();
 
     S9sVariantMap  jobData;
@@ -8868,15 +8843,6 @@ S9sRpcClient::composeJobData(
 
     if (!containers.empty())
         jobData["containers"]   = containers;
-    
-    //if (!osUserName.empty())
-    //    jobData["ssh_user"]     = osUserName;
-    
-    //if (!osKeyFile.empty())
-    //    jobData["ssh_keyfile"]  = osKeyFile;
-    
-    //if (!osPassword.empty())
-    //    jobData["ssh_password"] = osPassword;
 
     if (options->dry())
         jobData["dry_run"] = true;
@@ -8941,6 +8907,26 @@ S9sRpcClient::composeJobData(
         jobData["with_tags"] = options->withTags();
 
     return jobData;
+}
+
+void
+S9sRpcClient::addCredentialsToJobData(
+		S9sVariantMap & jobData) const
+{
+    S9sOptions    *options      = S9sOptions::instance();
+
+    S9sString      osUserName   = options->osUser(false);
+    S9sString      osKeyFile    = options->osKeyFile();
+    S9sString      osPassword   = options->osPassword();
+
+    if (!osUserName.empty())
+        jobData["ssh_user"]     = osUserName;
+
+    if (!osKeyFile.empty())
+        jobData["ssh_keyfile"]  = osKeyFile;
+
+    if (!osPassword.empty())
+        jobData["ssh_password"] = osPassword;
 }
 
 S9sVariantMap 
