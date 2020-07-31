@@ -241,6 +241,8 @@ class S9sRpcClient
         bool deleteAccount();
         bool createDatabase();
 
+        bool importSqlUsers();
+
         /*
          * Requests related to scripts.
          */

@@ -258,6 +258,10 @@ S9sBusinessLogic::execute()
         {
             success = client.checkPkgUpgrades();
             maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isImportSqlUsersRequested())
+        {
+            success = client.importSqlUsers();
+            maybeJobRegistered(client, clusterId, success); 
         } else {
             PRINT_ERROR("Operation is not specified.");
         }

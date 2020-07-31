@@ -412,6 +412,25 @@ s9s cluster \\
     --wait 
 .fi
 
+.TP
+.B --import-sql-users
+Imports SQL users to the load balancer. Depending on the actual load balancer
+this can be only import or complete update of the user authentication information
+known by the load balancer. This is only supported by PgBouncer at the moment.
+Adds a new node (server) to the cluster or to be more precise creates a new
+job that will eventually add a new node to the cluster.
+The load balancer nodes where the users are to be imported shall be specified
+using the \fB\-\-nodes\fR command line option.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --import-sql-user \\
+    --cluster-id=1 \\
+    --nodes=PgBouncer://192.168.0.202:6432 \\
+    --wait
+.fi
+
 .\"
 .\" Generic options
 .\"
