@@ -8908,6 +8908,8 @@ S9sRpcClient::composeJobData(
     if (!containers.empty())
         jobData["containers"]   = containers;
 
+    addCredentialsToJobData(jobData);
+
     if (options->dry())
         jobData["dry_run"] = true;
 
