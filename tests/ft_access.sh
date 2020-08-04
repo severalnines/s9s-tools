@@ -200,7 +200,11 @@ EOF
 
         let node_serial+=1
     done
-     
+
+    #
+    # Print version, so we know.
+    # 
+    mys9s --version
 
     #
     # Creating a Galera cluster.
