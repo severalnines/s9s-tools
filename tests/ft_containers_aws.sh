@@ -458,7 +458,7 @@ function createCluster()
 {
     local node001="ft_containers_aws_01_$$"
     local node002="ft_containers_aws_02_$$"
-
+    local n
     #
     # Creating a Cluster.
     #
@@ -476,7 +476,7 @@ function createCluster()
 
     check_exit_code $?
 
-    while true; do 
+    while [ $n -lt 10 ]; do 
         CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
         
         if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
@@ -485,7 +485,8 @@ function createCluster()
 
         echo "Cluster '$CLUSTER_NAME' not found."
         s9s cluster --list --long
-        sleep 5
+        sleep 6
+        let n+=1
     done
 
     if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
