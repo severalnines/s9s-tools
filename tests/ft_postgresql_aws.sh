@@ -296,7 +296,7 @@ else
     runFunctionalTest createCluster
     runFunctionalTest testAddNode
     runFunctionalTest testAddHaproxy
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
     runFunctionalTest unregisterServer
 fi
 

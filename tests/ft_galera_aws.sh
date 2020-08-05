@@ -269,7 +269,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest createServer
     runFunctionalTest createCluster
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
     runFunctionalTest unregisterServer
 fi
 

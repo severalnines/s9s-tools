@@ -591,7 +591,7 @@ else
     runFunctionalTest containerImages
     runFunctionalTest createFail
     runFunctionalTest createCluster
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
     runFunctionalTest unregisterServer
 fi
 

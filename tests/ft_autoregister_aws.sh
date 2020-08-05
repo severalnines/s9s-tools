@@ -337,7 +337,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest installCmonCloud
     runFunctionalTest createContainer
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
     runFunctionalTest removeCmonCloud
 fi
 #fi

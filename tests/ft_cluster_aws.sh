@@ -348,7 +348,7 @@ else
     runFunctionalTest createCluster
 
     if [ -z "$OPTION_INSTALL" ]; then
-        runFunctionalTest deleteContainers
+        runFunctionalTest --force deleteContainers
     fi
 fi
 
