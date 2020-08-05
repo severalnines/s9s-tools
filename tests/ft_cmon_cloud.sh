@@ -230,7 +230,7 @@ function testInstall()
     local image
     local counter=0
     local images="ubuntu_xenial \
-      debian_buster debian_stretch debian_jessie \
+      debian_buster debian_stretch \
       centos_7 oracle_7 ubuntu_trusty"
 
     # 
