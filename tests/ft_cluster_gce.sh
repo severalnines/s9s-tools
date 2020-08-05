@@ -252,6 +252,8 @@ function checkContainer()
 
 function deleteContainer()
 {
+    local container_name="ft-cluster-gce-01-$$"
+
     #
     # Deleting the container we just created.
     #
