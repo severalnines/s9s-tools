@@ -157,6 +157,7 @@ function createServer()
     # Checking the state... TBD
     #
     mys9s tree --cat /$CMON_CLOUD_CONTAINER_SERVER/.runtime/state
+    end_verbatim
 }
 
 function createCluster()
