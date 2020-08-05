@@ -208,27 +208,15 @@ function createCluster()
     exitCode=$?
     check_exit_code $exitCode
     if [ $exitCode -ne 0 ]; then
+        end_verbatim
         return 1
     fi
 
-    counter=0    
-    while true; do 
-        CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
-        
-        if [ "$CLUSTER_ID" != 'NOT-FOUND' ]; then
-            break;
-        fi
-
-        if [ "$counter" -gt 10 ]; then
-            break
-        fi
-
-        let counter+=1
-
-        echo "Cluster '$CLUSTER_NAME' not found."
-        s9s cluster --list --long
-        sleep 10
-    done
+    CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
+    if [ $? -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     if [ "$CLUSTER_ID" -gt 0 2>/dev/null ]; then
         printVerbose "Cluster ID is $CLUSTER_ID"

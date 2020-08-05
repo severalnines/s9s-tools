@@ -2016,19 +2016,23 @@ function find_cluster_id()
         retval=$(echo "$retval" | awk '{print $1}')
 
         if [ -z "$retval" ]; then
-            printVerbose "Cluster '$name' was not found."
             let nTry+=1
 
             if [ "$nTry" -gt 10 ]; then
+                # Not found, timeout reached.
+                failure "  o Cluster $name was not found, giving up."
                 echo "NOT-FOUND"
-                break
+                return 1
             else
+                # Not found, still waiting.
+                printVerbose "Cluster '$name' was not found, waiting..."
                 sleep 3
             fi
         else
+            # Cluster with the given name found.
             printVerbose "Cluster '$name' was found with ID ${retval}."
             echo "$retval"
-            break
+            return 0
         fi
     done
 }
