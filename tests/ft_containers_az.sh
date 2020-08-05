@@ -553,7 +553,7 @@ else
     runFunctionalTest createFail
     runFunctionalTest createCluster
     runFunctionalTest dropCluster
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
 fi
 
 endTests

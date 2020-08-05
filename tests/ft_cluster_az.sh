@@ -287,6 +287,6 @@ else
     runFunctionalTest createCluster
     runFunctionalTest checkCluster
     runFunctionalTest dropCluster
-    runFunctionalTest deleteContainers
+    runFunctionalTest --force deleteContainers
 fi
 endTests

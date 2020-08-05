@@ -998,7 +998,7 @@ else
     runFunctionalTest restartContainer
     runFunctionalTest createServer
     runFunctionalTest failOnContainers
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
 fi
 
 endTests

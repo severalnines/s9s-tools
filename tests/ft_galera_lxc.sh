@@ -373,7 +373,7 @@ else
     runFunctionalTest createCluster
     runFunctionalTest testAlarms
     runFunctionalTest dropCluster
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
     runFunctionalTest unregisterServer
 fi
 
