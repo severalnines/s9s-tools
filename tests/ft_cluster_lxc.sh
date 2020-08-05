@@ -334,8 +334,9 @@ EOF
     # No alarms, owner, cluster ID provided.
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 --batch | grep CRITICAL; then
+    if s9s alarm --list --long --cluster-id=1 --batch | grep -q CRITICAL; then
         failure "Alarm should have disappeared already."
+        mys9s job --list
     else
         success "  o Alarm disappeared, ok."
     fi
@@ -343,7 +344,7 @@ EOF
 
     mys9s alarm --list --long 
     check_exit_code $?
-    if s9s alarm --list --long --cluster-id=1 --batch | grep CRITICAL; then
+    if s9s alarm --list --long --cluster-id=1 --batch | grep -q CRITICAL; then
         failure "Alarm should have disappeared already."
     else
         success "  o Alarm disappeared, ok."
