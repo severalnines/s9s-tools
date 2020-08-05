@@ -476,6 +476,7 @@ function createCluster()
 
     check_exit_code $?
 
+    n=0
     while [ $n -lt 10 ]; do 
         CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
         
