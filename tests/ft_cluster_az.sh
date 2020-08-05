@@ -191,17 +191,19 @@ EOF
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
-        --log
+        $LOG_OPTION 
 
     returnCode=$?
     check_exit_code $returnCode
+    end_verbatim
 
     if [ $returnCode -ne 0 ]; then
+        print_subtitle "Test failed, cleaning up"
+        begin_verbatim
         mys9s container --delete --wait "$container_name1"
         mys9s container --delete --wait "$container_name2"
+        end_verbatim
     fi
-
-    end_verbatim
 }
 
 function checkCluster()

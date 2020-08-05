@@ -130,7 +130,7 @@ function createServer()
 {
     local node001="ft_containers_az_01_$$"
     local nodeName
-
+    
     print_title "Creating Container Server"
     begin_verbatim
 
@@ -213,13 +213,14 @@ function createContainer()
     local owner
     local container_name="ftcontainersaz00$$"
     local template
-
-    print_title "Creating Container"
-    begin_verbatim
+    local retCode
 
     #
     # Creating a container.
     #
+    print_title "Creating Container"
+    begin_verbatim
+
     mys9s container \
         --create \
         --cloud=az \
@@ -227,9 +228,15 @@ function createContainer()
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         $LOG_OPTION \
         "$container_name"
-    
-    check_exit_code $?
-    
+   
+    retCode=$?
+    check_exit_code $retCode
+    if [ $retCode -ne 0 ]; then
+        end_verbatim
+        return 1
+
+    fi
+
     mys9s container --list --long
 
     #
@@ -239,13 +246,19 @@ function createContainer()
     if [ -z "$CONTAINER_IP" ]; then
         failure "The container was not created or got no IP."
         s9s container --list --long
-        exit 1
+        end_verbatim
+        return 1
+    else 
+        success "  o The container was created, OK."
     fi
 
     if [ "$CONTAINER_IP" == "-" ]; then
         failure "The container got no IP."
         s9s container --list --long
-        exit 1
+        end_verbatim
+        return 1
+    else
+        success "  o The container has IP $CONTAINER_IP, OK.".
     fi
 
     owner=$(\
@@ -255,6 +268,8 @@ function createContainer()
     if [ "$owner" != "$USER" ]; then
         failure "The owner of '$container_name' is '$owner', should be '$USER'"
         return 1
+    else
+        success "  o The owner of the container is $owner, OK."
     fi
     end_verbatim
    
@@ -262,12 +277,12 @@ function createContainer()
     # Checking if the user can actually log in through ssh.
     #
     print_title "Checking SSH Access"
-
     if ! is_server_running_ssh "$CONTAINER_IP" "$owner"; then
         failure "User $owner can not log in to $CONTAINER_IP"
-        exit 1
+        end_verbatim 
+        return 1
     else
-        echo "SSH access granted for user '$USER' on $CONTAINER_IP."
+        success "  o SSH access granted for user '$USER' on $CONTAINER_IP, OK."
     fi
 
     #
