@@ -135,6 +135,8 @@ fi
 
 function createCluster()
 {
+    local retCode
+
     #
     # Creating a Cluster.
     #
@@ -165,7 +167,12 @@ EOF
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    retCode=$?
+    check_exit_code $retCode
+    if [ $retCode -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     mys9s node --list --long
     mys9s node --stat
