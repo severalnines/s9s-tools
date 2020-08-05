@@ -1074,6 +1074,19 @@ function run_test()
         message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
 
+    for core_file in \
+        *core* \
+        */*core* \
+        $HOME/clustercontrol-enterprise/*core* \
+        $HOME/clustercontrol-enterprise/tests/*core*; 
+    do
+        if [ ! -f "$core_file" ]; then
+            continue
+        fi
+
+        rm -f "$core_file"
+    done
+
     ulimit -c unlimited
     if [ $? -ne 0 ]; then
         message "Failed: ulimit -c unlimited"
