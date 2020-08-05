@@ -1532,7 +1532,7 @@ function wait_for_cluster_state()
             # do check the timeout only when we are not in the expected state.
             #
             if [ "$waited" -gt 120 ]; then
-                failure "Waited ${waited}s to reach state $expectedState."
+                failure "Failed to reach $expectedState state in ${waited}s."
                 return 1
             fi
         fi
@@ -1549,6 +1549,9 @@ function wait_for_cluster_state()
     return 2
 }
 
+#
+# returns: True if the cluster reached STARTED state.
+#
 function wait_for_cluster_started()
 {
     wait_for_cluster_state $* "STARTED"
@@ -1993,6 +1996,7 @@ function remove_cmon_configs()
 
 #
 # $1: the name of the cluster
+# returns: True if the cluster found, false if not.
 #
 function find_cluster_id()
 {

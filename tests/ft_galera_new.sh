@@ -193,6 +193,10 @@ EOF
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    if [ $? -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     #
     # Dropping the cluster we just created.
