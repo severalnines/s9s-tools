@@ -3446,6 +3446,22 @@ function runFunctionalTest ()
     local test_skipped=""
     local test_start_time
     local test_end_time
+    local force=""
+    local shouldSkip
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --force)
+                # Execute the test even if the whole test script already failed.
+                force="true"
+                shift 1
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
 
     # Counters for numbering the titles/tests
     let t1_counter+=1
@@ -3459,9 +3475,15 @@ function runFunctionalTest ()
 
     #
     # This is where we call the function that executes the test. Unless
-    # wealready have some failed tests.
+    # we already have some failed tests.
     #
-    if ! isSuccess; then
+    if [ -z "$force" ]; then
+        if  ! isSuccess; then
+            shouldSkip="true"
+        fi
+    fi
+
+    if [ -n "$shouldSkip" ]; then
         print_title "Skipped Test $TEST_NAME"
         if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
             printf "  %-26s: SKIPPED\n" "$TEST_NAME"

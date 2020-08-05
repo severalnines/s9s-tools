@@ -148,6 +148,7 @@ function createServer()
 function createCluster()
 {
     local node001="ft-postgresql-gce-01-$$"
+    local retCode
 
     #
     # Creating a Cluster.
@@ -168,7 +169,12 @@ function createCluster()
         --template="n1-highcpu-4" \
         $LOG_OPTION
 
+    retCode=$?
     check_exit_code $?
+    if [ $retCode -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
     if [  "$CLUSTER_ID" == 'NOT-FOUND' ]; then
@@ -283,7 +289,7 @@ else
     runFunctionalTest createServer
     runFunctionalTest createCluster
     runFunctionalTest testAddNode
-    runFunctionalTest deleteContainer
+    runFunctionalTest --force deleteContainer
     runFunctionalTest unregisterServer
 fi
 
