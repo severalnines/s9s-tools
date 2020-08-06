@@ -2,7 +2,7 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.5"
+VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
 CONTAINER=""
@@ -59,7 +59,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:,stop,\
+        -l "help,verbose,version,log-file:,dry,server:,stop,\
 auto,gzip" \
         -- "$@")
 
@@ -145,16 +145,6 @@ fi
 #
 EXTRA_OPTIONS=$*
 
-#
-# Checking root privileges.
-#
-if [ -z "$SERVER" ]; then
-    if [ "$EUID" -ne 0 ]; then 
-        printError "This script has to have root privileges."
-        exit 5
-    fi
-fi
-
 function archive_file_name()
 {
     local container="$1"
@@ -167,14 +157,21 @@ function archive_file_name()
     echo "$tar_file_name"
 }
 
+#
+# Prints the names of the containers on the local computer.
+#
 function get_container_names()
 {
     local pattern="$1"
     local container
     local n_containers=0
 
-    cd /var/lib/lxc 
-   
+    cd /var/lib/lxc
+
+    if [ -z "$pattern" ]; then
+        pattern='*'
+    fi
+
     for container in $pattern; do 
         if [ ! -d "$container" ]; then
             continue
@@ -463,14 +460,22 @@ function create_archive_auto_server()
 
     # Now we can archive the containers one by one.
     for container in $containers; do
-        printVerbose "Archiving $container in $PWD"
-        pip-container-archive --server=$server --gzip --verbose "$container"
+        if [ -n "$OPTION_DRY" ]; then
+            printVerbose "DRY: Not archiving $container in $PWD on $server."
+        else
+            printVerbose "Archiving $container in $PWD"
+            pip-container-archive --server=$server --gzip --verbose "$container"
+        fi
     done
 
     # If the server was off, we can stop it again.
     if [ "$server_status" == "off" ]; then
-        printVerbose "The server '$server' was off, stopping it again."
-        pip-server-control --shut-down "$server"
+        if [ -n "$OPTION_DRY" ]; then
+            printVerbose "DRY: Not stopping '$server'."
+        else
+            printVerbose "The server '$server' was off, stopping it again."
+            pip-server-control --shut-down "$server"
+        fi
     fi
 
     # Deleting the archive files that are made empty.
@@ -510,7 +515,17 @@ function create_archive_auto()
 if [ "$VERSION_OPTION" ]; then
     printVersionAndExit
     exit 0
-elif [ -z "$SERVER" ]; then
+fi
+
+if [ -z "$SERVER" ]; then
+    if [ "$EUID" -ne 0 ]; then 
+        printError "This script has to have root privileges."
+        exit 5
+    fi
+fi
+
+if [ -z "$SERVER" ]; then
+    # This is for local containers.
     archive_all_containers "$EXTRA_OPTIONS"
 elif [ -n "$AUTO_OPTION" ]; then
     create_archive_auto

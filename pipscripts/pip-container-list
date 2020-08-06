@@ -37,6 +37,8 @@ Usage:
   --log-file=FILE      Store all the messages in the given file too.
   --server=SERVER      List the containers on remote server.
 
+  --long               Print detailed list.
+
 EOF
     exit 0
 }
@@ -44,7 +46,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,server:" \
+        -l "help,verbose,version,log-file:,server:,long" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -81,6 +83,12 @@ while true; do
             shift
             ;;
 
+
+        --long)
+            shift
+            OPTION_LONG="true"
+            ;;
+
         --)
             shift
             break
@@ -90,6 +98,8 @@ while true; do
             ;;
     esac
 done
+
+EXTRA_OPTIONS=$*
 
 function host_name()
 {
@@ -157,10 +167,37 @@ function list_containers_long()
     IFS=$oldIfs
 }
 
-if [ -z "$SERVER" ]; then
-    printError "Server name is not provided."
-    printError "Use the --server command line option to set the server name."
-    exit 6
-fi
+function list_containers_brief()
+{
+    local oldIfs="$IFS"
+    local lines
 
-list_containers_long
+    if [ -n "$SERVER" ]; then
+        lines=$($SSH $SERVER -- sudo ls -d /var/lib/lxc/*/)
+    else
+        lines=$(sudo ls -d /var/lib/lxc/*/ 2>/dev/null)
+    fi
+
+    IFS=$'\n'
+    for line in $lines; do
+        line=$(basename $line)
+        echo "$line"
+    done
+    IFS=$oldIfs
+}
+
+#if [ -z "$SERVER" ]; then
+#    printError "Server name is not provided."
+#    printError "Use the --server command line option to set the server name."
+#    exit 6
+#fi
+
+if [ -n "$OPTION_LONG" ]; then
+    list_containers_long
+else
+    if [ -t 1 ]; then
+        list_containers_brief | column
+    else
+        list_containers_brief
+    fi
+fi
