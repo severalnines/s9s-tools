@@ -8,7 +8,6 @@ VERSION="0.0.1"
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
 
-CONTAINER_SERVER=""
 CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
@@ -20,9 +19,6 @@ PROVIDER_VERSION="11"
 CONTAINER_NAME1="${MYBASENAME}_node_1_$$"
 CONTAINER_NAME2="${MYBASENAME}_node_2_$$"
 CONTAINER_NAME3="${MYBASENAME}_node_3_$$"
-
-CONTAINER_NAME_PGBOUNCER_1="${MYBASENAME}_pgbouncer_1_$$"
-CONTAINER_NAME_PGBOUNCER_2="${MYBASENAME}_pgbouncer_2_$$"
 
 cd $MYDIR
 source ./include.sh
@@ -48,6 +44,7 @@ Usage:
   --install           Just install the cluster and pgbouncer, then exit.
   --reset-config      Remove and re-generate the ~/.s9s directory.
   --server=SERVER     Use the given server to create containers.
+  --cluster-name=name Use the given cluster name to run tests.
 
 EOF
     exit 1
@@ -56,7 +53,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,debug,print-commands,install,\
-reset-config,server:" \
+reset-config,server,cluster-name:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -103,15 +100,9 @@ while true; do
             OPTION_INSTALL="--install"
             ;;
 
-        --reset-config)
-            shift
-            OPTION_RESET_CONFIG="true"
-            ;;
-
-        --server)
-            shift
-            CONTAINER_SERVER="$1"
-            shift
+        --cluster-name)
+            CLUSTER_NAME="$2"
+	    shift 2
             ;;
 
         --)
@@ -120,18 +111,6 @@ while true; do
             ;;
     esac
 done
-
-if [ -z "$OPTION_RESET_CONFIG" ]; then
-    printError "This script must remove the s9s config files."
-    printError "Make a copy of ~/.s9s and pass the --reset-config option."
-    exit 6
-fi
-
-if [ -z "$CONTAINER_SERVER" ]; then
-    printError "No container server specified."
-    printError "Use the --server command line option to set the server."
-    exit 6
-fi
 
 function createCluster()
 {
@@ -148,12 +127,9 @@ EOF
 
     begin_verbatim
 
-    NODES="$CONTAINER_NAME1;PgBouncer://$CONTAINER_NAME_PGBOUNCER_1"
-    CONTAINERS="$CONTAINER_NAME1?template=ubuntu;$CONTAINER_NAME_PGBOUNCER_1"
+    NODES="$CONTAINER_NAME1;PgBouncer://$CONTAINER_NAME1"
+    CONTAINERS="$CONTAINER_NAME1?template=ubuntu;$CONTAINER_NAME1"
     
-    #NODES="$CONTAINER_NAME1;$CONTAINER_NAME2;$CONTAINER_NAME3;PgBouncer://$CONTAINER_NAME_PGBOUNCER_1;PgBouncer://$CONTAINER_NAME_PGBOUNCER_2"
-    #CONTAINERS="$CONTAINER_NAME1;$CONTAINER_NAME2;$CONTAINER_NAME3;$CONTAINER_NAME_PGBOUNCER_1;$CONTAINER_NAME_PGBOUNCER_2"
-
     # Creating the cluster.
     mys9s cluster \
         --create \
@@ -175,8 +151,11 @@ EOF
     fi
 
     mys9s node --list --long
-    mys9s node --stat
+    #mys9s node --stat
+}
 
+function accountTest()
+{
     # Creating the database
     mys9s cluster \
         --create-database \
@@ -276,18 +255,6 @@ function destroyContainers()
 
     check_exit_code $?
 
-    mys9s container --delete \
-        "$CONTAINER_NAME_PGBOUNCER_1" \
-        $LOG_OPTION $DEBUG_OPTION
-    
-    check_exit_code $?
-    
-#    mys9s container --delete \
-#        "$CONTAINER_NAME_PGBOUNCER_2" \
-#        $LOG_OPTION $DEBUG_OPTION
-
-    check_exit_code $?
-
     end_verbatim
 }
 
@@ -301,6 +268,7 @@ grant_user
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest accountTest
     runFunctionalTest checkPgBouncer
     runFunctionalTest testPgBouncerConnect
 elif [ "$1" ]; then
@@ -310,6 +278,7 @@ elif [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest accountTest
     runFunctionalTest checkPgBouncer
     runFunctionalTest testPgBouncerConnect
     runFunctionalTest destroyContainers
