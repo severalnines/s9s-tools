@@ -53,7 +53,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,debug,print-commands,install,\
-reset-config,server,cluster-name:" \
+reset-config,server:,cluster-name:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
