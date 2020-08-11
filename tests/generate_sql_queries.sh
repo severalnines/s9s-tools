@@ -212,11 +212,16 @@ function testInsertMySql()
         query="INSERT INTO $table_name(NAME, VALUE) VALUES('$file', 10);"
 
         reply=$(\
-            mysql -h$SQL_HOST -P$SQL_PORT -u$user_name -p$password $db_name -e "$query")
+            mysql \
+                -h$SQL_HOST \
+                -P$SQL_PORT \
+                -u$user_name \
+                -p$password \
+                $db_name \
+                -e "$query")
 
         if [ $? -ne 0 ]; then
             failure "Failed to insert."
-            #exit 5
         else
             success "  o success: $query."
         fi
@@ -232,6 +237,40 @@ function testInsertMySql()
             fi
         fi
     done
+
+    #
+    #
+    #
+        query="SELECT 42;"
+        reply=$(\
+            mysql \
+                -h$SQL_HOST \
+                -P$SQL_PORT \
+                -u$user_name \
+                -p$password \
+                $db_name \
+                -e "$query")
+        
+        query="SELECT 41 + 1;"
+        reply=$(\
+            mysql \
+                -h$SQL_HOST \
+                -P$SQL_PORT \
+                -u$user_name \
+                -p$password \
+                $db_name \
+                -e "$query")
+
+        query="SELECT NAME, VALUE FROM $table_name WHERE NAME = 'ak';"
+        reply=$(\
+            mysql \
+                -h$SQL_HOST \
+                -P$SQL_PORT \
+                -u$user_name \
+                -p$password \
+                $db_name \
+                -e "$query")
+
 }
 
 n=0

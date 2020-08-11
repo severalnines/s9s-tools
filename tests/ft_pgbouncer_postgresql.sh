@@ -51,8 +51,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,print-json,log,debug,print-commands,install,\
-reset-config,cluster-name:" \
+        -l "help,verbose,log,server:,print-json,log,debug,print-commands,\
+install,reset-config,cluster-name:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -76,6 +76,13 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
+            DEBUG_OPTION="--debug"
+            ;;
+
+        --server)
+            shift
+            CONTAINER_SERVER="$1"
+            shift
             ;;
 
         --debug)
@@ -99,13 +106,23 @@ while true; do
             OPTION_INSTALL="--install"
             ;;
 
+        --reset-config)
+            shift
+            OPTION_RESET_CONFIG="true"
+            ;;
+
         --cluster-name)
             CLUSTER_NAME="$2"
-	    shift 2
+	        shift 2
             ;;
 
         --)
             shift
+            break
+            ;;
+
+        *) 
+            printError "Unhandled option $1."
             break
             ;;
     esac
@@ -127,7 +144,7 @@ EOF
     begin_verbatim
 
     NODES="$CONTAINER_NAME1;PgBouncer://$CONTAINER_NAME1"
-    CONTAINERS="$CONTAINER_NAME1?template=ubuntu;$CONTAINER_NAME1"
+    CONTAINERS="$CONTAINER_NAME1?template=ubuntu"
     
     # Creating the cluster.
     mys9s cluster \

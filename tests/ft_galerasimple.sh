@@ -149,6 +149,11 @@ while true; do
             shift
             break
             ;;
+
+        *) 
+            printError "Unhandled option $1."
+            break
+            ;;
     esac
 done
 
