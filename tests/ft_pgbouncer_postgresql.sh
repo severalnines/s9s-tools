@@ -43,7 +43,6 @@ Usage:
   --print-commands    Do not print unit test info, print the executed commands.
   --install           Just install the cluster and pgbouncer, then exit.
   --reset-config      Remove and re-generate the ~/.s9s directory.
-  --server=SERVER     Use the given server to create containers.
   --cluster-name=name Use the given cluster name to run tests.
 
 EOF
@@ -53,7 +52,7 @@ EOF
 ARGS=$(\
     getopt -o h \
         -l "help,verbose,print-json,log,debug,print-commands,install,\
-reset-config,server:,cluster-name:" \
+reset-config,cluster-name:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
