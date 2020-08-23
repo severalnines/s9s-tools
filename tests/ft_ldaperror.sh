@@ -128,7 +128,7 @@ function ldap_config_ok()
 #
 # Second Cmon LDAP configuration file created by $MYNAME $VERSION.
 #
-ldap_server_uri = "ldap://192.168.0.167:389"
+ldap_server_uri = "ldap://192.168.0.63:389"
 ldap_base_dn    = "dc=homelab,dc=local"
 ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
 ldap_admin_pwd  = "p"
@@ -143,7 +143,7 @@ function ldap_config_disabled()
 # Third Cmon LDAP configuration file created by $MYNAME $VERSION.
 #
 ldap_is_enabled  = false
-ldap_server_uri  = "ldap://192.168.0.167:389"
+ldap_server_uri  = "ldap://192.168.0.63:389"
 ldap_base_dn     = "dc=homelab,dc=local"
 ldap_admin_dn    = "cn=admin,dc=homelab,dc=local"
 ldap_admin_pwd   = "p"

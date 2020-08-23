@@ -34,30 +34,6 @@ Usage:
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
 
-SUPPORTED TESTS:
-  o testCreateUser       Creates a user with normal user privileges.
-  o testCreateSuperuser  Creates a user with superuser privileges.
-  o testCreateOutsider   Creates an outsider user who should not have access.
-  o testLicense          Reading the license through CDT.
-  o testLicenseUpload    Uploading the license through CDT.
-  o testRegisterServer   Registers a container server.
-  o testCreateContainer  Creates a container.
-  o testCreateCluster    Creates a cluster on the container.
-  o testPingAccess       Tests if outsiders can not ping a cluster.
-  o testJobAccess        Checks if outsiders can not create a job.
-  o testLogAccess        Checks if outsiders can not see the logs of a cluster.
-  o testCreateDatabase   Creates some databases.
-  o testCreateAccount    Creates some database accounts.
-  o testMoveObjects      Moves objects in the tree.
-  o testStats
-  o testAclChroot
-  o testCreateFolder
-  o testAddAcl           Adds an ACL entry to a CDT entry.
-  o testChangeOwner      Changes the owner of a CDT entry.
-  o testTree
-  o testMoveBack
-  o deleteContainers
-
 EOF
     exit 1
 }
@@ -825,19 +801,18 @@ EOF
     end_verbatim
 }
 
-function testJobAccess()
+function testJobCreate()
 {
     local retCode
 
     #
+    # Testing if the outsider can't create jobs and the owner can create them.
     #
-    #
-    print_title "Checking if Outsiders can't Create Jobs"
-    cat <<EOF
+    print_title "Checking who can create jobs"
+    cat <<EOF | paragraph
   This test will check that an outsider can not execute a job on the cluster it
   can't even see. Then we double check that the owner can actually execute a
   job.
-
 EOF
 
     begin_verbatim
@@ -887,15 +862,99 @@ EOF
     end_verbatim
 }
 
+function testJobAccess()
+{
+    local old_ifs="$IFS"
+    local cid
+    local cluster_zero_found
+    local cluster_one_found
+
+    print_title "Checking who can see jobs"
+    cat <<EOF | paragraph
+  This test will check if the owner can see the jobs of the cluster and the
+  outsider can not.
+EOF
+    
+    begin_verbatim
+    mys9s cluster --stat
+    mys9s cluster --list --long --cmon-user=grumio --password=p
+    
+    mys9s job --list
+    mys9s job --list --cmon-user=grumio --password=p
+
+    #
+    # Checking the job visibility for the outsider.
+    #
+    cluster_zero_found=""
+    cluster_one_found=""
+
+    IFS=$'\n'
+    for line in $(s9s job --list --batch --cmon-user=grumio --password=p); do
+        cid=$(echo $line | awk '{print $2}')
+        if [ "$cid" == "0" ]; then
+            cluster_zero_found="true"
+        elif [ "$cid" == "1" ]; then
+            cluster_one_found="true"
+        else
+            failure "Cluster $cid is unexpected."
+        fi
+    done
+    IFS=$old_ifs    
+
+    if [ -n "$cluster_zero_found" ]; then
+        success "  o Outsider can see cluster 0 jobs, OK."
+    else
+        failure "Outsider can not see cluster 0 jobs."
+    fi
+
+    if [ -n "$cluster_one_found" ]; then
+        failure "Outsider can see cluster 1 jobs."
+    else
+        success "  o Outsider can not see cluster 1 jobs, OK."
+    fi
+
+    #
+    # Checking the job visibility for the owner.
+    #
+    cluster_zero_found=""
+    cluster_one_found=""
+
+    IFS=$'\n'
+    for line in $(s9s job --list --batch); do
+        cid=$(echo $line | awk '{print $2}')
+        if [ "$cid" == "0" ]; then
+            cluster_zero_found="true"
+        elif [ "$cid" == "1" ]; then
+            cluster_one_found="true"
+        else
+            failure "Cluster $cid is unexpected."
+        fi
+    done
+    IFS=$old_ifs    
+
+    if [ -n "$cluster_zero_found" ]; then
+        success "  o Owner can see cluster 0 jobs, OK."
+    else
+        failure "Owner can not see cluster 0 jobs."
+    fi
+
+    if [ -n "$cluster_one_found" ]; then
+        success "  o Owner can see cluster 1 jobs, OK."
+    else
+        failure "Owner can not see cluster 1 jobs."
+    fi
+
+    end_verbatim
+}
+
 function testLogAccess()
 {
     local retCode
     print_title "Checking if Outsiders can't See the Logs"
 
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will check that an outsider can not see the logs of a cluster he
   can't see. Then we check that the owner can see the logs.
-
 EOF
 
     begin_verbatim
@@ -1901,20 +1960,12 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateUser
         runFunctionalTest testCreateSuperuser
         runFunctionalTest testCreateOutsider
-        runFunctionalTest testLicenseDevice
         runFunctionalTest testRegisterServer
         runFunctionalTest testCreateContainer
         runFunctionalTest testCreateCluster
-        runFunctionalTest testPingAccess
-        runFunctionalTest testConfigRead
-        runFunctionalTest testConfigWrite
+        runFunctionalTest testJobCreate
         runFunctionalTest testJobAccess
         runFunctionalTest testLogAccess
-        runFunctionalTest testAccountAccess
-        runFunctionalTest testDatabaseAccess
-        runFunctionalTest testBackupAccess
-        runFunctionalTest testAlarmAccess
-        runFunctionalTest testReportAccess
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -1930,9 +1981,11 @@ else
     runFunctionalTest testRegisterServer
     runFunctionalTest testCreateContainer
     runFunctionalTest testCreateCluster
+
     runFunctionalTest testPingAccess
     runFunctionalTest testConfigRead
     runFunctionalTest testConfigWrite
+    runFunctionalTest testJobCreate
     runFunctionalTest testJobAccess
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
@@ -1950,7 +2003,7 @@ else
     runFunctionalTest testChangeOwner
     runFunctionalTest testTree
     runFunctionalTest testMoveBack
-    runFunctionalTest deleteContainers
+    runFunctionalTest --force deleteContainers
 fi
 
 endTests

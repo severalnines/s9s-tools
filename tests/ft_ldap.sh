@@ -105,7 +105,7 @@ function ldap_config()
 # The URI where the Cmon Controller will find the LDAP server as it is specified
 # in the ldap.conf(5).
 #
-ldap_server_uri = "ldap://192.168.0.167:389"
+ldap_server_uri = "ldap://192.168.0.63:389"
 
 #
 # The default base DN to be used when performing LDAP operations. As it is
