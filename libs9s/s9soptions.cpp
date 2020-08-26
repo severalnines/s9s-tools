@@ -12502,6 +12502,7 @@ S9sOptions::readOptionsJob(
         { "job-id",           required_argument, 0, OptionJobId           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
         { "log-format",       required_argument, 0, OptionLogFormat       },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "timeout",          required_argument, 0, OptionTimeout         },
