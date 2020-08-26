@@ -155,8 +155,9 @@ function testLdapSupport()
     print_title "Checking LDAP Support"
     cat <<EOF
   This test checks if the controller has LDAP support.
-
 EOF
+
+    begin_verbatim
 
     mys9s tree \
         --cat \
@@ -174,12 +175,15 @@ EOF
     else
         failure "No LDAP support."
     fi
+
+    end_verbatim
 }
 
 function testCmonDbUser()
 {
     print_title "Testing User with CmonDb Origin"
 
+    begin_verbatim
     mys9s user --stat pipas
 
     check_user \
@@ -187,7 +191,9 @@ function testCmonDbUser()
         --cdt-path     "/" \
         --group        "testgroup" \
         --dn           "-" \
-        --origin       "CmonDb"    
+        --origin       "CmonDb"
+
+    end_verbatim
 }
 
 function testLdapUser()
@@ -201,6 +207,7 @@ function testLdapUser()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -225,6 +232,9 @@ EOF
         --group        "ldap" \
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    s9s user --list-groups --long
+    end_verbatim
 }
 
 function testLdapObject()
@@ -237,6 +247,7 @@ function testLdapObject()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -260,6 +271,9 @@ EOF
         --group        "ldap" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
+    
+    s9s user --list-groups --long
+    end_verbatim
 }
 
 function testLdapGroup()
@@ -273,6 +287,7 @@ function testLdapGroup()
 
 EOF
 
+    begin_verbatim
     mys9s user \
         --list \
         --long \
@@ -296,6 +311,9 @@ EOF
         --group        "ldap" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    s9s user --list-groups --long
+    end_verbatim
 }
 
 
