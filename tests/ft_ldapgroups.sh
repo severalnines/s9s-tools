@@ -130,6 +130,7 @@ ldap_cmon_group_name = "ldap"
 #
 [cn=ldapgroup,dc=homelab,dc=local]
 ldap_create_cmon_group = false
+ldap_cmon_group_name   = "shouldntbethere"
 
 EOF
 }
@@ -281,10 +282,9 @@ function testLdapGroup()
     local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
 
     print_title "Checking LDAP Groups"
-    cat <<EOF 
+    cat <<EOF | paragraph
   Logging in with a user that is part of an LDAP group and also not in the root
   of the LDAP tree.
-
 EOF
 
     begin_verbatim
@@ -312,7 +312,8 @@ EOF
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 
-    s9s user --list-groups --long
+    mys9s user --list-groups --long
+    mys9s user --stat "lpere"
     end_verbatim
 }
 
