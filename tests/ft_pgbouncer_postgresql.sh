@@ -172,6 +172,10 @@ EOF
 
 function accountTest()
 {
+    print_title "Testing the creation of an account"
+
+    begin_verbatim
+
     # Creating the database
     mys9s cluster \
         --create-database \
