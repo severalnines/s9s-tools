@@ -117,7 +117,7 @@ EOF
 
     begin_verbatim
     # A job that destined to be a success.
-    mys9s job --success --job-tags=success,test --wait
+    mys9s job --success --job-tags="success,test,one" --wait
     exit_code=$?
     #echo "exit_code: $exit_code"
     if [ "$exit_code" -ne 0 ]; then
@@ -125,7 +125,7 @@ EOF
     fi
 
     # And one that destined to be a failure.
-    mys9s job --fail --job-tags=fail,test --wait
+    mys9s job --fail --job-tags="fail,test,two" --wait
     exit_code=$?
     #echo "exit_code: $exit_code"
     if [ "$exit_code" -ne 1 ]; then
@@ -174,6 +174,14 @@ EOF
         failure "There should be 2 jobs altogether."
     else
         success "  o There are 2 jobs altogether."
+    fi
+
+    mys9s job --list --with-tags="one,two"
+    n_lines=$(s9s job --list --batch --with-tags="one,two" | wc -l)
+    if [ "$n_lines" -ne 2 ]; then
+        failure "There should be 2 jobs with tags one || two."
+    else
+        success "  o There are 2 jobs with tags one || two."
     fi
 
     end_verbatim

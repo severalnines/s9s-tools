@@ -423,7 +423,7 @@ S9sObject::tags(
 
 /**
  * \param requiredTags Tags to be checked.
- * \returns True if the job has all the required tags.
+ * \returns True if the job has at least one of the required tags.
  */
 bool
 S9sObject::hasTags(
@@ -452,9 +452,9 @@ S9sObject::hasTags(
             }
         }
 
-        if (!found)
-            return false;
+        if (found)
+            return true;
     }
 
-    return true;
+    return requiredTags.empty();
 }
