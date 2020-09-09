@@ -215,7 +215,7 @@ EOF
     if ! s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance not found with reason '$reason'."
     else
-        success "The maintenance period is found."
+        success "  o The maintenance period is found."
     fi
 
     #
@@ -228,7 +228,7 @@ EOF
     if s9s maintenance --list --long | grep --quiet "$reason"; then
         failure "The maintenance should have expired: '$reason'."
     else
-        success "The maintenance period expired."
+        success "  o The maintenance period expired, OK."
     fi
 
     end_verbatim
@@ -552,9 +552,9 @@ EOF
     # Waiting and checking if the job is triggered.
     #
     mysleep 180
-    mys9s job --list --with-tags="$tag,recurrence"
+    mys9s job --list --with-tags="recurrence"
     
-    state=$(s9s job --list --with-tags=$tag,recurrence --batch | head -n 1 | awk '{print $3}')
+    state=$(s9s job --list --with-tags=recurrence --batch | head -n 1 | awk '{print $3}')
     if [ "$state" == "FINISHED" ]; then
         success "  o The recurring job is in finished state, ok."
     else
