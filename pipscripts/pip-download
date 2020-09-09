@@ -2,8 +2,8 @@
 MYNAME=$(basename "$0")
 MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.8"
-VERBOSE="true"
+VERSION="0.0.9"
+VERBOSE=""
 LOGFILE="$HOME/pip-cmon-test.log"
 EXITCODE=0
 
@@ -634,6 +634,9 @@ function process_html_file_xml()
     elif [ ! -f "$html_file" ]; then
         printError "process_html_file: File '$html_file' was not found."
         return 1
+    elif grep --quiet "p42di 152" "$html_file"; then
+        printVerbose "Test was not executed in $html_file."
+        return 0
     fi
 
     #
@@ -667,7 +670,13 @@ function process_html_file_xml()
     fi
 
     if [ "$n_cases" -eq 0 ]; then
-        printWarning "No test cases in $test_name..."
+        printWarning "8273 No test cases in $test_name..."
+        echo "*** html_file: $html_file" >&2
+        ls -lha $html_file  >&2
+        cat $html_file >&2
+        echo ""   >&2
+        echo ""   >&2
+        exit 1
     fi
 
     #printError "status: $test_status for $html_file"
@@ -705,16 +714,16 @@ EOF
 
     test_case_names=$(get_test_names_html --html-file "$html_file")
     for test_case_name in $test_case_names; do
+        printVerbose "  Processing $test_case_name..."
         cut_test_case_html \
             --html-file "$html_file" \
             --output-file "$slice_file" \
             --test-name "$test_case_name"
         
         if [ $? -ne 0 ]; then
-            return 1
+            continue
         fi
 
-        #vim "$slice_file"
         emit_test_case_xml \
             --report-file "$PWD/$html_file" \
             --html-file   "$slice_file" \
@@ -1047,9 +1056,16 @@ for testscript in $mytests; do
     XML_FILE+="$(basename $HTML_FILE .html)"
     XML_FILE+=".xml"
 
-    printf "$HTML_FILE               \r"
+    #
+    # Here we print out some progress messages
+    #
+    printf "Processing $PWD/$HTML_FILE...               \r"
+
+
+    printVerbose "Processing $HTML_FILE"
     process_html_file_xml \
         --html-file $HTML_FILE >$XML_FILE
+    printVerbose "Processed $HTML_FILE"
 
     if [ $? -ne 0 ]; then
         printWarning "Removing $XML_FILE..."

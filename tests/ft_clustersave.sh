@@ -191,6 +191,7 @@ function testCreateGalera()
     local node_name
 
     if [ "$CLUSTER_TYPE" != "galera" ]; then
+        print_title "Creating a Galera Cluster is Not Done Here"
         return 0
     fi
 
@@ -262,6 +263,7 @@ function testCreatePostgre()
     local node_name
 
     if [ "$CLUSTER_TYPE" != "postgresql" ]; then
+        print_title "Creating a PostgreSQL Cluster is Not Done Here"
         return 0
     fi
 
