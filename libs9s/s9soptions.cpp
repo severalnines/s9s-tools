@@ -82,6 +82,8 @@ enum S9sOptionType
     OptionCreate,
     OptionCreateWithJob,
     OptionStage,
+    OptionSynchronous,
+    OptionToggleSync,
     OptionDelete,
     OptionClone,
     OptionEnable,
@@ -4132,6 +4134,33 @@ S9sOptions::isStageRequested() const
 }
 
 /**
+ * \returns the value of the --synchronous=BOOL command line option
+ */
+bool
+S9sOptions::isSynchronous() const
+{
+    return getBool("synchronous");
+}
+
+/**
+ * \returns if CLI has the --synchronous command line option
+ */
+bool
+S9sOptions::hasSynchronous() const
+{
+    return m_options.contains("synchronous");
+}
+
+/**
+ * \returns if --toggle-sync option was requested
+ */
+bool
+S9sOptions::isToggleSyncRequested() const
+{
+    return getBool("toggle-sync");
+}
+
+/**
  * \returns true if the --register command line option was provided when the
  *   program was started.
  */
@@ -6341,12 +6370,14 @@ S9sOptions::printHelpReplication()
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
 "  --reset                    Reset the slave functionality.\n"
+"  --toggle-sync              Toggle PostgreSQL synchronous replication.\n" 
 "\n"
 "  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
 "  --replication-master=NODE  The same as --master.\n"
 "  --replication-slave=NODE   The same as --slave.\n"
 "  --slave=NODE               The replication slave.\n"
+"  --synchronous=BOOL         Option for stage/rebuild for PostgreSQL.\n"
 "\n"
     );
 }
@@ -7453,6 +7484,9 @@ S9sOptions::checkOptionsReplication()
         countOptions++;
     
     if (isStageRequested())
+        countOptions++;
+
+    if (isToggleSyncRequested())
         countOptions++;
     
     if (isStartRequested())
@@ -8606,8 +8640,10 @@ S9sOptions::readOptionsReplication(
         { "promote",          no_argument,       0, OptionPromoteSlave    },
         { "reset",            no_argument,       0, OptionReset           },
         { "stage",            no_argument,       0, OptionStage           },
+        { "synchronous",      required_argument, 0, OptionSynchronous     },
         { "start",            no_argument,       0, OptionStart           },
         { "stop",             no_argument,       0, OptionStop            },
+        { "toggle-sync",      no_argument,       0, OptionToggleSync      },
         
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -8776,6 +8812,19 @@ S9sOptions::readOptionsReplication(
             case OptionStage:
                 // --stage
                 m_options["stage"] = true;
+                break;
+
+            case OptionSynchronous:
+            {
+                // --synchronous[=BOOL]
+                S9sString arg(optarg);
+                m_options["synchronous"] = arg.toBoolean();
+                break;
+            }
+
+            case OptionToggleSync:
+                // --toggle-sync
+                m_options["toggle-sync"] = true;
                 break;
             
             case OptionStart:
