@@ -5613,6 +5613,9 @@ S9sRpcClient::stageSlave()
 
     if (options->hasMaster())
         jobData["replication_master"] = options->master().toVariantMap();
+
+    if (options->hasSynchronous())
+        jobData["synchronous"] = options->isSynchronous();
      
     // The jobspec describing the command.
     jobSpec["command"]    = "stage_replication_slave";
@@ -5630,6 +5633,53 @@ S9sRpcClient::stageSlave()
 
     return retval;
 }
+
+bool
+S9sRpcClient::toggleSync()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+
+    if (!options->hasSlave())
+    {
+        PRINT_ERROR("To toggle synchronous replication a slave must be specified.");
+        PRINT_ERROR("Use the --slave or --replication-slave option.");
+        return false;
+    } else {
+        node = options->slave().toNode();
+    }
+
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["node"]       = node.toVariantMap();
+
+    if (options->hasSynchronous())
+        jobData["synchronous"] = options->isSynchronous();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "toggle_replication_sync";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Toggle Synchronous Replication";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * This function will create and send a job to stop and then start a node of a

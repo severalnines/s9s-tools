@@ -1182,6 +1182,10 @@ S9sBusinessLogic::execute()
         {
             success = client.stageSlave();
             maybeJobRegistered(client, clusterId, success); 
+        } else if (options->isToggleSyncRequested())
+        {
+            success = client.toggleSync();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isPromoteSlaveRequested())
         {
             success = client.promoteReplicationSlave();

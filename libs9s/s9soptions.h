@@ -472,6 +472,9 @@ class S9sOptions
         bool isCreateRequested() const;
         bool isCreateWithJobRequested() const;
         bool isStageRequested() const;
+        bool isSynchronous() const;
+        bool hasSynchronous() const;
+        bool isToggleSyncRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
         bool isAllRequested() const;
