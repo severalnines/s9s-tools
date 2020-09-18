@@ -141,6 +141,7 @@ class S9sRpcClient
         bool registerHost();
         bool registerMaxScaleHost(const S9sNode &node);
         bool registerPgBouncerHost(const S9sNode &node);
+        bool registerPBMAgentHost(const S9sNode &node);
 
         bool getContainers();
         bool getServers();
@@ -540,6 +541,9 @@ class S9sRpcClient
                 const S9sVariantList &hosts);
 
         bool addPgBouncer(
+                const S9sVariantList &hosts);
+
+        bool addPBMAgent(
                 const S9sVariantList &hosts);
         
         bool addProxySql(

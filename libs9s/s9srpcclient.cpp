@@ -3284,6 +3284,7 @@ S9sRpcClient::registerHost()
     S9sVariantList hosts = options->nodes();
     bool           hasMaxScale = false;
     bool           hasPgBouncer = false;
+    bool           hasPBMAgent = false;
 
     if (hosts.empty())
     {
@@ -3310,6 +3311,9 @@ S9sRpcClient::registerHost()
 
 	if (protocol == "pgbouncer")
             hasPgBouncer = true;
+
+	if (protocol == "pbmagent")
+            hasPBMAgent = true;
     }
    
     if (hasMaxScale)
@@ -3319,6 +3323,9 @@ S9sRpcClient::registerHost()
     } else if (hasPgBouncer) {
         S9sNode node = hosts[0u].toNode();
         return registerPgBouncerHost(node);
+    } else if (hasPBMAgent) {
+        S9sNode node = hosts[0u].toNode();
+        return registerPBMAgentHost(node);
     } else {
         PRINT_ERROR("Registering this type of node is not supported.");
         return false;
@@ -4213,6 +4220,7 @@ S9sRpcClient::createNode()
     bool           hasHaproxy    = false;
     bool           hasKeepalived = false;
     bool           hasPgBouncer  = false;
+    bool           hasPBMAgent   = false;
     bool           hasProxySql   = false;
     bool           hasMaxScale   = false;
     bool           hasMongo      = false;
@@ -4243,6 +4251,9 @@ S9sRpcClient::createNode()
     	} else if (protocol == "pgbouncer")
         {
             hasPgBouncer = true;
+    	} else if (protocol == "pbmagent")
+        {
+            hasPBMAgent = true;
         } else if (protocol == "proxysql")
         {
             hasProxySql = true;
@@ -4319,6 +4330,9 @@ S9sRpcClient::createNode()
     } else if (hasPgBouncer)
     {
         success = addPgBouncer(hosts);
+    } else if (hasPBMAgent)
+    {
+        success = addPBMAgent(hosts);
     } else if (hasMaxScale)
     {
         success = addMaxScale(hosts);
@@ -4676,6 +4690,62 @@ S9sRpcClient::addPgBouncer(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Add PgBouncer to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::addPBMAgent(
+        const S9sVariantList &hosts)
+{
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sString      thirdPartyBackupDir = options->thirdPartyBackupDir();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pbmagent");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To add a PBMAgent one needs to specify"
+            " one or more PBMAgent nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setup";
+    jobData["nodes"]    = nodesField(nodes);
+
+    if (!thirdPartyBackupDir.empty())
+        jobData["third_party_backupdir"] = thirdPartyBackupDir;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pbmagent";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add PBMAgent to Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
