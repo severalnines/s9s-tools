@@ -9109,17 +9109,22 @@ S9sRpcClient::composeJobData(
      */
     if (options->hasProxySql())
     {
-        jobData["admin_user"]       = 
-            options->getString("admin_user", "proxysql-admin");
+        S9sString adminUser = options->getString("admin_user", "");
+        S9sString adminPassword = options->getString("admin_password", "");
+        S9sString monitorUser = options->getString("monitor_user", "proxysql-monitor");
+        S9sString monitorPassword = options->getString("monitor_password", "proxysql-monitor");
 
-        jobData["admin_password"]   = 
-            options->getString("admin_password", "proxysql-admin");
+	if (! adminUser.empty())
+            jobData["admin_user"] = adminUser;
+
+	if (! adminPassword.empty())
+            jobData["admin_password"] = adminPassword;
     
-        jobData["monitor_user"]     = 
-             options->getString("monitor_user", "proxysql-monitor");
+	if (! monitorUser.empty())
+	    jobData["monitor_user"] = monitorUser;
 
-        jobData["monitor_password"] = 
-            options->getString("monitor_password", "proxysql-monitor");
+	if (! monitorPassword.empty())
+            jobData["monitor_password"] = monitorPassword;
 
         jobData["import_accounts"]  = 
             !options->getBool("dont_import_accounts");
