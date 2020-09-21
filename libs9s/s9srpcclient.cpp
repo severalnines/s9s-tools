@@ -2812,7 +2812,6 @@ S9sRpcClient::createCluster()
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList hosts;
     S9sString      osUserName;
-    S9sString      osSudoPassword;
     S9sString      vendor;
     S9sString      dbVersion;
     S9sRpcReply    reply;
@@ -2845,7 +2844,6 @@ S9sRpcClient::createCluster()
 
     osUserName     = options->osUser();
     vendor         = options->vendor();
-    osSudoPassword = options->osSudoPassword();
 
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
@@ -2894,13 +2892,11 @@ S9sRpcClient::createCluster()
     } else if (options->clusterType() == "postgresql")
     {
         success = createPostgreSql(
-                hosts, osUserName, osSudoPassword,
-                dbVersion);
+                hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "mongodb")
     {
         success = createMongoCluster(
-                hosts, osUserName, osSudoPassword, 
-                vendor, dbVersion);
+                hosts, osUserName, vendor, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -3926,7 +3922,6 @@ bool
 S9sRpcClient::createPostgreSql(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &osSudoPassword,
         const S9sString      &psqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -3950,7 +3945,6 @@ S9sRpcClient::createPostgreSql(
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["nodes"]            = nodesField(hosts);
-    jobData["sudo_password"]    = osSudoPassword;
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
@@ -4061,7 +4055,6 @@ bool
 S9sRpcClient::createMongoCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &osSudoPassword,
         const S9sString      &vendor,
         const S9sString      &mongoVersion)
 {
@@ -4215,8 +4208,7 @@ S9sRpcClient::createMongoCluster(
     jobData["cluster_type"]     = "mongodb";
     jobData["vendor"]           = vendor;
     jobData["mongodb_version"]  = mongoVersion;
-    jobData["sudo_password"]    = osSudoPassword;
-    
+
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
 
@@ -9146,9 +9138,10 @@ S9sRpcClient::addCredentialsToJobData(
 {
     S9sOptions    *options      = S9sOptions::instance();
 
-    S9sString      osUserName   = options->osUser(false);
-    S9sString      osKeyFile    = options->osKeyFile();
-    S9sString      osPassword   = options->osPassword();
+    S9sString      osUserName     = options->osUser(false);
+    S9sString      osKeyFile      = options->osKeyFile();
+    S9sString      osPassword     = options->osPassword();
+    S9sString      osSudoPassword = options->osSudoPassword();
 
     if (!osUserName.empty())
         jobData["ssh_user"]     = osUserName;
@@ -9158,6 +9151,10 @@ S9sRpcClient::addCredentialsToJobData(
 
     if (!osPassword.empty())
         jobData["ssh_password"] = osPassword;
+
+    if (!osSudoPassword.empty())
+        jobData["sudo_password"] = osSudoPassword;
+
 }
 
 S9sVariantMap 
