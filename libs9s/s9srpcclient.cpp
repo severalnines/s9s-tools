@@ -3424,6 +3424,51 @@ S9sRpcClient::registerPgBouncerHost(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::registerPBMAgentHost(
+        const S9sNode &node)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    int             clusterId;
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    S9sVariantList  nodes;
+
+    nodes << node;
+    if (options->hasClusterIdOption())
+    {
+        clusterId = options->clusterId();
+    } else {
+        PRINT_ERROR("Cluster ID is missing.");
+        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["action"] = "register";
+    jobData["nodes"] = nodesField(nodes);
+    
+    //jobData["server_address"] = node.hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pbmagent";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Register PBMAgent Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    return executeRequest(uri, request);
+}
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
