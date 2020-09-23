@@ -636,7 +636,7 @@ function process_html_file_xml()
         return 1
     elif grep --quiet "p42di 152" "$html_file"; then
         printVerbose "Test was not executed in $html_file."
-        return 0
+        return 1
     fi
 
     #
@@ -1065,9 +1065,11 @@ for testscript in $mytests; do
     printVerbose "Processing $HTML_FILE"
     process_html_file_xml \
         --html-file $HTML_FILE >$XML_FILE
+
+    xml_file_processed=$?
     printVerbose "Processed $HTML_FILE"
 
-    if [ $? -ne 0 ]; then
+    if [ $xml_file_processed -ne 0 ]; then
         printWarning "Removing $XML_FILE..."
         rm -f "$XML_FILE"
     fi
