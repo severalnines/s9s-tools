@@ -141,6 +141,7 @@ class S9sRpcClient
         bool registerHost();
         bool registerMaxScaleHost(const S9sNode &node);
         bool registerPgBouncerHost(const S9sNode &node);
+        bool registerPBMAgentHost(const S9sNode &node);
 
         bool getContainers();
         bool getServers();
@@ -392,6 +393,7 @@ class S9sRpcClient
         
         bool failoverMaster();
         bool stageSlave();
+        bool toggleSync();
 
         bool restartNode();
         bool promoteSlave();
@@ -511,13 +513,11 @@ class S9sRpcClient
         bool createPostgreSql(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &osSudoPassword,
                 const S9sString      &psqlVersion);
 
         bool createMongoCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &osSudoPassword,
                 const S9sString      &vendor,
                 const S9sString      &mongoVersion);
 
@@ -540,6 +540,9 @@ class S9sRpcClient
                 const S9sVariantList &hosts);
 
         bool addPgBouncer(
+                const S9sVariantList &hosts);
+
+        bool addPBMAgent(
                 const S9sVariantList &hosts);
         
         bool addProxySql(

@@ -2812,7 +2812,6 @@ S9sRpcClient::createCluster()
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList hosts;
     S9sString      osUserName;
-    S9sString      osSudoPassword;
     S9sString      vendor;
     S9sString      dbVersion;
     S9sRpcReply    reply;
@@ -2845,7 +2844,6 @@ S9sRpcClient::createCluster()
 
     osUserName     = options->osUser();
     vendor         = options->vendor();
-    osSudoPassword = options->osSudoPassword();
 
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
@@ -2894,13 +2892,11 @@ S9sRpcClient::createCluster()
     } else if (options->clusterType() == "postgresql")
     {
         success = createPostgreSql(
-                hosts, osUserName, osSudoPassword,
-                dbVersion);
+                hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "mongodb")
     {
         success = createMongoCluster(
-                hosts, osUserName, osSudoPassword, 
-                vendor, dbVersion);
+                hosts, osUserName, vendor, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -3284,6 +3280,7 @@ S9sRpcClient::registerHost()
     S9sVariantList hosts = options->nodes();
     bool           hasMaxScale = false;
     bool           hasPgBouncer = false;
+    bool           hasPBMAgent = false;
 
     if (hosts.empty())
     {
@@ -3310,6 +3307,9 @@ S9sRpcClient::registerHost()
 
 	if (protocol == "pgbouncer")
             hasPgBouncer = true;
+
+	if (protocol == "pbmagent")
+            hasPBMAgent = true;
     }
    
     if (hasMaxScale)
@@ -3319,6 +3319,9 @@ S9sRpcClient::registerHost()
     } else if (hasPgBouncer) {
         S9sNode node = hosts[0u].toNode();
         return registerPgBouncerHost(node);
+    } else if (hasPBMAgent) {
+        S9sNode node = hosts[0u].toNode();
+        return registerPBMAgentHost(node);
     } else {
         PRINT_ERROR("Registering this type of node is not supported.");
         return false;
@@ -3407,6 +3410,51 @@ S9sRpcClient::registerPgBouncerHost(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Register PgBouncer Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::registerPBMAgentHost(
+        const S9sNode &node)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    int             clusterId;
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    S9sVariantList  nodes;
+
+    nodes << node;
+    if (options->hasClusterIdOption())
+    {
+        clusterId = options->clusterId();
+    } else {
+        PRINT_ERROR("Cluster ID is missing.");
+        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["action"] = "register";
+    jobData["nodes"] = nodesField(nodes);
+    
+    //jobData["server_address"] = node.hostName();
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pbmagent";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Register PBMAgent Node";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -3874,7 +3922,6 @@ bool
 S9sRpcClient::createPostgreSql(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &osSudoPassword,
         const S9sString      &psqlVersion)
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -3898,7 +3945,6 @@ S9sRpcClient::createPostgreSql(
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["nodes"]            = nodesField(hosts);
-    jobData["sudo_password"]    = osSudoPassword;
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
@@ -4009,7 +4055,6 @@ bool
 S9sRpcClient::createMongoCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &osSudoPassword,
         const S9sString      &vendor,
         const S9sString      &mongoVersion)
 {
@@ -4163,8 +4208,7 @@ S9sRpcClient::createMongoCluster(
     jobData["cluster_type"]     = "mongodb";
     jobData["vendor"]           = vendor;
     jobData["mongodb_version"]  = mongoVersion;
-    jobData["sudo_password"]    = osSudoPassword;
-    
+
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
 
@@ -4213,6 +4257,7 @@ S9sRpcClient::createNode()
     bool           hasHaproxy    = false;
     bool           hasKeepalived = false;
     bool           hasPgBouncer  = false;
+    bool           hasPBMAgent   = false;
     bool           hasProxySql   = false;
     bool           hasMaxScale   = false;
     bool           hasMongo      = false;
@@ -4243,6 +4288,9 @@ S9sRpcClient::createNode()
     	} else if (protocol == "pgbouncer")
         {
             hasPgBouncer = true;
+    	} else if (protocol == "pbmagent")
+        {
+            hasPBMAgent = true;
         } else if (protocol == "proxysql")
         {
             hasProxySql = true;
@@ -4319,6 +4367,9 @@ S9sRpcClient::createNode()
     } else if (hasPgBouncer)
     {
         success = addPgBouncer(hosts);
+    } else if (hasPBMAgent)
+    {
+        success = addPBMAgent(hosts);
     } else if (hasMaxScale)
     {
         success = addMaxScale(hosts);
@@ -4676,6 +4727,62 @@ S9sRpcClient::addPgBouncer(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Add PgBouncer to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::addPBMAgent(
+        const S9sVariantList &hosts)
+{
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sString      thirdPartyBackupDir = options->thirdPartyBackupDir();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pbmagent");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To add a PBMAgent one needs to specify"
+            " one or more PBMAgent nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setup";
+    jobData["nodes"]    = nodesField(nodes);
+
+    if (!thirdPartyBackupDir.empty())
+        jobData["third_party_backupdir"] = thirdPartyBackupDir;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pbmagent";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add PBMAgent to Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -5543,6 +5650,9 @@ S9sRpcClient::stageSlave()
 
     if (options->hasMaster())
         jobData["replication_master"] = options->master().toVariantMap();
+
+    if (options->hasSynchronous())
+        jobData["synchronous"] = options->isSynchronous();
      
     // The jobspec describing the command.
     jobSpec["command"]    = "stage_replication_slave";
@@ -5560,6 +5670,53 @@ S9sRpcClient::stageSlave()
 
     return retval;
 }
+
+bool
+S9sRpcClient::toggleSync()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+
+    if (!options->hasSlave())
+    {
+        PRINT_ERROR("To toggle synchronous replication a slave must be specified.");
+        PRINT_ERROR("Use the --slave or --replication-slave option.");
+        return false;
+    } else {
+        node = options->slave().toNode();
+    }
+
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["node"]       = node.toVariantMap();
+
+    if (options->hasSynchronous())
+        jobData["synchronous"] = options->isSynchronous();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "toggle_replication_sync";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Toggle Synchronous Replication";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * This function will create and send a job to stop and then start a node of a
@@ -8952,17 +9109,22 @@ S9sRpcClient::composeJobData(
      */
     if (options->hasProxySql())
     {
-        jobData["admin_user"]       = 
-            options->getString("admin_user", "proxysql-admin");
+        S9sString adminUser = options->getString("admin_user", "");
+        S9sString adminPassword = options->getString("admin_password", "");
+        S9sString monitorUser = options->getString("monitor_user", "proxysql-monitor");
+        S9sString monitorPassword = options->getString("monitor_password", "proxysql-monitor");
 
-        jobData["admin_password"]   = 
-            options->getString("admin_password", "proxysql-admin");
+	if (! adminUser.empty())
+            jobData["admin_user"] = adminUser;
+
+	if (! adminPassword.empty())
+            jobData["admin_password"] = adminPassword;
     
-        jobData["monitor_user"]     = 
-             options->getString("monitor_user", "proxysql-monitor");
+	if (! monitorUser.empty())
+	    jobData["monitor_user"] = monitorUser;
 
-        jobData["monitor_password"] = 
-            options->getString("monitor_password", "proxysql-monitor");
+	if (! monitorPassword.empty())
+            jobData["monitor_password"] = monitorPassword;
 
         jobData["import_accounts"]  = 
             !options->getBool("dont_import_accounts");
@@ -8981,9 +9143,10 @@ S9sRpcClient::addCredentialsToJobData(
 {
     S9sOptions    *options      = S9sOptions::instance();
 
-    S9sString      osUserName   = options->osUser(false);
-    S9sString      osKeyFile    = options->osKeyFile();
-    S9sString      osPassword   = options->osPassword();
+    S9sString      osUserName     = options->osUser(false);
+    S9sString      osKeyFile      = options->osKeyFile();
+    S9sString      osPassword     = options->osPassword();
+    S9sString      osSudoPassword = options->osSudoPassword();
 
     if (!osUserName.empty())
         jobData["ssh_user"]     = osUserName;
@@ -8993,6 +9156,10 @@ S9sRpcClient::addCredentialsToJobData(
 
     if (!osPassword.empty())
         jobData["ssh_password"] = osPassword;
+
+    if (!osSudoPassword.empty())
+        jobData["sudo_password"] = osSudoPassword;
+
 }
 
 S9sVariantMap 

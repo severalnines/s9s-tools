@@ -82,6 +82,8 @@ enum S9sOptionType
     OptionCreate,
     OptionCreateWithJob,
     OptionStage,
+    OptionSynchronous,
+    OptionToggleSync,
     OptionDelete,
     OptionClone,
     OptionEnable,
@@ -110,6 +112,7 @@ enum S9sOptionType
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
+    OptionThirdPartyBackupDirectory,
     OptionKeepTempDir,
     OptionTempDirPath,
     OptionSubDirectory,
@@ -3013,6 +3016,27 @@ S9sOptions::backupDir() const
     return retval;
 }
 
+/**
+ * \returns The argument for the --third-party-backupdir option or the
+ *   third_party_backupdir config value.
+ */
+S9sString
+S9sOptions::thirdPartyBackupDir() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("third_party_backupdir"))
+    {
+        retval = m_options.at("third_party_backupdir").toString();
+    } else {
+        retval = m_userConfig.variableValue("third_party_backupdir");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("third_party_backupdir");
+    }
+
+    return retval;
+}
+
 S9sString
 S9sOptions::subDirectory() const
 {
@@ -4129,6 +4153,33 @@ bool
 S9sOptions::isStageRequested() const
 {
     return getBool("stage");
+}
+
+/**
+ * \returns the value of the --synchronous=BOOL command line option
+ */
+bool
+S9sOptions::isSynchronous() const
+{
+    return getBool("synchronous");
+}
+
+/**
+ * \returns if CLI has the --synchronous command line option
+ */
+bool
+S9sOptions::hasSynchronous() const
+{
+    return m_options.contains("synchronous");
+}
+
+/**
+ * \returns if --toggle-sync option was requested
+ */
+bool
+S9sOptions::isToggleSyncRequested() const
+{
+    return getBool("toggle-sync");
 }
 
 /**
@@ -6341,12 +6392,14 @@ S9sOptions::printHelpReplication()
 "  --start                    Make the slave start replicating.\n"
 "  --stop                     Make the slave stop replicating.\n"
 "  --reset                    Reset the slave functionality.\n"
+"  --toggle-sync              Toggle PostgreSQL synchronous replication.\n" 
 "\n"
 "  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
 "  --replication-master=NODE  The same as --master.\n"
 "  --replication-slave=NODE   The same as --slave.\n"
 "  --slave=NODE               The replication slave.\n"
+"  --synchronous=BOOL         Option for stage/rebuild for PostgreSQL.\n"
 "\n"
     );
 }
@@ -7453,6 +7506,9 @@ S9sOptions::checkOptionsReplication()
         countOptions++;
     
     if (isStageRequested())
+        countOptions++;
+
+    if (isToggleSyncRequested())
         countOptions++;
     
     if (isStartRequested())
@@ -8606,8 +8662,10 @@ S9sOptions::readOptionsReplication(
         { "promote",          no_argument,       0, OptionPromoteSlave    },
         { "reset",            no_argument,       0, OptionReset           },
         { "stage",            no_argument,       0, OptionStage           },
+        { "synchronous",      required_argument, 0, OptionSynchronous     },
         { "start",            no_argument,       0, OptionStart           },
         { "stop",             no_argument,       0, OptionStop            },
+        { "toggle-sync",      no_argument,       0, OptionToggleSync      },
         
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -8776,6 +8834,19 @@ S9sOptions::readOptionsReplication(
             case OptionStage:
                 // --stage
                 m_options["stage"] = true;
+                break;
+
+            case OptionSynchronous:
+            {
+                // --synchronous[=BOOL]
+                S9sString arg(optarg);
+                m_options["synchronous"] = arg.toBoolean();
+                break;
+            }
+
+            case OptionToggleSync:
+                // --toggle-sync
+                m_options["toggle-sync"] = true;
                 break;
             
             case OptionStart:
@@ -11390,6 +11461,7 @@ S9sOptions::readOptionsCluster(
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
+        { "third-party-backupdir", required_argument, 0, OptionThirdPartyBackupDirectory },
 
         // Options for ProxySql.
         { "admin-user",       required_argument, 0, OptionAdminUser       },
@@ -11838,14 +11910,19 @@ S9sOptions::readOptionsCluster(
                 m_options["with_timescaledb"] = true;
                 break;
             
+            case OptionWithoutTags:
+                // --without-tags=one;two
+                setWithoutTags(optarg);
+                break;
+            
             case OptionWithTags:
                 // --with-tags=one;two
                 setWithTags(optarg);
                 break;
-            
-            case OptionWithoutTags:
-                // --without-tags=one;two
-                setWithoutTags(optarg);
+
+            case OptionThirdPartyBackupDirectory:
+                // --third-party-backupdir=DIRECTORY
+                m_options["third_party_backupdir"] = optarg;
                 break;
 
             case OptionDbName:

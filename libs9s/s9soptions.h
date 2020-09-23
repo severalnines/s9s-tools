@@ -335,6 +335,7 @@ class S9sOptions
         
         S9sString subDirectory() const;
         S9sString backupDir() const;
+        S9sString thirdPartyBackupDir() const;
         S9sString backupMethod() const;
         bool noCompression() const;
         bool pitrCompatible() const;
@@ -471,6 +472,9 @@ class S9sOptions
         bool isCreateRequested() const;
         bool isCreateWithJobRequested() const;
         bool isStageRequested() const;
+        bool isSynchronous() const;
+        bool hasSynchronous() const;
+        bool isToggleSyncRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
         bool isAllRequested() const;

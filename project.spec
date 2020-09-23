@@ -42,6 +42,10 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Mon Sep 21 2020 David Kedves <kedazo@severalnines.com> 1.8.20200921
+- A new public release
+* Fri Sep 18 2020 David Kedves <kedazo@severalnines.com> 1.8.20200918
+- A new public release
 * Thu Sep  3 2020 David Kedves <kedazo@severalnines.com> 1.8.20200903
 - A new public release
 * Mon Aug 24 2020 David Kedves <kedazo@severalnines.com> 1.8.20200824
