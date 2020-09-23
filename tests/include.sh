@@ -1543,7 +1543,7 @@ function wait_for_cluster_state()
         fi
 
         let waited+=10
-        sleep 1
+        sleep 10
     done
 
     return 2

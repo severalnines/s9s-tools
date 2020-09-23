@@ -203,7 +203,7 @@ EOF
     
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -gt 0 ]; then
-        failure "There are $n_alarms, there should be none."
+        failure "There are $n_alarms alarm(s), there should be none."
     else
         success "  o There are no alarms, ok."
     fi
@@ -253,7 +253,7 @@ EOF
 
     n_alarms=$(s9s alarm --list --long --batch | wc -l)
     if [ "$n_alarms" -gt 0 ]; then
-        failure "There are $n_alarms, there should be none."
+        failure "There are $n_alarms alarm(s), there should be none."
     else
         success "  o The alarm disappeared, ok."
     fi
