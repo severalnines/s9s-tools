@@ -549,6 +549,7 @@ class S9sOptions
         bool isBatchRequested() const;
         bool isNoHeaderRequested() const;
         bool isLogRequested() const;
+        bool isFollowRequested() const;
 
         bool isStringMatchExtraArguments(const S9sString &theString) const;
         bool isStringMatchToServerOption(const S9sString &theString) const;

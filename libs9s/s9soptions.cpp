@@ -1367,6 +1367,7 @@ S9sOptions::hasJobOptions() const
     return 
         m_options.contains("job_tags") ||
         m_options.contains("log") ||
+        m_options.contains("follow") ||
         m_options.contains("recurrence") ||
         m_options.contains("schedule") ||
         m_options.contains("timeout") ||
@@ -4124,6 +4125,17 @@ S9sOptions::isLogRequested() const
 {
     return getBool("log");
 }
+
+/**
+ * \returns true if the --follow command line option was provided when the program
+ *   was started.
+ */
+bool
+S9sOptions::isFollowRequested() const
+{
+    return getBool("follow");
+}
+
 
 /**
  * \returns true if the --create command line option was provided when the
@@ -9086,6 +9098,9 @@ S9sOptions::checkOptionsJob()
 
         if (isWaitRequested())
             countOptions++;
+
+        if (isFollowRequested())
+            countOptions++;
     }
 
     if (isDeleteRequested())
@@ -12570,6 +12585,7 @@ S9sOptions::readOptionsJob(
         { "kill",             no_argument,       0,  OptionKill           },
         { "list",             no_argument,       0, 'L'                   },
         { "log",              no_argument,       0, 'G'                   },
+        { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
         { "wait",             no_argument,       0,  5                    },
 
@@ -12606,7 +12622,7 @@ S9sOptions::readOptionsJob(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLlG", 
+                argc, argv, "hvc:P:t:VLlGf", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -12674,6 +12690,11 @@ S9sOptions::readOptionsJob(
                 m_options["log"] = true;
                 break;
             
+            case 'f': 
+                // -f, --follow
+                m_options["log"] = true;
+                break;
+
             case OptionDelete: 
                 // --delete
                 m_options["delete"] = true;
