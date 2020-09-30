@@ -12692,7 +12692,7 @@ S9sOptions::readOptionsJob(
             
             case 'f': 
                 // -f, --follow
-                m_options["log"] = true;
+                m_options["follow"] = true;
                 break;
 
             case OptionDelete: 
