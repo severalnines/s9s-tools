@@ -372,6 +372,10 @@ enum S9sOptionType
     OptionMonitorUser,
     OptionMonitorPassword,
     OptionDontImportAccounts,
+
+    OptionSslCertFile,
+    OptionSslKeyFile,
+    OptionSslCaFile,
 };
 
 /**
@@ -6083,6 +6087,11 @@ S9sOptions::printHelpCluster()
 "  --haproxy-config-template=FILENAME Config template for HaProxy install.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"\n"
+"SSL related options (for create and enable-ssl)\n"
+"  --ssl-ca=STRING            The SSL CA file path on controller.\n"
+"  --ssl-cert=STRING          The SSL certificate file path on controller.\n"
+"  --ssl-key=STRING           The SSL key file path on controller.\n"
 "\n");
 }
 
@@ -11508,7 +11517,12 @@ S9sOptions::readOptionsCluster(
         // Options for maintenance
         { "maintenance-minutes", required_argument, 0, OptionMinutes       },
         { "reason",              required_argument, 0, OptionReason        },
-       
+
+        // options for creation
+        { "ssl-ca",              required_argument, 0, OptionSslCaFile     },
+        { "ssl-cert",            required_argument, 0, OptionSslCertFile   },
+        { "ssl-key",             required_argument, 0, OptionSslKeyFile    },
+
         // Options for remove cluster/node.
         { "uninstall",           no_argument,    0, OptionUninstall        },
 
@@ -12153,6 +12167,20 @@ S9sOptions::readOptionsCluster(
             case OptionUninstall:
                 // --uninstall
                 m_options["uninstall"] = true;
+                break;
+
+            case OptionSslCaFile:
+                // --ssl-ca
+                m_options["ssl_ca"] = optarg;
+                break;
+            case OptionSslCertFile:
+                // --ssl-cert
+                m_options["ssl_cert"] = optarg;
+                break;
+
+            case OptionSslKeyFile:
+                // --ssl-key
+                m_options["ssl_key"] = optarg;
                 break;
 
             case '?':
@@ -15000,3 +15028,49 @@ S9sOptions::getVariantMap(
 
     return retval;
 }
+
+/**
+ * \returns The user defined SSL CA file for --create & --enable-ssl options
+ * (--ssl-ca)
+ */
+S9sString
+S9sOptions::sslCaFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("ssl_ca"))
+        retval = m_options.at("ssl_ca").toString();
+
+    return retval;
+}
+
+/**
+ * \returns The user defined SSL certificate file for
+ * --create & --enable-ssl options (--ssl-cert)
+ */
+S9sString
+S9sOptions::sslCertFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("ssl_cert"))
+        retval = m_options.at("ssl_cert").toString();
+
+    return retval;
+}
+
+/**
+ * \returns The user defined SSL key file for
+ * --create & --enable-ssl options (--ssl-key)
+ */
+S9sString
+S9sOptions::sslKeyFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("ssl_key"))
+        retval = m_options.at("ssl_key").toString();
+
+    return retval;
+}
+

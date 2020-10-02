@@ -187,6 +187,10 @@ class S9sOptions
         S9sString formatDateTime(S9sDateTime value) const;
         S9s::AddressType addressType() const;
 
+        S9sString sslCaFile() const;
+        S9sString sslCertFile() const;
+        S9sString sslKeyFile() const;
+
         bool fullUuid() const;
 
         S9sString schedule() const;
