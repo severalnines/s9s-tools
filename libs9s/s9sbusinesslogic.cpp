@@ -1,6 +1,6 @@
 /*
  * Severalnines Tools
- * Copyright (C) 2016-2018 Severalnines AB
+ * Copyright (C) 2016-present Severalnines AB
  *
  * This file is part of s9s-tools.
  *
@@ -813,6 +813,9 @@ S9sBusinessLogic::execute()
         } else if (options->isWaitRequested())
         {
             waitForJob(clusterId, options->jobId(), client);
+        } else if (options->isFollowRequested())
+        {
+            waitForJob(clusterId, options->jobId(), client);
         } else if (options->isDeleteRequested())
         {
             success = client.deleteJobInstance(options->jobId());
@@ -1219,7 +1222,7 @@ S9sBusinessLogic::waitForJob(
 {
     S9sOptions  *options = S9sOptions::instance();
     
-    if (options->isLogRequested())
+    if (options->isLogRequested() || options->isFollowRequested())
     {
         waitForJobWithLog(clusterId, jobId, client);
     } else {

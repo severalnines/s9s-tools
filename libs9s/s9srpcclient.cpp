@@ -2470,6 +2470,7 @@ S9sRpcClient::collectLogs()
 bool
 S9sRpcClient::enableSsl()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request = composeRequest();
     S9sVariantMap  job     = composeJob();
     S9sVariantMap  jobData = composeJobData();
@@ -2479,6 +2480,10 @@ S9sRpcClient::enableSsl()
     // JobData...
     jobData["action"]      = "enable";
     jobData["expire_days"] = 1000;
+
+    jobData["ca_file"]     = options->sslCaFile();
+    jobData["cert_file"]   = options->sslCertFile();
+    jobData["key_file"]    = options->sslKeyFile();
 
     // JobSpec...
     jobSpec["command"]     = "setup_ssl";
@@ -9160,6 +9165,15 @@ S9sRpcClient::addCredentialsToJobData(
     if (!osSudoPassword.empty())
         jobData["sudo_password"] = osSudoPassword;
 
+    // The SSL options for create cluster jobs
+    if (!options->sslCaFile().empty())
+        jobData["ca_file"]     = options->sslCaFile();
+
+    if (!options->sslCertFile().empty())
+        jobData["cert_file"]   = options->sslCertFile();
+
+    if (!options->sslKeyFile().empty())
+        jobData["key_file"]    = options->sslKeyFile();
 }
 
 S9sVariantMap 

@@ -372,6 +372,10 @@ enum S9sOptionType
     OptionMonitorUser,
     OptionMonitorPassword,
     OptionDontImportAccounts,
+
+    OptionSslCertFile,
+    OptionSslKeyFile,
+    OptionSslCaFile,
 };
 
 /**
@@ -1367,6 +1371,7 @@ S9sOptions::hasJobOptions() const
     return 
         m_options.contains("job_tags") ||
         m_options.contains("log") ||
+        m_options.contains("follow") ||
         m_options.contains("recurrence") ||
         m_options.contains("schedule") ||
         m_options.contains("timeout") ||
@@ -4126,6 +4131,17 @@ S9sOptions::isLogRequested() const
 }
 
 /**
+ * \returns true if the --follow command line option was provided when the program
+ *   was started.
+ */
+bool
+S9sOptions::isFollowRequested() const
+{
+    return getBool("follow");
+}
+
+
+/**
  * \returns true if the --create command line option was provided when the
  *   program was started.
  */
@@ -6071,6 +6087,11 @@ S9sOptions::printHelpCluster()
 "  --haproxy-config-template=FILENAME Config template for HaProxy install.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"\n"
+"SSL related options (for create and enable-ssl)\n"
+"  --ssl-ca=STRING            The SSL CA file path on controller.\n"
+"  --ssl-cert=STRING          The SSL certificate file path on controller.\n"
+"  --ssl-key=STRING           The SSL key file path on controller.\n"
 "\n");
 }
 
@@ -9086,6 +9107,9 @@ S9sOptions::checkOptionsJob()
 
         if (isWaitRequested())
             countOptions++;
+
+        if (isFollowRequested())
+            countOptions++;
     }
 
     if (isDeleteRequested())
@@ -11493,7 +11517,12 @@ S9sOptions::readOptionsCluster(
         // Options for maintenance
         { "maintenance-minutes", required_argument, 0, OptionMinutes       },
         { "reason",              required_argument, 0, OptionReason        },
-       
+
+        // options for creation
+        { "ssl-ca",              required_argument, 0, OptionSslCaFile     },
+        { "ssl-cert",            required_argument, 0, OptionSslCertFile   },
+        { "ssl-key",             required_argument, 0, OptionSslKeyFile    },
+
         // Options for remove cluster/node.
         { "uninstall",           no_argument,    0, OptionUninstall        },
 
@@ -12140,6 +12169,20 @@ S9sOptions::readOptionsCluster(
                 m_options["uninstall"] = true;
                 break;
 
+            case OptionSslCaFile:
+                // --ssl-ca
+                m_options["ssl_ca"] = optarg;
+                break;
+            case OptionSslCertFile:
+                // --ssl-cert
+                m_options["ssl_cert"] = optarg;
+                break;
+
+            case OptionSslKeyFile:
+                // --ssl-key
+                m_options["ssl_key"] = optarg;
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
@@ -12570,6 +12613,7 @@ S9sOptions::readOptionsJob(
         { "kill",             no_argument,       0,  OptionKill           },
         { "list",             no_argument,       0, 'L'                   },
         { "log",              no_argument,       0, 'G'                   },
+        { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
         { "wait",             no_argument,       0,  5                    },
 
@@ -12606,7 +12650,7 @@ S9sOptions::readOptionsJob(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLlG", 
+                argc, argv, "hvc:P:t:VLlGf", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -12674,6 +12718,11 @@ S9sOptions::readOptionsJob(
                 m_options["log"] = true;
                 break;
             
+            case 'f': 
+                // -f, --follow
+                m_options["follow"] = true;
+                break;
+
             case OptionDelete: 
                 // --delete
                 m_options["delete"] = true;
@@ -14979,3 +15028,49 @@ S9sOptions::getVariantMap(
 
     return retval;
 }
+
+/**
+ * \returns The user defined SSL CA file for --create & --enable-ssl options
+ * (--ssl-ca)
+ */
+S9sString
+S9sOptions::sslCaFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("ssl_ca"))
+        retval = m_options.at("ssl_ca").toString();
+
+    return retval;
+}
+
+/**
+ * \returns The user defined SSL certificate file for
+ * --create & --enable-ssl options (--ssl-cert)
+ */
+S9sString
+S9sOptions::sslCertFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("ssl_cert"))
+        retval = m_options.at("ssl_cert").toString();
+
+    return retval;
+}
+
+/**
+ * \returns The user defined SSL key file for
+ * --create & --enable-ssl options (--ssl-key)
+ */
+S9sString
+S9sOptions::sslKeyFile() const
+{
+    S9sString retval;
+
+    if (m_options.contains("ssl_key"))
+        retval = m_options.at("ssl_key").toString();
+
+    return retval;
+}
+

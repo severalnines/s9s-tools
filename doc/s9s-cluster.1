@@ -431,6 +431,22 @@ s9s cluster \\
     --wait
 .fi
 
+.TP
+.B --enable-ssl
+Deploys SSL certificates and enables incoming SSL connections to the database
+nodes. You may pass your own certificates (path on controller using the \fB\-\-ssl-ca\fR,
+\fB\-\-ssl-cert\fR  and \fB\-\-ssl-key\fR options).
+By default ClusterControll will attempt to generate a CA certificate and server
+& client certificates and deploy them.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --enable-ssl \\
+    --cluster-id=1 \\
+    --wait
+.fi
+
 .\"
 .\" Generic options
 .\"
@@ -1022,6 +1038,31 @@ The password of the monitoring user of the load balancer.
 .TP
 .BI --monitor-user= USERNAME
 The username of the monitoring user of the load balancer.
+
+\"
+\"
+\"
+.SH SSL OPTIONS
+The following command line options are related to cluster creation job and to
+enable SSL jobs. These options allows the user to pass their own pre-generated
+SSL certificates instead of the ClusterControl auto-generated ones.
+
+Please note that these command line optins are not mandatory.
+
+.TP
+.BI --ssl-ca= PATH
+The SSL CA certificate file path on the controller, to be imported by
+ClusterControl and be deployed to the database nodes.
+
+.TP
+.BI --ssl-cert= PATH
+The SSL certificate file path on the controller, to be imported by
+ClusterControl and be deployed to the database nodes.
+
+.TP
+.BI --ssl-key= PATH
+The private key file of the SSL certificate file path on the controller,
+to be imported by ClusterControl and be deployed to the database nodes.
 
 .\"
 .\"

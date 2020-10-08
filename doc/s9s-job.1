@@ -199,6 +199,11 @@ If the s9s application created a job and this command line option is provided it
 will wait until the job is executed. While waiting the job logs will be shown
 unless the silent mode is set.
 
+.TP
+.B -f/--follow
+It is like the combination of --log and --wait, s9s is going to attach to an
+existing running job and print out its job messages while it is running.
+
 .TP 
 .BI --recurrence= CRONTABSTRING
 This option can be used to create recurring jobs, jobs that are repeated over
