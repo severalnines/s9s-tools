@@ -101,23 +101,26 @@ function ldap_config()
 # Cmon LDAP configuration file created by $MYNAME $VERSION.
 #
 
-#
-# The URI where the Cmon Controller will find the LDAP server as it is specified
-# in the ldap.conf(5).
-#
-ldap_server_uri = "ldap://192.168.0.63:389"
+enable_ldap_authentication = true
 
-#
-# The default base DN to be used when performing LDAP operations. As it is
-# specified in the ldap.conf(5).
-#
-ldap_base_dn    = "dc=homelab,dc=local"
+ldap_uri          = "ldap://192.168.0.63:389"
+login_dn          = "cn=admin,dc=homelab,dc=local"
+login_dn_password = "p"
 
-#
-# The credentials of the LDAP admin user.
-#
-ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
-ldap_admin_pwd  = "p"
+users_dn          = "dc=homelab,dc=local"
+groups_dn         = "dc=homelab,dc=local"
+
+[advanced_settings]
+#username_attribute      = "cn, uid, sAMAccountName"
+#real_name_attribute     = "displayName"
+#email_attribute         = "mail"
+#group_name_attribute    = "cn"
+static_member_attribute = "memberUid"
+#nested_groups           = false
+#network_timeout         = 5
+#protocol_version        = "3"
+#time_limit              = 5
+
 EOF
 
 }
@@ -136,7 +139,8 @@ EOF
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
 
-    #mysleep 2
+    mys9s group --create ldapgroup
+    mys9s group --list --long
 }
 
 function testLdapSupport()
@@ -220,7 +224,7 @@ EOF
         --user-name    "username"  \
         --cdt-path     "/" \
         --full-name    "firstname lastname" \
-        --group        "LDAPUsers" \
+        --group        "ldapgroup" \
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
 
@@ -347,7 +351,7 @@ EOF
         --user-name    "pipas1"  \
         --cdt-path     "/" \
         --full-name    "Lastname" \
-        --group        "LDAPUsers" \
+        --group        "ldapgroup" \
         --dn           "cn=pipas1,dc=homelab,dc=local" \
         --origin       "LDAP"
 
@@ -385,7 +389,7 @@ EOF
     check_user \
         --user-name    "pipas2"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers" \
+        --group        "ldapgroup" \
         --dn           "uid=pipas2,dc=homelab,dc=local" \
         --origin       "LDAP"
 
@@ -400,7 +404,6 @@ function testLdapGroup()
     cat <<EOF 
   Logging in with a user that is part of an LDAP group and also not in the root
   of the LDAP tree.
-
 EOF
 
     begin_verbatim
@@ -424,7 +427,7 @@ EOF
     check_user \
         --user-name    "lpere"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers,ldapgroup" \
+        --group        "ldapgroup" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 
