@@ -962,6 +962,25 @@ s9s cluster \\
     --backup-id=214
 .fi
 
+.TP
+.BI \-\^\-third-party-backupdir= STRING
+The directory where third party tool shall save the backup data for this cluster.
+This directory is saved into cluster configuration and must be the same for all
+the database nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=mongodb \\
+    --nodes="MongoDb://192.168.10.65?port=27017;PBMAgent://192.168.10.65" \\
+    --third-party-backupdir=/pbm-backup \\
+    --vendor=percona \\
+    --provider-version=4.2 \\
+    --cluster-name=mongo_test \\
+    --wait
+.fi
+
 .TP 
 .BI --without-tags= LIST
 When listing the existing clusters this option can be used to limit the list of
