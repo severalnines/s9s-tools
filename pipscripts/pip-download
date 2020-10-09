@@ -672,11 +672,11 @@ function process_html_file_xml()
     if [ "$n_cases" -eq 0 ]; then
         printWarning "8273 No test cases in $test_name..."
         echo "*** html_file: $html_file" >&2
-        ls -lha $html_file  >&2
-        cat $html_file >&2
-        echo ""   >&2
-        echo ""   >&2
-        exit 1
+        #ls -lha $html_file  >&2
+        #cat $html_file >&2
+        #echo ""   >&2
+        #echo ""   >&2
+        #exit 1
     fi
 
     #printError "status: $test_status for $html_file"

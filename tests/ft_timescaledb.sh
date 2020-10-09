@@ -130,8 +130,9 @@ function testCreateCluster()
     cat <<EOF
   This test will create a new PostgreSQL cluster with the TimescaleDb extension
   enabled.
-
 EOF
+
+    begin_verbatim
 
     #
     # Creating containers.
@@ -156,11 +157,13 @@ EOF
         $DEBUG_OPTION
 
     check_exit_code $?
-    
+    end_verbatim
+
     #
     #
     #
     print_title "Waiting until the Cluster Started"
+    begin_verbatim
     wait_for_cluster_started "$CLUSTER_NAME"
     if [ $? -ne 0 ]; then
         failure "The cluster failed to start."
@@ -208,6 +211,8 @@ EOF
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
         --log        "/tmp/cmon_1.log"
+
+    end_verbatim
 }
 
 #
@@ -219,8 +224,9 @@ function testAddNode()
     cat <<EOF
 This test will add a new node as slave to the cluster created in the previous
 test as a single node postgresql cluster.
-
 EOF
+
+    begin_verbatim
 
     LAST_ADDED_NODE=$(create_node --autodestroy)
 
@@ -246,6 +252,8 @@ EOF
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
         --no-maint
+
+    end_verbatim
 }
 
 #
@@ -254,6 +262,7 @@ EOF
 function testDrop()
 {
     print_title "Dropping the Cluster"
+    begin_verbatim
 
     #
     # 
@@ -265,6 +274,7 @@ function testDrop()
         $DEBUG_OPTION
     
     check_exit_code $?    
+    end_verbatim
 }
 
 #
