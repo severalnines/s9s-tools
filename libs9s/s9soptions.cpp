@@ -113,6 +113,7 @@ enum S9sOptionType
     OptionBackupMethod,
     OptionBackupDirectory,
     OptionThirdPartyBackupDirectory,
+    OptionPitrStopTime,
     OptionKeepTempDir,
     OptionTempDirPath,
     OptionSubDirectory,
@@ -3037,6 +3038,22 @@ S9sOptions::thirdPartyBackupDir() const
         retval = m_userConfig.variableValue("third_party_backupdir");
         if (retval.empty())
             retval = m_systemConfig.variableValue("third_party_backupdir");
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The argument for the --pitr-stop-time option.
+ */
+S9sString
+S9sOptions::pitrStopTime() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("pitr_stop_time"))
+    {
+        retval = m_options.at("pitr_stop_time").toString();
     }
 
     return retval;
@@ -6915,6 +6932,7 @@ S9sOptions::readOptionsBackup(
         { "use-pigz",         no_argument,       0, OptionUsePigz         },
         { "no-install",       no_argument,       0, OptionNoInstall       },
         { "no-terminate",     no_argument,       0, OptionNoTerminate     },
+        { "pitr-stop-time",   required_argument, 0, OptionPitrStopTime    },
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -7310,6 +7328,11 @@ S9sOptions::readOptionsBackup(
             case OptionInputFile:
                 // --input-file=FILE
                 m_options["input_file"] = optarg;
+                break;
+
+            case OptionPitrStopTime:
+                // --pitr-stop-time="2020-07-14T14:27:04"
+                m_options["pitr_stop_time"] = optarg;
                 break;
 
             case '?':

@@ -4071,6 +4071,7 @@ S9sRpcClient::createMongoCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    S9sString       thirdPartyBackupDir = options->thirdPartyBackupDir();
     bool            retval;
 
     if (hosts.size() < 1u)
@@ -4079,135 +4080,12 @@ S9sRpcClient::createMongoCluster(
         return false;
     }
 
-    // classify hosts into separate lists for each replicaset
-    for (uint idx = 0; idx < hosts.size(); ++idx)
-    {
-        S9sString   replsetName = "replica_set_0";
-
-        S9sNode     node     = hosts[idx].toNode();
-        S9sString   protocol = node.protocol().toLower();
-
-        if (!protocol.size())
-            protocol = "mongodb";
-
-        if (protocol == "mongos")
-            replsetName = protocol;
-        else if (protocol == "mongocfg")
-            replsetName = protocol;
-        else if (protocol == "mongodb")
-        {
-            if (node.hasProperty("rs"))
-                replsetName = node.property("rs").toString();
-        } else {
-            PRINT_ERROR("Protocol name '%s' is invalid.", STR(protocol));
-            options->setExitStatus(S9sOptions::BadOptions);
-            return false;
-        }
-
-        if (!nodelistMap.contains(replsetName))
-            nodelistMap[replsetName] = S9sVariantList();
-
-        nodelistMap[replsetName] << node;
-    }
-
-    if (1 < nodelistMap.size())
-    {
-        if (!nodelistMap.contains("mongos") || 
-                !nodelistMap.contains("mongocfg"))
-        {
-            PRINT_ERROR(
-                    "When multiple replicasets/shards are defined, mongos "
-                    "and mongocfg nodes are mandatory to be defined as well.");
-
-            return false;
-        }
-    }
-
-    // The job_data describing the cluster - config nodes
-    if (nodelistMap.contains("mongocfg"))
-    {
-        S9sVariantMap configReplSet;
-        configReplSet["rs"] = "config";
-        S9sVariantList members;
-
-        for (uint idx = 0; idx < nodelistMap["mongocfg"].size(); ++idx)
-        {
-            S9sNode node = nodelistMap["mongocfg"][idx].toNode();
-            S9sVariantMap member;
-            member["hostname"] = node.hostName();
-
-            if (node.port() != 0)
-                member["port"] = node.port();
-
-            members.push_back(member);
-        }
-
-        configReplSet["members"] = members;
-        jobData["config_servers"] = configReplSet;
-    }
-
-    // The job_data describing the cluster - mongos nodes
-    if (nodelistMap.contains("mongos"))
-    {
-        S9sVariantList mongos;
-
-        for (uint idx = 0; idx < nodelistMap["mongos"].size(); ++idx)
-        {
-            S9sNode node = nodelistMap["mongos"][idx].toNode();
-            S9sVariantMap member;
-            member["hostname"] = node.hostName();
-
-            if (node.port() != 0)
-                member["port"] = node.port();
-
-            mongos.push_back(member);
-        }
-
-        jobData["mongos_servers"] = mongos;
-    }
-
-    // The job_data describing the cluster - data replicaset nodes
-    S9sVariantList replSets;
-    for(std::map<S9sString, S9sVariantList>::iterator iter = nodelistMap.begin();
-            iter != nodelistMap.end(); iter++)
-    {
-        if (iter->first == "mongocfg" || iter->first == "mongos")
-            continue;
-
-        S9sVariantMap replSet;
-        replSet["rs"] = iter->first;
-        S9sVariantList members;
-
-        for (uint idx = 0; idx < iter->second.size(); ++idx)
-        {
-            S9sNode node = iter->second[idx].toNode();
-            S9sVariantMap member;
-            member["hostname"] = node.hostName();
-
-            if (node.port() != 0)
-                member["port"] = node.port();
-
-            if (node.hasProperty("arbiter_only"))
-                member["arbiter_only"] = 
-                    node.property("arbiter_only").toBoolean();
-
-            if (node.hasProperty("priority"))
-                member["priority"] = node.property("priority").toDouble();
-
-            if (node.hasProperty("slave_delay"))
-                member["slave_delay"] = 
-                    node.property("slave_delay").toULongLong();
-
-            members.push_back(member);
-        }
-
-        replSet["members"] = members;
-        replSets.push_back(replSet);
-    }
-
     addCredentialsToJobData(jobData);
 
-    jobData["replica_sets"] = replSets;
+    jobData["nodes"]            = nodesField(hosts);
+
+    if (!thirdPartyBackupDir.empty())
+        jobData["third_party_backupdir"] = thirdPartyBackupDir;
 
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "mongodb";
@@ -7290,12 +7168,16 @@ S9sRpcClient::restoreBackup()
     S9sVariantMap   jobData      = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri          = "/v2/jobs/";
+    S9sString       pitrStopTime = options->pitrStopTime();
     bool            retval;
 
     // The job_data describing how the backup will be created.
     jobData["backupid"]   = backupId;
     jobData["bootstrap"]  = true;
     jobData["backup_datadir_before_restore"] = options->backupDatadir();
+
+    if (!pitrStopTime.empty())
+        jobData["pitr_stop_time"] = pitrStopTime;
 
     if (!options->nodes().empty())
     {

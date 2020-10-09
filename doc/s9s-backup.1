@@ -231,6 +231,22 @@ s9s backup \\
 .fi
 
 
+
+.TP
+.B \-\^\-pitr\-stop\-time
+Timestamp specification for doing point in time backup recovery.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --restore \\
+    --cluster-id=1 \\
+    --backup-id=10 \\
+    --pitr-stop-time="2020-07-14T14:27:04" \\
+    --log
+.fi
+
+
 .TP
 .B \-\^\-save\-cluster\-info
 Saves the information the controller has about one cluster.
