@@ -145,6 +145,7 @@ fi
 #
 function createCluster()
 {
+    local return_value
     #
     # Creating a Cluster.
     #
@@ -170,7 +171,12 @@ EOF
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    return_value=$?
+    check_exit_code $return_value
+    if [ "$return_value" -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
 
     mys9s cluster --stat
 
