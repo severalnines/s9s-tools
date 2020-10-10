@@ -139,8 +139,11 @@ EOF
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
 
+    print_title "Creating LDAP group"
+    begin_verbatim
     mys9s group --create ldapgroup
     mys9s group --list --long
+    end_verbatim
 }
 
 function testLdapSupport()
@@ -350,7 +353,6 @@ EOF
     check_user \
         --user-name    "pipas1"  \
         --cdt-path     "/" \
-        --full-name    "Lastname" \
         --group        "ldapgroup" \
         --dn           "cn=pipas1,dc=homelab,dc=local" \
         --origin       "LDAP"
