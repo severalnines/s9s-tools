@@ -12,7 +12,8 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./include_ldap.sh
 
 #
 # Prints usage information and exits.
@@ -272,38 +273,6 @@ EOF
         success "  o CDT '/.runtime/LDAP/configuration' is readable, ok"
     else
         failure "CDT '/.runtime/LDAP/configuration' is not proper."
-    fi
-
-    end_verbatim
-}
-
-function testLdapSupport()
-{
-    print_title "Checking LDAP Support"
-    cat <<EOF
-  This test checks if the controller has LDAP support.
-
-EOF
-
-    begin_verbatim
-    #
-    # The controller info file.
-    #
-    mys9s tree \
-        --cat \
-        --cmon-user=system \
-        --password=secret \
-        /.runtime/controller
-    
-    check_exit_code_no_job $?
-
-    if s9s tree --cat --cmon-user=system --password=secret \
-        /.runtime/controller | \
-        grep -q "have_libldap : true"; 
-    then
-        success "  o The controller has libldap, ok."
-    else
-        failure "No LDAP support."
     fi
 
     end_verbatim

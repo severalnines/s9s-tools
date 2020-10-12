@@ -12,7 +12,8 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
 cd $MYDIR
-source include.sh
+source ./include.sh
+source ./include_ldap.sh
 
 #
 # Prints usage information and exits.
@@ -146,36 +147,6 @@ EOF
     end_verbatim
 }
 
-function testLdapSupport()
-{
-    print_title "Checking LDAP Support"
-    cat <<EOF
-  This test checks if the controller has LDAP support.
-
-EOF
-    
-    begin_verbatim
-
-    mys9s tree \
-        --cat \
-        --cmon-user=system \
-        --password=secret \
-        /.runtime/controller
-    
-    check_exit_code_no_job $?
-
-    if s9s tree --cat --cmon-user=system --password=secret \
-        /.runtime/controller | \
-        grep -q "have_libldap : true"; 
-    then
-        success "  o The controller has libldap, ok."
-    else
-        failure "No LDAP support."
-    fi
-
-    end_verbatim
-}
-
 function testCmonDbUser()
 {
     print_title "Testing User with CmonDb Origin"
@@ -196,12 +167,11 @@ function testCmonDbUser()
 function testLdapUser()
 {
     print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will check teh LDAP authentication using the distinguished name at
   the login. This is the first login of the user, a CmonDb shadow will be
   created about the user and that shadow will hold some extra information the
   Cmon Controller needs and will also guarantee a unique user ID.
-
 EOF
 
     begin_verbatim
@@ -403,7 +373,7 @@ function testLdapGroup()
     local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
 
     print_title "Checking LDAP Groups"
-    cat <<EOF 
+    cat <<EOF | paragraph
   Logging in with a user that is part of an LDAP group and also not in the root
   of the LDAP tree.
 EOF
