@@ -95,6 +95,9 @@ EOF
     end_verbatim
 }
 
+#
+# Checking the successful authentication of an LDAP user with a simple name.
+#
 function testLdapUserSimple()
 {
     local retcode
@@ -126,3 +129,46 @@ EOF
 
     end_verbatim
 }
+
+#
+# Testing a successful authentication of an LDAP user with a distinguished 
+# name.
+#
+function testLdapUserDn()
+{
+    print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF | paragraph
+  This test will check teh LDAP authentication using the distinguished name at
+  the login. 
+EOF
+
+    begin_verbatim
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p \
+        username
+
+    check_exit_code_no_job $?
+
+    check_user \
+        --user-name    "username"  \
+        --cdt-path     "/" \
+        --full-name    "firstname lastname" \
+        --group        "ldapgroup" \
+        --dn           "cn=username,dc=homelab,dc=local" \
+        --origin       "LDAP"
+
+    end_verbatim
+}
+

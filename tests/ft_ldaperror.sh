@@ -301,21 +301,21 @@ function testCmonDbUser()
     end_verbatim
 }
 
-function testAuthFail()
+function testFailNoUser()
 {
     local retcode
 
     print_title "Checking if LDAP Authentication Fails"
     cat <<EOF | paragraph
   Trying to authenticate with an LDAP user. The authentication should fail 
-  now, we are checking that.
+  because the user does not exist.
 EOF
 
     begin_verbatim
     mys9s user \
         --list \
         --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --cmon-user="cn=doesnotexist,dc=homelab,dc=local" \
         --password=p
 
     retcode=$?
@@ -328,42 +328,29 @@ EOF
     end_verbatim
 }
 
-function testAuthSuccess()
+function testFailPasswd()
 {
-    print_title "Checking LDAP Authentication with Distinguished Name"
+    local retcode
+
+    print_title "Checking if LDAP Authentication Fails"
     cat <<EOF | paragraph
-  This test will check teh LDAP authentication using the distinguished name at
-  the login. This is the first login of the user, a CmonDb shadow will be
-  created about the user and that shadow will hold some extra information the
-  Cmon Controller needs and will also guarantee a unique user ID.
+  Trying to authenticate with an LDAP user. The authentication should fail 
+  because the user does not exist.
 EOF
 
     begin_verbatim
-
     mys9s user \
         --list \
         --long \
         --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p
+        --password=badpassword
 
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "username"  \
-        --cdt-path     "/" \
-        --full-name    "firstname lastname" \
-        --group        "ldapgroup" \
-        --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        success "  o The command failed, ok."
+    else
+        failure "The command should have failed."
+    fi
 
     end_verbatim
 }
@@ -438,6 +425,62 @@ function testLdapConfigDisabled()
     end_verbatim
 }
 
+function testLdapFailSimple()
+{
+    local retcode
+
+    print_title "Checking if LDAP Authentication Fails"
+    cat <<EOF | paragraph
+  Trying to authenticate with an LDAP user. The username is OK, the password is
+  OK, but authentication should fail because of the LDAP configuration (maybe it
+  is disabled or point to the wrong LDAP server or whatever).
+EOF
+
+    begin_verbatim
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="username" \
+        --password=p
+
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        success "  o The command failed, ok."
+    else
+        failure "The command should have failed."
+    fi
+
+    end_verbatim
+}
+
+function testLdapFailDn()
+{
+    local retcode
+
+    print_title "Checking if LDAP Authentication Fails"
+    cat <<EOF | paragraph
+  Trying to authenticate with an LDAP user. The username is OK, the password is
+  OK, but authentication should fail because of the LDAP configuration (maybe it
+  is disabled or point to the wrong LDAP server or whatever).
+EOF
+
+    begin_verbatim
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p
+
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        success "  o The command failed, ok."
+    else
+        failure "The command should have failed."
+    fi
+
+    end_verbatim
+}
+
 #
 # Running the requested tests.
 #
@@ -456,13 +499,16 @@ else
 
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUserSimple
-    runFunctionalTest testAuthFail
+    runFunctionalTest testFailNoUser
+    runFunctionalTest testFailPasswd
 
     runFunctionalTest testLdapConfigOk
-    runFunctionalTest testAuthSuccess
+    runFunctionalTest testLdapUserDn
+    runFunctionalTest testLdapUserSimple
 
     runFunctionalTest testLdapConfigDisabled
-    runFunctionalTest testAuthFail
+    runFunctionalTest testLdapFailSimple
+    runFunctionalTest testLdapFailDn
 fi
 
 endTests
