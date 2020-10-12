@@ -100,27 +100,7 @@ function ldap_config()
     cat <<EOF
 #
 # Cmon LDAP configuration file created by $MYNAME $VERSION.
-#
-enable_ldap_authentication = true
-
-ldap_uri          = "ldap://192.168.0.63:389"
-login_dn          = "cn=admin,dc=homelab,dc=local"
-login_dn_password = "p"
-
-users_dn          = "dc=homelab,dc=local"
-groups_dn         = "dc=homelab,dc=local"
-
-[advanced_settings]
-static_member_attribute = "memberUid"
-
-EOF
-}
-
-function ldap_config_ok()
-{
-    cat <<EOF
-#
-# Cmon LDAP configuration file created by $MYNAME $VERSION.
+# This configuration should work on the test system.
 #
 enable_ldap_authentication = true
 
@@ -145,6 +125,28 @@ function ldap_config_disabled()
 #
 enable_ldap_authentication = false
 
+
+EOF
+}
+
+function ldap_config_fail_url()
+{
+    cat <<EOF
+#
+# Cmon LDAP configuration file created by $MYNAME $VERSION.
+# This is an LDAP configuration that should fail.
+#
+enable_ldap_authentication = true
+
+ldap_uri          = "ldap://no.such.server.com:389"
+login_dn          = "cn=admin,dc=homelab,dc=local"
+login_dn_password = "p"
+
+users_dn          = "dc=homelab,dc=local"
+groups_dn         = "dc=homelab,dc=local"
+
+[advanced_settings]
+static_member_attribute = "memberUid"
 
 EOF
 }
@@ -355,51 +357,6 @@ EOF
     end_verbatim
 }
 
-function testLdapConfigOk()
-{
-    local filename="/etc/cmon-ldap.cnf"
-    local mode
-
-    print_title "Creating an LDAP Config that Works"
-    cat <<EOF | paragraph
-  This test will write the LDAP config file through a CDT file. Then the file
-  is checked.
-EOF
-
-    begin_verbatim
-    #ls -lha $filename
-    ldap_config_ok | \
-        s9s tree --save \
-        --cmon-user=system \
-        --password=secret \
-        "/.runtime/LDAP/configuration"
-
-    check_exit_code_no_job $?
-    
-    if [ -f "$filename" ]; then
-        success "  o The file '$filename' exists, ok."
-    else
-        failure "File '$filename' does not exist."
-    fi
-
-    mode=$(ls -lha "$filename" | awk '{print $1}')
-    if [ "$mode" == "-rw-------" ]; then
-        success "  o The mode is '$mode', ok."
-    else
-        failure "The mode is '$mode', should be '-rw-------'."
-    fi
-
-    #
-    #
-    #
-    #mys9s tree \
-    #    --cat \
-    #    --cmon-user=system \
-    #    --password=secret \
-    #    /.runtime/LDAP/configuration
-    end_verbatim
-}
-
 function testLdapConfigDisabled()
 {
     print_title "Creating an LDAP Config that is Disabled"
@@ -414,6 +371,28 @@ function testLdapConfigDisabled()
     #
     #
     #
+    mys9s tree \
+        --cat \
+        --cmon-user=system \
+        --password=secret \
+        /.runtime/LDAP/configuration
+
+    cat /etc/cmon-ldap.cnf | print_ini_file
+
+    end_verbatim
+}
+
+function testLdapConfigFail()
+{
+    print_title "Creating an LDAP Config that is Disabled"
+
+    begin_verbatim
+
+    ls -lha /etc/cmon-ldap.cnf
+    ldap_config_fail_url | s9s tree --save --cmon-user=system --password=secret "/.runtime/LDAP/configuration"
+
+    check_exit_code_no_job $?
+    
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -499,16 +478,28 @@ else
 
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUserSimple
+    runFunctionalTest testLdapUserDn
     runFunctionalTest testFailNoUser
     runFunctionalTest testFailPasswd
-
-    runFunctionalTest testLdapConfigOk
-    runFunctionalTest testLdapUserDn
-    runFunctionalTest testLdapUserSimple
 
     runFunctionalTest testLdapConfigDisabled
     runFunctionalTest testLdapFailSimple
     runFunctionalTest testLdapFailDn
+    runFunctionalTest testFailNoUser
+    runFunctionalTest testFailPasswd
+    
+    runFunctionalTest testLdapConfigFail
+    runFunctionalTest testLdapFailSimple
+    runFunctionalTest testLdapFailDn
+    runFunctionalTest testFailNoUser
+    runFunctionalTest testFailPasswd
+    
+    # The user gets disabled here.
+    #runFunctionalTest testCreateLdapConfig
+    #runFunctionalTest testLdapUserSimple
+    #runFunctionalTest testLdapUserDn
+    #runFunctionalTest testFailNoUser
+    #runFunctionalTest testFailPasswd
 fi
 
 endTests
