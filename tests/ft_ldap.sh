@@ -265,12 +265,11 @@ EOF
 function testLdapUserSecond()
 {
     print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will check teh LDAP authentication using the distinguished name at
   the login. This is not the first time the user logins, so the CmonDb shadow
   should be found. This shadow contains the origin set to LDAP and so LDAP
   authentication should be used.
-
 EOF
 
     begin_verbatim

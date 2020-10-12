@@ -149,17 +149,19 @@ enable_ldap_authentication = false
 EOF
 }
 
+#
+# Sets and gets the LDAP configuration, checks its content.
+#
 function testCreateLdapConfig()
 {
     local lines
     local filename="/etc/cmon-ldap.cnf"
+    local cdt_path="/.runtime/LDAP/configuration"
 
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
   This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
-  file that holds the settings of the LDAP settnings for the Cmon Controller.
-  
-  Here is the configuration we created:
+  file that holds the settings of the LDAP settings for the Cmon Controller.
 EOF
    
     begin_verbatim
@@ -174,9 +176,6 @@ EOF
 
     ls -lha $filename
 
-    #
-    #
-    #
     mys9s tree \
         --cat \
         --cmon-user=system \
@@ -186,27 +185,28 @@ EOF
     #
     #
     #
-    mys9s tree \
-        --tree \
-        --all \
-        --cmon-user=system \
-        --password=secret \
-        /.runtime
+    if false; then
+        mys9s tree \
+            --tree \
+            --all \
+            --cmon-user=system \
+            --password=secret \
+            /.runtime
     
-    check_exit_code_no_job $?
+        check_exit_code_no_job $?
     
-    mys9s tree \
-        --list \
-        --long \
-        --recursive \
-        --full-path \
-        --all \
-        --cmon-user=system \
-        --password=secret \
-        /
+        mys9s tree \
+            --list \
+            --long \
+            --recursive \
+            --full-path \
+            --all \
+            --cmon-user=system \
+            --password=secret \
+            /
     
-    check_exit_code_no_job $?
-    
+        check_exit_code_no_job $?
+    fi
 
     #
     # Listing the LDAP config in the CDT.
@@ -253,13 +253,13 @@ EOF
     fi
 
     #
-    #
+    # Checking the content of the LDAP configuration CDT entry.
     #
     mys9s tree \
         --cat \
         --cmon-user=system \
         --password=secret \
-        /.runtime/LDAP/configuration
+        $cdt_path
     
     check_exit_code_no_job $?
 
@@ -267,12 +267,18 @@ EOF
         --cat \
         --cmon-user=system \
         --password=secret \
-        /.runtime/LDAP/configuration)
+        $cdt_path)
 
-    if echo "$lines" | grep --quiet "ldap_server_uri"; then
-        success "  o CDT '/.runtime/LDAP/configuration' is readable, ok"
+    if echo "$lines" | grep --quiet "ldap_uri"; then
+        success "  o CDT '$cdt_path' has ldap_uri, OK."
     else
-        failure "CDT '/.runtime/LDAP/configuration' is not proper."
+        failure "CDT '$cdt_path' has no ldap_uri."
+    fi
+    
+    if echo "$lines" | grep --quiet "login_dn"; then
+        success "  o CDT '$cdt_path' has login_dn, OK."
+    else
+        failure "CDT '$cdt_path' has no login_dn."
     fi
 
     end_verbatim
@@ -357,44 +363,6 @@ EOF
         --full-name    "firstname lastname" \
         --group        "ldapgroup" \
         --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
-    end_verbatim
-}
-
-function testLdapGroup()
-{
-    local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
-
-    print_title "Checking LDAP Groups"
-    cat <<EOF | paragraph
-  Logging in with a user that is part of an LDAP group and also not in the root
-  of the LDAP tree.
-EOF
-
-    begin_verbatim
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="$username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="$username" \
-        --password=p \
-        lpere
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "lpere"  \
-        --cdt-path     "/" \
-        --group        "ldapgroup" \
-        --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 
     end_verbatim
