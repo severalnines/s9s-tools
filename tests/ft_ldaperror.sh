@@ -451,6 +451,7 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest testCmonDbUser
+    runFunctionalTest testCreateLdapGroup
     runFunctionalTest testLdapSupport
 
     runFunctionalTest testCreateLdapConfig

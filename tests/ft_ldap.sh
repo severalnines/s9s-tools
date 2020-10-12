@@ -139,12 +139,6 @@ EOF
     ldap_config |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
-
-    print_title "Creating LDAP group"
-    begin_verbatim
-    mys9s group --create ldapgroup
-    mys9s group --list --long
-    end_verbatim
 }
 
 function testCmonDbUser()
@@ -412,6 +406,7 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest testCmonDbUser
+    runFunctionalTest testCreateLdapGroup
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser

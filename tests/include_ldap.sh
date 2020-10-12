@@ -4,6 +4,23 @@
 #
 
 #
+# Creating the group or groups needed by the LDAP test scripts.
+#
+function testCreateLdapGroup()
+{
+    print_title "Creating LDAP Group"
+    cat << EOF | paragraph
+    LDAP tests need to have some group(s) for the LDAP users created in advance.
+    This test will create the necessary group(s) for the test scripts.
+EOF
+ 
+    begin_verbatim
+    mys9s group --create ldapgroup
+    mys9s group --list --long
+    end_verbatim  
+}
+
+#
 # Checking the /.runtime/controller CDT file to see if there is an LDAP support.
 # In the current version of the controller LDAP support is mandatory.
 # 
