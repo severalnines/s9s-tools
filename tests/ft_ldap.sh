@@ -204,44 +204,14 @@ EOF
     end_verbatim
 }
 
-function testLdapUserSimple()
+function testLdapChangePasswd()
 {
-    local retcode
-
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is not
-  the first login, the existing CmonDb shadow will be found and identified.
-
-EOF
-    begin_verbatim
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="username" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    end_verbatim
-
     #
     #
     #
     print_title "Trying to Change the Password of a User"
     cat <<EOF
   Changing the password on the LDAP server is not yet implemented.
-
 EOF
 
     begin_verbatim
@@ -367,44 +337,6 @@ EOF
     end_verbatim
 }
 
-function testLdapGroup()
-{
-    local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
-
-    print_title "Checking LDAP Groups"
-    cat <<EOF | paragraph
-  Logging in with a user that is part of an LDAP group and also not in the root
-  of the LDAP tree.
-EOF
-
-    begin_verbatim
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="$username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="$username" \
-        --password=p \
-        lpere
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "lpere"  \
-        --cdt-path     "/" \
-        --group        "ldapgroup" \
-        --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
-    end_verbatim
-}
-
 function testLdapFailures()
 {
     local retcode
@@ -484,6 +416,7 @@ else
     runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUser
     runFunctionalTest testLdapUserSimple
+    runFunctionalTest testLdapChangePasswd
     runFunctionalTest testLdapUserSecond
     runFunctionalTest testLdapUserSimpleFirst
     runFunctionalTest testLdapObject

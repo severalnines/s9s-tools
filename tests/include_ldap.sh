@@ -78,3 +78,34 @@ EOF
     end_verbatim
 }
 
+function testLdapUserSimple()
+{
+    local retcode
+
+    print_title "Checking LDAP Authentication with Username"
+    cat <<EOF | paragraph
+  This test checks the LDAP authentication using the simple name. The user
+  should be able to authenticate.
+EOF
+
+    begin_verbatim
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="username" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="username" \
+        --password=p \
+        username
+
+    check_exit_code_no_job $?
+
+    end_verbatim
+}

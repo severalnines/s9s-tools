@@ -306,10 +306,9 @@ function testAuthFail()
     local retcode
 
     print_title "Checking if LDAP Authentication Fails"
-    cat <<EOF
+    cat <<EOF | paragraph
   Trying to authenticate with an LDAP user. The authentication should fail 
   now, we are checking that.
-
 EOF
 
     begin_verbatim
@@ -325,6 +324,7 @@ EOF
     else
         failure "The command should have failed."
     fi
+
     end_verbatim
 }
 
@@ -454,6 +454,7 @@ else
     runFunctionalTest testLdapSupport
 
     runFunctionalTest testCreateLdapConfig
+    runFunctionalTest testLdapUserSimple
     runFunctionalTest testAuthFail
 
     runFunctionalTest testLdapConfigOk
