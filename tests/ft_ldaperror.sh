@@ -100,24 +100,17 @@ function ldap_config()
 #
 # Cmon LDAP configuration file created by $MYNAME $VERSION.
 #
+enable_ldap_authentication = true
 
-#
-# The URI where the Cmon Controller will find the LDAP server as it is specified
-# in the ldap.conf(5).
-#
-ldap_server_uri = "ldap://192.168.42.42:389"
+ldap_uri          = "ldap://192.168.0.63:389"
+login_dn          = "cn=admin,dc=homelab,dc=local"
+login_dn_password = "p"
 
-#
-# The default base DN to be used when performing LDAP operations. As it is
-# specified in the ldap.conf(5).
-#
-ldap_base_dn    = "dc=homelab,dc=local"
+users_dn          = "dc=homelab,dc=local"
+groups_dn         = "dc=homelab,dc=local"
 
-#
-# The credentials of the LDAP admin user.
-#
-ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
-ldap_admin_pwd  = "p"
+[advanced_settings]
+static_member_attribute = "memberUid"
 
 EOF
 }
@@ -126,12 +119,19 @@ function ldap_config_ok()
 {
     cat <<EOF
 #
-# Second Cmon LDAP configuration file created by $MYNAME $VERSION.
+# Cmon LDAP configuration file created by $MYNAME $VERSION.
 #
-ldap_server_uri = "ldap://192.168.0.63:389"
-ldap_base_dn    = "dc=homelab,dc=local"
-ldap_admin_dn   = "cn=admin,dc=homelab,dc=local"
-ldap_admin_pwd  = "p"
+enable_ldap_authentication = true
+
+ldap_uri          = "ldap://192.168.0.63:389"
+login_dn          = "cn=admin,dc=homelab,dc=local"
+login_dn_password = "p"
+
+users_dn          = "dc=homelab,dc=local"
+groups_dn         = "dc=homelab,dc=local"
+
+[advanced_settings]
+static_member_attribute = "memberUid"
 
 EOF
 }
@@ -140,13 +140,10 @@ function ldap_config_disabled()
 {
     cat <<EOF
 #
-# Third Cmon LDAP configuration file created by $MYNAME $VERSION.
+# Cmon LDAP configuration file created by $MYNAME $VERSION.
 #
-ldap_is_enabled  = false
-ldap_server_uri  = "ldap://192.168.0.63:389"
-ldap_base_dn     = "dc=homelab,dc=local"
-ldap_admin_dn    = "cn=admin,dc=homelab,dc=local"
-ldap_admin_pwd   = "p"
+enable_ldap_authentication = false
+
 
 EOF
 }
@@ -358,18 +355,20 @@ EOF
 
 function testAuthSuccess()
 {
-    print_title "Checking if LDAP Authentication Succeeds"
-    cat <<EOF 
-  Checking if the LDAP authentication succeeds. This time the LDAP
-  authentication should work.
-
+    print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF | paragraph
+  This test will check teh LDAP authentication using the distinguished name at
+  the login. This is the first login of the user, a CmonDb shadow will be
+  created about the user and that shadow will hold some extra information the
+  Cmon Controller needs and will also guarantee a unique user ID.
 EOF
-    
+
     begin_verbatim
+
     mys9s user \
         --list \
         --long \
-        --cmon-user="pipas2" \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
         --password=p
 
     check_exit_code_no_job $?
@@ -377,17 +376,18 @@ EOF
     mys9s user \
         --stat \
         --long \
-        --cmon-user="pipas2" \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
         --password=p \
-        pipas2
+        username
 
     check_exit_code_no_job $?
-    
+
     check_user \
-        --user-name    "pipas2"  \
+        --user-name    "username"  \
         --cdt-path     "/" \
-        --group        "LDAPUsers" \
-        --dn           "uid=pipas2,dc=homelab,dc=local" \
+        --full-name    "firstname lastname" \
+        --group        "ldapgroup" \
+        --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
 
     end_verbatim
@@ -398,10 +398,9 @@ function testLdapGroup()
     local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
 
     print_title "Checking LDAP Groups"
-    cat <<EOF 
+    cat <<EOF | paragraph
   Logging in with a user that is part of an LDAP group and also not in the root
   of the LDAP tree.
-
 EOF
 
     begin_verbatim
@@ -425,7 +424,7 @@ EOF
     check_user \
         --user-name    "lpere"  \
         --cdt-path     "/" \
-        --group        "users" \
+        --group        "ldapgroup" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 
@@ -438,10 +437,9 @@ function testLdapConfigOk()
     local mode
 
     print_title "Creating an LDAP Config that Works"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will write the LDAP config file through a CDT file. Then the file
   is checked.
-
 EOF
 
     begin_verbatim
