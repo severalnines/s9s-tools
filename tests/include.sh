@@ -51,6 +51,17 @@ if [ -x ../s9s/s9s ]; then
     S9S="../s9s/s9s"
 fi
 
+#
+# Prints the arguments but only if the output does not go to the standard
+# output.
+#
+function print_html()
+{
+    if [ ! -t 1 ]; then
+        echo $*
+    fi
+}
+
 function color_command()
 {
     sed \
@@ -3470,8 +3481,8 @@ function runFunctionalTest ()
     TEST_NAME=$1
 
     # This shows the beginning of the test.
-    echo ""
-    echo "<!-- p42dc 200 $TEST_NAME -->"
+    print_html ""
+    print_html "<!-- p42dc 200 $TEST_NAME -->"
 
     #
     # This is where we call the function that executes the test. Unless
@@ -3515,20 +3526,20 @@ function runFunctionalTest ()
 
     if [ -n "$test_skipped" ]; then
         # Skipped
-        echo "<!-- p42dc 101 $TEST_NAME -->"
+        print_html "<!-- p42dc 101 $TEST_NAME -->"
     elif ! isSuccess; then
         # FAILURE
-        echo "<!-- p42dc 102 $TEST_NAME -->"
+        print_html "<!-- p42dc 102 $TEST_NAME -->"
     else 
         # SUCCESS
-        echo "<!-- p42dc 103 $TEST_NAME -->"
+        print_html "<!-- p42dc 103 $TEST_NAME -->"
     fi
 
     # This shows how long it took to execute this particular test case.
-    echo "<!-- p42dc 300 $test_elapsed_time -->"
+    print_html "<!-- p42dc 300 $test_elapsed_time -->"
     
     # This marks the end of the test case.
-    echo "<!-- p42dc 201 $TEST_NAME -->"
+    print_html "<!-- p42dc 201 $TEST_NAME -->"
 
     if [ -f "$client_log_file" ]; then
         echo -n "" >"$client_log_file"
