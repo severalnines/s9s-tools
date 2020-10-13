@@ -544,6 +544,9 @@ class S9sRpcClient
 
         bool addPBMAgent(
                 const S9sVariantList &hosts);
+
+        bool addNFSClient(
+                const S9sVariantList &hosts);
         
         bool addProxySql(
                 const S9sVariantList &hosts);
