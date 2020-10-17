@@ -1156,7 +1156,7 @@ function run_test()
             message "Running '$test_name'..."
             upload_slog_file
 
-            timeout --kill-after=122m 120m ./$test_name \
+            timeout --kill-after=182m 180m ./$test_name \
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
