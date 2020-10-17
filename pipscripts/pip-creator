@@ -1,0 +1,309 @@
+#! /bin/bash
+export MYNAME=$(basename $0)
+export MYDIR=$(dirname $0)
+export MYDIR=$(readlink -m "$MYDIR")
+export VERSION="0.0.6"
+export VERBOSE=""
+export LOGFILE=""
+
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
+function printHelpAndExit()
+{
+cat <<EOF
+Usage:
+  $MYNAME [OPTION]... 
+
+  $MYNAME - Creates files.
+
+  -h, --help             Print this help and exit.
+  -v, --version          Print version information and exit.
+  --verbose              Print more messages.
+  --log-file=FILE        Store all the messages in the given file too.
+
+  --create-unit-test     
+
+EOF
+    exit 0
+}
+
+ARGS=$(\
+    getopt \
+        -o hvs:c:l \
+        -l "help,verbose,version,log-file:,create-unit-test" \
+        -- "$@")
+
+if [ $? -ne 0 ]; then
+    exit 6
+fi
+
+eval set -- "$ARGS"
+while true; do
+    case "$1" in
+        -h|--help)
+            shift
+            printHelpAndExit
+            ;;
+
+        --verbose)
+            shift
+            VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
+            ;;
+
+        -v|--version)
+            shift
+            VERSION_OPTION="--version"
+            ;;
+
+        --log-file)
+            shift
+            LOGFILE="$(readlink -m "$1")"
+            shift
+            ;;
+
+        --create-unit-test)
+            shift
+            OPTION_CREATE_UNIT_TEST="true"
+            ;;
+
+        --)
+            shift
+            break
+            ;;
+
+        *)
+            printError "Option '$1' not handled."
+            break
+            ;;
+    esac
+done
+
+EXTRA_OPTIONS=$*
+
+function emit_ut_makefile()
+{
+    local name
+    local lowercase
+    local filename
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --lowercase)
+                lowercase="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    cat <<EOF >$filename
+include \$(top_srcdir)/tests/common.am
+
+bin_PROGRAMS = ut_$lowercase
+
+ut_${lowercase}_SOURCES =          \\
+	\$(unit_test_sources)        \\
+	ut_${lowercase}.h              \\
+	ut_${lowercase}.cpp  
+EOF
+
+}
+
+function emit_ut_header()
+{
+    local name
+    local lowercase
+    local filename
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --lowercase)
+                lowercase="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_header(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    cat <<EOF >$filename
+#pragma once
+
+#include "PevTestHelper"
+
+class Ut${name} : public PevTestHelper
+{
+    public:
+        Ut${name}();
+        virtual ~Ut${name}();
+        virtual bool runTest(const char *testName = 0);
+
+    protected:
+        bool testCreate();
+};
+EOF
+}
+
+function emit_ut_cpp()
+{
+    local name
+    local lowercase
+    local filename
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --lowercase)
+                lowercase="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    cat <<EOF >$filename
+#include "ut_${lowercase}.h"
+
+//#define DEBUG
+//#define WARNING
+#include "pevdebug.h"
+
+Ut${name}::Ut${name}()
+{
+}
+
+Ut${name}::~Ut${name}()
+{
+}
+
+bool
+Ut${name}::runTest(const char *testName)
+{
+    bool retval = true;
+    PERFORM_TEST(testCreate,              retval);
+
+    return retval;
+}
+
+bool
+Ut${name}::testCreate()
+{
+    return true;
+}
+
+PEV_UNIT_TEST_MAIN(Ut${name})
+EOF
+
+}
+
+
+function create_unit_test()
+{
+    local name=$1
+    local lowercase
+    local dirname
+    local filename_am
+    local filename_h
+    local filename_cpp
+
+    #local prefix="${name:0:3}"
+    lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+    dirname="tests/ut_$lowercase"
+    filename_am="$dirname/Makefile.am"
+    filename_h="$dirname/ut_${lowercase}.h"
+    filename_cpp="$dirname/ut_${lowercase}.cpp"
+
+    if [ -f "$filename_am" ]; then
+        printError "File '$filename_am' already exists."
+        return 1
+    fi
+    
+    if [ -f "$filename_h" ]; then
+        printError "File '$filename_h' already exists."
+        return 1
+    fi
+    
+    if [ -f "$filename_cpp" ]; then
+        printError "File '$filename_cpp' already exists."
+        return 1
+    fi
+
+    #
+    # Creating the output directory if it doesn't exist.
+    #
+    if [ ! -d "$dirname" ]; then
+        mkdir -p "$dirname"
+    fi
+
+    if [ ! -d "$dirname" ]; then
+        printError "Could not create directory '$dirname'."
+        return 1
+    fi
+
+
+    printVerbose "      name: '$name'"
+    printVerbose " lowercase: '$lowercase'"
+    printVerbose "   dirname: '$dirname'"
+    printVerbose "     file1: '$filename_am'"
+    printVerbose "     file1: '$filename_h'"
+    printVerbose "     file1: '$filename_cpp'"
+    emit_ut_makefile \
+        --lowercase "$lowercase" \
+        --name      "$name"      \
+        --filename  "$filename_am"
+
+    emit_ut_header \
+        --lowercase "$lowercase" \
+        --name      "$name" \
+        --filename  "$filename_h"
+    
+    emit_ut_cpp \
+        --lowercase "$lowercase" \
+        --name      "$name" \
+        --filename  "$filename_cpp"
+}
+
+create_unit_test $1

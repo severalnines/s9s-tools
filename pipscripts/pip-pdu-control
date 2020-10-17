@@ -325,6 +325,9 @@ function outlet_requested()
 }
 
 # https://tobinsramblings.wordpress.com/2011/05/03/snmp-tutorial-apc-pdus/
+# sudo apt-get install snmp
+# sudo apt-get install libsnmp-base
+# sudo apt-get install snmp-mibs-downloader
 #
 # Check the status of one outlet:
 # snmpget -v 1 -c private pdu01 PowerNet-MIB::sPDUOutletCtl.6
@@ -344,7 +347,8 @@ function switch_apc()
     local outlets
     local tmp
     local retval
- 
+
+    printVerbose "switch_apc(): $PDU_OPERATION"
     if [ -n "$OPTION_OUTLET" ]; then
         outlets="$(echo "$OPTION_OUTLET" | tr ',' ' ')"
     elif [ "$PDU_OUTLETS" == "all" ]; then
@@ -398,7 +402,8 @@ function switch_apc()
                     else
                         status="?"
                     fi
-                
+               
+                    printVerbose "stat/${CONF_PDU_SERVER}_$outlet/POWER -> $status"
                     mosquitto_pub \
                         -u "$MQTT_USER" \
                         -P "$MQTT_PASSWORD" \
@@ -765,6 +770,7 @@ function print_outlets_long_for_device()
                 status="?"
             fi
         
+            printVerbose "stat/${CONF_PDU_SERVER}_$outlet/POWER -> $status"
             mosquitto_pub \
                 -u "$MQTT_USER" \
                 -P "$MQTT_PASSWORD" \

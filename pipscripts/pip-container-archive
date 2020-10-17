@@ -1,18 +1,18 @@
 #! /bin/bash
-MYNAME=$(basename $0)
-MYDIR=$(dirname $0)
-MYDIR=$(readlink -m "$MYDIR")
-VERSION="0.0.6"
-VERBOSE=""
-LOGFILE=""
-CONTAINER=""
-SERVER=""
-SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
-STOP_OPTION=""
-GZIP_OPTION=""
+export MYNAME=$(basename $0)
+export MYDIR=$(dirname $0)
+export MYDIR=$(readlink -m "$MYDIR")
+export VERSION="0.0.6"
+export VERBOSE=""
+export LOGFILE=""
+export CONTAINER=""
+export SERVER=""
+export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
-OPTION_DRY=""
-OPTION_ARCHIVE_DIRECTORY="$HOME/archives"
+export STOP_OPTION=""
+export GZIP_OPTION=""
+export OPTION_DRY=""
+export OPTION_ARCHIVE_DIRECTORY="$HOME/archives"
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
@@ -20,14 +20,6 @@ else
     echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
     exit 5
 fi
-
-#
-# Prints the software version and exits.
-#
-function printVersionAndExit()
-{
-    echo "$MYNAME Version $VERSION on $(hostname)." >&2
-}
 
 function printHelpAndExit()
 {
