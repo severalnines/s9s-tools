@@ -27,6 +27,11 @@ Usage:
   --log-file=FILE        Store all the messages in the given file too.
 
   --create-unit-test     
+  --create-object
+
+EXAMPLE:
+  pip-creator --create-unit-test --verbose PevEvent
+  pip-creator --create-object --verbose PevSome
 
 EOF
     exit 0
@@ -35,7 +40,8 @@ EOF
 ARGS=$(\
     getopt \
         -o hvs:c:l \
-        -l "help,verbose,version,log-file:,create-unit-test" \
+        -l "help,verbose,version,log-file:,dry,\
+create-unit-test,create-object" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -67,9 +73,19 @@ while true; do
             shift
             ;;
 
+        --dry)
+            shift
+            OPTION_DRY="true"
+            ;;
+
         --create-unit-test)
             shift
-            OPTION_CREATE_UNIT_TEST="true"
+            OPTION_MODE="create-unit-test"
+            ;;
+
+        --create-object)
+            shift
+            OPTION_MODE="create-object"
             ;;
 
         --)
@@ -86,26 +102,38 @@ done
 
 EXTRA_OPTIONS=$*
 
+function exit_if_file_exists()
+{
+    local filename="$1"
+
+    if [ -f "$filename" ]; then
+        printError "File '$filename' already exists."
+        exit 1
+    fi
+}
+
 function emit_ut_makefile()
 {
     local name
-    local lowercase
+    local name_lowercase
     local filename
+    local prefix
 
     while [ -n "$1" ]; do
         case "$1" in 
             --name)
                 name="$2"
-                shift 2
-                ;;
-
-            --lowercase)
-                lowercase="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
                 shift 2
                 ;;
 
             --filename)
                 filename="$2"
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
                 shift 2
                 ;;
 
@@ -114,16 +142,20 @@ function emit_ut_makefile()
                 return 1
         esac
     done
-    
+   
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
     cat <<EOF >$filename
 include \$(top_srcdir)/tests/common.am
 
-bin_PROGRAMS = ut_$lowercase
+bin_PROGRAMS = ut_$name_lowercase
 
-ut_${lowercase}_SOURCES =          \\
+ut_${name_lowercase}_SOURCES =          \\
 	\$(unit_test_sources)        \\
-	ut_${lowercase}.h              \\
-	ut_${lowercase}.cpp  
+	ut_${name_lowercase}.h              \\
+	ut_${name_lowercase}.cpp  
 EOF
 
 }
@@ -131,23 +163,25 @@ EOF
 function emit_ut_header()
 {
     local name
-    local lowercase
+    local name_lowercase
     local filename
+    local prefix
 
     while [ -n "$1" ]; do
         case "$1" in 
             --name)
                 name="$2"
-                shift 2
-                ;;
-
-            --lowercase)
-                lowercase="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
                 shift 2
                 ;;
 
             --filename)
                 filename="$2"
+                shift 2
+                ;;
+            
+            --prefix)
+                prefix="$2"
                 shift 2
                 ;;
 
@@ -157,12 +191,16 @@ function emit_ut_header()
         esac
     done
     
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
     cat <<EOF >$filename
 #pragma once
 
-#include "PevTestHelper"
+#include "${prefix}TestHelper"
 
-class Ut${name} : public PevTestHelper
+class Ut${name} : public ${prefix}TestHelper
 {
     public:
         Ut${name}();
@@ -178,23 +216,29 @@ EOF
 function emit_ut_cpp()
 {
     local name
-    local lowercase
+    local name_lowercase
     local filename
+    local prefix
+    local prefix_upper
+    local prefix_lower
 
     while [ -n "$1" ]; do
         case "$1" in 
             --name)
                 name="$2"
-                shift 2
-                ;;
-
-            --lowercase)
-                lowercase="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
                 shift 2
                 ;;
 
             --filename)
                 filename="$2"
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
+                prefix_upper=$(echo "$prefix" | tr '[a-z]' '[A-Z]')
+                prefix_lower=$(echo "$prefix" | tr '[A-Z]' '[a-z]')
                 shift 2
                 ;;
 
@@ -204,12 +248,16 @@ function emit_ut_cpp()
         esac
     done
     
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
     cat <<EOF >$filename
-#include "ut_${lowercase}.h"
+#include "ut_${name_lowercase}.h"
 
 //#define DEBUG
 //#define WARNING
-#include "pevdebug.h"
+#include "${prefix_lower}debug.h"
 
 Ut${name}::Ut${name}()
 {
@@ -234,27 +282,311 @@ Ut${name}::testCreate()
     return true;
 }
 
-PEV_UNIT_TEST_MAIN(Ut${name})
+${prefix_upper}_UNIT_TEST_MAIN(Ut${name})
 EOF
 
 }
 
+function emit_object_p_h()
+{
+    local name
+    local name_lowercase
+    local filename
+    local prefix
+    local prefix_upper
+    local prefix_lower
 
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
+                prefix_upper=$(echo "$prefix" | tr '[a-z]' '[A-Z]')
+                prefix_lower=$(echo "$prefix" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
+    cat <<EOF >$filename
+#pragma once
+
+#include "${prefix}Types"
+#include "${prefix_lower}object_p.h"
+
+/**
+ * \brief The private part of the $name class.
+ */
+class ${name}Private : public PevObjectPrivate
+{
+    public:
+        ${name}Private();
+        virtual ~${name}Private();
+};
+EOF
+}
+
+function emit_object_p_cpp()
+{
+    local name
+    local name_lowercase
+    local filename
+    local prefix
+    local prefix_upper
+    local prefix_lower
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
+                prefix_upper=$(echo "$prefix" | tr '[a-z]' '[A-Z]')
+                prefix_lower=$(echo "$prefix" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
+    cat <<EOF >$filename
+#include "${name_lowercase}_p.h"
+
+#include "${prefix}Exception"
+
+//#define DEBUG
+//#define WARNING
+#include "${prefix_lower}debug.h"
+
+${name}Private::${name}Private() :
+    ${prefix}ObjectPrivate("${name}")
+{
+}
+
+${name}Private::~${name}Private()
+{
+}
+EOF
+}
+
+function emit_object_h()
+{
+    local name
+    local name_lowercase
+    local filename
+    local prefix
+    local prefix_upper
+    local prefix_lower
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
+                prefix_upper=$(echo "$prefix" | tr '[a-z]' '[A-Z]')
+                prefix_lower=$(echo "$prefix" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
+    cat <<EOF >$filename
+#pragma once
+
+#include <${prefix}Types>
+#include <${prefix}Object>
+
+class ${name}Private;
+
+/**
+ * \class ${name} ${name} <${name}>
+ * \brief Add class description here.
+ */
+class ${name} : public ${prefix}Object
+{
+    public:
+        ${name}();
+        virtual ~${name}();
+
+    private:
+         ${prefix_upper}_DECLARE_PRIVATE(${name});
+};
+EOF
+}
+
+function emit_object_cpp()
+{
+    local name
+    local name_lowercase
+    local filename
+    local prefix
+    local prefix_upper
+    local prefix_lower
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
+                prefix_upper=$(echo "$prefix" | tr '[a-z]' '[A-Z]')
+                prefix_lower=$(echo "$prefix" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
+    cat <<EOF >$filename
+#include "${name_lowercase}.h"
+#include "${name_lowercase}_p.h"
+
+//#define DEBUG
+//#define WARNING
+#include "${prefix_lower}debug.h"
+
+${name}::${name}() :
+    ${prefix}Object(new ${name}Private)
+{
+}
+
+${name}::~${name}()
+{
+}
+EOF
+}
+
+function emit_object_include()
+{
+    local name
+    local name_lowercase
+    local filename
+    local prefix
+    local prefix_upper
+    local prefix_lower
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --name)
+                name="$2"
+                shift 2
+                ;;
+
+            --filename)
+                filename="$2"
+                name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            --prefix)
+                prefix="$2"
+                prefix_upper=$(echo "$prefix" | tr '[a-z]' '[A-Z]')
+                prefix_lower=$(echo "$prefix" | tr '[A-Z]' '[a-z]')
+                shift 2
+                ;;
+
+            *)
+                printError "emit_ut_makefile(): Invalid option '$1'."
+                return 1
+        esac
+    done
+    
+    if [ -n "$OPTION_DRY" ]; then
+        return 0
+    fi
+
+    cat <<EOF >$filename
+#include <${name_lowercase}.h>
+EOF
+}
+#
+# This method will create three files, a Makefile.am, a .cpp and a .p file which
+# together will form a new unit test.
+#
 function create_unit_test()
 {
     local name=$1
-    local lowercase
+    local name_lowercase
     local dirname
     local filename_am
     local filename_h
     local filename_cpp
+    local prefix
 
-    #local prefix="${name:0:3}"
-    lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
-    dirname="tests/ut_$lowercase"
+    prefix="${name:0:3}"
+    name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+    dirname="tests/ut_$name_lowercase"
     filename_am="$dirname/Makefile.am"
-    filename_h="$dirname/ut_${lowercase}.h"
-    filename_cpp="$dirname/ut_${lowercase}.cpp"
+    filename_h="$dirname/ut_${name_lowercase}.h"
+    filename_cpp="$dirname/ut_${name_lowercase}.cpp"
 
     if [ -f "$filename_am" ]; then
         printError "File '$filename_am' already exists."
@@ -266,8 +598,74 @@ function create_unit_test()
         return 1
     fi
     
-    if [ -f "$filename_cpp" ]; then
-        printError "File '$filename_cpp' already exists."
+    exit_if_file_exists "$filename_am"
+    exit_if_file_exists "$filename_h"
+    exit_if_file_exists "$filename_cpp"
+
+    #
+    # Creating the output directory if it doesn't exist.
+    #
+    if [ ! -d "$dirname" ]; then
+        mkdir -p "$dirname"
+    fi
+
+    if [ ! -d "$dirname" ]; then
+        printError "Could not create directory '$dirname'."
+        return 1
+    fi
+
+    #
+    #
+    #
+    printVerbose "      name: '$name'"
+    printVerbose "    prefix: '$prefix'"
+    printVerbose "   dirname: '$dirname'"
+    printVerbose "     file1: '$filename_am'"
+    printVerbose "     file2: '$filename_h'"
+    printVerbose "     file3: '$filename_cpp'"
+    emit_ut_makefile                \
+        --name      "$name"         \
+        --prefix    "$prefix"       \
+        --filename  "$filename_am"
+
+    emit_ut_header                  \
+        --name      "$name"         \
+        --prefix    "$prefix"       \
+        --filename  "$filename_h"
+    
+    emit_ut_cpp                     \
+        --name      "$name"         \
+        --prefix    "$prefix"       \
+        --filename  "$filename_cpp"
+}
+
+function create_object()
+{
+    local name=$1
+    local name_lowercase
+    local dirname
+    local filename_p_h
+    local filename_p_cpp
+    local filename_h
+    local filename_cpp
+    local filename_include
+
+    prefix="${name:0:3}"
+    name_lowercase=$(echo "$name" | tr '[A-Z]' '[a-z]')
+    if [ "$prefix" == "Pev" ]; then
+        dirname="libpipevo"
+    else
+        dirname="libcmon"
+    fi
+
+    filename_p_h="$dirname/${name_lowercase}_p.h"
+    filename_p_cpp="$dirname/${name_lowercase}_p.cpp"
+    filename_h="$dirname/${name_lowercase}.h"
+    filename_cpp="$dirname/${name_lowercase}.cpp"
+    filename_include="$dirname/${name}"
+
+    if [ -f "$filename_p_h" ]; then
+        printError "File '$filename_p_h' already exists."
         return 1
     fi
 
@@ -283,27 +681,58 @@ function create_unit_test()
         return 1
     fi
 
+    #
+    # Checking if the files already exist.
+    #
+    exit_if_file_exists "$filename_p_h"
+    exit_if_file_exists "$filename_p_cpp"
+    exit_if_file_exists "$filename_h"
+    exit_if_file_exists "$filename_cpp"
+    exit_if_file_exists "$filename_include"
 
+    #
+    #
+    #
     printVerbose "      name: '$name'"
-    printVerbose " lowercase: '$lowercase'"
+    printVerbose "    prefix: '$prefix'"
     printVerbose "   dirname: '$dirname'"
-    printVerbose "     file1: '$filename_am'"
-    printVerbose "     file1: '$filename_h'"
-    printVerbose "     file1: '$filename_cpp'"
-    emit_ut_makefile \
-        --lowercase "$lowercase" \
-        --name      "$name"      \
-        --filename  "$filename_am"
+    printVerbose "     file1: '$filename_p_h'"
+    printVerbose "     file2: '$filename_p_cpp'"
+    printVerbose "     file3: '$filename_h'"
+    printVerbose "     file4: '$filename_cpp'"
+    printVerbose "     file5: '$filename_include'"
 
-    emit_ut_header \
-        --lowercase "$lowercase" \
-        --name      "$name" \
+    emit_object_p_h                    \
+        --name      "$name"            \
+        --prefix    "$prefix"          \
+        --filename  "$filename_p_h"
+    
+    emit_object_p_cpp                  \
+        --name      "$name"            \
+        --prefix    "$prefix"          \
+        --filename  "$filename_p_cpp"
+
+    emit_object_h                      \
+        --name      "$name"            \
+        --prefix    "$prefix"          \
         --filename  "$filename_h"
     
-    emit_ut_cpp \
-        --lowercase "$lowercase" \
-        --name      "$name" \
+    emit_object_cpp                    \
+        --name      "$name"            \
+        --prefix    "$prefix"          \
         --filename  "$filename_cpp"
+    
+    emit_object_include                \
+        --name      "$name"            \
+        --prefix    "$prefix"          \
+        --filename  "$filename_include"
 }
 
-create_unit_test $1
+if [ "$OPTION_MODE" == "create-unit-test" ]; then
+    create_unit_test $1
+elif [ "$OPTION_MODE" == "create-object" ]; then
+    create_object $1
+else
+    printError "The mode is not set."
+fi
+
