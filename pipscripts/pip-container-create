@@ -17,6 +17,15 @@ OPTION_NO_SSH_TEST=""
 LIST_IMAGES_OPTION=""
 APT_UPDATED=""
 
+#
+# If this is empty, the default will be used.
+# WORKING pool.sks-keyservers.net
+# FAILING pgp.mit.edu
+#
+# https://discuss.linuxcontainers.org/t/3-0-unable-to-fetch-gpg-key-from-keyserver/2015/12
+#
+KEYSERVER="pool.sks-keyservers.net"
+
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
 else
@@ -503,13 +512,23 @@ function create_container()
         # /etc/lxc/default.conf
         #
         printVerbose "Creating cointainer with $vendor_name $release_name."
-        lxc-create \
-            -t download --name="$new_name" \
-                -- \
-                --dist "$vendor_name" \
-                --release "$release_name" \
-                --arch amd64 \
-                >>$temp_file 2>>$temp_file
+        if [ -n "$KEYSERVER" ]; then
+            lxc-create \
+                -t download --name="$new_name" \
+                    -- \
+                    --dist "$vendor_name" \
+                    --release "$release_name" \
+                    --arch amd64 \
+                    >>$temp_file 2>>$temp_file
+        else
+            DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
+                -t download --name="$new_name" \
+                    -- \
+                    --dist "$vendor_name" \
+                    --release "$release_name" \
+                    --arch amd64 \
+                    >>$temp_file 2>>$temp_file
+        fi
     fi
    
     container_root="/var/lib/lxc/$new_name"
