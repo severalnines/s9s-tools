@@ -112,7 +112,6 @@ enum S9sOptionType
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
-    OptionThirdPartyBackupDirectory,
     OptionPitrStopTime,
     OptionKeepTempDir,
     OptionTempDirPath,
@@ -3017,27 +3016,6 @@ S9sOptions::backupDir() const
         retval = m_userConfig.variableValue("backup_directory");
         if (retval.empty())
             retval = m_systemConfig.variableValue("backup_directory");
-    }
-
-    return retval;
-}
-
-/**
- * \returns The argument for the --third-party-backupdir option or the
- *   third_party_backupdir config value.
- */
-S9sString
-S9sOptions::thirdPartyBackupDir() const
-{
-    S9sString  retval;
-
-    if (m_options.contains("third_party_backupdir"))
-    {
-        retval = m_options.at("third_party_backupdir").toString();
-    } else {
-        retval = m_userConfig.variableValue("third_party_backupdir");
-        if (retval.empty())
-            retval = m_systemConfig.variableValue("third_party_backupdir");
     }
 
     return retval;
@@ -11508,7 +11486,6 @@ S9sOptions::readOptionsCluster(
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
-        { "third-party-backupdir", required_argument, 0, OptionThirdPartyBackupDirectory },
 
         // Options for ProxySql.
         { "admin-user",       required_argument, 0, OptionAdminUser       },
@@ -11970,11 +11947,6 @@ S9sOptions::readOptionsCluster(
             case OptionWithTags:
                 // --with-tags=one;two
                 setWithTags(optarg);
-                break;
-
-            case OptionThirdPartyBackupDirectory:
-                // --third-party-backupdir=DIRECTORY
-                m_options["third_party_backupdir"] = optarg;
                 break;
 
             case OptionDbName:

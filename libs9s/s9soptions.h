@@ -339,7 +339,6 @@ class S9sOptions
         
         S9sString subDirectory() const;
         S9sString backupDir() const;
-        S9sString thirdPartyBackupDir() const;
         S9sString pitrStopTime() const;
         S9sString backupMethod() const;
         bool noCompression() const;

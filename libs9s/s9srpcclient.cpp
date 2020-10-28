@@ -4071,7 +4071,6 @@ S9sRpcClient::createMongoCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
-    S9sString       thirdPartyBackupDir = options->thirdPartyBackupDir();
     bool            retval;
 
     if (hosts.size() < 1u)
@@ -4083,9 +4082,6 @@ S9sRpcClient::createMongoCluster(
     addCredentialsToJobData(jobData);
 
     jobData["nodes"]            = nodesField(hosts);
-
-    if (!thirdPartyBackupDir.empty())
-        jobData["third_party_backupdir"] = thirdPartyBackupDir;
 
     // The job_data describing the cluster.
     jobData["cluster_type"]     = "mongodb";
@@ -4638,11 +4634,9 @@ bool
 S9sRpcClient::addPBMAgent(
         const S9sVariantList &hosts)
 {
-    S9sOptions     *options      = S9sOptions::instance();
     S9sVariantMap  request = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
-    S9sString      thirdPartyBackupDir = options->thirdPartyBackupDir();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     S9sVariantList nodes;
@@ -4663,9 +4657,6 @@ S9sRpcClient::addPBMAgent(
     // The job_data describing the cluster.
     jobData["action"]   = "setup";
     jobData["nodes"]    = nodesField(nodes);
-
-    if (!thirdPartyBackupDir.empty())
-        jobData["third_party_backupdir"] = thirdPartyBackupDir;
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pbmagent";
@@ -4694,11 +4685,9 @@ bool
 S9sRpcClient::addNFSClient(
         const S9sVariantList &hosts)
 {
-    S9sOptions     *options            = S9sOptions::instance();
     S9sVariantMap  request             = composeRequest();
     S9sVariantMap  job                 = composeJob();
     S9sVariantMap  jobData             = composeJobData();
-    S9sString      thirdPartyBackupDir = options->thirdPartyBackupDir();
     S9sString      uri                 = "/v2/jobs/";
     S9sVariantMap  jobSpec;
     S9sVariantList nodes;
@@ -4719,9 +4708,6 @@ S9sRpcClient::addNFSClient(
     // The job_data describing the cluster.
     jobData["action"]   = "setup";
     jobData["nodes"]    = nodesField(nodes);
-
-    if (!thirdPartyBackupDir.empty())
-        jobData["third_party_backupdir"] = thirdPartyBackupDir;
 
     // The jobspec describing the command.
     jobSpec["command"]    = "nfsclient";
