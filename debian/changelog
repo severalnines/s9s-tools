@@ -1,3 +1,9 @@
+s9s-tools (1.8.20201028-release1) UNRELEASED; urgency=medium
+
+  * New internal release
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 28 Oct 2020 13:51:04 +0100
+
 s9s-tools (1.8.20201013-release1) UNRELEASED; urgency=medium
 
   * New internal release
