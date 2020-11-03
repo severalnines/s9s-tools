@@ -104,7 +104,7 @@ function ldap_config()
 
 enable_ldap_authentication = true
 
-ldap_uri          = "ldap://192.168.0.63:389"
+ldap_uri          = "ldap://192.168.0.193:389"
 login_dn          = "cn=admin,dc=homelab,dc=local"
 login_dn_password = "p"
 
