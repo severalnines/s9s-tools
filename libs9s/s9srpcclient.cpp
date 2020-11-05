@@ -4294,6 +4294,126 @@ S9sRpcClient::createNode()
     return success;
 }
 
+/**
+ * This method is executed when the --reconfigure option is used like in 
+ * s9s cluster --reinstall-node --cluster-id=X --nodes=
+ */
+bool 
+S9sRpcClient::reinstallNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts;
+    S9sRpcReply    reply;
+    bool           hasPBMAgent   = false;
+    bool           hasNFSClient  = false;
+    bool           success       = true;
+
+    hosts = options->nodes();
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while reinstalling node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+    	if (protocol == "pbmagent")
+        {
+            hasPBMAgent = true;
+    	} else if (protocol == "nfsclient")
+        {
+            hasNFSClient = true;
+        } else {
+            PRINT_ERROR(
+                    "The protocol '%s' is not supported.", 
+                    STR(protocol));
+        
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    /*
+     * Running the request on the controller.
+     */
+    if (hasPBMAgent)
+    {
+        success = reinstallPBMAgent(hosts);
+    } else if (hasNFSClient)
+    {
+        success = reinstallNFSClient(hosts);
+    }
+
+    return success;
+}
+
+/**
+ * This method is executed when the --reconfigure option is used like in 
+ * s9s cluster --reconfigure-node --cluster-id=X --nodes=
+ */
+bool 
+S9sRpcClient::reconfigureNode()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts;
+    S9sRpcReply    reply;
+    bool           hasPBMAgent   = false;
+    bool           hasNFSClient  = false;
+    bool           success       = true;
+
+    hosts = options->nodes();
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while reconfiguring node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+    	if (protocol == "pbmagent")
+        {
+            hasPBMAgent = true;
+    	} else if (protocol == "nfsclient")
+        {
+            hasNFSClient = true;
+        } else {
+            PRINT_ERROR(
+                    "The protocol '%s' is not supported.", 
+                    STR(protocol));
+        
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    /*
+     * Running the request on the controller.
+     */
+    if (hasPBMAgent)
+    {
+        success = reconfigurePBMAgent(hosts);
+    } else if (hasNFSClient)
+    {
+        success = reconfigureNFSClient(hosts);
+    }
+
+    return success;
+}
+
 
 
 /**
@@ -4948,6 +5068,210 @@ S9sRpcClient::addMongoNode(
 
 /**
  * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::reconfigurePBMAgent(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pbmagent");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To reconfigure PBMAgent one needs to specify"
+            " one or more PBMAgent nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "reconfigure";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pbmagent";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Reconfigure PBMAgent node of Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::reconfigureNFSClient(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request             = composeRequest();
+    S9sVariantMap  job                 = composeJob();
+    S9sVariantMap  jobData             = composeJobData();
+    S9sString      uri                 = "/v2/jobs/";
+    S9sVariantMap  jobSpec;
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "nfsclient");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To reconfigure NFSClient one needs to specify"
+            " one or more NFSClient nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "reconfigure";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "nfsclient";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Reconfigure NFSClient node in Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::reinstallPBMAgent(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pbmagent");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To reinstall PBMAgent one needs to specify"
+            " one or more PBMAgent nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "reinstall";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pbmagent";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Reinstall PBMAgent node of Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::reinstallNFSClient(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request             = composeRequest();
+    S9sVariantMap  job                 = composeJob();
+    S9sVariantMap  jobData             = composeJobData();
+    S9sString      uri                 = "/v2/jobs/";
+    S9sVariantMap  jobSpec;
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "nfsclient");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To reconfigure NFSClient one needs to specify"
+            " one or more NFSClient nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "reinstall";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "nfsclient";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Reinstall NFSClient node in Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be removed from the cluster (variant list
  *   with S9sNode elements).
  * \returns true if the request was sent and the reply was received (even if the
@@ -4979,13 +5303,13 @@ S9sRpcClient::removeNode()
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
-
+/*
     if (hosts.size() != 1u)
     {
         PRINT_ERROR("Remove node is currently implemented only for one node.");
         return false;
     }
-    
+*/
     host     = hosts[0].toNode();
     hostName = host.hostName();
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));

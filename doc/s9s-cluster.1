@@ -447,6 +447,32 @@ s9s cluster \\
     --wait
 .fi
 
+.TP
+.B \-\-reconfigure-node
+Reconfigures the existing nodes with the optionaly specified node properties.
+At the moment this only works with PBMAgent nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --cluster-id=1 \\
+    --reconfigure-node \\
+    --nodes=PBMAgent://*?backup_dir=/my_new_shared_backupdir
+.fi
+
+.TP
+.B \-\-reinstall-node
+Reinstalls and reconfigures the existing nodes with the optionaly specified
+node properties. At the moment this only works with PBMAgent nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --cluster-id=1 \\
+    --reinstall-node \\
+    --nodes=PBMAgent://*?backup_dir=/my_new_shared_backupdir
+.fi
+
 .\"
 .\" Generic options
 .\"

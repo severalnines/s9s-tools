@@ -67,6 +67,8 @@ enum S9sOptionType
     OptionServers,
     OptionContainers,
     OptionAddNode,
+    OptionReinstallNode,
+    OptionReconfigureNode,
     OptionRemoveNode,
     OptionJobId,
     OptionSet,
@@ -4622,6 +4624,26 @@ S9sOptions::isAddNodeRequested() const
 }
 
 /**
+ * \returns true if the reinstall operation was requested using the "--reinstall-node"
+ *   command line option.
+ */
+bool
+S9sOptions::isReinstallNodeRequested() const
+{
+    return getBool("reinstall_node");
+}
+
+/**
+ * \returns true if the reconfiguration operation was requested using the "--reconfigure-node"
+ *   command line option.
+ */
+bool
+S9sOptions::isReconfigureNodeRequested() const
+{
+    return getBool("reconfigure_node");
+}
+
+/**
  * \returns true if the remove node oparation was requested using the
  *   "--remove-node" command line option.
  */
@@ -6003,6 +6025,8 @@ S9sOptions::printHelpCluster()
     printf(
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
+"  --reinstall-node           Reinstalls software and also reconfigures it on nodes.\n"
+"  --reconfigure-node         Reconfigures specified nodes of the cluster.\n"
 "  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
@@ -9197,6 +9221,12 @@ S9sOptions::checkOptionsCluster()
 
     if (isAddNodeRequested())
         countOptions++;
+
+    if (isReinstallNodeRequested())
+        countOptions++;
+
+    if (isReconfigureNodeRequested())
+        countOptions++;
     
     if (isChangeConfigRequested())
         countOptions++;
@@ -11400,6 +11430,8 @@ S9sOptions::readOptionsCluster(
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
+        { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
+        { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
@@ -11656,6 +11688,16 @@ S9sOptions::readOptionsCluster(
             case OptionAddNode:
                 // --add-node
                 m_options["add_node"] = true;
+                break;
+
+            case OptionReinstallNode:
+                // --reinstall-node
+                m_options["reinstall_node"] = true;
+                break;
+
+            case OptionReconfigureNode:
+                // --reconfigure-node
+                m_options["reconfigure_node"] = true;
                 break;
             
             case OptionChangeConfig:

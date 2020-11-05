@@ -519,6 +519,8 @@ class S9sOptions
         bool isCreateReportRequested() const;
         bool isDeployAgentsRequested() const;
         bool isAddNodeRequested() const;
+        bool isReinstallNodeRequested() const;
+        bool isReconfigureNodeRequested() const;
         bool isRemoveNodeRequested() const;
         bool isStopRequested() const;
         bool isUsr1Requested() const;

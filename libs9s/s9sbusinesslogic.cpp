@@ -187,6 +187,14 @@ S9sBusinessLogic::execute()
         {
             success = client.createNode();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isReinstallNodeRequested())
+        {
+            success = client.reinstallNode();
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isReconfigureNodeRequested())
+        {
+            success = client.reconfigureNode();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isRemoveNodeRequested())
         {
             success = client.removeNode();

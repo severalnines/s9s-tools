@@ -367,6 +367,8 @@ class S9sRpcClient
         bool createCluster();
         bool registerCluster();
         bool createNode();
+        bool reinstallNode();
+        bool reconfigureNode();
         bool removeNode();
 
         bool stopCluster();
@@ -555,6 +557,22 @@ class S9sRpcClient
                 const S9sVariantList &hosts);
 
         bool addMongoNode(
+                const S9sVariantList &hosts);
+
+        // Low level methods that reinstalls software on a node as an attempt to fix it.
+
+        bool reinstallPBMAgent(
+                const S9sVariantList &hosts);
+
+        bool reinstallNFSClient(
+                const S9sVariantList &hosts);
+
+        // Low level methods that reconfigures a node as an attempt to fix it.
+
+        bool reconfigurePBMAgent(
+                const S9sVariantList &hosts);
+
+        bool reconfigureNFSClient(
                 const S9sVariantList &hosts);
 
         static S9sVariant 
