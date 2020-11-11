@@ -236,14 +236,14 @@ function archive_one_container()
     retcode=""
     if [ "$GZIP_OPTION" ]; then
         if [ -n "$OPTION_DRY" ]; then
-            echo "DRY: tar --numeric-owner -czf $tar_file_name $container"
+            echo "DRY: tar --numeric-owner --warning=no-file-changed -czf $tar_file_name $container"
         else
             tar --numeric-owner -czf "$tar_file_name" "$container"
             retcode=$?
         fi
     else
         if [ -n "$OPTION_DRY" ]; then
-            echo "DRY: tar --numeric-owner -cf $tar_file_name $container"
+            echo "DRY: tar --numeric-owner --warning=no-file-changed -cf $tar_file_name $container"
         else
             tar --numeric-owner -cf "$tar_file_name" "$container"
             retcode=$?
