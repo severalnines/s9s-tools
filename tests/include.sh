@@ -1730,6 +1730,7 @@ function create_node()
     local args
     local os_release=""
     local os_vendor=""
+    local template_name=""
 
     args=$(\
     getopt -o h \
@@ -1757,6 +1758,7 @@ function create_node()
 
             --template)
                 template_option="--template=$2"
+                template_name="$2"
                 shift 2
                 ;;
 
@@ -1804,7 +1806,11 @@ function create_node()
 
     container_name=$1
 
-    echo -n "Creating container... $os_vendor$os_release" >&2
+    if [ -n "$template_name" ]; then
+        echo -n "Creating container from template $template_name" >&2
+    else
+        echo -n "Creating container... $os_vendor$os_release" >&2
+    fi
     ip=$(pip-container-create \
         $os_vendor_option \
         $os_release_option \
