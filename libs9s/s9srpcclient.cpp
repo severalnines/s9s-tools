@@ -10117,4 +10117,28 @@ S9sRpcClient::timeStampString()
     return dt.toString();
 }
 
+bool
+S9sRpcClient::syncClusters()
+{
+    S9sString      title;
+    S9sVariantMap  request;
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    title = "Synchronize clusters";
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "sync_clusters";
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    return executeRequest(uri, request);
+}
 

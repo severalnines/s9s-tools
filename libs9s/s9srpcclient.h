@@ -370,6 +370,7 @@ class S9sRpcClient
         bool reinstallNode();
         bool reconfigureNode();
         bool removeNode();
+        bool syncClusters();
 
         bool stopCluster();
         bool startCluster();

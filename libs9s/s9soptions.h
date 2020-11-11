@@ -472,7 +472,6 @@ class S9sOptions
         bool isSetReadWriteRequested() const;
         bool isChangePasswordRequested() const;
 
-
         bool isCreateRequested() const;
         bool isCreateWithJobRequested() const;
         bool isStageRequested() const;
@@ -546,6 +545,7 @@ class S9sOptions
         bool isKillRequested() const;
         bool isSystemRequested() const;
         bool isTreeRequested() const;
+        bool isSyncRequested() const;
 
         bool isLongRequested() const;
         bool isJsonRequested() const;

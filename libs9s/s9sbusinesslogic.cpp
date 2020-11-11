@@ -135,6 +135,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createCluster();
             maybeJobRegistered(client, 0, success);
+        } else if (options->isSyncRequested())
+        {
+            success = client.syncClusters();
+            maybeJobRegistered(client, 0, success);
         } else if (options->isRegisterRequested())
         {
             success = client.registerCluster();
