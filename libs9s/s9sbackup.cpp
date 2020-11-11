@@ -129,10 +129,7 @@ S9sBackup::setProperties(
 S9sString
 S9sBackup::backupHost() const
 {
-    if (m_properties.contains("backup_host"))
-        return m_properties.at("backup_host").toString();
-
-    return S9sString();    
+    return m_properties.valueByPath("metadata/backup_host").toString();
 }
 
 /**
@@ -141,19 +138,13 @@ S9sBackup::backupHost() const
 S9sString
 S9sBackup::storageHost() const
 {
-    if (m_properties.contains("storage_host"))
-        return m_properties.at("storage_host").toString();
-
-    return S9sString();    
+    return m_properties.valueByPath("metadata/storage_host").toString();
 }
 
 S9sString
 S9sBackup::title() const
 {
-    if (m_properties.contains("title"))
-        return m_properties.at("title").toString();
-
-    return S9sString();
+    return m_properties.valueByPath("metadata/title").toString();
 }
 
 /**
@@ -162,19 +153,13 @@ S9sBackup::title() const
 int
 S9sBackup::id() const
 {
-    if (m_properties.contains("id"))
-        return m_properties.at("id").toInt();
-
-    return 0;
+    return m_properties.valueByPath("metadata/id").toInt();
 }
 
 int
 S9sBackup::parentId() const
 {
-    if (m_properties.contains("chain_up"))
-        return m_properties.at("chain_up").toInt();
-
-    return 0;
+    return m_properties.valueByPath("metadata/chain_up").toInt();
 }
 
 /**
@@ -183,10 +168,7 @@ S9sBackup::parentId() const
 int
 S9sBackup::clusterId() const
 {
-    if (m_properties.contains("cid"))
-        return m_properties.at("cid").toInt();
-
-    return 0;
+    return m_properties.valueByPath("metadata/cid").toInt();
 }
 
 /**
@@ -195,10 +177,7 @@ S9sBackup::clusterId() const
 int
 S9sBackup::jobId() const
 {
-    if (m_properties.contains("job_id"))
-        return m_properties.at("job_id").toInt();
-
-    return 0;
+    return m_properties.valueByPath("metadata/job_id").toInt();
 }
 
 /**
@@ -207,10 +186,7 @@ S9sBackup::jobId() const
 S9sString
 S9sBackup::status() const
 {
-    if (m_properties.contains("status"))
-        return m_properties.at("status").toString().toUpper();
-
-    return S9sString();    
+    return m_properties.valueByPath("metadata/status").toString().toUpper();
 }
 
 const char *
@@ -248,11 +224,8 @@ S9sBackup::statusColorEnd(
 S9sString
 S9sBackup::verificationStatus() const
 {
-    S9sVariantMap verificationMap;
-
-    if (m_properties.contains("verified"))
-        verificationMap = m_properties.at("verified").toVariantMap();
-
+    S9sVariantMap verificationMap =
+        m_properties.valueByPath("metadata/verified").toVariantMap();
     return verificationMap["status"].toString();
 }
 
@@ -268,15 +241,8 @@ S9sBackup::verificationFlag() const
 bool
 S9sBackup::encrypted() const
 {
-    bool retval = false;
-
-    if (m_properties.contains("encrypted"))
-        retval = m_properties.at("encrypted").toBoolean();
-
-    return retval;
+    return m_properties.valueByPath("metadata/encrypted").toBoolean();
 }
-
-
 
 /**
  * \returns The date and time when the backup creation was started as it is in
@@ -285,10 +251,7 @@ S9sBackup::encrypted() const
 S9sVariant
 S9sBackup::begin() const
 {
-    if (m_properties.contains("created"))
-        return m_properties.at("created");
-
-    return S9sVariant();
+    return m_properties.valueByPath("metadata/created");
 }
 
 /**
@@ -317,10 +280,7 @@ S9sBackup::beginAsString() const
 S9sVariant
 S9sBackup::end() const
 {
-    if (m_properties.contains("finished"))
-        return m_properties.at("finished");
-
-    return S9sVariant();
+    return m_properties.valueByPath("metadata/finished");
 }
 
 /**
@@ -349,10 +309,7 @@ S9sBackup::endAsString() const
 S9sString
 S9sBackup::rootDir() const
 {
-    if (m_properties.contains("root_dir"))
-        return m_properties.at("root_dir").toString();
-
-    return S9sString();    
+    return m_properties.valueByPath("metadata/root_dir").toString();
 }
 
 /**
@@ -409,10 +366,7 @@ S9sBackup::configDescription() const
 bool
 S9sBackup::isCompressed() const
 {
-    if (m_properties.contains("compressed"))
-        return m_properties.at("compressed").toBoolean();
-
-    return false;
+    return m_properties.valueByPath("metadata/compressed").toBoolean();
 }
 
 /**
@@ -421,10 +375,7 @@ S9sBackup::isCompressed() const
 int 
 S9sBackup::nBackups() const
 {
-    if (m_properties.contains("backup"))
-        return m_properties.at("backup").size();
-
-    return 0;
+    return m_properties.valueByPath("metadata/backup").size();
 }
 
 S9sString
@@ -573,8 +524,7 @@ S9sBackup::incremental(
 S9sString
 S9sBackup::method() const
 {
-    if (m_properties.contains("method"))
-        return m_properties.at("method").toString();
+    return m_properties.valueByPath("method/method").toString();
 
     return S9sString();
 }
@@ -587,8 +537,7 @@ S9sBackup::description() const
 {
     S9sString retval;
 
-    if (m_properties.contains("description"))
-        retval = m_properties.at("description").toString();
+    retval = m_properties.valueByPath("metadata/description").toString();
 
     if (retval.empty())
         retval = S9sString("-");
@@ -926,10 +875,7 @@ S9sVariantMap
 S9sBackup::backupMap(
         const int backupIndex) const
 {
-    S9sVariant backups;
-
-    if (m_properties.contains("backup"))
-        backups = m_properties.at("backup");
+    S9sVariant backups = m_properties.valueByPath("metadata/backup");
 
     if (backupIndex >= 0 && backupIndex < backups.size())
         return backups[backupIndex].toVariantMap();
@@ -950,9 +896,6 @@ S9sBackup::configValue(
 S9sVariant
 S9sBackup::config() const
 {
-    if (m_properties.contains("config"))
-        return m_properties.at("config");
-
-    return S9sVariantMap();
+    return m_properties.valueByPath("metadata/config").toVariantMap();
 }
 

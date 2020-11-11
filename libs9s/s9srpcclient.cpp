@@ -7599,8 +7599,9 @@ S9sRpcClient::getBackups(
     S9sVariantMap  request;
     bool           retval;
 
-    request["operation"] = "getBackups";
-    request["ascending"] = true;
+    request["operation"]             = "getBackups";
+    request["ascending"]             = true;
+    request["backup_record_version"] = 2;
 
     if (clusterId > 0)
         request["cluster_id"] = clusterId;
