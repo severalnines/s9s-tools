@@ -57,8 +57,8 @@ EOF
 
     print_title "Installing Packages on $SECONDARY_CONTROLLER_IP"
     begin_verbatim
-    ssh_to_controller "sudo apt install pkg-config"
-    ssh_to_controller "sudo apt install libldap2-dev"
+    ssh_to_controller "sudo apt install -y pkg-config"
+    ssh_to_controller "sudo apt install -y libldap2-dev"
     end_verbatim
 
     print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
