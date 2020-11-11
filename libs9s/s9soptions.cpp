@@ -83,6 +83,7 @@ enum S9sOptionType
     OptionVendor,
     OptionCreate,
     OptionCreateWithJob,
+    OptionSync,
     OptionStage,
     OptionSynchronous,
     OptionToggleSync,
@@ -4137,7 +4138,6 @@ S9sOptions::isFollowRequested() const
     return getBool("follow");
 }
 
-
 /**
  * \returns true if the --create command line option was provided when the
  *   program was started.
@@ -4147,6 +4147,17 @@ S9sOptions::isCreateRequested() const
 {
     return getBool("create");
 }
+
+/**
+ * \returns true if the --sync command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isSyncRequested() const
+{
+    return getBool("sync");
+}
+
 
 /**
  * \returns true if the --create-with-job command line option was provided when
@@ -6056,6 +6067,7 @@ S9sOptions::printHelpCluster()
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
+"  --sync                     Synchronize cluster list with UI Frontend.\n"
 
 "\n"
 "  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
@@ -9186,6 +9198,9 @@ S9sOptions::checkOptionsCluster()
     if (isCreateRequested())
         countOptions++;
 
+    if (isSyncRequested())
+        countOptions++;
+
     if (isPingRequested())
         countOptions++;
     
@@ -11443,6 +11458,7 @@ S9sOptions::readOptionsCluster(
         { "import-sql-users", no_argument,       0, OptionImportSqlUsers  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
+        { "sync",             no_argument,       0, OptionSync            },
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "demote-node",      no_argument,       0, OptionDemoteNode      },
         { "deploy-agents",    no_argument,       0, OptionDeployAgents    },
@@ -11907,7 +11923,12 @@ S9sOptions::readOptionsCluster(
                 // --create
                 m_options["create"] = true;
                 break;
-            
+
+            case OptionSync:
+                // --sync
+                m_options["sync"] = true;
+                break;
+
             case OptionRegister:
                 // --register
                 m_options["register"] = true;
