@@ -1,3 +1,10 @@
+s9s-tools (1.8.20201113-release1) UNRELEASED; urgency=medium
+
+  * Added s9s cluster --sync option (to sync backend with frontend database)
+  * Percona Backup for MongoDB support
+
+ -- David Kedves <kedazo@severalnines.com>  Fri, 13 Nov 2020 12:25:32 +0100
+
 s9s-tools (1.8.20201028-release1) UNRELEASED; urgency=medium
 
   * New internal release

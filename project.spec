@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Fri Nov 13 2020 David Kedves <kedazo@severalnines.com> 1.8.20201113
+- Added s9s cluster --sync option (to sync backend with frontend database)
+- Percona Backup for MongoDB support
 * Wed Oct 28 2020 David Kedves <kedazo@severalnines.com> 1.8.20201028
 - New internal release
 * Tue Oct 13 2020 David Kedves <kedazo@severalnines.com> 1.8.20201013
