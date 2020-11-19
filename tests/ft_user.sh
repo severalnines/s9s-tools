@@ -432,7 +432,7 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    if [ "$output" != "Access denied." ]; then
+    if [ "$output" != "Username or password is incorrect." ]; then
         failure "Wrong error message when using the wrong password"
         failure "  output: '$output'"
     else

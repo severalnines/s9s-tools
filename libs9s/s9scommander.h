@@ -43,9 +43,9 @@ class S9sCommander :
         virtual void main();
         virtual void processKey(int key);
         virtual bool processButton(uint button, uint x, uint y);        
+        virtual bool refreshScreen();
 
     protected:
-        virtual bool refreshScreen();
         virtual void printHeader();
         virtual void printFooter();
 

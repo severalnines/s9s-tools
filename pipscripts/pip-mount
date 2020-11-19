@@ -206,6 +206,8 @@ function check_package()
             APT_UPDATED="yes"
         fi
         sudo apt install --yes "$package_name"
+    else
+        printVerbose "The $binary_name is installed."
     fi
     
     if [ -z "$(which $binary_name)" ]; then
@@ -244,6 +246,8 @@ function check_user()
         printVerbose "Creating samba user."
         echo -e "$password\n$password" | \
             sudo smbpasswd -s -a "$username"
+    else
+        printVerbose "Samba user $username exists."
     fi
 }
 
@@ -254,6 +258,7 @@ function check_shares()
     local hostname=$(hostname)
 
     if grep --quiet "$username" "$config_file"; then
+        printVerbose "The share $username in $config_file exists."
         return 0
     fi
 
@@ -363,6 +368,7 @@ elif [ -n "$OPTION_UMOUNT" ]; then
 fi
 
 if [ -n "$OPTION_LIST" ]; then
+    printVerbose "Executing: smbtree -Upipas%p"
     smbtree -Upipas%p
 fi
 

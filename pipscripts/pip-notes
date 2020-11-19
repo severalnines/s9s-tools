@@ -274,19 +274,32 @@ function list_notes_long()
 function cat_note()
 {
     local file
-    
+    local tmp
+
+    echo "1"
+    tmp=$(which html2text)
+
+    if [ -z "$tmp" ]; then
+        echo "The 'html2text' program was not found."
+        exit 6
+    fi
+
+    echo "2"
     file="$NOTES_DIR/${1}"
     if [ ! -f "$file" ]; then
         file="$NOTES_DIR/${1}.html"
     fi
 
+    echo "file: $file"
     if [ -f "$file" ]; then
         if [ -n "$HTML_OPTION" ]; then
             cat $file
             print_debug
         else
-            cat $file | html2text -style pretty -width 100 -utf8
+            html2text -style pretty -width 100 -utf8 "$file"
         fi
+    else
+        echo "File $file was not found."
     fi
 }
 
