@@ -468,7 +468,7 @@ EOF
     fi
 
     if [ "$output" != "User 'sys' is not found." ]; then
-        failure "Wrong error message when using the wrong password"
+        failure "Wrong error message when using the wrong username"
         failure "  output: '$output'"
     else
         success "  o output is '$output', ok"
