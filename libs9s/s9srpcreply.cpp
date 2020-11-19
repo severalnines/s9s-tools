@@ -6091,11 +6091,13 @@ S9sRpcReply::printUpgradesBrief()
         S9sVariantMap  theMap   = theList[idx].toVariantMap();
         S9sPkgInfo     pkg      = theMap;
         S9sString      hostName = pkg.hostName();
+        S9sString      pkgName  = pkg.name();
 
         if (!options->isStringMatchExtraArguments(hostName))
             continue;
 
-        printf("%s%s%s\n", hostColorBegin, STR(hostName), hostColorEnd);
+        //printf("%s%s%s\n", hostColorBegin, STR(hostName), hostColorEnd);
+        printf("%s%s%s\n", hostColorBegin, STR(pkgName), hostColorEnd);
     }
 }
 
