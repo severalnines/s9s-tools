@@ -433,7 +433,7 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    expected="Username or password is incorrect."
+    expected="Access denied."
     if [ "$output" != "$expected" ]; then
         failure "Wrong error message when using the wrong password."
         failure "    output: '$output'"
