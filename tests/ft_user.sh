@@ -408,6 +408,7 @@ function testFailWrongPassword()
 {
     local output
     local exitCode
+    local expected
 
     #
     # Using the wrong password.
@@ -432,9 +433,11 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    if [ "$output" != "Username or password is incorrect." ]; then
-        failure "Wrong error message when using the wrong password"
-        failure "  output: '$output'"
+    expected="Username or password is incorrect."
+    if [ "$output" != "$expected" ]; then
+        failure "Wrong error message when using the wrong password."
+        failure "    output: '$output'"
+        failure "  expected: '$expected'"
     else
         success "  o output is '$output', ok"
     fi
@@ -467,9 +470,11 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    if [ "$output" != "User 'sys' is not found." ]; then
-        failure "Wrong error message when using the wrong username"
-        failure "  output: '$output'"
+    expected="User 'sys' is not found."
+    if [ "$output" != "$expected" ]; then
+        failure "Wrong error message when using the wrong username."
+        failure "    output: '$output'"
+        failure "  expected: '$expected'"
     else
         success "  o output is '$output', ok"
     fi
