@@ -6168,11 +6168,11 @@ S9sOptions::printHelpNode()
     printf(
 "Options for the \"node\" command:\n"
 "  --change-config            Change the configuration for a node.\n"
-"  --enable-binary-logging    Enables binary logs on a node.\n"
 "  --list-config              Print the configuration for a node.\n"
 "  --list                     List the jobs found on the controller.\n"
 "  --pull-config              Copy configuration files from a node.\n"
 "  --push-config              Copy configuration files to a node.\n"
+"  --enable-binary-logging    Enables binary logs on a node.\n"
 "  --register                 Register a node that already is working.\n"
 "  --restart                  Stop, then start the node.\n"
 "  --set                      Change the properties of a node.\n"
