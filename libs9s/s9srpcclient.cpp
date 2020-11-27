@@ -2708,10 +2708,13 @@ S9sRpcClient::setupAuditLogging(
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  jobData = composeJobData();
+
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
 
     jobSpec["command"]    = "setup_audit_logging";
-    if (!hosts.empty())
-        jobSpec["nodes"] = nodesField(hosts);
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Setup Audit Logging";
