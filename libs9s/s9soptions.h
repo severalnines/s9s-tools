@@ -459,6 +459,7 @@ class S9sOptions
         bool isEditRequested() const;
         bool isListConfigRequested() const;
         bool isChangeConfigRequested() const;
+        bool isUnsetConfigRequested() const;
         bool isPullConfigRequested() const;
         bool isPushConfigRequested() const;
         bool isListPropertiesRequested() const;

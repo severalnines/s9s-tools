@@ -185,6 +185,7 @@ enum S9sOptionType
     OptionOptValue,
     OptionListConfig,
     OptionChangeConfig,
+    OptionUnsetConfig,
     OptionPullConfig,
     OptionPushConfig,
     OptionExecute,
@@ -4002,6 +4003,16 @@ S9sOptions::isChangeConfigRequested() const
 }
 
 /**
+ * \returns true if the "disable-config" function is requested by providing the
+ *     --unset-config command line option.
+ */
+bool
+S9sOptions::isUnsetConfigRequested() const
+{
+    return getBool("unset_config");
+}
+
+/**
  * \returns true if the "pull-config" function is requested by providing the
  *     --pull-config command line option.
  */
@@ -6168,6 +6179,7 @@ S9sOptions::printHelpNode()
     printf(
 "Options for the \"node\" command:\n"
 "  --change-config            Change the configuration for a node.\n"
+"  --unset-config             Unset the configuration for a node.\n"
 "  --list-config              Print the configuration for a node.\n"
 "  --list                     List the jobs found on the controller.\n"
 "  --pull-config              Copy configuration files from a node.\n"
@@ -6492,12 +6504,13 @@ S9sOptions::readOptionsNode(
          * Main Option
          */
         { "change-config",    no_argument,       0, OptionChangeConfig    },
-        { "enable-binary-logging", no_argument,  0, OptionEnableBinaryLogging },
-        { "inspect",          no_argument,       0, OptionInspect         },
+        { "unset-config",     no_argument,       0, OptionUnsetConfig     },
         { "list-config",      no_argument,       0, OptionListConfig      },
         { "list",             no_argument,       0, 'L'                   },
         { "pull-config",      no_argument,       0, OptionPullConfig      },
         { "push-config",      no_argument,       0, OptionPushConfig      },
+        { "enable-binary-logging", no_argument,  0, OptionEnableBinaryLogging },
+        { "inspect",          no_argument,       0, OptionInspect         },
         { "register",         no_argument,       0, OptionRegister        },
         { "restart",          no_argument,       0, OptionRestart         },
         { "set",              no_argument,       0, OptionSet             },
@@ -6651,6 +6664,11 @@ S9sOptions::readOptionsNode(
             case OptionChangeConfig:
                 // --change-config
                 m_options["change_config"] = true;
+                break;
+
+            case OptionUnsetConfig:
+                // --unset-config
+                m_options["unset_config"] = true;
                 break;
 
             case OptionEnableBinaryLogging:
@@ -9437,6 +9455,9 @@ S9sOptions::checkOptionsNode()
         countOptions++;
     
     if (isChangeConfigRequested())
+        countOptions++;
+    
+    if (isUnsetConfigRequested())
         countOptions++;
     
     if (isStartRequested())
