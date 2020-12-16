@@ -5,6 +5,18 @@ TEST_SUITE_NAME=""
 TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
+PRINT_PIP_COMMANDS=""
+TEST_EMAIL="laszlo@severalnines.com"
+
+if [ "${S9S_TEST_EMAIL}" != "" ]; then
+	export TEST_EMAIL=${S9S_TEST_EMAIL}
+fi
+if [ "${S9S_TEST_CONTAINER_SERVER}" != "" ]; then
+	export CONTAINER_SERVER=${S9S_TEST_CONTAINER_SERVER}
+fi
+if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
+	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
+fi
 
 export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -72,8 +84,13 @@ function color_command()
 function prompt_string
 {
     local dirname=$(basename $PWD)
+    local DATETIME=""
 
-    echo "$USER@$HOSTNAME:$dirname\$"
+    if [ "${S9S_TEST_DATETIME_PROMPT}" != "" ]; then
+        DATETIME="$(date +"%Y-%m-%dT%X") "
+    fi
+
+    echo "$DATETIME$USER@$HOSTNAME:$dirname\$"
 }
 
 #
@@ -223,6 +240,44 @@ function mys9s()
     else
         mys9s_multiline "$@"
     fi
+}
+
+function print_command()
+{
+    local n_arguments=0
+    local argument
+    local prompt=$(prompt_string)
+    local nth=0
+    local cmd="$1"
+    shift
+
+    for argument in $*; do
+        let n_arguments+=1
+    done
+
+    echo ""
+    echo -ne "$prompt ${XTERM_COLOR_YELLOW}${cmd}${TERM_NORMAL} "
+
+    for argument in "$@"; do
+        if [ 4 -lt "$n_arguments" ]; then
+            if [ $nth -gt 0 ]; then
+                echo -e "\\"
+            fi
+        fi
+
+        if [ $nth -eq 0 ]; then
+            echo -ne "${XTERM_COLOR_BLUE}$argument${TERM_NORMAL} "
+        elif [ $nth -eq 1 ]; then
+            echo -ne "    ${XTERM_COLOR_ORANGE}$argument${TERM_NORMAL} "
+        else
+            echo -ne "    $argument " | color_command
+        fi
+
+        let nth+=1
+    done
+
+    echo ""
+    echo ""
 }
 
 t1_counter="0"
@@ -1811,6 +1866,15 @@ function create_node()
     else
         echo -n "Creating container... $os_vendor$os_release" >&2
     fi
+    if [ "$PRINT_PIP_COMMANDS" ]; then
+        print_command \
+            "pip-container-create" \
+            $os_vendor_option \
+            $os_release_option \
+            $template_option \
+            $verbose_option \
+            --server=$CONTAINER_SERVER $container_name
+    fi
     ip=$(pip-container-create \
         $os_vendor_option \
         $os_release_option \
@@ -2140,7 +2204,7 @@ EOF
         --generate-key \
         --controller="https://localhost:$cmon_port" \
         --new-password="p" \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${EMAIL} \
         --first-name="$first" \
         --last-name="$last" \
         $OPTION_PRINT_JSON \

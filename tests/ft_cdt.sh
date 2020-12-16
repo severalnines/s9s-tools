@@ -127,7 +127,7 @@ function testCreateUser()
         --cmon-user="system" \
         --password="secret" \
         --group="admins" \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
