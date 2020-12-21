@@ -1098,6 +1098,15 @@ function find_line()
 }
 
 #
+# Formatting the timestamp to a string that the cmnd will understand, e.g. 
+# "2020-11-28T08:39:34.753+01:00".
+#
+function dateTimeToTZ()
+{
+    date +'%FT%T.%3N%:z' --date "$1" 2>/dev/null
+}
+
+#
 # $1: the file in which the output messages are stored.
 # $2: the message to find.
 #

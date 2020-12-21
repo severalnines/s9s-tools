@@ -87,6 +87,8 @@ EOF
 
     check_user \
         --user-name    "lpere"  \
+        --full-name    "Laszlo Pere" \
+        --email        "pipas@domain.hu" \
         --cdt-path     "/" \
         --group        "ldapgroup" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
@@ -100,8 +102,6 @@ EOF
 #
 function testLdapUserSimple()
 {
-    local retcode
-
     print_title "Checking LDAP Authentication with Username"
     cat <<EOF | paragraph
   This test checks the LDAP authentication using the simple name. The user
@@ -126,6 +126,15 @@ EOF
         username
 
     check_exit_code_no_job $?
+
+    check_user \
+        --user-name    "username"  \
+        --full-name    "firstname lastname" \
+        --email        "username@domain.hu" \
+        --cdt-path     "/" \
+        --group        "ldapgroup" \
+        --dn           "cn=username,dc=homelab,dc=local" \
+        --origin       "LDAP"
 
     end_verbatim
 }

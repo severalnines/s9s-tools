@@ -20,6 +20,9 @@ PROVIDER_VERSION="9.6"
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
 
+INSTALL_START_TIME=""
+INSTALL_END_TIME=""
+
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
@@ -148,9 +151,9 @@ function testCreateCluster()
     print_title "Creating a PostgreSQL Cluster"
     cat <<EOF | paragraph
   This test will create a PostgreSQL cluster and check its state.
-
 EOF
 
+    INSTALL_START_TIME=$(dateTimeToTZ "now")
     begin_verbatim
 
     #
@@ -172,6 +175,8 @@ EOF
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version=$PROVIDER_VERSION \
+        --print-request \
+        --with-tags="myCluster" \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -196,6 +201,8 @@ EOF
     else
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
+
+    INSTALL_END_TIME=$(dateTimeToTZ "now")
 
     mys9s cluster --stat
     mys9s node    --stat
@@ -1357,6 +1364,14 @@ else
 
     #runFunctionalTest testDrop
 fi
+
+begin_verbatim
+
+cat <<EOF
+./tests/ft_graph01/ft_graph01.sh --top-begin="$INSTALL_START_TIME" --top-end="$INSTALL_END_TIME" --report-title="PostgreSQL Test (ft_postgresql)" --highlight-title="Cluster Install" --output-dir=report2
+EOF
+
+end_verbatim
 
 endTests
 

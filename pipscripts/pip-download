@@ -9,7 +9,6 @@ EXITCODE=0
 
 COMMAND_LINE_OPTIONS="$0 $*"
 OPTION_MAIL_LIST=""
-OPTION_NO_MAIL=""
 OPTION_TESTS=""
 
 #
@@ -41,6 +40,7 @@ N_MAILS_SENT=0
 
 REPORT_FILE="${ymd}.text"
 OPTION_NO_HTML=""
+OPTION_UPLOAD=""
 
 source $MYDIR/utilityfunctions.sh
 
@@ -62,13 +62,12 @@ Usage:
   --log-file=FILE         Store all the messages in the given file too.
 
   --mail-list=NAME        The name of the mail list.
-  --no-mail               Do not send mail.
- 
+
   --no-html               Do not include html test report.
+  --upload                Upload the files to Jenkins.
 
 EXAMPLES:
-  PASSWORD="SSSSSSS" pip-download --verbose --no-mail
-  PASSWORD="SSSSSSS" pip-download --verbose --mail-list=myself
+  PASSWORD="SSSSSSS" pip-download --verbose --upload
 
 EOF
 
@@ -78,8 +77,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:,
-no-mail,no-html,mail-list:" \
+        -l "help,verbose,version,log-file:,no-html,upload,mail-list:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -115,13 +113,13 @@ while true; do
             shift 2
             ;;
 
-        --no-mail)
-            OPTION_NO_MAIL="true"
+        --no-html)
+            OPTION_NO_HTML="true"
             shift
             ;;
 
-        --no-html)
-            OPTION_NO_HTML="true"
+        --upload)
+            OPTION_UPLOAD="true"
             shift
             ;;
 
@@ -939,41 +937,9 @@ function email_body()
     echo -en "---\r\n"
 }
 
-function send_mail_to_list()
-{
-    local recipient
-
-    if [ -n "$OPTION_NO_MAIL" ]; then
-        return 0
-    fi
-
-    for recipient in $(cat "$MAIL_LIST_FILE"); do
-        printVerbose "Sending email to ${recipient}..."
-        email_body | ssmtp "$recipient"
-        let N_MAILS_SENT+=1
-    done
-}
-
 #
 # Checking the command line option.
 #
-#pip-say "It is $(date +%R)."
-#pip-say "Preparing to download logs about tests."
-if [ -z "$OPTION_MAIL_LIST" -a -z "$OPTION_NO_MAIL" ]; then
-    printError "One of the --mail-list or --no-mail options is mandatory."
-    pip-say "Command line option error found, aborting download program."
-    exit 5
-fi
-
-if [ -n "$OPTION_MAIL_LIST" ]; then
-    MAIL_LIST_FILE="$HOME/.pip/${OPTION_MAIL_LIST}.list"
-    if [ ! -f "$MAIL_LIST_FILE" ]; then
-        printError "File '$MAIL_LIST_FILE' was not found..."
-        printError "File not found for $OPTION_MAIL_LIST, aborting.."
-        exit 5
-    fi
-fi
-
 if [ ! -d "$HOME/tests" ]; then
     mkdir $HOME/tests
 fi
@@ -990,30 +956,56 @@ fi
 #
 #pip-say "Downloading daily test results."
 export WWW_PASSWORD="$PASSWORD"
-export WWW_USER="pipas"
+export WWW_USER="$USER"
 
 if [ ! -d "$OPTION_OUTPUT_DIR" ]; then
     printError "The output directory '$OPTION_OUTPUT_DIR' was not found."
     exit 1
+else
+    printVerbose "***  output_dir: $OPTION_OUTPUT_DIR"
 fi
 
-CONFIG_FILE_NAME="${OPTION_OUTPUT_DIR}/${OPTION_CONFIG_NAME}.conf"
-if [ ! -f "$CONFIG_FILE_NAME" ]; then
-    printError "File '$CONFIG_FILE_NAME' was not found."
-    exit 6
+#
+# Loading and checking the Jenkins configuration.
+#
+if [ -n "$OPTION_UPLOAD" ]; then
+    CONFIG_FILE_NAME="${OPTION_OUTPUT_DIR}/${OPTION_CONFIG_NAME}.conf"
+    if [ ! -f "$CONFIG_FILE_NAME" ]; then
+        printError "File '$CONFIG_FILE_NAME' was not found."
+        exit 6
+    else
+        printVerbose "*** config_file: $OPTION_OUTPUT_DIR"
+        source "$CONFIG_FILE_NAME"
+    fi
+
+    printVerbose "*** JENKINS_DESTFILE: $JENKINS_DESTFILE"
+    printVerbose "***    JENKINS_TOKEN: $JENKINS_TOKEN"
+    printVerbose "***  JENKINS_APIUSER: $JENKINS_APIUSER"
+    printVerbose "***  JENKINS_JOB_URL: $JENKINS_JOB_URL"
+
+    if [ -z "$JENKINS_DESTFILE" ]; then
+        printError "Jenkins config is invalid, aborting..."
+        exit 5
+    fi
 fi
 
 if [ -z "$WWW_PASSWORD" ]; then
     pip-say "The 'PASSWORD' environment variable should be present."
     exit 1
+else
+    printVerbose "***  www_passwd: 'xxxxxxxxx'" 
 fi
 
 if [ -z "$WWW_USER" ]; then
     pip-say "The 'WWW_USER' environment variable should be present."
     exit 1
+else
+    printVerbose "***    www_user: '$WWW_USER'" 
 fi
 
-
+#
+# Checking the test names.
+#
 mytests=$(test_names)
 if [ -z "$mytests" ]; then
     printError "No tests found."
@@ -1031,15 +1023,31 @@ for testscript in $mytests; do
     let NUMBER_OF_TEST_SCRIPTS+=1
 done
 
-for old_file in $OPTION_OUTPUT_DIR/*.xml; do
+#
+# Removing old files from the output directory.
+#
+printVerbose "Removing old files...."
+n_files_removed=0
+
+for old_file in \
+    $OPTION_OUTPUT_DIR/*.xml \
+    $OPTION_OUTPUT_DIR/*.html \
+    results.tar.bz2;
+do
     if [ ! -f "$old_file" ]; then
         continue
     fi
 
     #printWarning "Removing $old_file..."
     rm -f $old_file
+    let n_files_removed+=1
 done
 
+printVerbose "Removed $n_files_removed old files (XML, HTML)."
+
+#
+# Generating the reports...
+#
 for testscript in $mytests; do
     HTML_FILE=$(download_html_file "$testscript")
     if [ -z "$HTML_FILE" ]; then
@@ -1061,7 +1069,6 @@ for testscript in $mytests; do
     #
     printf "Processing $PWD/$HTML_FILE...               \r"
 
-
     printVerbose "Processing $HTML_FILE"
     process_html_file_xml \
         --html-file $HTML_FILE >$XML_FILE
@@ -1080,28 +1087,34 @@ done
 
 print_footer | tee --append $REPORT_FILE
 
-#exit 0
+#
+# Uploading
+#
+if [ -n "$OPTION_UPLOAD" ]; then
+    pushd $OPTION_OUTPUT_DIR
+    SSH_KEY=""
 
-#
-# Not sending emails...
-#
-#if [ "$N_TESTS_PASSED" == "0" -a "$N_TESTS_FAILED" == "0" ]; then
-#    pip-say "Found no test results."
-#    exit 6
-#else
-#    pip-say "Download succeeded, $(plural_test $N_TESTS_PASSED) passed, \
-#        $(plural_test $N_TESTS_FAILED) failed."
-#fi
-#
-#tar czf "${gzfile}" "$ymd"
-#send_mail_to_list
-#
-#if [ "$N_MAILS_SENT" -eq 0 ]; then
-#    pip-say "Download program finished, no notification was sent."
-#elif [ "$N_MAILS_SENT" -eq 1 ]; then
-#    pip-say "Download program finished, one notification was sent."
-#else
-#    pip-say "Download program finished, $N_MAILS_SENT notifications were sent."
-#fi
+    echo "Uploading to Jenkins..."
+    printVerbose "Creating tarball..."
+    tar -cjpf results.tar.bz2 *.txt *.xml *.html
+
+    printVerbose "Uploading tarball to Jenkins..."
+    scp $SSH_KEY \
+        results.tar.bz2 \
+        jenkins@jenkins.severalnines.com:${JENKINS_DESTFILE}
+
+    # trigger jenkins job to process
+    curl --user "${JENKINS_APIUSER}" "${JENKINS_JOB_URL}"
+
+    if [ $? -eq 0 ]; then
+        printVerbose "Uploaded"
+    else
+        printError "Failed to upload"
+    fi
+
+    popd
+else
+    echo "Skipping the upload, it was not requested."
+fi
 
 

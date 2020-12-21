@@ -98,32 +98,26 @@ done
 function ldap_config()
 {
     cat <<EOF
-#
-# Cmon LDAP configuration file created by $MYNAME $VERSION.
-#
+enabled                = true
+ldapServerUri          = "ldap://192.168.0.193:389"
+ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
+ldapAdminPassword      = "p"
 
-enable_ldap_authentication = true
+ldapUserSearchRoot     = "dc=homelab,dc=local"
+ldapGroupSearchRoot    = "dc=homelab,dc=local"
 
-ldap_uri          = "ldap://192.168.0.193:389"
-login_dn          = "cn=admin,dc=homelab,dc=local"
-login_dn_password = "p"
+[ldap_settings]
+ldapUsernameAttributes = "cn"
+ldapRealnameAttributes = "displayName,cn"
+ldapEmailAttributes    = "mail"
+ldapMemberAttributes   = "memberUid"
 
-users_dn          = "dc=homelab,dc=local"
-groups_dn         = "dc=homelab,dc=local"
-
-[advanced_settings]
-#username_attribute      = "cn, uid, sAMAccountName"
-#real_name_attribute     = "displayName"
-#email_attribute         = "mail"
-#group_name_attribute    = "cn"
-static_member_attribute = "memberUid"
-#nested_groups           = false
-#network_timeout         = 5
-#protocol_version        = "3"
-#time_limit              = 5
-
+[mapping1]
+ldapGroupId            = "ldapgroup"
+cmonGroupName          = "ldapgroup"
 EOF
 
+    return 0
 }
 
 function testCreateLdapConfig()
@@ -132,13 +126,13 @@ function testCreateLdapConfig()
     cat <<EOF
   This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
   file that holds the settings of the LDAP settnings for the Cmon Controller.
-  
-  Here is the configuration we created:
 EOF
     
+    begin_verbatim
     ldap_config |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
+    end_verbatim
 }
 
 function testCmonDbUser()
@@ -258,11 +252,10 @@ EOF
 
 function testLdapUserSimpleFirst()
 {
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF 
+    print_title "LDAP Authentication with 'pipas1'"
+    cat <<EOF | paragraph
   This test checks the LDAP authentication using the simple name. This is 
   the first login of this user.
-
 EOF
 
     begin_verbatim
@@ -295,7 +288,7 @@ EOF
 
 function testLdapObject()
 {
-    print_title "Checking LDAP Authentication with Username"
+    print_title "Checking LDAP Authentication with Distinguished Name"
     cat <<EOF 
   This test checks the LDAP authentication using the simple name. This is 
   the first login of this user. On the LDAP server this user has the class
@@ -379,7 +372,7 @@ function testLdapFailures()
     mys9s user \
         --list \
         --long \
-        --cmon-user="lpere" \
+        --cmon-user="username" \
         --password=wrongpassword
 
     retcode=$?
@@ -409,12 +402,14 @@ else
     runFunctionalTest testCreateLdapGroup
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
-    runFunctionalTest testLdapUser
     runFunctionalTest testLdapUserSimple
     runFunctionalTest testLdapChangePasswd
     runFunctionalTest testLdapUserSecond
     runFunctionalTest testLdapUserSimpleFirst
-    runFunctionalTest testLdapObject
+
+    #runFunctionalTest testLdapObject
+    #runFunctionalTest testLdapUser
+
     runFunctionalTest testLdapFailures
     runFunctionalTest testLdapGroup
 fi
