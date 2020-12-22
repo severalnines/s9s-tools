@@ -32,11 +32,7 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --print-commands Do not print unit test info, print the executed commands.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
-  --ldap-url       
-
-  This script will check the basic ldap support. It will configure the LDAP
-  support then authenticate with various usernames and passwords to check that
-  the authentication works.
+  --ldap-url
 
 EOF
     exit 1
@@ -100,8 +96,9 @@ while true; do
 done
 
 
-function ldap_config()
+function ldap_config_ok()
 {
+
     cat <<EOF
 enabled                = true
 ldapServerUri          = "$LDAP_URL"
@@ -125,14 +122,40 @@ EOF
     return 0
 }
 
-function testCreateLdapConfig()
+function ldap_config_bad_url()
+{
+
+    cat <<EOF
+enabled                = true
+ldapServerUri          = "ldap://nosuchserver.homelab.local:389"
+ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
+ldapAdminPassword      = "p"
+
+ldapUserSearchRoot     = "dc=homelab,dc=local"
+ldapGroupSearchRoot    = "dc=homelab,dc=local"
+
+[ldap_settings]
+ldapUsernameAttributes = "cn"
+ldapRealnameAttributes = "displayName,cn"
+ldapEmailAttributes    = "mail"
+ldapMemberAttributes   = "memberUid"
+
+[mapping1]
+ldapGroupId            = "ldapgroup"
+cmonGroupName          = "ldapgroup"
+EOF
+
+    return 0
+}
+
+function testCreateLdapConfigOk()
 {
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
   This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
   file that holds the settings of the LDAP settnings for the Cmon Controller.
 EOF
-
+    
     begin_verbatim
 
     if [ -n "$LDAP_URL" ]; then
@@ -141,10 +164,40 @@ EOF
         failure "The LDAP_URL variable is empty."
     fi
 
-    ldap_config |\
+    ldap_config_ok |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
+
+
     end_verbatim
+
+
+}
+
+function testCreateLdapConfigBadUrl()
+{
+    print_title "Creating the Cmon LDAP Configuration File"
+    cat <<EOF
+  This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
+  file that holds the settings of the LDAP settnings for the Cmon Controller.
+EOF
+    
+    begin_verbatim
+
+    if [ -n "$LDAP_URL" ]; then
+        success "  o LDAP URL is $LDAP_URL, OK."
+    else
+        failure "The LDAP_URL variable is empty."
+    fi
+
+    ldap_config_bad_url |\
+        sudo tee /etc/cmon-ldap.cnf | \
+        print_ini_file
+
+
+    end_verbatim
+
+
 }
 
 function testCmonDbUser()
@@ -160,35 +213,6 @@ function testCmonDbUser()
         --group        "testgroup" \
         --dn           "-" \
         --origin       "CmonDb"    
-
-    end_verbatim
-}
-
-
-function testLdapChangePasswd()
-{
-    #
-    #
-    #
-    print_title "Trying to Change the Password of a User"
-    cat <<EOF
-  Changing the password on the LDAP server is not yet implemented.
-EOF
-
-    begin_verbatim
-    mys9s user \
-        --change-password \
-        --cmon-user="system" \
-        --password="secret" \
-        --new-password="p" \
-        "username"     
-
-    retcode=$?
-    if [ $retcode -ne 0 ]; then
-        success "  o The change password failed, ok."
-    else
-        failure "Changing the password for an LDAP user should have failed."
-    fi
 
     end_verbatim
 }
@@ -277,106 +301,80 @@ EOF
     end_verbatim
 }
 
-function testLdapUser3()
-{
-    local username="lpere"
 
-    print_title "Logging in with LDAP user $username"
+#
+# Checking the successful authentication of an LDAP user.
+#
+function testLdapUserFail1()
+{
+    local username="username"
+
+    print_title "Checking LDAP Authentication with user '$username'"
+
     cat <<EOF | paragraph
-  Logging in with a user that is part of an LDAP group and also not in the root
-  of the LDAP tree. Checking that the ldapgroup is there and the user is in the
-  ldap related group.
+  This test checks the LDAP authentication using the simple name. The user
+  should not be able to authenticate, because the Cmon Group is not created in
+  advance.
 EOF
 
     begin_verbatim
+    #
+    # Searching LDAP groups for user 'username'.
+    # Considering cn=ldapgroup,dc=homelab,dc=local as group.
+    # Group 'ldapgroup' was not found on Cmon.
+    # No Cmon group assigned for user 'username'.
+    #
     mys9s user \
         --list \
         --long \
         --cmon-user="$username" \
         --password=p
 
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="$username" \
-        --password=p \
-        lpere
+    if [ $? -eq 0 ]; then
+        failure "The user should've failed to authenticate."
+    else
+        success "  o Command failed, ok."
+    fi
 
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "lpere"  \
-        --full-name    "Laszlo Pere" \
-        --email        "pipas@domain.hu" \
-        --cdt-path     "/" \
-        --group        "ldapgroup" \
-        --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
+    # FIXME: We should check that the user does not exist.
     end_verbatim
 }
 
-function testLdapFailures()
+#
+# Checking the successful authentication of an LDAP user.
+#
+function testLdapUserFail2()
 {
-    local retcode
+    local username="pipas1"
 
-    print_title "Testing Failed Logins"
+    print_title "Checking LDAP Authentication with user '$username'"
+
+    cat <<EOF | paragraph
+  This test checks the LDAP authentication using the simple name. The user
+  should not be able to authenticate, because the Cmon Group is not created in
+  advance.
+EOF
 
     begin_verbatim
-
     #
-    # Invalid/non-existing username.
+    # Searching LDAP groups for user 'username'.
+    # Considering cn=ldapgroup,dc=homelab,dc=local as group.
+    # Group 'ldapgroup' was not found on Cmon.
+    # No Cmon group assigned for user 'username'.
     #
     mys9s user \
         --list \
         --long \
-        --cmon-user="nosuchuser" \
+        --cmon-user="$username" \
         --password=p
 
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
+    if [ $? -eq 0 ]; then
+        failure "The user should've failed to authenticate."
     else
-        failure "This command should have failed."
+        success "  o Command failed, ok."
     fi
 
-    #
-    # Non existing distinguished name.
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=nosuchuser,dc=homelab,dc=local" \
-        --password=p
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-    
-    #
-    # Wrong password.
-    #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="username" \
-        --password=wrongpassword
-
-    retcode=$?
-
-    if [ "$retcode" -ne 0 ]; then
-        success "  o command failed, ok"
-    else
-        failure "This command should have failed."
-    fi
-
+    # FIXME: We should check that the user does not exist.
     end_verbatim
 }
 
@@ -395,13 +393,20 @@ else
     runFunctionalTest testCmonDbUser
     runFunctionalTest testCreateLdapGroup
     runFunctionalTest testLdapSupport
-    runFunctionalTest testCreateLdapConfig
+    
+    runFunctionalTest testCreateLdapConfigBadUrl
+    runFunctionalTest testLdapUserFail1
+    runFunctionalTest testLdapUserFail2
+    
+    runFunctionalTest testCreateLdapConfigOk
     runFunctionalTest testLdapUser1
     runFunctionalTest testLdapUser2
-    runFunctionalTest testLdapUser3
-    runFunctionalTest testLdapChangePasswd
 
-    runFunctionalTest testLdapFailures
+    #
+    # FIXME: Here is a question: what should happen if now we remove the
+    # mapping? The user is already created and so the authentication will
+    # succeed.
+    #
 fi
 
 endTests

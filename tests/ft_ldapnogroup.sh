@@ -104,7 +104,7 @@ function ldap_config()
 {
     cat <<EOF
 enabled                = true
-ldapServerUri          = "ldap://192.168.0.193:389"
+ldapServerUri          = "$LDAP_URL"
 ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
 ldapAdminPassword      = "p"
 
@@ -134,6 +134,13 @@ function testCreateLdapConfig()
 EOF
     
     begin_verbatim
+
+    if [ -n "$LDAP_URL" ]; then
+        success "  o LDAP URL is $LDAP_URL, OK."
+    else
+        failure "The LDAP_URL variable is empty."
+    fi
+
     ldap_config |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file

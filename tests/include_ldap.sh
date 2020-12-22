@@ -2,6 +2,8 @@
 # This is an include file that contains LDAP related tests that are executed
 # from multiple scripts.
 #
+export LDAP_URL="ldap://ldap.homelab.local:389"
+
 
 #
 # Creating the group or groups needed by the LDAP test scripts.

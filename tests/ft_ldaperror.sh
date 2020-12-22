@@ -101,7 +101,7 @@ function ldap_config_ok()
 
     cat <<EOF
 enabled                = true
-ldapServerUri          = "ldap://192.168.0.193:389"
+ldapServerUri          = "$LDAP_URL"
 ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
 ldapAdminPassword      = "p"
 
@@ -127,7 +127,7 @@ function ldap_config_bad_group()
 
     cat <<EOF
 enabled                = true
-ldapServerUri          = "ldap://192.168.0.193:389"
+ldapServerUri          = "$LDAP_URL"
 ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
 ldapAdminPassword      = "p"
 
@@ -157,6 +157,13 @@ function testCreateLdapConfigOk()
 EOF
     
     begin_verbatim
+
+    if [ -n "$LDAP_URL" ]; then
+        success "  o LDAP URL is $LDAP_URL, OK."
+    else
+        failure "The LDAP_URL variable is empty."
+    fi
+
     ldap_config_ok |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
@@ -176,6 +183,13 @@ function testCreateLdapConfigBadGroup()
 EOF
     
     begin_verbatim
+
+    if [ -n "$LDAP_URL" ]; then
+        success "  o LDAP URL is $LDAP_URL, OK."
+    else
+        failure "The LDAP_URL variable is empty."
+    fi
+
     ldap_config_bad_group |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
