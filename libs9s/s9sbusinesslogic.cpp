@@ -371,6 +371,11 @@ S9sBusinessLogic::execute()
             success = client.setConfig();
             client.printMessages("OK.", success);
             client.setExitStatus();  
+        } else if (options->isUnsetConfigRequested())
+        {
+            success = client.unsetConfig();
+            client.printMessages("OK.", success);
+            client.setExitStatus();  
         } else if (options->isPullConfigRequested())
         {
             executePullConfig(client);

@@ -817,6 +817,65 @@ S9sRpcClient::setConfig()
 }
 
 /**
+ * This function unsets a configuration name through the controller for 
+ * one node.
+ */
+bool
+S9sRpcClient::unsetConfig()
+{
+    S9sOptions    *options    = S9sOptions::instance();
+    S9sVariantList hosts      = options->nodes();
+    S9sString      uri        = "/v2/config/";
+    S9sVariantMap  request    = composeRequest();
+    S9sVariantList optionList;
+    S9sVariantMap  optionMap;
+    bool           retval;
+
+    request["operation"]  = "unsetConfig";
+    if (hosts.size() == 1u)
+    {
+        S9sNode node = hosts[0].toNode();
+
+        request["hostname"] = node.hostName();
+
+        if (node.hasPort())
+            request["port"] = node.port();
+    } else {
+        PRINT_ERROR("unsetConfig only implemented for one host.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (options->optName().empty())
+    {
+        PRINT_ERROR(
+                "Configuration option name is not provided.\n"
+                "Use the --opt-name command line option to provide"
+                " a configuration option name."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+
+    // 
+    // The configuration value: here it is implemented for one name.
+    //
+    optionMap["name"]  = options->optName();
+
+    if (!options->optGroup().empty())
+        optionMap["group"] = options->optGroup();
+
+    optionList << optionMap;
+
+    request["configuration"] = optionList;
+
+    retval = executeRequest(uri, request);
+    return retval;
+}
+
+/**
  * Sends a call to get the cluster configuration.
  */
 bool
@@ -2708,10 +2767,13 @@ S9sRpcClient::setupAuditLogging(
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  jobData = composeJobData();
+
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
 
     jobSpec["command"]    = "setup_audit_logging";
-    if (!hosts.empty())
-        jobSpec["nodes"] = nodesField(hosts);
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Setup Audit Logging";

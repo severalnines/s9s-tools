@@ -100,7 +100,7 @@ function testCreateUsers()
         --password="secret" \
         --group="users" \
         --create-group \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
@@ -120,7 +120,7 @@ function testCreateUsers()
         --cmon-user="system" \
         --password="secret" \
         --group="admins" \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="Cmon" \
         --last-name="Administrator"   \
         --generate-key \

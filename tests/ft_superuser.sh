@@ -137,7 +137,7 @@ function testBoostrap()
         --group="admins" \
         --new-password="admin" \
         --controller="https://localhost:9556" \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="$first" \
         --last-name="$last" \
         $OPTION_PRINT_JSON \

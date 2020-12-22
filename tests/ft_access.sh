@@ -154,7 +154,7 @@ EOF
         --password="secret" \
         --group="admins" \
         --create-group \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
@@ -254,7 +254,7 @@ EOF
         --create \
         --group=users \
         --new-password=secret \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         "$TEST_USER_NAME"
@@ -359,7 +359,7 @@ EOF
     check_exit_code_no_job $?
 
     mys9s user --stat "$TEST_USER_NAME"
-    tmp=$(s9s user --list laszlo --user-format="%G")
+    tmp=$(s9s user --list ${TEST_USER_NAME} --user-format="%G")
     if [ "$tmp" == "users,admins" ]; then
         success "  o User is a member of the admins group, ok."
     else

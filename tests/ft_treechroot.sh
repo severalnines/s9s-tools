@@ -114,7 +114,7 @@ function testCreateUser()
         --password="secret" \
         --group="users" \
         --create-group \
-        --email-address="laszlo@severalnines.com" \
+        --email-address=${TEST_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \

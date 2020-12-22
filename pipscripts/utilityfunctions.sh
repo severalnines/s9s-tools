@@ -52,6 +52,10 @@ DATE_COLOR="\033[1m\033[38;5;215m"
 DIST_COLOR="\033[1m\033[38;5;93m"
 VERSION_COLOR="\033[1m\033[38;5;190m"
 
+if [ "${S9S_TEST_REPORT_URL}" != "" ]; then
+       export TEST_REPORT_URL=${S9S_TEST_REPORT_URL}
+fi
+
 #
 # Various utility functions that are used (or should be used) in many scrips.
 # This is a very important file, because it makes possible to re-use the code.
