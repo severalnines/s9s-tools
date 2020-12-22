@@ -34,6 +34,10 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --server=SERVER  Use the given server to create containers.
   --ldap-url
 
+  This test will use a valid LDAP configuration, but it will not create the
+  proper mapping for the LDAP group. The group is not mapped, so the LDAP 
+  authentication should fail.
+
 EOF
     exit 1
 }
@@ -96,35 +100,8 @@ while true; do
 done
 
 
-function ldap_config_ok()
+function ldap_config()
 {
-
-    cat <<EOF
-enabled                = true
-ldapServerUri          = "ldap://192.168.0.193:389"
-ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
-ldapAdminPassword      = "p"
-
-ldapUserSearchRoot     = "dc=homelab,dc=local"
-ldapGroupSearchRoot    = "dc=homelab,dc=local"
-
-[ldap_settings]
-ldapUsernameAttributes = "cn"
-ldapRealnameAttributes = "displayName,cn"
-ldapEmailAttributes    = "mail"
-ldapMemberAttributes   = "memberUid"
-
-[mapping1]
-ldapGroupId            = "ldapgroup"
-cmonGroupName          = "ldapgroup"
-EOF
-
-    return 0
-}
-
-function ldap_config_bad_group()
-{
-
     cat <<EOF
 enabled                = true
 ldapServerUri          = "ldap://192.168.0.193:389"
@@ -148,7 +125,7 @@ EOF
     return 0
 }
 
-function testCreateLdapConfigOk()
+function testCreateLdapConfig()
 {
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
@@ -157,26 +134,7 @@ function testCreateLdapConfigOk()
 EOF
     
     begin_verbatim
-    ldap_config_ok |\
-        sudo tee /etc/cmon-ldap.cnf | \
-        print_ini_file
-
-
-    end_verbatim
-
-
-}
-
-function testCreateLdapConfigBadGroup()
-{
-    print_title "Creating the Cmon LDAP Configuration File"
-    cat <<EOF
-  This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
-  file that holds the settings of the LDAP settnings for the Cmon Controller.
-EOF
-    
-    begin_verbatim
-    ldap_config_bad_group |\
+    ldap_config |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
 
@@ -202,91 +160,6 @@ function testCmonDbUser()
 
     end_verbatim
 }
-
-#
-# Checking the successful authentication of an LDAP user with the user 
-# "username".
-#
-function testLdapUser1()
-{
-    local username="username"
-
-    print_title "Checking LDAP Authentication with user '$username'"
-
-    cat <<EOF | paragraph
-  This test checks the LDAP authentication using the simple name. The user
-  should be able to authenticate.
-EOF
-
-    begin_verbatim
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="$username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="$username" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "$username"  \
-        --full-name    "firstname lastname" \
-        --email        "username@domain.hu" \
-        --cdt-path     "/" \
-        --group        "ldapgroup" \
-        --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
-    end_verbatim
-}
-
-function testLdapUser2()
-{
-    local username="pipas1"
-
-    print_title "LDAP Authentication with '$username'"
-    cat <<EOF | paragraph
-  This test checks the LDAP authentication using the simple name. This is 
-  the first login of this user.
-EOF
-
-    begin_verbatim
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="$username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="$username" \
-        --password=p \
-        pipas1
-
-    check_exit_code_no_job $?
-    
-    check_user \
-        --user-name    "$username"  \
-        --cdt-path     "/" \
-        --group        "ldapgroup" \
-        --dn           "cn=pipas1,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
-    end_verbatim
-}
-
 
 #
 # Checking the successful authentication of an LDAP user.
@@ -379,20 +252,9 @@ else
     runFunctionalTest testCmonDbUser
     runFunctionalTest testCreateLdapGroup
     runFunctionalTest testLdapSupport
-    
-    runFunctionalTest testCreateLdapConfigBadGroup
+    runFunctionalTest testCreateLdapConfig
     runFunctionalTest testLdapUserFail1
     runFunctionalTest testLdapUserFail2
-    
-    runFunctionalTest testCreateLdapConfigOk
-    runFunctionalTest testLdapUser1
-    runFunctionalTest testLdapUser2
-
-    #
-    # FIXME: Here is a question: what should happen if now we remove the
-    # mapping? The user is already created and so the authentication will
-    # succeed.
-    #
 fi
 
 endTests

@@ -32,7 +32,12 @@ Usage: $MYNAME [OPTION]... [TESTNAME]
   --print-commands Do not print unit test info, print the executed commands.
   --reset-config   Remove and re-generate the ~/.s9s directory.
   --server=SERVER  Use the given server to create containers.
-  --ldap-url
+  --ldap-url       
+
+  This script will check the basic ldap support. It will configure the LDAP
+  support then authenticate with various usernames and passwords to check that
+  the authentication works.
+
 EOF
     exit 1
 }
@@ -152,45 +157,6 @@ function testCmonDbUser()
     end_verbatim
 }
 
-function testLdapUser()
-{
-    print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF | paragraph
-  This test will check teh LDAP authentication using the distinguished name at
-  the login. This is the first login of the user, a CmonDb shadow will be
-  created about the user and that shadow will hold some extra information the
-  Cmon Controller needs and will also guarantee a unique user ID.
-EOF
-
-    begin_verbatim
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "username"  \
-        --cdt-path     "/" \
-        --full-name    "firstname lastname" \
-        --group        "ldapgroup" \
-        --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
-    end_verbatim
-}
 
 function testLdapChangePasswd()
 {
@@ -220,39 +186,11 @@ EOF
     end_verbatim
 }
 
-function testLdapUserSecond()
+function testLdapUser2()
 {
-    print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF | paragraph
-  This test will check teh LDAP authentication using the distinguished name at
-  the login. This is not the first time the user logins, so the CmonDb shadow
-  should be found. This shadow contains the origin set to LDAP and so LDAP
-  authentication should be used.
-EOF
+    local username="pipas1"
 
-    begin_verbatim
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="cn=username,dc=homelab,dc=local" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-    end_verbatim
-}
-
-function testLdapUserSimpleFirst()
-{
-    print_title "LDAP Authentication with 'pipas1'"
+    print_title "LDAP Authentication with '$username'"
     cat <<EOF | paragraph
   This test checks the LDAP authentication using the simple name. This is 
   the first login of this user.
@@ -262,7 +200,7 @@ EOF
     mys9s user \
         --list \
         --long \
-        --cmon-user="pipas1" \
+        --cmon-user="$username" \
         --password=p
 
     check_exit_code_no_job $?
@@ -270,14 +208,14 @@ EOF
     mys9s user \
         --stat \
         --long \
-        --cmon-user="pipas1" \
+        --cmon-user="$username" \
         --password=p \
         pipas1
 
     check_exit_code_no_job $?
     
     check_user \
-        --user-name    "pipas1"  \
+        --user-name    "$username"  \
         --cdt-path     "/" \
         --group        "ldapgroup" \
         --dn           "cn=pipas1,dc=homelab,dc=local" \
@@ -286,21 +224,27 @@ EOF
     end_verbatim
 }
 
-function testLdapObject()
+#
+# Checking the successful authentication of an LDAP user with the user 
+# "username".
+#
+function testLdapUser1()
 {
-    print_title "Checking LDAP Authentication with Distinguished Name"
-    cat <<EOF 
-  This test checks the LDAP authentication using the simple name. This is 
-  the first login of this user. On the LDAP server this user has the class
-  simpleSecurityObject, so we test a bit different code here.
+    local username="username"
 
+    print_title "Checking LDAP Authentication with user '$username'"
+
+    cat <<EOF | paragraph
+  This test checks the LDAP authentication using the simple name. The user
+  should be able to authenticate.
 EOF
 
     begin_verbatim
+
     mys9s user \
         --list \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="$username" \
         --password=p
 
     check_exit_code_no_job $?
@@ -308,17 +252,61 @@ EOF
     mys9s user \
         --stat \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="$username" \
         --password=p \
-        pipas2
+        username
 
     check_exit_code_no_job $?
-    
+
     check_user \
-        --user-name    "pipas2"  \
+        --user-name    "$username"  \
+        --full-name    "firstname lastname" \
+        --email        "username@domain.hu" \
         --cdt-path     "/" \
         --group        "ldapgroup" \
-        --dn           "uid=pipas2,dc=homelab,dc=local" \
+        --dn           "cn=username,dc=homelab,dc=local" \
+        --origin       "LDAP"
+
+    end_verbatim
+}
+
+
+function testLdapUser3()
+{
+    local username="lpere"
+
+    print_title "Logging in with LDAP user $username"
+    cat <<EOF | paragraph
+  Logging in with a user that is part of an LDAP group and also not in the root
+  of the LDAP tree. Checking that the ldapgroup is there and the user is in the
+  ldap related group.
+EOF
+
+    begin_verbatim
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="$username" \
+        --password=p \
+        lpere
+
+    check_exit_code_no_job $?
+
+    check_user \
+        --user-name    "lpere"  \
+        --full-name    "Laszlo Pere" \
+        --email        "pipas@domain.hu" \
+        --cdt-path     "/" \
+        --group        "ldapgroup" \
+        --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \
         --origin       "LDAP"
 
     end_verbatim
@@ -402,16 +390,12 @@ else
     runFunctionalTest testCreateLdapGroup
     runFunctionalTest testLdapSupport
     runFunctionalTest testCreateLdapConfig
-    runFunctionalTest testLdapUserSimple
+    runFunctionalTest testLdapUser1
+    runFunctionalTest testLdapUser2
+    runFunctionalTest testLdapUser3
     runFunctionalTest testLdapChangePasswd
-    runFunctionalTest testLdapUserSecond
-    runFunctionalTest testLdapUserSimpleFirst
-
-    #runFunctionalTest testLdapObject
-    #runFunctionalTest testLdapUser
 
     runFunctionalTest testLdapFailures
-    runFunctionalTest testLdapGroup
 fi
 
 endTests

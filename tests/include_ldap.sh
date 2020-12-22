@@ -56,9 +56,9 @@ EOF
     end_verbatim
 }
 
-function testLdapGroup()
+function testLdapUser3()
 {
-    local username="cn=lpere,cn=ldapgroup,dc=homelab,dc=local"
+    local username="lpere"
 
     print_title "Checking LDAP Groups"
     cat <<EOF | paragraph
@@ -97,51 +97,10 @@ EOF
     end_verbatim
 }
 
-#
-# Checking the successful authentication of an LDAP user with a simple name.
-#
-function testLdapUserSimple()
-{
-    print_title "Checking LDAP Authentication with Username"
-    cat <<EOF | paragraph
-  This test checks the LDAP authentication using the simple name. The user
-  should be able to authenticate.
-EOF
 
-    begin_verbatim
-
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="username" \
-        --password=p
-
-    check_exit_code_no_job $?
-   
-    mys9s user \
-        --stat \
-        --long \
-        --cmon-user="username" \
-        --password=p \
-        username
-
-    check_exit_code_no_job $?
-
-    check_user \
-        --user-name    "username"  \
-        --full-name    "firstname lastname" \
-        --email        "username@domain.hu" \
-        --cdt-path     "/" \
-        --group        "ldapgroup" \
-        --dn           "cn=username,dc=homelab,dc=local" \
-        --origin       "LDAP"
-
-    end_verbatim
-}
-
-#
-# Testing a successful authentication of an LDAP user with a distinguished 
-# name.
+# 
+# Distinguished name logins, these are not supported any more and so these tests
+# are probably deprecated.
 #
 function testLdapUserDn()
 {
@@ -180,4 +139,125 @@ EOF
 
     end_verbatim
 }
+
+# 
+# Distinguished name logins, these are not supported any more and so these tests
+# are probably deprecated.
+#
+function testLdapUserDnSecond()
+{
+    print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF | paragraph
+  This test will check teh LDAP authentication using the distinguished name at
+  the login. This is not the first time the user logins, so the CmonDb shadow
+  should be found. This shadow contains the origin set to LDAP and so LDAP
+  authentication should be used.
+EOF
+
+    begin_verbatim
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p \
+        username
+
+    check_exit_code_no_job $?
+    end_verbatim
+}
+
+# 
+# Distinguished name logins, these are not supported any more and so these tests
+# are probably deprecated.
+#
+function testLdapUserDnOne()
+{
+    print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF | paragraph
+  This test will check teh LDAP authentication using the distinguished name at
+  the login. This is the first login of the user, a CmonDb shadow will be
+  created about the user and that shadow will hold some extra information the
+  Cmon Controller needs and will also guarantee a unique user ID.
+EOF
+
+    begin_verbatim
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="cn=username,dc=homelab,dc=local" \
+        --password=p \
+        username
+
+    check_exit_code_no_job $?
+
+    check_user \
+        --user-name    "username"  \
+        --cdt-path     "/" \
+        --full-name    "firstname lastname" \
+        --group        "ldapgroup" \
+        --dn           "cn=username,dc=homelab,dc=local" \
+        --origin       "LDAP"
+
+    end_verbatim
+}
+
+# 
+# Distinguished name logins, these are not supported any more and so these tests
+# are probably deprecated.
+#
+function testLdapObjectDn()
+{
+    print_title "Checking LDAP Authentication with Distinguished Name"
+    cat <<EOF 
+  This test checks the LDAP authentication using the simple name. This is 
+  the first login of this user. On the LDAP server this user has the class
+  simpleSecurityObject, so we test a bit different code here.
+
+EOF
+
+    begin_verbatim
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --password=p
+
+    check_exit_code_no_job $?
+   
+    mys9s user \
+        --stat \
+        --long \
+        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --password=p \
+        pipas2
+
+    check_exit_code_no_job $?
+    
+    check_user \
+        --user-name    "pipas2"  \
+        --cdt-path     "/" \
+        --group        "ldapgroup" \
+        --dn           "uid=pipas2,dc=homelab,dc=local" \
+        --origin       "LDAP"
+
+    end_verbatim
+}
+
 
