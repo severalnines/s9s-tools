@@ -188,6 +188,20 @@ EOF
     create_node --autodestroy $CONTAINER_NAME2
     nodes+="$LAST_ADDED_NODE;"
 
+    create_node --autodestroy $CONTAINER_NAME3
+    nodes+="$LAST_ADDED_NODE?rs=replset_2;"
+
+    create_node --autodestroy $CONTAINER_NAME4
+    nodes+="$LAST_ADDED_NODE?rs=replset_2;"
+
+    create_node --autodestroy $CONTAINER_NAME5
+    nodes+="MongoCfg://$LAST_ADDED_NODE;"
+    nodes+="Mongos://$LAST_ADDED_NODE;"
+
+    create_node --autodestroy $CONTAINER_NAME6
+    nodes+="MongoCfg://$LAST_ADDED_NODE;"
+    nodes+="Mongos://$LAST_ADDED_NODE;"
+
 
     mys9s cluster \
         --create \
@@ -280,7 +294,7 @@ EOF
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="MongoDb://$nodeIp" \
+        --nodes="MongoDb://$nodeIp?rs=replset_2" \
         $REQUEST_OPTION \
         $LOG_OPTION \
         $DEBUG_OPTION
@@ -335,7 +349,7 @@ EOF
     mys9s cluster \
         --add-node \
         --cluster-id=$CLUSTER_ID \
-        --nodes="MongoDb://$LAST_ADDED_NODE" \
+        --nodes="MongoDb://$LAST_ADDED_NODE?rs=replset_2" \
         $REQUEST_OPTION \
         $LOG_OPTION \
         $DEBUG_OPTION
@@ -685,13 +699,6 @@ else
     runFunctionalTest testAddRemoveNode
     runFunctionalTest testAddNode
     runFunctionalTest testStopStartNode
-
-    BACKUP_METHOD=mongodump
-
-    runFunctionalTest testCreateBackup
-    runFunctionalTest testCreateBackup
-    runFunctionalTest testRestoreBackup
-    runFunctionalTest testRemoveBackup
 
     #BACKUP_METHOD=percona-backup-mongodb
 

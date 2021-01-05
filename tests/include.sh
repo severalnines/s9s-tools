@@ -6,6 +6,7 @@ TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
 PRINT_PIP_COMMANDS=""
+OPTION_KEEP_NODES=""
 TEST_EMAIL="laszlo@severalnines.com"
 
 if [ "${S9S_TEST_EMAIL}" != "" ]; then
@@ -3429,9 +3430,9 @@ EOF
     fi
 
     # Destroying the nodes if we have to.
-    if [ "$OPTION_LEAVE_NODES" ]; then
+    if [ "$OPTION_KEEP_NODES" ]; then
         print_subtitle "Leaving the Containers"
-        echo "The --leave-nodes option was provided, not destroying the "
+        echo "The --keep-nodes option was provided, not destroying the "
         echo "containers."
         
         begin_verbatim
