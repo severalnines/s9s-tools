@@ -3242,7 +3242,7 @@ function check_container_server()
     #
     # Checking the regions.
     #
-    #mys9s server --list-regions $cloud_option
+    mys9s server --list-regions $cloud_option
 
     n_names_found=0
     IFS=$'\n'
@@ -3268,6 +3268,9 @@ function check_container_server()
     
     if [ "$n_names_found" -lt 1 ]; then
         failure "No regions with credentials found."
+        failure "No regions means the cloud is not operational!"
+        end_verbatim
+        return 1
     fi
 
     #
