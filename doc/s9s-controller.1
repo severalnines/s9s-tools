@@ -37,7 +37,9 @@ Cmon Database and will ask the leader to let them join. When the join is
 successful one more \fBCmonController\fP will be created for every joining
 controller.
 
-
+\"
+\"
+\"
 .SH OPTIONS
 .SS "Main Option"
 The application should always be started using a main option that sets what
@@ -91,6 +93,20 @@ echo "true" | \\
         --controller="https://10.10.1.23:9501" \\
         --batch \\
         /.runtime/cmon_ha/enabled
+.fi
+
+.TP
+.B --get-ldap-config
+Gets the LDAP configuration from the controller and prints it to the standard
+output.
+
+.B EXAMPLE
+.nf
+s9s controller \\
+    --cmon-user="system" \\
+    --password="XXXXXXX" \\
+    --get-ldap-config \\
+    --print-json 
 .fi
 
 .TP

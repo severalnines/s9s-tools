@@ -764,10 +764,15 @@ S9sRpcClient::getConfig(
     return executeRequest(uri, request);
 }
 
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Sends the getLdapConfig request to the server.
+ */
 bool
 S9sRpcClient::getLdapConfig()
 {
-    //S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/config/";
     S9sVariantMap  request;
 

@@ -6298,10 +6298,10 @@ S9sOptions::printHelpController()
 "Options for the \"controller\" command:\n"
 "  --create-snapshot          Creates a controller to controller snapshot.\n"
 "  --enable-cmon-ha           Enables the Cmon HA mode.\n"
+"  --get-ldap-config          Gets the LDAP configuration of the controller.\n"
 "  --list                     List the registered controllers.\n"
 "  --ping                     Pings the controller, prints status.\n"
 "  --stat                     Prints details about the controllers.\n"
-""
 "\n"
     );
 }
