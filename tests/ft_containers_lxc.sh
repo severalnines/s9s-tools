@@ -650,33 +650,6 @@ function createFail()
 
     end_verbatim
 }
-#
-# This will create a container and check if the user can actually log in through
-# ssh.
-#
-function createCentos6()
-{
-    local container_name="ft_containers_lxc_11_$$"
-
-    #
-    # Creating a container Centos 6.
-    #
-    print_title "Creating Centos 6 Container"
-    begin_verbatim
-
-    mys9s container \
-        --create \
-        --image=centos_6 \
-        --servers=$CONTAINER_SERVER \
-        $LOG_OPTION \
-        $DEBUG_OPTION \
-        "$container_name"
-    
-    check_exit_code $?
-    remember_cmon_container "$container_name"
-    check_container "$container_name"
-    end_verbatim
-}
 
 function createCentos7()
 {
@@ -991,7 +964,6 @@ else
     runFunctionalTest createAsSystem
     runFunctionalTest createFail
 
-    runFunctionalTest createCentos6
     runFunctionalTest createCentos7
     runFunctionalTest createDebianStretch
 

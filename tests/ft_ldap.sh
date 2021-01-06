@@ -127,7 +127,11 @@ EOF
 
 function testCreateLdapConfig()
 {
+    local lines
+    local cdtPath="/.runtime/LDAP/configuration"
+
     print_title "Creating the Cmon LDAP Configuration File"
+
     cat <<EOF
   This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
   file that holds the settings of the LDAP settnings for the Cmon Controller.
@@ -144,6 +148,26 @@ EOF
     ldap_config |\
         sudo tee /etc/cmon-ldap.cnf | \
         print_ini_file
+
+
+    mys9s tree \
+        --cmon-user=system \
+        --password=secret \
+        --cat \
+        $cdtPath
+
+    check_exit_code_no_job $?
+
+    lines=$(s9s tree --cmon-user=system --password=secret --cat $cdtPath)
+    S9S_LINES_CONTAINS "$lines" \
+        "enabled" \
+        "ldapServerUri" \
+        "ldapAdminPassword" \
+        "ldapUserSearchRoot" \
+        "ldapUsernameAttributes" \
+        "ldapGroupId" \
+        "cmonGroupName"
+    
     end_verbatim
 }
 

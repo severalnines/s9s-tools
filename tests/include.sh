@@ -4216,5 +4216,34 @@ function check_alarm_statistics()
 
 }
 
+function S9S_LINES_CONTAINS()
+{
+    local lines
+    local retval=0
+
+    lines="$1"
+    shift
+
+    while [ -n "$1" ]; do
+        if echo "$lines" | grep -q "$1"; then
+            success "  o Text '$1' found, OK."
+        else
+            failure "Line '$1' was not found."
+            retval=1
+        fi
+
+        shift
+    done
+
+    if [ "$retval" -ne 0 ]; then
+        echo "Lines:"
+        echo "-----8<------8<------8<------8<------8<------8<------8<------"
+        echo "$lines"
+        echo "-----8<------8<------8<------8<------8<------8<------8<------"
+    fi
+
+    return $retval
+}
+
 trap clean_up_after_test EXIT
 
