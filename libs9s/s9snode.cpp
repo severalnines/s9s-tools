@@ -96,6 +96,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonPBMAgentHost";
         else if (m_url.protocol().toLower() == "nfsclient")
             m_properties["class_name"] = "CmonNFSClientHost";
+        else if (m_url.protocol().toLower() == "nfsserver")
+            m_properties["class_name"] = "CmonNFSServerHost";
         else if (m_url.protocol().toLower() == "proxysql")
             m_properties["class_name"] = "CmonProxySqlHost";
         else if (m_url.protocol().toLower() == "proxysql")
@@ -1083,6 +1085,8 @@ S9sNode::nodeTypeFlag() const
         return 't';
     else if (theNodeType == "nfsclient")
         return 'n';
+    else if (theNodeType == "nfsserver")
+        return 'f';
     else if (theNodeType == "garbd")
         return 'a';
     else if (theNodeType == "grouprepl")
