@@ -95,6 +95,8 @@ class S9sRpcReply : public S9sVariantMap
         void printTopQueries();
         void printSqlProcesses();
 
+        void printLdapConfig();
+        
         void printAcl();
         
         void printReplicationList();

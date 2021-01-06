@@ -585,7 +585,15 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printControllers();
             client.setExitStatus();
-        } 
+        } else if (options->isGetLdapConfigRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getLdapConfig();
+            reply = client.reply();
+            reply.printLdapConfig();
+            client.setExitStatus();
+        }
     } else if (options->isServerOperation())
     {
         if (options->isCreateRequested())

@@ -155,6 +155,8 @@ class S9sRpcClient
         bool setConfig();
         bool unsetConfig();
 
+        bool getLdapConfig();
+
         bool pingCluster();
         bool pingController();
 

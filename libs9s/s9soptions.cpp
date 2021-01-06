@@ -184,6 +184,7 @@ enum S9sOptionType
     OptionOptName,
     OptionOptValue,
     OptionListConfig,
+    OptionGetLdapConfig,
     OptionChangeConfig,
     OptionUnsetConfig,
     OptionPullConfig,
@@ -3990,6 +3991,12 @@ bool
 S9sOptions::isListConfigRequested() const
 {
     return getBool("list_config");
+}
+
+bool
+S9sOptions::isGetLdapConfigRequested() const
+{
+    return getBool("get_ldap_config");
 }
 
 /**
@@ -13955,6 +13962,7 @@ S9sOptions::readOptionsController(
         // Main Option
         { "create-snapshot",  no_argument,       0, OptionCreateSnaphot   },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
+        { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
         { "stat",             no_argument,       0, OptionStat            },
@@ -14099,6 +14107,11 @@ S9sOptions::readOptionsController(
             case OptionEnableCmonHa:
                 // --enable-cmon-ha
                 m_options["enable_cmon_ha"] = true;
+                break;
+
+            case OptionGetLdapConfig:
+                // --get-ldap-config
+                m_options["get_ldap_config"] = true;
                 break;
 
             case 'L': 
@@ -14761,6 +14774,9 @@ S9sOptions::checkOptionsController()
         countOptions++;
     
     if (isStatRequested())
+        countOptions++;
+    
+    if (isGetLdapConfigRequested())
         countOptions++;
 
     if (countOptions > 1)

@@ -724,6 +724,17 @@ S9sRpcClient::getTree(
  * The method that sends the "getConfig" RPC request and reads the
  * reply. The "getConfig" returns the parsed version of the configuration for a
  * given node.
+ *
+ * Here is an example showing how to use this request:
+ * \code
+pipas@blade05:tests$ s9s node \
+    --batch \
+    --list-config \
+    --opt-name="log_line_prefix" \
+    --nodes="192.168.0.101" 
+
+- log_line_prefix '%m' 
+ * \endcode
  */
 bool
 S9sRpcClient::getConfig(
@@ -732,7 +743,6 @@ S9sRpcClient::getConfig(
     S9sOptions    *options = S9sOptions::instance();
     S9sString      uri = "/v2/config/";
     S9sVariantMap  request;
-    bool           retval;
 
     request["operation"]  = "getConfig";
     if (hosts.size() == 1u)
@@ -751,9 +761,18 @@ S9sRpcClient::getConfig(
     if (options->clusterId() > 0)
         request["cluster_id"] = options->clusterId();
 
-    retval = executeRequest(uri, request);
+    return executeRequest(uri, request);
+}
 
-    return retval;
+bool
+S9sRpcClient::getLdapConfig()
+{
+    //S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri = "/v2/config/";
+    S9sVariantMap  request;
+
+    request["operation"]  = "getLdapConfig";
+    return executeRequest(uri, request);
 }
 
 /**
@@ -797,7 +816,6 @@ S9sRpcClient::setConfig()
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
-
 
     // 
     // The configuration value: here it is implemented for one value.

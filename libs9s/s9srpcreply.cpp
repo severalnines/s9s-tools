@@ -374,6 +374,28 @@ S9sRpcReply::printSqlProcesses()
 }
 
 /**
+ * This method should be called to rint the reply for the "getLdapConfig"
+ * request.
+ */
+void
+S9sRpcReply::printLdapConfig()
+{
+    S9sOptions     *options  = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        // FIXME: This is not yet implemented, so we print the json instead.
+        printJsonFormat();
+    }
+}
+
+
+/**
  *
   "processes": [
     {

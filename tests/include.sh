@@ -466,6 +466,32 @@ function startTests ()
     end_verbatim
 }
 
+function check_reply()
+{
+    local lines
+    local name
+    local required
+    local value
+
+    lines="$1"
+    shift
+
+    while [ -n "$1" ]; do
+        name="$1"
+        required="$2"
+
+        value=$(echo "$lines" | jq "$name" | tr -d '"')
+
+        if [ "$value" == "$required" ]; then
+            success "  o Value for $name is $value, OK."
+        else
+            failure "Value for $name is $value, should be $required."
+        fi
+
+        shift 2
+    done
+}
+
 #
 # This function should be called when the function tests are executed. It prints
 # a message about the results and exits with the exit code that is true if the
