@@ -780,6 +780,35 @@ S9sRpcClient::getLdapConfig()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::setLdapConfig()
+{
+    S9sString      uri = "/v2/config/";
+    S9sVariantMap  request;
+    std::string    s; 
+    S9sString      content;
+    S9sVariantMap  config;
+
+    while(std::getline(std::cin, s))
+    {
+        content += s;
+        content += "\n";
+    }
+
+    if (!config.parse(STR(content)))
+    {
+        PRINT_ERROR("Failed to parse standard input as a JSon string.");
+        return false;
+    }
+
+    request["operation"]          = "setLdapConfig";
+    request["ldap_configuration"] = config;
+
+    return executeRequest(uri, request);
+
+}
+
+
 /**
  * This function is for changing the configuration through the controller for 
  * one node.

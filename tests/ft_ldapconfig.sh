@@ -15,6 +15,9 @@ cd $MYDIR
 source ./include.sh
 source ./include_ldap.sh
 
+OPTION_LDAP_CONFIG_FILE="/tmp/cmon-ldap.cnf"
+
+
 #
 # Prints usage information and exits.
 #
@@ -158,6 +161,57 @@ EOF
     end_verbatim
 }
 
+function emit_ldap_settings_json()
+{
+    cat <<EOF
+  {
+    "enabled": true,
+    "ldapAdminPassword": "p",
+    "ldapAdminUser": "cn=admin,dc=homelab,dc=local",
+    "ldapGroupSearchRoot": "dc=homelab,dc=local",
+    "ldapServerUri": "ldap://ldap.homelab.local:389",
+    "ldapUserSearchRoot": "dc=homelab,dc=local",
+    "groupMappings": [ {
+        "cmonGroupName": "ldapgroup",
+        "ldapGroupId": "ldapgroup",
+        "sectionName": "mapping1"
+      }  ],
+    "ldapSettings": {
+      "ldapEmailAttributes": "mail",
+      "ldapGroupClassName": null,
+      "ldapGroupIdAttributes": null,
+      "ldapGroupNameAttribute": null,
+      "ldapMemberAttributes": "memberUid",
+      "ldapNetworkTimeout": null,
+      "ldapProtocolVersion": null,
+      "ldapQueryTimeLimit": null,
+      "ldapRealnameAttributes": "displayName,cn",
+      "ldapUserClassName": null,
+      "ldapUsernameAttributes": "cn"
+    },
+    "security": {
+      "caCertFile": null,
+      "certFile": null,
+      "keyFile": null
+    }
+  }
+EOF
+}
+
+function testSetLdapConfig()
+{
+    print_title "Setting LDAP Configuration"
+
+    emit_ldap_settings_json |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config 
+
+    return 0
+}
+
+
 function testCreateLdapConfig()
 {
     local lines
@@ -166,8 +220,9 @@ function testCreateLdapConfig()
     print_title "Creating the Cmon LDAP Configuration File"
 
     cat <<EOF
-  This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
-  file that holds the settings of the LDAP settnings for the Cmon Controller.
+  This test will create and overwrite the '$OPTION_LDAP_CONFIG_FILE', a 
+  configuration file that holds the settings of the LDAP settnings for 
+  the Cmon Controller.
 EOF
 
     begin_verbatim
@@ -179,7 +234,7 @@ EOF
     fi
 
     ldap_config |\
-        sudo tee /etc/cmon-ldap.cnf | \
+        tee $OPTION_LDAP_CONFIG_FILE | \
         print_ini_file
 
 
@@ -232,7 +287,18 @@ EOF
         ".request_status"                       "Ok" \
         ".ldap_configuration.enabled"           "true" \
         ".ldap_configuration.ldapAdminPassword" "p" \
-        ".ldap_configuration.ldapAdminUser"     "cn=admin,dc=homelab,dc=local" 
+        ".ldap_configuration.ldapAdminUser"     "cn=admin,dc=homelab,dc=local" \
+        ".ldap_configuration.ldapGroupSearchRoot" "dc=homelab,dc=local" \
+        ".ldap_configuration.ldapServerUri"     "ldap://ldap.homelab.local:389" \
+        ".ldap_configuration.ldapUserSearchRoot"  "dc=homelab,dc=local" \
+        ".ldap_configuration.ldapSettings.ldapMemberAttributes"    "memberUid" \
+        ".ldap_configuration.ldapSettings.ldapRealnameAttributes"  "displayName,cn" \
+        ".ldap_configuration.ldapSettings.ldapUsernameAttributes"  "cn" \
+        ".ldap_configuration.groupMappings[0].cmonGroupName"  "ldapgroup" \
+        ".ldap_configuration.groupMappings[0].ldapGroupId"  "ldapgroup"
+
+
+
         
 
     end_verbatim
@@ -299,9 +365,15 @@ else
     runFunctionalTest testGetLdapConfig1
 
     runFunctionalTest testCreateLdapGroup
-    runFunctionalTest testCreateLdapConfig
+
+    # This is for reference when debugging.
+    #runFunctionalTest testCreateLdapConfig
+
+    # This is what we test.
+    runFunctionalTest testSetLdapConfig
+
     runFunctionalTest testGetLdapConfig2
-    #runFunctionalTest testLdapUser1
+    runFunctionalTest testLdapUser1
 fi
 
 endTests

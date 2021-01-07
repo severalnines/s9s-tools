@@ -593,6 +593,11 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printLdapConfig();
             client.setExitStatus();
+        } else if (options->isSetLdapConfigRequested())
+        {
+            success = client.setLdapConfig();
+            client.printMessages("LDAP configuration was saved.", success);
+            client.setExitStatus();
         }
     } else if (options->isServerOperation())
     {

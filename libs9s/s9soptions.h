@@ -458,6 +458,7 @@ class S9sOptions
         bool isWatchRequested() const;
         bool isEditRequested() const;
         bool isGetLdapConfigRequested() const;
+        bool isSetLdapConfigRequested() const;
         bool isListConfigRequested() const;
         bool isChangeConfigRequested() const;
         bool isUnsetConfigRequested() const;

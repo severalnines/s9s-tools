@@ -11,6 +11,9 @@ CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
+OPTION_LDAP_CONFIG_FILE="/tmp/cmon-ldap.cnf"
+
+
 cd $MYDIR
 source ./include.sh
 source ./include_ldap.sh
@@ -152,8 +155,9 @@ function testCreateLdapConfigOk()
 {
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
-  This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
-  file that holds the settings of the LDAP settnings for the Cmon Controller.
+  This test will create and overwrite the '$OPTION_LDAP_CONFIG_FILE', a 
+  configuration file that holds the settings of the LDAP settnings for the 
+  Cmon Controller.
 EOF
     
     begin_verbatim
@@ -165,7 +169,7 @@ EOF
     fi
 
     ldap_config_ok |\
-        sudo tee /etc/cmon-ldap.cnf | \
+        tee $OPTION_LDAP_CONFIG_FILE | \
         print_ini_file
 
 
@@ -178,8 +182,9 @@ function testCreateLdapConfigBadUrl()
 {
     print_title "Creating the Cmon LDAP Configuration File"
     cat <<EOF
-  This test will create and overwrite the '/etc/cmon-ldap.cnf', a configuration
-  file that holds the settings of the LDAP settnings for the Cmon Controller.
+  This test will create and overwrite the '$OPTION_LDAP_CONFIG_FILE', a 
+  configuration file that holds the settings of the LDAP settnings for the 
+  Cmon Controller.
 EOF
     
     begin_verbatim
@@ -191,7 +196,7 @@ EOF
     fi
 
     ldap_config_bad_url |\
-        sudo tee /etc/cmon-ldap.cnf | \
+        tee $OPTION_LDAP_CONFIG_FILE | \
         print_ini_file
 
 

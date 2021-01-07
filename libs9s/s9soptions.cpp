@@ -185,6 +185,7 @@ enum S9sOptionType
     OptionOptValue,
     OptionListConfig,
     OptionGetLdapConfig,
+    OptionSetLdapConfig,
     OptionChangeConfig,
     OptionUnsetConfig,
     OptionPullConfig,
@@ -3997,6 +3998,12 @@ bool
 S9sOptions::isGetLdapConfigRequested() const
 {
     return getBool("get_ldap_config");
+}
+
+bool
+S9sOptions::isSetLdapConfigRequested() const
+{
+    return getBool("set_ldap_config");
 }
 
 /**
@@ -13965,6 +13972,7 @@ S9sOptions::readOptionsController(
         { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
+        { "set-ldap-config",  no_argument,       0, OptionSetLdapConfig   },
         { "stat",             no_argument,       0, OptionStat            },
        
         // FIXME: remove this.
@@ -14124,6 +14132,11 @@ S9sOptions::readOptionsController(
                 m_options["ping"] = true;
                 break;
 
+            case OptionSetLdapConfig:
+                // --set-ldap-config
+                m_options["set_ldap_config"] = true;
+                break;
+                
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;
@@ -14777,6 +14790,9 @@ S9sOptions::checkOptionsController()
         countOptions++;
     
     if (isGetLdapConfigRequested())
+        countOptions++;
+    
+    if (isSetLdapConfigRequested())
         countOptions++;
 
     if (countOptions > 1)
