@@ -149,6 +149,14 @@ function archive_file_name()
     echo "$tar_file_name"
 }
 
+function archive_log_file_name()
+{
+    local container="$1"
+    local log_file_name="${container}-container-archive.log"
+
+    echo "$log_file_name"
+}
+
 #
 # Prints the names of the containers on the local computer.
 #
@@ -181,10 +189,12 @@ function archive_one_container()
 {
     local container="$1"
     local tar_file_name
+    local tar_log_file_name
     local old_tar_file_name
     local state
     local stopped
     local retcode
+    local tar_failed
 
     #
     # If the container is running and we are allowed to stop it we stop it.
@@ -213,6 +223,7 @@ function archive_one_container()
     printVerbose "Archiving container '$container'."
     tar_file_name="$(archive_file_name "$container")"
     tar_basename="$(basename $tar_file_name)"
+    tar_log_file_name=$(archive_log_file_name "$container")
 
     old_tar_file_name="${tar_file_name}.BAK"
 
@@ -232,27 +243,42 @@ function archive_one_container()
         fi
     fi
 
+    if [ -F "$tar_log_file_name" ]; then
+        rm -f "$tar_log_file_name"
+    fi
+
     printVerbose "Archiving into '$tar_file_name'."
     retcode=""
     if [ "$GZIP_OPTION" ]; then
         if [ -n "$OPTION_DRY" ]; then
             echo "DRY: tar --numeric-owner --warning=no-file-changed -czf $tar_file_name $container"
         else
-            tar --numeric-owner -czf "$tar_file_name" "$container"
+            tar --numeric-owner -czf \
+                "$tar_file_name" "$container" \
+                >>"$tar_log_file_name" 2>>"$tar_log_file_name" 
             retcode=$?
         fi
     else
         if [ -n "$OPTION_DRY" ]; then
             echo "DRY: tar --numeric-owner --warning=no-file-changed -cf $tar_file_name $container"
         else
-            tar --numeric-owner -cf "$tar_file_name" "$container"
+            tar --numeric-owner -cf \
+                "$tar_file_name" "$container" \
+                >>"$tar_log_file_name" 2>>"$tar_log_file_name"
             retcode=$?
         fi
     fi
 
     if [ -n "$retcode" ]; then
+        echo "Return code from tar is $retcode." >>"$tar_log_file_name"
         printVerbose "Return code from tar is $retcode."
-        if [ "$retcode" -eq 0 -a -z "$OPTION_DRY" -a -f "$old_tar_file_name" ];
+
+        if [ "$retcode" != "1" ] && [ "$retcode" != "0" ]; then
+            tar_failed="true"
+        fi
+
+        # If the tar is not failed we remove the old archive file.
+        if [ -z "$tar_faile" -a -z "$OPTION_DRY" -a -f "$old_tar_file_name" ];
         then
             printVerbose "Removing '$old_tar_file_name' file."
             rm -f "$old_tar_file_name"
