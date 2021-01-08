@@ -376,10 +376,9 @@ function startTests ()
     #
     # Printing some info
     #
-    begin_verbatim
-
     print_title "Starting Test Script"
     
+    begin_verbatim
     pip-host-control --status="Running '$TEST_SUITE_NAME'."
 
     echo "Starting test $TEST_SUITE_NAME"
