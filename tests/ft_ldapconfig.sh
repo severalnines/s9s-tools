@@ -239,13 +239,25 @@ function testSetLdapConfigEnabled()
 EOF
     
     begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
     emit_ldap_settings_json |  \
         s9s controller         \
             --cmon-user=system \
             --password=secret  \
             --set-ldap-config  \
             --print-request    \
-            --print-json
+            --print-json       \
+            --color=always
 
     check_exit_code_no_job $?
     end_verbatim
@@ -260,6 +272,19 @@ function testSetLdapConfigDisabled()
 EOF
 
     begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json \\
+        --disabled \\
+        |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always 
+EOF
+
     emit_ldap_settings_json \
         --disabled \
         |  \
@@ -268,7 +293,8 @@ EOF
             --password=secret  \
             --set-ldap-config  \
             --print-request    \
-            --print-json
+            --print-json       \
+            --color=always 
 
     check_exit_code_no_job $?
     end_verbatim
@@ -285,13 +311,25 @@ function testSetLdapConfigNoAccess()
 EOF
 
     begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json \\
+        --disabled \\
+        |  \\
+        s9s controller         \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
     emit_ldap_settings_json \
         --disabled \
         |  \
         s9s controller         \
             --set-ldap-config  \
             --print-request    \
-            --print-json
+            --print-json       \
+            --color=always
 
     exitcode=$?
     if [ "$exitcode" -eq 0 ]; then
@@ -313,6 +351,18 @@ function testSetLdapConfigSyntaxError()
 EOF
 
     begin_verbatim
+    cat <<EOF
+    # echo "not a json string" \\
+        |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
     echo "not a json string" \
         |  \
         s9s controller         \
@@ -320,7 +370,8 @@ EOF
             --password=secret  \
             --set-ldap-config  \
             --print-request    \
-            --print-json
+            --print-json       \
+            --color=always
 
     exitcode=$?
     if [ "$exitcode" -eq 0 ]; then
@@ -417,10 +468,6 @@ EOF
         ".ldap_configuration.ldapSettings.ldapUsernameAttributes"  "cn" \
         ".ldap_configuration.groupMappings[0].cmonGroupName"  "ldapgroup" \
         ".ldap_configuration.groupMappings[0].ldapGroupId"  "ldapgroup"
-
-
-
-        
 
     end_verbatim
 }
