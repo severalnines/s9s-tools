@@ -372,12 +372,15 @@ function startTests ()
     local container_list_file="/tmp/${MYNAME}.containers"
 
     TEST_SUITE_NAME=$(basename $0 .sh)
-    pip-host-control --status="Running '$TEST_SUITE_NAME'."
 
     #
     # Printing some info
     #
     begin_verbatim
+
+    print_title "Starting Test Script"
+    
+    pip-host-control --status="Running '$TEST_SUITE_NAME'."
 
     echo "Starting test $TEST_SUITE_NAME"
     if [ -n "$COMMAND_LINE_OPTIONS" ]; then

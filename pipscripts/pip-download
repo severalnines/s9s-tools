@@ -486,7 +486,8 @@ function emit_test_output()
     git_date=$(get_field_from_html --html-file $report_file "p42di 120")
     git_time=$(get_field_from_html --html-file $report_file "p42di 121")
     test_hostname=$(get_field_from_html --html-file $report_file "p42di 150")
-   
+  
+    return 0
     cat <<EOF
             <system-err>
     <![CDATA[
