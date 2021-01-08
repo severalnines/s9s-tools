@@ -389,14 +389,17 @@ EOF
         echo "  Command line: $COMMAND_LINE_OPTIONS"
     fi
 
-    echo " TEST_SUITE_NAME: $TEST_SUITE_NAME"
-    echo "        hostname: $(hostname)"
-    echo "           MYDIR: $MYDIR"
-    echo "         VERSION: $VERSION"
-    echo "            USER: $USER"
-    echo "             PWD: $PWD"
-    echo "         OPTIONS: $OPTIONS"
-    echo "  OPTION_INSTALL: $OPTION_INSTALL"
+    cat <<EOF
+     TEST_SUITE_NAME: $TEST_SUITE_NAME
+            hostname: $(hostname)
+               MYDIR: $MYDIR
+             VERSION: $VERSION
+                USER: $USER
+                 PWD: $PWD
+             OPTIONS: $OPTIONS
+      OPTION_INSTALL: $OPTION_INSTALL
+
+EOF
 
     #
     # Doing some checks
@@ -409,7 +412,6 @@ EOF
     CHECK_PROGRAM_INSTALLED pip-container-create
     CHECK_PROGRAM_INSTALLED highlight
 
-    echo -n "Checking if s9s is installed..."
     if [ -z "$S9S" ]; then
         failure "The 's9s' program is not installed."
     else 
@@ -432,10 +434,11 @@ EOF
     rm -rf /tmp/BACKUP*
 
     if [ -d "$MYDIR/../pipscripts" ]; then
-        echo "Installing 'pipscripts'."
-        pushd "$MYDIR/../pipscripts"
+        echo "Installing the 'pipscripts' script set."
+        echo "Entering directory pipscripts..."
+        pushd "$MYDIR/../pipscripts" >/dev/null
         sudo make install 
-        popd
+        popd >/dev/null
     fi
 
     if [ -f "$HOME/.s9s/s9s.state" ]; then
