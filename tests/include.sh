@@ -281,7 +281,7 @@ function print_command()
     echo ""
 }
 
-t1_counter="0"
+t1_counter="1"
 t2_counter="0"
 
 #
@@ -3588,6 +3588,7 @@ function runFunctionalTest ()
     let t2_counter=0
 
     TEST_NAME=$1
+    shift
 
     # This shows the beginning of the test.
     print_html ""

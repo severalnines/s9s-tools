@@ -783,6 +783,7 @@ S9sRpcClient::getLdapConfig()
 bool
 S9sRpcClient::setLdapConfig()
 {
+    S9sOptions    *options   = S9sOptions::instance();    
     S9sString      uri       = "/v2/config/";
     S9sVariantMap  request   = composeRequest();
     std::string    s; 
@@ -798,6 +799,7 @@ S9sRpcClient::setLdapConfig()
     if (!config.parse(STR(content)))
     {
         PRINT_ERROR("Failed to parse standard input as a JSon string.");
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
 

@@ -161,11 +161,35 @@ EOF
     end_verbatim
 }
 
+#
+# A helper function to emit a JSon string that holds the LDAP configuration.
+#
 function emit_ldap_settings_json()
 {
+    local enabled="true"
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            --enabled)
+                enabled="true"
+                shift
+                ;;
+
+            --disabled)
+                enabled="false"
+                shift
+                ;;
+
+            *)
+                failure "emit_ldap_settings_json(): Unknown option '$1'."
+                return 1
+        esac
+    done
+
+    if [ "$enabled" == "true" ]; then
     cat <<EOF
   {
-    "enabled": true,
+    "enabled": $enabled,
     "ldapAdminPassword": "p",
     "ldapAdminUser": "cn=admin,dc=homelab,dc=local",
     "ldapGroupSearchRoot": "dc=homelab,dc=local",
@@ -196,11 +220,23 @@ function emit_ldap_settings_json()
     }
   }
 EOF
+    else
+cat <<EOF
+  {
+    "enabled": $enabled
+  }
+EOF
+    fi
 }
 
-function testSetLdapConfig()
+# FIXME: return value on non-parseable input is not set.
+function testSetLdapConfigEnabled()
 {
     print_title "Setting LDAP Configuration"
+    cat <<EOF | paragraph
+  This test sets the LDAP configuration using the setLdapConfig call. The exit
+  code should show that the call succeeded.
+EOF
 
     emit_ldap_settings_json |  \
         s9s controller         \
@@ -210,9 +246,83 @@ function testSetLdapConfig()
             --print-request    \
             --print-json
 
+    check_exit_code_no_job $?
+}
+
+function testSetLdapConfigDisabled()
+{
+    print_title "Setting LDAP Configuration"
+    cat <<EOF | paragraph
+  This test will set the LDAP configuration to disabled state. The exit code
+  should show that the call succeeded.
+EOF
+
+    emit_ldap_settings_json \
+        --disabled \
+        |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json
+
+    check_exit_code_no_job $?
     return 0
 }
 
+function testSetLdapConfigNoAccess()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Insufficient Access Rights"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration while the user that does it
+  should have insufficient privileges to do so.
+EOF
+
+    emit_ldap_settings_json \
+        --disabled \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+}
+
+function testSetLdapConfigSyntaxError()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Syntax Error"
+    cat << EOF | paragraph
+  This test will try to set the LDAP config, but the standard input is not a
+  well-formed JSon string. The exit code should show an error.
+EOF
+
+    echo "not a json string" \
+        |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+}
 
 function testCreateLdapConfig()
 {
@@ -308,6 +418,40 @@ EOF
     end_verbatim
 }
 
+function testGetLdapConfig3()
+{
+    local lines
+
+    print_title "Checking LDAP Config After Disabling"
+    cat <<EOF | paragraph
+  Getting the LDAP configuration through the RPC and checking some values. This
+  test assumes the LDAP should be disabled through the setLdapConfig call
+  before.
+EOF
+
+    begin_verbatim
+    mys9s controller       \
+        --cmon-user=system \
+        --password=secret  \
+        --print-json       \
+        --get-ldap-config  \
+        --print-request    \
+        --print-json
+
+    check_exit_code_no_job $?
+
+    # s9s controller --get-ldap-config --cmon-user=system --password=secret | jq .ldap_configuration.enabled | cat
+    lines=$(s9s controller \
+        --get-ldap-config  \
+        --cmon-user=system \
+        --password=secret)
+
+    check_reply "$lines" \
+        ".request_status"                       "Ok" \
+        ".ldap_configuration.enabled"           "false" 
+
+    end_verbatim
+}
 #
 # Checking the successful authentication of an LDAP user with the user 
 # "username".
@@ -357,9 +501,9 @@ EOF
 #
 # Running the requested tests.
 #
-startTests
-reset_config
-grant_user
+runFunctionalTest startTests
+runFunctionalTest reset_config
+runFunctionalTest grant_user
 
 if [ "$1" ]; then
     for testName in $*; do
@@ -374,11 +518,17 @@ else
     #runFunctionalTest testCreateLdapConfig
 
     # This is what we test.
-    runFunctionalTest testSetLdapConfig
+    runFunctionalTest testSetLdapConfigEnabled
 
     runFunctionalTest testGetLdapConfig2
     runFunctionalTest testLdapUser1
+    
+    runFunctionalTest testSetLdapConfigDisabled
+    runFunctionalTest testGetLdapConfig3
+
+    runFunctionalTest testSetLdapConfigSyntaxError
+    runFunctionalTest testSetLdapConfigNoAccess
 fi
 
-endTests
+runFunctionalTest --force endTests
 
