@@ -237,7 +237,8 @@ function testSetLdapConfigEnabled()
   This test sets the LDAP configuration using the setLdapConfig call. The exit
   code should show that the call succeeded.
 EOF
-
+    
+    begin_verbatim
     emit_ldap_settings_json |  \
         s9s controller         \
             --cmon-user=system \
@@ -247,6 +248,7 @@ EOF
             --print-json
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 function testSetLdapConfigDisabled()
@@ -257,6 +259,7 @@ function testSetLdapConfigDisabled()
   should show that the call succeeded.
 EOF
 
+    begin_verbatim
     emit_ldap_settings_json \
         --disabled \
         |  \
@@ -268,7 +271,7 @@ EOF
             --print-json
 
     check_exit_code_no_job $?
-    return 0
+    end_verbatim
 }
 
 function testSetLdapConfigNoAccess()
@@ -281,6 +284,7 @@ function testSetLdapConfigNoAccess()
   should have insufficient privileges to do so.
 EOF
 
+    begin_verbatim
     emit_ldap_settings_json \
         --disabled \
         |  \
@@ -295,6 +299,7 @@ EOF
     else
         success "  o The exit code is $exitcode, ok."
     fi
+    end_verbatim
 }
 
 function testSetLdapConfigSyntaxError()
@@ -307,6 +312,7 @@ function testSetLdapConfigSyntaxError()
   well-formed JSon string. The exit code should show an error.
 EOF
 
+    begin_verbatim
     echo "not a json string" \
         |  \
         s9s controller         \
@@ -322,6 +328,7 @@ EOF
     else
         success "  o The exit code is $exitcode, ok."
     fi
+    end_verbatim
 }
 
 function testCreateLdapConfig()

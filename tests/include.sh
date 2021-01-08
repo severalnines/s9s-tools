@@ -3423,7 +3423,7 @@ function clean_up_after_test()
     #
     # Some closing logs.
     #
-    print_title "Preparing to Exit"
+    echo "Preparing to Exit"
     cat <<EOF
   The clean_up_after_test method is running now to clean up after the test
   script.
