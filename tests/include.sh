@@ -461,7 +461,9 @@ EOF
         sudo mv "/etc/cmon-ldap.cnf" "/etc/cmon-ldap.cnf.BAK"
     fi
 
-    pip-server-control --list --long --print-report
+    if [ -f "$HOME/.pip/host01.host" ]; then
+        pip-server-control --list --long --print-report
+    fi
 
     end_verbatim
 }
