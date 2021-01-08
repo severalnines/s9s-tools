@@ -370,6 +370,8 @@ function print_ini_file()
 function startTests ()
 {
     local container_list_file="/tmp/${MYNAME}.containers"
+    local model
+    local memory
 
     TEST_SUITE_NAME=$(basename $0 .sh)
 
@@ -389,9 +391,17 @@ EOF
         echo "  Command line: $COMMAND_LINE_OPTIONS"
     fi
 
+    model=$(cat /sys/devices/virtual/dmi/id/product_name | tr -d '\n')
+    memory=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+    let memory/=1024
+    let memory/=1024
+
     cat <<EOF
      TEST_SUITE_NAME: $TEST_SUITE_NAME
             hostname: $(hostname)
+               model: $model
+             threads: $(nproc)
+    memory_gigabytes: $memory
                MYDIR: $MYDIR
              VERSION: $VERSION
                 USER: $USER
@@ -415,7 +425,7 @@ EOF
     if [ -z "$S9S" ]; then
         failure "The 's9s' program is not installed."
     else 
-        success " o The 's9s' program is installed, ok."
+        success "  o The 's9s' program is installed, ok."
     fi
 
     #
