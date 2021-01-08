@@ -281,7 +281,7 @@ function print_command()
     echo ""
 }
 
-t1_counter="1"
+t1_counter="0"
 t2_counter="0"
 
 #
@@ -376,7 +376,7 @@ function startTests ()
     #
     # Printing some info
     #
-    print_title "Starting Test Script"
+    print_title "startTests() Preparing to Run Test Script"
     
     begin_verbatim
     pip-host-control --status="Running '$TEST_SUITE_NAME'."
