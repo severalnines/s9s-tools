@@ -773,8 +773,8 @@ S9sRpcClient::getConfig(
 bool
 S9sRpcClient::getLdapConfig()
 {
-    S9sString      uri = "/v2/config/";
-    S9sVariantMap  request;
+    S9sString      uri      = "/v2/config/";
+    S9sVariantMap  request  = composeRequest();
 
     request["operation"]  = "getLdapConfig";
     return executeRequest(uri, request);
@@ -783,8 +783,8 @@ S9sRpcClient::getLdapConfig()
 bool
 S9sRpcClient::setLdapConfig()
 {
-    S9sString      uri = "/v2/config/";
-    S9sVariantMap  request;
+    S9sString      uri       = "/v2/config/";
+    S9sVariantMap  request   = composeRequest();
     std::string    s; 
     S9sString      content;
     S9sVariantMap  config;
@@ -9652,11 +9652,11 @@ S9sRpcClient::executeRequest(
     int            nTry = 0;
     S9sVariantMap  triedKeys;
    
-    if (important)
-        printRequestForDebug(request);
-
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
+    
+    if (important)
+        printRequestForDebug(request);
 
     while (true)
     {

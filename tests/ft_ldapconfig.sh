@@ -206,7 +206,9 @@ function testSetLdapConfig()
         s9s controller         \
             --cmon-user=system \
             --password=secret  \
-            --set-ldap-config 
+            --set-ldap-config  \
+            --print-request    \
+            --print-json
 
     return 0
 }
@@ -273,7 +275,9 @@ EOF
         --cmon-user=system \
         --password=secret  \
         --print-json       \
-        --get-ldap-config 
+        --get-ldap-config  \
+        --print-request    \
+        --print-json
 
     check_exit_code_no_job $?
 
