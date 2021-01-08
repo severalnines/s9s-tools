@@ -398,16 +398,16 @@ EOF
 
     cat <<EOF
      TEST_SUITE_NAME: $TEST_SUITE_NAME
+
             hostname: $(hostname)
                model: $model
              threads: $(nproc)
     memory_gigabytes: $memory
+
                MYDIR: $MYDIR
              VERSION: $VERSION
                 USER: $USER
                  PWD: $PWD
-             OPTIONS: $OPTIONS
-      OPTION_INSTALL: $OPTION_INSTALL
 
 EOF
 
