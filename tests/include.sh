@@ -394,6 +394,7 @@ EOF
     echo "           MYDIR: $MYDIR"
     echo "         VERSION: $VERSION"
     echo "            USER: $USER"
+    echo "             PWD: $PWD"
     echo "         OPTIONS: $OPTIONS"
     echo "  OPTION_INSTALL: $OPTION_INSTALL"
 
@@ -606,9 +607,9 @@ function CHECK_PROGRAM_INSTALLED()
     local path=$(which $program)
 
     if [ -z "$path" ]; then
-        failure "  o The '$program' utilitity is installed, ok."
-    else
         failure "The '$program' is not installed."
+    else
+        success "  o The '$program' utilitity is installed, ok."
     fi
 }
 
