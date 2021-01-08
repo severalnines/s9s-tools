@@ -376,8 +376,11 @@ function startTests ()
     #
     # Printing some info
     #
-    print_title "startTests() Preparing to Run Test Script"
-    
+    print_title "Preparing to Run Test Script"
+    cat <<EOF
+  The startTests BASH function is preparing to execute the test script.
+EOF
+
     begin_verbatim
     pip-host-control --status="Running '$TEST_SUITE_NAME'."
 
@@ -397,33 +400,19 @@ function startTests ()
     #
     # Doing some checks
     #
-    echo -n "Checking if jq is installed..."
     if [ -z "$(which jq)" ]; then
-        echo "[INSTALLING]"
         sudo apt-get install -y --force-yes jq
-    else
-        echo "[OK]"
     fi
+   
+    CHECK_PROGRAM_INSTALLED jq
+    CHECK_PROGRAM_INSTALLED pip-container-create
+    CHECK_PROGRAM_INSTALLED highlight
 
     echo -n "Checking if s9s is installed..."
     if [ -z "$S9S" ]; then
-        echo " [FAILED]"
-        exit 7
+        failure "The 's9s' program is not installed."
     else 
-        echo " [OK]"
-    fi
-
-    echo -n "Searching for pip-container-create..."
-    if [ -z $(which pip-container-create) ]; then
-        echo " [FAILED]"
-        exit 7
-    else 
-        echo " [OK]"
-    fi
-
-    if [ -z "$(which highlight)" ]; then
-        echo "Installing the highlight package."
-        sudo apt -y --force-yes install highlight
+        success " o The 's9s' program is installed, ok."
     fi
 
     #
@@ -457,13 +446,6 @@ function startTests ()
         echo "Removing '/etc/cmon-ldap.cnf'..."
         sudo mv "/etc/cmon-ldap.cnf" "/etc/cmon-ldap.cnf.BAK"
     fi
-
-#    if [ -z "$DONT_PRINT_TEST_MESSAGES" ]; then
-        echo ""
-        echo "***********************"
-        echo "* $TEST_SUITE_NAME"
-        echo "***********************"
-#    fi
 
     end_verbatim
 }
@@ -616,6 +598,18 @@ function warning()
     let NUMBER_OF_PERFORMED_CHECKS+=1
 
     echo -e "${XTERM_COLOR_YELLOW}$1${TERM_NORMAL}"
+}
+
+function CHECK_PROGRAM_INSTALLED()
+{
+    local program="$1"
+    local path=$(which $program)
+
+    if [ -z "$path" ]; then
+        failure "  o The '$program' utilitity is installed, ok."
+    else
+        failure "The '$program' is not installed."
+    fi
 }
 
 #
