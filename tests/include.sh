@@ -461,6 +461,8 @@ EOF
         sudo mv "/etc/cmon-ldap.cnf" "/etc/cmon-ldap.cnf.BAK"
     fi
 
+    pip-server-control --list --long --print-report
+
     end_verbatim
 }
 
