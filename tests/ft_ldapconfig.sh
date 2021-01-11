@@ -142,6 +142,7 @@ EOF
         --cmon-user=system \
         --password=secret  \
         --print-json       \
+        --print-request    \
         --get-ldap-config 
 
     check_exit_code_no_job $?
@@ -167,6 +168,8 @@ EOF
 function emit_ldap_settings_json()
 {
     local enabled="true"
+    local ldap_url="$LDAP_URL"
+    local ldap_protocol_version="null"
 
     while [ -n "$1" ]; do
         case "$1" in
@@ -178,6 +181,16 @@ function emit_ldap_settings_json()
             --disabled)
                 enabled="false"
                 shift
+                ;;
+
+            --ldap-url)
+                ldap_url="$2"
+                shift 2
+                ;;
+
+            --ldap-protocol-version)
+                ldap_protocol_version="$2"
+                shift 2
                 ;;
 
             *)
@@ -193,7 +206,7 @@ function emit_ldap_settings_json()
     "ldapAdminPassword": "p",
     "ldapAdminUser": "cn=admin,dc=homelab,dc=local",
     "ldapGroupSearchRoot": "dc=homelab,dc=local",
-    "ldapServerUri": "ldap://ldap.homelab.local:389",
+    "ldapServerUri": "$ldap_url",
     "ldapUserSearchRoot": "dc=homelab,dc=local",
     "groupMappings": [ {
         "cmonGroupName": "ldapgroup",
@@ -207,7 +220,7 @@ function emit_ldap_settings_json()
       "ldapGroupNameAttribute": null,
       "ldapMemberAttributes": "memberUid",
       "ldapNetworkTimeout": null,
-      "ldapProtocolVersion": null,
+      "ldapProtocolVersion": $ldap_protocol_version,
       "ldapQueryTimeLimit": null,
       "ldapRealnameAttributes": "displayName,cn",
       "ldapUserClassName": null,
@@ -327,6 +340,144 @@ EOF
         |  \
         s9s controller         \
             --set-ldap-config  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+    end_verbatim
+}
+
+function testSetLdapConfigEmptyUrl()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Empty URL"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration with the LDAP URL set to an
+  empty string. The call should fail.
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json  \\
+        --enabled              \\
+        --ldap-url ""          \\
+        |                      \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json \
+        --enabled \
+        --ldap-url "" \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --cmon-user=system \
+            --password=secret  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+    end_verbatim
+}
+
+function testSetLdapConfigWrongUrl()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Empty URL"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration with the LDAP URL set to an
+  empty string. The call should fail.
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json  \\
+        --enabled              \\
+        --ldap-url "ldap://wrong-url.hu" \\
+        |                      \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json \
+        --enabled \
+        --ldap-url "ldap://wrong-url.hu" \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --cmon-user=system \
+            --password=secret  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+    end_verbatim
+}
+
+function testSetLdapConfigWrongProtocol()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Empty URL"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration with the wrong LDAP protocol
+  version.
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json  \\
+        --enabled              \\
+        --ldap-protocol-version "2" \\
+        |                      \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json \
+        --enabled \
+        --ldap-protocol-version "2" \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --cmon-user=system \
+            --password=secret  \
             --print-request    \
             --print-json       \
             --color=always
@@ -552,6 +703,29 @@ EOF
     end_verbatim
 }
 
+function testLdapUser1Again()
+{
+    local username="username"
+
+    print_title "Checking LDAP Authentication Again"
+
+    cat <<EOF | paragraph
+  This check is executed after we tried to set the LDAP configuration. The
+  original configuration should still be working and is checked here.
+EOF
+
+    begin_verbatim
+
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    check_exit_code_no_job $?
+    end_verbatim
+}
+
 #
 # Running the requested tests.
 #
@@ -580,8 +754,16 @@ else
     runFunctionalTest testSetLdapConfigDisabled
     runFunctionalTest testGetLdapConfig3
 
+    # First setting the LDAP to a working configuration, then try various wrong
+    # configurations, then we check the the original good configuration is kept
+    # and keeps working.
+    runFunctionalTest testSetLdapConfigEnabled
     runFunctionalTest testSetLdapConfigSyntaxError
     runFunctionalTest testSetLdapConfigNoAccess
+    runFunctionalTest testSetLdapConfigEmptyUrl
+    runFunctionalTest testSetLdapConfigWrongUrl
+    runFunctionalTest testSetLdapConfigWrongProtocol
+    runFunctionalTest testLdapUser1Again
 fi
 
 runFunctionalTest --force endTests
