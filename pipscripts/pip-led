@@ -3,19 +3,21 @@
 export MYNAME=$(basename $0)
 export MYDIR=$(dirname $0)
 export MYDIR=$(readlink -m "$MYDIR")
-export VERSION="0.0.1"
+export VERSION="0.0.2"
 
-OPTION_MONITORED_HOST=storage02
+OPTION_MONITORED_HOST=""
 OPTION_PROTECTED=""
-OPTION_CHANNEL_GREEN=14
-OPTION_CHANNEL_RED=15
-OPTION_CHANNEL_BLUE=18
-
-OPTION_CHANNEL_GREEN=17
-OPTION_CHANNEL_RED=27
-OPTION_CHANNEL_BLUE=22
-
+OPTION_CHANNEL_GREEN=""
+OPTION_CHANNEL_RED=""
+OPTION_CHANNEL_BLUE=""
 OPTION_FLASH=""
+
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
 
 function printHelpAndExit()
 {
@@ -96,7 +98,17 @@ while true; do
     esac
 done
 
+#
+# Checking the system.
+#
+if [ -z $(which "gpio") ]; then
+    printError "The gpio program was not found."
+    exit 6
+fi
 
+#
+# Checking command line options.
+#
 if [ -n "$1" ]; then
     OPTION_MONITORED_HOST="$1"
 fi
@@ -111,12 +123,15 @@ elif [ "$OPTION_PORT" == "LED2" ]; then
     OPTION_CHANNEL_BLUE=22
 fi
 
-
-
-
-for id in $OPTION_CHANNEL_GREEN $OPTION_CHANNEL_RED $OPTION_CHANNEL_BLUE; do
-    gpio -g mode $id out
-done
+function initialize_gpio()
+{
+    #
+    # Setting the GPIO ports to output mode.
+    #
+    for id in $OPTION_CHANNEL_GREEN $OPTION_CHANNEL_RED $OPTION_CHANNEL_BLUE; do
+        gpio -g mode $id out
+    done
+}
 
 function set_color_to()
 {
@@ -133,12 +148,20 @@ function set_color_to()
                 gpio -g write $OPTION_CHANNEL_GREEN 0
                 gpio -g write $OPTION_CHANNEL_RED 1
                 gpio -g write $OPTION_CHANNEL_BLUE 0
+
                 shift
                 ;;
 
             --green)
                 gpio -g write $OPTION_CHANNEL_GREEN 1
                 gpio -g write $OPTION_CHANNEL_RED 0
+                gpio -g write $OPTION_CHANNEL_BLUE 0
+                shift
+                ;;
+            
+            --yellow)
+                gpio -g write $OPTION_CHANNEL_GREEN 1
+                gpio -g write $OPTION_CHANNEL_RED 1
                 gpio -g write $OPTION_CHANNEL_BLUE 0
                 shift
                 ;;
@@ -178,8 +201,27 @@ function atexit_handler()
     set_color_to --dark
 }
 
+function led_test()
+{
+    set_color_to --red
+    sleep 0.10
+
+    set_color_to --green
+    sleep 0.10
+
+    set_color_to --blue
+    sleep 0.10
+ 
+    set_color_to --dark
+}
+
 trap atexit_handler EXIT
 
+led_test
+
+#
+#
+#
 while true; do
     if [ "$ok" == "true" ]; then
         set_color_to --green

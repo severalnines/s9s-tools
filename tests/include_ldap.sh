@@ -10,14 +10,42 @@ export LDAP_URL="ldap://ldap.homelab.local:389"
 #
 function testCreateLdapGroup()
 {
+    local groupName="ldapgroup"
+
     print_title "Creating LDAP Group"
+
     cat << EOF | paragraph
     LDAP tests need to have some group(s) for the LDAP users created in advance.
     This test will create the necessary group(s) for the test scripts.
 EOF
- 
+    
     begin_verbatim
-    mys9s group --create ldapgroup
+ 
+    while [ -n "$1" ]; do
+        case "$1" in
+            --group-name)
+                groupName="$2"
+                shift 2
+                ;;
+
+            *)
+                failure "testCreateLdapGroup(): Unknown option '$1'."
+                return 1
+        esac
+    done
+
+    if [ -n "$groupName" ]; then
+        success "  o Will create group '$groupName'"
+    else
+        failure "No group name is provided."
+    fi
+
+    mys9s group --create $groupName 
+    check_exit_code_no_job $?
+
+    check_group \
+        --group-name   "$groupName"    
+
     mys9s group --list --long
     end_verbatim  
 }

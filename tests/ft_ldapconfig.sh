@@ -169,8 +169,13 @@ function emit_ldap_settings_json()
 {
     local enabled="true"
     local ldap_url="$LDAP_URL"
-    local ldap_protocol_version="null"
-
+    local ldapAdminUser="cn=admin,dc=homelab,dc=local"
+    local ldapAdminPassword="p"
+    local ldapProtocolVersion="null"
+    local caCertFile="null"
+    local certFile="null"
+    local keyFile="null"
+    
     while [ -n "$1" ]; do
         case "$1" in
             --enabled)
@@ -188,8 +193,36 @@ function emit_ldap_settings_json()
                 shift 2
                 ;;
 
+            --ldap-admin-user)
+                ldapAdminUser="$2"
+                shift 2
+                ;;
+
+            --ldap-admin-password)
+                ldapAdminPassword="$2"
+                shift 2
+                ;;
+
             --ldap-protocol-version)
-                ldap_protocol_version="$2"
+                ldapProtocolVersion="$2"
+                shift 2
+                ;;
+
+            --ca-cert-file)
+                caCertFile="$2"
+                [ "$caCertFile" != "null" ] && caCertFile="\"$caCertFile\""
+                shift 2
+                ;;
+            
+            --cert-file)
+                certFile="$2"
+                [ "$certFile" != "null" ] && certFile="\"$certFile\""
+                shift 2
+                ;;
+            
+            --key-file)
+                keyFile="$2"
+                [ "$keyFile" != "null" ] && keyFile="\"$keyFile\""
                 shift 2
                 ;;
 
@@ -203,8 +236,8 @@ function emit_ldap_settings_json()
     cat <<EOF
   {
     "enabled": $enabled,
-    "ldapAdminPassword": "p",
-    "ldapAdminUser": "cn=admin,dc=homelab,dc=local",
+    "ldapAdminPassword": "$ldapAdminPassword",
+    "ldapAdminUser": "$ldapAdminUser",
     "ldapGroupSearchRoot": "dc=homelab,dc=local",
     "ldapServerUri": "$ldap_url",
     "ldapUserSearchRoot": "dc=homelab,dc=local",
@@ -220,16 +253,16 @@ function emit_ldap_settings_json()
       "ldapGroupNameAttribute": null,
       "ldapMemberAttributes": "memberUid",
       "ldapNetworkTimeout": null,
-      "ldapProtocolVersion": $ldap_protocol_version,
+      "ldapProtocolVersion": $ldapProtocolVersion,
       "ldapQueryTimeLimit": null,
       "ldapRealnameAttributes": "displayName,cn",
       "ldapUserClassName": null,
       "ldapUsernameAttributes": "cn"
     },
     "security": {
-      "caCertFile": null,
-      "certFile": null,
-      "keyFile": null
+      "caCertFile": $caCertFile,
+      "certFile": $certFile,
+      "keyFile": $keyFile
     }
   }
 EOF
@@ -473,6 +506,144 @@ EOF
     emit_ldap_settings_json \
         --enabled \
         --ldap-protocol-version "2" \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --cmon-user=system \
+            --password=secret  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+    end_verbatim
+}
+
+function testSetLdapConfigWrongPassword()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Wrong Admin Password"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration with the wrong LDAP admin 
+  password.
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json  \\
+        --enabled              \\
+        --ldap-admin-password "2" \\
+        |                      \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json \
+        --enabled \
+        --ldap-admin-password "2" \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --cmon-user=system \
+            --password=secret  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+    end_verbatim
+}
+
+function testSetLdapConfigWrongAdmin()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Wrong Admin Username"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration with the wrong LDAP admin 
+  username.
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json  \\
+        --enabled              \\
+        --ldap-admin-user "cn=invalid,dc=homelab,dc=local" \\
+        |                      \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json \
+        --enabled \
+        --ldap-admin-user "cn=invalid,dc=homelab,dc=local" \
+        |  \
+        s9s controller         \
+            --set-ldap-config  \
+            --cmon-user=system \
+            --password=secret  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    exitcode=$?
+    if [ "$exitcode" -eq 0 ]; then
+        failure "The exit code should not be 0."
+    else
+        success "  o The exit code is $exitcode, ok."
+    fi
+    end_verbatim
+}
+
+function testSetLdapConfigWrongFiles()
+{
+    local exitcode
+
+    print_title "Setting LDAP Configuration with Wrong Files"
+    cat <<EOF | paragraph
+  This test will try to set the LDAP configuration with the wrong LDAP protocol
+  version.
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json  \\
+        --enabled              \\
+        --ca-cert-file "notok" \\
+        |                      \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json \
+        --enabled \
+        --ca-cert-file "notok" \
         |  \
         s9s controller         \
             --set-ldap-config  \
@@ -762,7 +933,11 @@ else
     runFunctionalTest testSetLdapConfigNoAccess
     runFunctionalTest testSetLdapConfigEmptyUrl
     runFunctionalTest testSetLdapConfigWrongUrl
+    runFunctionalTest testSetLdapConfigWrongPassword
+    runFunctionalTest testSetLdapConfigWrongAdmin
+    runFunctionalTest testSetLdapConfigWrongFiles
     runFunctionalTest testSetLdapConfigWrongProtocol
+
     runFunctionalTest testLdapUser1Again
 fi
 

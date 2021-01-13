@@ -462,7 +462,7 @@ EOF
     fi
 
     if [ -f "$HOME/.pip/host01.host" ]; then
-        pip-server-control --list --long --print-report
+        pip-server-control --list --long --print-report $(hostname) core4 storage02
     fi
 
     end_verbatim
