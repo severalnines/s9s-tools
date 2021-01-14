@@ -60,6 +60,8 @@ class S9sUnitTest
        
         int execute(int argc, char *argv[]);
 
+        bool isVerbose() const;
+
         void failed();
         int failedCounter() const;
 
@@ -125,6 +127,10 @@ class S9sUnitTest
                 const char *varName,
                 S9sVariant  value1,
                 S9sVariant  value2);
+
+    protected:
+        void printDebug(const S9sVariantMap &theMap) const;
+        void printDebug(const S9sString &theString) const;
 
     protected:
         S9sString               m_errorString;

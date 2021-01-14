@@ -102,31 +102,6 @@ while true; do
 done
 
 
-function ldap_config()
-{
-    cat <<EOF
-enabled                = true
-ldapServerUri          = "$LDAP_URL"
-ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
-ldapAdminPassword      = "p"
-
-ldapUserSearchRoot     = "dc=homelab,dc=local"
-ldapGroupSearchRoot    = "dc=homelab,dc=local"
-
-[ldap_settings]
-ldapUsernameAttributes = "cn"
-ldapRealnameAttributes = "displayName,cn"
-ldapEmailAttributes    = "mail"
-ldapMemberAttributes   = "memberUid"
-
-[mapping1]
-ldapGroupId            = "ldapgroup"
-cmonGroupName          = "ldapgroup"
-EOF
-
-    return 0
-}
-
 function testCreateLdapConfig()
 {
     local lines
@@ -148,7 +123,9 @@ EOF
         failure "The LDAP_URL variable is empty."
     fi
 
-    ldap_config |\
+    emit_ldap_config \
+        --ldap-url "$LDAP_URL" \
+        |\
         tee $OPTION_LDAP_CONFIG_FILE | \
         print_ini_file
 

@@ -102,51 +102,16 @@ done
 function ldap_config_ok()
 {
 
-    cat <<EOF
-enabled                = true
-ldapServerUri          = "$LDAP_URL"
-ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
-ldapAdminPassword      = "p"
-
-ldapUserSearchRoot     = "dc=homelab,dc=local"
-ldapGroupSearchRoot    = "dc=homelab,dc=local"
-
-[ldap_settings]
-ldapUsernameAttributes = "cn"
-ldapRealnameAttributes = "displayName,cn"
-ldapEmailAttributes    = "mail"
-ldapMemberAttributes   = "memberUid"
-
-[mapping1]
-ldapGroupId            = "ldapgroup"
-cmonGroupName          = "ldapgroup"
-EOF
+    emit_ldap_config \
+        --ldap-url "$LDAP_URL"
 
     return 0
 }
 
 function ldap_config_bad_url()
 {
-
-    cat <<EOF
-enabled                = true
-ldapServerUri          = "ldap://nosuchserver.homelab.local:389"
-ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
-ldapAdminPassword      = "p"
-
-ldapUserSearchRoot     = "dc=homelab,dc=local"
-ldapGroupSearchRoot    = "dc=homelab,dc=local"
-
-[ldap_settings]
-ldapUsernameAttributes = "cn"
-ldapRealnameAttributes = "displayName,cn"
-ldapEmailAttributes    = "mail"
-ldapMemberAttributes   = "memberUid"
-
-[mapping1]
-ldapGroupId            = "ldapgroup"
-cmonGroupName          = "ldapgroup"
-EOF
+    emit_ldap_config \
+        --ldap-url "ldap://nosuchserver.homelab.local:389"
 
     return 0
 }

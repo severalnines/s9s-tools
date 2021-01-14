@@ -3,6 +3,8 @@
  */
 #include "s9sunittest.h"
 
+#include "S9sVariantMap"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -53,6 +55,12 @@ S9sUnitTest::~S9sUnitTest()
 {
     free(m_basename);
     m_basename = 0;
+}
+
+bool
+S9sUnitTest::isVerbose() const
+{
+    return m_verbose;
 }
 
 void 
@@ -670,5 +678,19 @@ S9sUnitTest::compare (
 
     m_failedCounter++;
     return false;
+}
+
+void 
+S9sUnitTest::printDebug(
+        const S9sVariantMap &theMap) const
+{
+    ::printf("%s\n", STR(theMap.toJsonString(S9sFormatForDebug)));
+}
+
+void 
+S9sUnitTest::printDebug(
+        const S9sString &theString) const
+{
+    ::printf("%s\n", STR(theString));
 }
 

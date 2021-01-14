@@ -4,6 +4,64 @@
 #
 export LDAP_URL="ldap://ldap.homelab.local:389"
 
+#
+# This function will print a working LDAP configuration file to the standard
+# output.
+#
+function emit_ldap_config()
+{
+    local ldap_url=""
+
+    while [ -n "$1" ]; do
+        case "$1" in 
+            --ldap-url)
+                ldap_url="$2"
+                shift 2
+                ;;
+
+            *)
+                failure "emit_ldap_config(): Unknown option '$1'."
+                ;;
+        esac
+    done
+
+    cat <<EOF
+#
+# Basic settings of the LDAP configuration.
+#
+enabled                = true
+ldapServerUri          = "$ldap_url"
+ldapAdminUser          = "cn=admin,dc=homelab,dc=local"
+ldapAdminPassword      = "p"
+
+ldapUserSearchRoot     = "dc=homelab,dc=local"
+ldapGroupSearchRoot    = "dc=homelab,dc=local"
+
+#
+# Some more sophisticated values that will control how to interpret 
+# the data from the LDAP server.
+#
+[ldap_settings]
+ldapUsernameAttributes = "cn"
+ldapRealnameAttributes = "displayName,cn"
+ldapEmailAttributes    = "mail"
+ldapMemberAttributes   = "memberUid"
+
+#
+# Group mappings that will map the groups on the LDAP server to the
+# groups on the Cmon Controller.
+#
+[mapping1]
+ldapGroupId            = "ldapgroup"
+cmonGroupName          = "ldapgroup"
+
+[mapping2]
+ldapGroupId            = "cmonusers"
+cmonGroupName          = "users"
+EOF
+
+    return 0
+}
 
 #
 # Creating the group or groups needed by the LDAP test scripts.

@@ -511,12 +511,12 @@ UtS9sRpcClient::testCreateGalera()
     uri     = client.uri(0u);
     payload = client.payload(0u);
 
-    S9S_DEBUG("*** uri     : %s", STR(uri));
-    S9S_DEBUG("*** payload : %s", STR(payload));
+    if (isVerbose())
+        printDebug(payload);
+
     S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
     S9S_VERIFY(payload.contains("\"cluster_type\": \"galera\""));
-    S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
     S9S_VERIFY(payload.contains("\"vendor\": \"percona\""));
     S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
     S9S_VERIFY(payload.contains("\"hostname\": \"192.168.1.193\""));
@@ -549,7 +549,6 @@ UtS9sRpcClient::testCreateReplication()
     S9S_COMPARE(uri, "/v2/jobs/");
     S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
     S9S_VERIFY(payload.contains("\"cluster_type\": \"replication\""));
-    S9S_VERIFY(payload.contains("\"ssh_user\": \"pi\""));
     S9S_VERIFY(payload.contains("\"vendor\": \"percona\""));
     S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
 
@@ -600,7 +599,6 @@ UtS9sRpcClient::testCreateNdbCluster()
     S9S_VERIFY(payload.contains("\"command\": \"create_cluster\""));
     S9S_VERIFY(payload.contains("\"cluster_type\": \"mysqlcluster\""));
     S9S_VERIFY(payload.contains("\"type\": \"mysql\""));
-    S9S_VERIFY(payload.contains("\"ssh_user\": \"pip\""));
     S9S_VERIFY(payload.contains("\"vendor\": \"oracle\""));
     S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
 
@@ -949,8 +947,8 @@ UtS9sRpcClient::testBackupSchedule()
     S9S_VERIFY(client.createBackupSchedule());
     payload = client.lastPayload();
 
-    //if (isVerbose())
-        ::printf("\n%s\n", STR(payload.toString()));
+    if (isVerbose())
+        printDebug(payload);
 
     return true;
 }
