@@ -89,6 +89,8 @@ UtS9sRpcClient::runTest(
 {
     bool retval = true;
 
+    PERFORM_TEST(testComposeRequest,      retval);
+    PERFORM_TEST(testComposeJob,          retval);
     PERFORM_TEST(testGetAllClusterInfo,   retval);
     PERFORM_TEST(testGetCluster,          retval);
     PERFORM_TEST(testPing,                retval);
@@ -116,6 +118,70 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testBackupSchedule,      retval);
 
     return retval;
+}
+
+/**
+ * \returns true if everything went well.
+ *
+ * This method is called before each test method.
+ */
+bool
+UtS9sRpcClient::prepareToRunTestCase()
+{
+    bool retval;
+    
+    retval = S9sUnitTest::prepareToRunTestCase();
+    S9sOptions::uninit();
+
+    return retval;
+}
+
+/**
+ * \returns true if everything went well.
+ *
+ * This method is called after each test method.
+ */
+bool
+UtS9sRpcClient::finalizeRunTestCase()
+{
+    bool retval;
+    
+    retval = S9sUnitTest::finalizeRunTestCase();
+    return retval;
+}
+
+/**
+ * Testing the composeRequest() method.
+ */
+bool
+UtS9sRpcClient::testComposeRequest()
+{
+    S9sOptions          *options     = S9sOptions::instance();
+    S9sRpcClientTester   client;
+    S9sVariantMap        request;
+
+    options->m_options["cluster_id"] = 42;
+
+    request = client.composeRequest();
+    if (isVerbose())
+        printDebug(request);
+
+    S9S_COMPARE(request["class_name"], "CmonRpcRequest");
+    S9S_COMPARE(request["cluster_id"], 42);
+    return true;
+}
+
+bool
+UtS9sRpcClient::testComposeJob()
+{
+    S9sRpcClientTester client;
+    S9sVariantMap      job;
+
+    job = client.composeJob();
+    if (isVerbose())
+        printDebug(job);
+
+    return true;
 }
 
 /**

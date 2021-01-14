@@ -9177,7 +9177,9 @@ S9sRpcClient::composeRequest()
     int            clusterId   = options->clusterId();
     S9sString      clusterName = options->clusterName();
     S9sVariantMap  request;
- 
+
+    request["class_name"] = "CmonRpcRequest";
+
     if (S9S_CLUSTER_ID_IS_VALID(clusterId) || options->hasClusterIdOption())
         request["cluster_id"] = clusterId;
 

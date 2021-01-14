@@ -351,6 +351,29 @@ S9sUnitTest::finalizeRun()
     return true;
 }
 
+/**
+ * \returns true if everything went well.
+ *
+ * This method is called before each test method.
+ */
+bool
+S9sUnitTest::prepareToRunTestCase()
+{
+    return true;
+}
+
+/**
+ * \returns true if everything went well.
+ *
+ * This method is called after each test method.
+ */
+bool
+S9sUnitTest::finalizeRunTestCase()
+{
+    return true;
+}
+
+
 void
 S9sUnitTest::setRunningTestName(
         const S9sString name)
@@ -684,7 +707,7 @@ void
 S9sUnitTest::printDebug(
         const S9sVariantMap &theMap) const
 {
-    ::printf("%s\n", STR(theMap.toJsonString(S9sFormatForDebug)));
+    ::printf("\n%s\n", STR(theMap.toJsonString(S9sFormatForDebug)));
 }
 
 void 

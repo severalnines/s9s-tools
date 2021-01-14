@@ -35,6 +35,9 @@ int main (int argc, char *argv[]) \
         if (haveTerminal()) \
             printf ("  %-24s: RUNNING ", #functionName); \
         fflush(stdout); \
+        if (!prepareToRunTestCase()) \
+            failed(); \
+        \
         if (!functionName()) { \
             testFunctionEnded(false); \
             failed(); \
@@ -45,6 +48,8 @@ int main (int argc, char *argv[]) \
             resetCounters(); \
             fflush(stdout); \
         } \
+        if (!finalizeRunTestCase()) \
+            failed(); \
         setRunningTestName(""); \
     } \
 }
@@ -76,8 +81,13 @@ class S9sUnitTest
         void setTestName(const S9sString &name);
         S9sString testCase() const;
         void setTestCase(const S9sString &name);
-        bool prepareToRun();
-        bool finalizeRun();
+
+        virtual bool prepareToRun();
+        virtual bool finalizeRun();
+
+        virtual bool prepareToRunTestCase();
+        virtual bool finalizeRunTestCase();
+
         void setRunningTestName(const S9sString name);
         time_t testFunctionStartTime() const;
         void message(const char *formatString, ...);

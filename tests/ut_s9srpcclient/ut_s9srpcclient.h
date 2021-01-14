@@ -27,8 +27,13 @@ class UtS9sRpcClient : public S9sUnitTest
         UtS9sRpcClient();
         virtual ~UtS9sRpcClient();
         virtual bool runTest(const char *testName = 0);
-    
+   
+        virtual bool prepareToRunTestCase();
+        virtual bool finalizeRunTestCase();
+
     protected:
+        bool testComposeRequest();
+        bool testComposeJob();
         bool testGetAllClusterInfo();
         bool testGetCluster();
         bool testPing();
