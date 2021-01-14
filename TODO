@@ -60,7 +60,31 @@ Fullname:                              Email:
          // the connection has been moved there, so return
          return;
 
+** Register Host - ProxySQL
+s9s node --register --nodes="proxysql://10.10.10.15:6032?listen_port=6033" --cluster-id=214 --admin-password==pass --admin-user=user --monitor-user=user --monitor-password=pass
 
+ProxySQL has one admin port (default 6032) and then one listening port (default 6033, set in the job as /job_data/listening_port) that is used by applications. The admin user and admin password also have default passwords. The monitor user and monitor password also have defaults.
+
+
+** Register Host - HAProxy
+s9s node --register --nodes="haproxy://10.10.10.15:9600?listen_port=6033?stats_socket=..." --cluster-id=214 --admin-password==pass --admin-user=user 
+
+HAProxy has one admin port (default 9600) and then one listening port (default depends on the database it loadbalances,, set in the job as /job_data/listening_port) that is used by applications. The admin user and admin password also have default passwords. The monitor user and monitor password also have defaults.
+
+'stats_socket' has a default. In the job it is passed as  /job_data/socket .
+'listen_port' has a default. In the job it is passed as  /job_data/listening_port.
+
+    
+** Register Host - Keepalived
+s9s node --register --nodes="keepalived://10.10.10.15:112" --cluster-id=...
+
+Keepalived, should not be much more to it...
+
+
+        
+    
+
+        
 
 
 
