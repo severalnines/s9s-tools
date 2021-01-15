@@ -3463,12 +3463,16 @@ S9sRpcClient::registerHost()
 bool
 S9sRpcClient::registerHost()
 {
-    S9sOptions    *options      = S9sOptions::instance();
-    S9sVariantList hosts        = options->nodes();
-    //int            clusterId;
-    bool           hasMaxScale  = false;
-    bool           hasPgBouncer = false;
-    bool           hasPBMAgent  = false;
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sVariantList  hosts        = options->nodes();
+    int             clusterId;
+    S9sVariantMap   request = composeRequest();
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+    S9sString       protocol;
+    S9sString       command, title;
 
     /*
      * Doing some preliminary checks.
@@ -3491,7 +3495,7 @@ S9sRpcClient::registerHost()
    
     if (options->hasClusterIdOption())
     {
-        //clusterId = options->clusterId();
+        clusterId = options->clusterId();
     } else {
         PRINT_ERROR("Cluster ID is missing.");
         PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
@@ -3499,36 +3503,41 @@ S9sRpcClient::registerHost()
         return false;
     }
 
-    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    protocol = hosts[0].toNode().protocol().toLower();
+    if (protocol == "maxscale")
     {
-        S9sString protocol = hosts[idx].toNode().protocol().toLower();
-
-        if (protocol == "maxscale")
-            hasMaxScale = true;
-
-	    if (protocol == "pgbouncer")
-            hasPgBouncer = true;
-
-    	if (protocol == "pbmagent")
-            hasPBMAgent = true;
-    }
-   
-    if (hasMaxScale)
+        command = "maxscale";
+        title   = "Register MaxScale Node";
+    } else if (protocol == "pgbouncer")
     {
-        S9sNode node = hosts[0u].toNode();
-        return registerMaxScaleHost(node);
-    } else if (hasPgBouncer) {
-        S9sNode node = hosts[0u].toNode();
-        return registerPgBouncerHost(node);
-    } else if (hasPBMAgent) {
-        S9sNode node = hosts[0u].toNode();
-        return registerPBMAgentHost(node);
+        command = "pgbouncer";
+        title   = "Register PgBouncer Node";
+    } else if (protocol == "pbmagent")
+    {
+        command = "pbmagent";
+        title   = "Register PBMAgent Node";
     } else {
         PRINT_ERROR("Registering this type of node is not supported.");
         return false;
     }
 
-    return true;
+    jobData["action"] = "register";
+    jobData["nodes"] = nodesField(hosts);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = command;
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = title;
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    return executeRequest(uri, request);
 }
 #endif
 
@@ -3559,8 +3568,6 @@ S9sRpcClient::registerMaxScaleHost(
 
     jobData["action"] = "register";
     jobData["nodes"] = nodesField(nodes);
-    
-    //jobData["server_address"] = node.hostName();
     
     // The jobspec describing the command.
     jobSpec["command"]    = "maxscale";
