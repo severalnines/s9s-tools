@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
 
-LOG_OPTION="--log"
+LOG_OPTION="--wait"
 DEBUG_OPTION="--debug"
 
 CONTAINER_SERVER=""
@@ -26,7 +26,7 @@ OPTION_RW_PORT=""
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
-export S9S_DEBUG_PRINT_REQUEST="true"
+#export S9S_DEBUG_PRINT_REQUEST="true"
 
 cd $MYDIR
 source ./include.sh
@@ -382,6 +382,81 @@ function testStartHaProxy()
     end_verbatim
 }
 
+function unregisterHaProxy()
+{
+    local line
+    local retcode
+
+    print_title "Unregistering HaProxy Node"
+    cat <<EOF | paragraph
+  This test will unregister the HaProxy node. 
+EOF
+
+    begin_verbatim
+
+    #
+    # Unregister by the owner should be possible.
+    #
+    mys9s node \
+        --unregister \
+        --nodes="haproxy://$HAPROXY_IP:9600"
+
+    check_exit_code_no_job $?
+
+    mys9s node --list --long
+    line=$(s9s node --list --long --batch | grep '^y')
+    if [ -z "$line" ]; then 
+        success "  o The HaProxy node is no longer part of he cluster, ok."
+    else
+        failure "The HaProxy is still there after unregistering the node."
+    fi
+
+    end_verbatim
+}
+
+function registerHaProxy()
+{
+    local line
+    local retcode
+
+    print_title "Registering HaProxy Node"
+    cat <<EOF | paragraph
+  This test will register the HaProxy node that was previously unregistered.
+EOF
+
+    begin_verbatim
+   
+    #
+    # Registering the maxscale host here.
+    #
+    mys9s node \
+        --register \
+        --cluster-id=1 \
+        --nodes="haproxy://$HAPROXY_IP" \
+        --log 
+
+    check_exit_code $?
+    
+    mys9s node --list --long
+    line=$(s9s node --list --long --batch | grep '^h')
+    if [ -n "$line" ]; then 
+        success "  o The HaProxy node is part of he cluster, ok."
+    else
+        warning "The HaProxy is not part of the cluster."
+        
+        mysleep 15
+        line=$(s9s node --list --long --batch | grep '^h')
+        if [ -n "$line" ]; then 
+            success "  o The HaProxy node is part of he cluster, ok."
+        else
+            failure "The HaProxy is not part of the cluster."
+        fi
+    fi
+
+    wait_for_node_state "$HAPROXY_IP" "CmonHostOnline"
+    end_verbatim
+}
+
 function destroyContainers()
 {
     #
@@ -422,6 +497,8 @@ else
     runFunctionalTest testHaProxyConnect
     runFunctionalTest testStopHaProxy
     runFunctionalTest testStartHaProxy
+    runFunctionalTest unregisterHaProxy
+    runFunctionalTest registerHaProxy
     runFunctionalTest destroyContainers
 fi
 

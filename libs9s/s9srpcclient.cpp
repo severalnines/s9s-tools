@@ -3520,6 +3520,10 @@ S9sRpcClient::registerHost()
     {
         command = "proxysql";
         title   = "Register ProxySql Node";
+    } else if (protocol == "haproxy")
+    {
+        command = "haproxy";
+        title   = "Register HaProxy Node";
     } else {
         PRINT_ERROR("Registering this type of node is not supported.");
         return false;
