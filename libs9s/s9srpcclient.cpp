@@ -3516,6 +3516,10 @@ S9sRpcClient::registerHost()
     {
         command = "pbmagent";
         title   = "Register PBMAgent Node";
+    } else if (protocol == "proxysql")
+    {
+        command = "proxysql";
+        title   = "Register ProxySql Node";
     } else {
         PRINT_ERROR("Registering this type of node is not supported.");
         return false;

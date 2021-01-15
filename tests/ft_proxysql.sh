@@ -190,7 +190,7 @@ function testAddProxySql()
     #
     #
     #
-    print_title "Checking ProxySql State"
+    print_subtitle "Checking ProxySql State"
     begin_verbatim
 
     PROXYSQL_IP=$(proxysql_node_name)
@@ -206,6 +206,74 @@ function testAddProxySql()
 
     end_verbatim
 }
+
+function unregisterProxySql()
+{
+    local line
+    local retcode
+
+    print_title "Unregistering ProxySql Node"
+    cat <<EOF | paragraph
+  This test will unregister the ProxySql node. 
+EOF
+
+    begin_verbatim
+
+    #
+    # Unregister by the owner should be possible.
+    #
+    mys9s node \
+        --unregister \
+        --nodes="proxysql://$PROXYSQL_IP:6032"
+
+    check_exit_code_no_job $?
+
+    mys9s node --list --long
+    line=$(s9s node --list --long --batch | grep '^y')
+    if [ -z "$line" ]; then 
+        success "  o The ProxySql node is no longer part of he cluster, ok."
+    else
+        failure "The ProxySql is still there after unregistering the node."
+    fi
+
+    end_verbatim
+}
+
+function registerProxySql()
+{
+    local line
+    local retcode
+
+    print_title "Registering ProxySql Node"
+    cat <<EOF | paragraph
+  This test will register the ProxySql node that was previously unregistered.
+EOF
+
+    begin_verbatim
+   
+    #
+    # Registering the maxscale host here.
+    #
+    mys9s node \
+        --register \
+        --cluster-id=1 \
+        --nodes="proxysql://$PROXYSQL_IP" \
+        --log 
+
+    check_exit_code $?
+       
+    line=$(s9s node --list --long --batch | grep '^x')
+    if [ -n "$line" ]; then 
+        success "  o The ProxySql node is part of he cluster, ok."
+    else
+        failure "The ProxySql is not part of the cluster."
+    fi
+
+    wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
+    mys9s node --list --long
+    end_verbatim
+}
+
 
 function testStopProxySql()
 {
@@ -295,6 +363,8 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testAddProxySql
+    runFunctionalTest unregisterProxySql
+    runFunctionalTest registerProxySql
     runFunctionalTest testStopProxySql
     runFunctionalTest testStartProxySql
     runFunctionalTest destroyContainers
