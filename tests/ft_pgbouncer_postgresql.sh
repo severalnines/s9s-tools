@@ -137,8 +137,8 @@ function createCluster()
     #
     print_title "Creating a Cluster on LXC"
     cat <<EOF | paragraph
-  Here we create a cluster on which the PgBouncer will be tested. The cluster will
-  be created on the LXC server usng LXC containers.
+  Here we create a cluster on which the PgBouncer will be tested. The cluster
+  will be created on the LXC server usng LXC containers.
 EOF
 
     begin_verbatim
@@ -167,7 +167,10 @@ EOF
     fi
 
     mys9s node --list --long
-    #mys9s node --stat
+    mysleep 60
+    mys9s node --list --long
+
+    end_verbatim
 }
 
 function accountTest()

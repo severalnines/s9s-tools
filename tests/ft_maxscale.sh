@@ -5,8 +5,8 @@ MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
 
-LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -19,7 +19,6 @@ OPTION_COLOCATE=""
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
-
 
 cd $MYDIR
 source ./include.sh
@@ -202,6 +201,12 @@ function testAddMaxScale()
 
     mys9s node --list --long
     MAXSCALE_IP=$(maxscale_node_name)
+    if [ -n "$MAXSCALE_IP" ]; then
+        success "  o Found MaxScale at $MAXSCALE_IP, ok."
+    else
+        failure "MaxScale was not found in the node list."
+    fi
+
     end_verbatim
 
     #
@@ -273,20 +278,18 @@ EOF
     end_verbatim
 }
 
-function unregisterMaxScale()
+function unregisterMaxScaleFail()
 {
-    local node_ip
     local line
     local retcode
 
-    print_title "Unregistering then Registering MaxScale Node"
+    print_title "Unregistering MaxScale Node"
     cat <<EOF | paragraph
-  This test will unregister the MaxScale node, then register the same node again
-  and check if the node is properly re-added to the cluster.
+  This test will try to unregister the MaxScale node as an outsider that should
+  fail because the insufficient privileges.
 EOF
 
     begin_verbatim
-    node_ip=$(maxscale_node_name)
    
     #
     # Unregistering by an outsider should not be possible.
@@ -295,7 +298,7 @@ EOF
         --unregister \
         --cmon-user="grumio" \
         --password="p" \
-        --nodes="maxscale://$node_ip:6603"
+        --nodes="maxscale://$MAXSCALE_IP:6603"
         
     retcode=$?
 
@@ -304,13 +307,27 @@ EOF
     else
         success "  o Outsider can't unregister node, ok."
     fi
+    end_verbatim
+}
+
+function unregisterMaxScale()
+{
+    local line
+    local retcode
+
+    print_title "Unregistering MaxScale Node"
+    cat <<EOF | paragraph
+  This test will unregister the MaxScale node. 
+EOF
+
+    begin_verbatim
 
     #
     # Unregister by the owner should be possible.
     #
     mys9s node \
         --unregister \
-        --nodes="maxscale://$node_ip:6603"
+        --nodes="maxscale://$MAXSCALE_IP:6603"
 
     check_exit_code_no_job $?
 
@@ -322,15 +339,29 @@ EOF
         failure "The MaxScale is still there after unregistering the node."
     fi
 
-    mysleep 30
+    #mysleep 30
+    end_verbatim
+}
 
+function registerMaxScale()
+{
+    local line
+    local retcode
+
+    print_title "Registering MaxScale Node"
+    cat <<EOF | paragraph
+  This test will register the MaxScale node that was previously unregistered.
+EOF
+
+    begin_verbatim
+   
     #
-    #
+    # Registering the maxscale host here.
     #
     mys9s node \
         --register \
         --cluster-id=1 \
-        --nodes="maxscale://$node_ip" \
+        --nodes="maxscale://$MAXSCALE_IP" \
         --log 
 
     check_exit_code $?
@@ -342,7 +373,7 @@ EOF
         failure "The MaxScale is not part of the cluster."
     fi
 
-    wait_for_node_state "$node_ip" "CmonHostOnline"
+    wait_for_node_state "$MAXSCALE_IP" "CmonHostOnline"
     mys9s node --list --long
     end_verbatim
 }
@@ -457,7 +488,9 @@ else
     runFunctionalTest testStartContainer
     runFunctionalTest testStopMaxScale
     runFunctionalTest testStartMaxScale
+    runFunctionalTest unregisterMaxScaleFail
     runFunctionalTest unregisterMaxScale
+    runFunctionalTest registerMaxScale
     runFunctionalTest destroyContainers
 fi
 

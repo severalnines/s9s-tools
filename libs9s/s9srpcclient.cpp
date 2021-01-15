@@ -3394,14 +3394,17 @@ S9sRpcClient::registerGaleraCluster(
     return executeRequest(uri, request);
 }
 
+#if 0
+// Deprecated, a generic method will be used. We just keep this code around
+// until the other version is tested.
 bool
 S9sRpcClient::registerHost()
 {
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantList hosts = options->nodes();
-    bool           hasMaxScale = false;
+    S9sOptions    *options      = S9sOptions::instance();
+    S9sVariantList hosts        = options->nodes();
+    bool           hasMaxScale  = false;
     bool           hasPgBouncer = false;
-    bool           hasPBMAgent = false;
+    bool           hasPBMAgent  = false;
 
     if (hosts.empty())
     {
@@ -3426,10 +3429,10 @@ S9sRpcClient::registerHost()
         if (protocol == "maxscale")
             hasMaxScale = true;
 
-	if (protocol == "pgbouncer")
+	    if (protocol == "pgbouncer")
             hasPgBouncer = true;
 
-	if (protocol == "pbmagent")
+    	if (protocol == "pbmagent")
             hasPBMAgent = true;
     }
    
@@ -3450,7 +3453,72 @@ S9sRpcClient::registerHost()
 
     return true;
 }
+#else
+/**
+ * This method will create a new job that will register a host into a cluster. 
+ *
+ * Registering means the host is already installed and set up, it just needs to
+ * be added to the controller so it "knows" about it.
+ */
+bool
+S9sRpcClient::registerHost()
+{
+    S9sOptions    *options      = S9sOptions::instance();
+    S9sVariantList hosts        = options->nodes();
+    bool           hasMaxScale  = false;
+    bool           hasPgBouncer = false;
+    bool           hasPBMAgent  = false;
 
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while registering node.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    } else if (hosts.size() > 1u)
+    {
+        PRINT_ERROR("Registering nodes can only be done one-by-one.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+        if (protocol == "maxscale")
+            hasMaxScale = true;
+
+	    if (protocol == "pgbouncer")
+            hasPgBouncer = true;
+
+    	if (protocol == "pbmagent")
+            hasPBMAgent = true;
+    }
+   
+    if (hasMaxScale)
+    {
+        S9sNode node = hosts[0u].toNode();
+        return registerMaxScaleHost(node);
+    } else if (hasPgBouncer) {
+        S9sNode node = hosts[0u].toNode();
+        return registerPgBouncerHost(node);
+    } else if (hasPBMAgent) {
+        S9sNode node = hosts[0u].toNode();
+        return registerPBMAgentHost(node);
+    } else {
+        PRINT_ERROR("Registering this type of node is not supported.");
+        return false;
+    }
+
+    return true;
+}
+#endif
+
+// Deprecated, will be removed.
 bool
 S9sRpcClient::registerMaxScaleHost(
         const S9sNode &node)
@@ -3496,6 +3564,7 @@ S9sRpcClient::registerMaxScaleHost(
     return executeRequest(uri, request);
 }
 
+// Deprecated, will be removed.
 bool
 S9sRpcClient::registerPgBouncerHost(
         const S9sNode &node)
@@ -3541,6 +3610,7 @@ S9sRpcClient::registerPgBouncerHost(
     return executeRequest(uri, request);
 }
 
+// Deprecated, will be removed.
 bool
 S9sRpcClient::registerPBMAgentHost(
         const S9sNode &node)
@@ -9170,6 +9240,10 @@ S9sRpcClient::getNextMaintenance()
     return retval;
 }
 
+/**
+ * \returns A prepared request that after further settings added can be sent to
+ *   the controller.
+ */
 S9sVariantMap 
 S9sRpcClient::composeRequest() 
 {
