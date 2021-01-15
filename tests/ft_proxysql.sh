@@ -261,16 +261,24 @@ EOF
         --log 
 
     check_exit_code $?
-       
+    
+    mys9s node --list --long
     line=$(s9s node --list --long --batch | grep '^y')
     if [ -n "$line" ]; then 
         success "  o The ProxySql node is part of he cluster, ok."
     else
-        failure "The ProxySql is not part of the cluster."
+        warning "The ProxySql is not part of the cluster."
+        
+        mysleep 15
+        line=$(s9s node --list --long --batch | grep '^y')
+        if [ -n "$line" ]; then 
+            success "  o The ProxySql node is part of he cluster, ok."
+        else
+            failure "The ProxySql is not part of the cluster."
+        fi
     fi
 
     wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
-    mys9s node --list --long
     end_verbatim
 }
 
