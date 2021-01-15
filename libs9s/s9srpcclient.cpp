@@ -3465,10 +3465,14 @@ S9sRpcClient::registerHost()
 {
     S9sOptions    *options      = S9sOptions::instance();
     S9sVariantList hosts        = options->nodes();
+    //int            clusterId;
     bool           hasMaxScale  = false;
     bool           hasPgBouncer = false;
     bool           hasPBMAgent  = false;
 
+    /*
+     * Doing some preliminary checks.
+     */
     if (hosts.empty())
     {
         PRINT_ERROR(
@@ -3484,7 +3488,17 @@ S9sRpcClient::registerHost()
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
-    
+   
+    if (options->hasClusterIdOption())
+    {
+        //clusterId = options->clusterId();
+    } else {
+        PRINT_ERROR("Cluster ID is missing.");
+        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     for (uint idx = 0u; idx < hosts.size(); ++idx)
     {
         S9sString protocol = hosts[idx].toNode().protocol().toLower();

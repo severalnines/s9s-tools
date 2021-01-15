@@ -283,7 +283,7 @@ function unregisterMaxScaleFail()
     local line
     local retcode
 
-    print_title "Unregistering MaxScale Node"
+    print_title "Unregistering MaxScale Node with Failure"
     cat <<EOF | paragraph
   This test will try to unregister the MaxScale node as an outsider that should
   fail because the insufficient privileges.
@@ -339,7 +339,6 @@ EOF
         failure "The MaxScale is still there after unregistering the node."
     fi
 
-    #mysleep 30
     end_verbatim
 }
 

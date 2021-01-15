@@ -387,9 +387,9 @@ function testLdapFailures()
 #
 # Running the requested tests.
 #
-startTests
-reset_config
-grant_user
+runFunctionalTest startTests
+runFunctionalTest reset_config
+runFunctionalTest grant_user
 
 if [ "$1" ]; then
     for testName in $*; do

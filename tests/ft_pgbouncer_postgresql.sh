@@ -283,7 +283,7 @@ EOF
     #
     mys9s node \
         --unregister \
-        --nodes="PgBouncer://$PGBOUNCER_IP"
+        --nodes="PgBouncer://$PGBOUNCER_IP:6432"
 
     check_exit_code_no_job $?
 
@@ -353,9 +353,9 @@ function destroyContainers()
 #
 # Running the requested tests.
 #
-startTests
-reset_config
-grant_user
+runFunctionalTest startTests
+runFunctionalTest reset_config
+runFunctionalTest grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest registerServer
