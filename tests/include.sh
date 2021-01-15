@@ -1371,6 +1371,9 @@ function check_number_of_haproxy_nodes()
     fi    
 }
 
+#
+# Finds the name/ip of the maxscale node.
+#
 function maxscale_node_name()
 {
     s9s node --list --long --batch |\

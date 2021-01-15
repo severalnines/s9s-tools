@@ -166,10 +166,9 @@ EOF
         return 1
     fi
 
+    PGBOUNCER_IP=$(pgbouncer_node_name)
+    wait_for_node_state "$PGBOUNCER_IP" "CmonHostOnline"
     mys9s node --list --long
-    mysleep 60
-    mys9s node --list --long
-
     end_verbatim
 }
 
@@ -212,6 +211,8 @@ function accountTest()
 
 function checkPgBouncer()
 {
+    local pgbouncer_ip
+
     #
     #
     #
@@ -220,15 +221,15 @@ function checkPgBouncer()
 
     PGBOUNCER_IPS=$(pgbouncer_node_name)
 
-    for PGBOUNCER_IP in $PGBOUNCER_IPS; do
-        wait_for_node_state "$PGBOUNCER_IP" "CmonHostOnline"
+    for pgbouncer_ip in $PGBOUNCER_IPS; do
+        wait_for_node_state "$pgbouncer_ip" "CmonHostOnline"
         if [ $? -ne 0 ]; then
-            failure "PgBouncer $PGBOUNCER_IP is not in CmonHostOnline state"
+            failure "PgBouncer $pgbouncer_ip is not in CmonHostOnline state"
             mys9s node --list --long
-            mys9s node --stat $PGBOUNCER_IP
+            mys9s node --stat $pgbouncer_ip
         else
-            success "  o PgBouncer $PGBOUNCER_IP is in CmonHostOnline state."
-            mys9s node --stat $PGBOUNCER_IP
+            success "  o PgBouncer $pgbouncer_ip is in CmonHostOnline state."
+            mys9s node --stat $pgbouncer_ip
         fi
     done
 
@@ -264,6 +265,74 @@ function testPgBouncerConnect()
 
     end_verbatim
 }
+
+function unregisterPgBouncer()
+{
+    local line
+    local retcode
+
+    print_title "Unregistering PgBouncer Node"
+    cat <<EOF | paragraph
+  This test will unregister the PgBouncer node. 
+EOF
+
+    begin_verbatim
+
+    #
+    # Unregister by the owner should be possible.
+    #
+    mys9s node \
+        --unregister \
+        --nodes="PgBouncer://$PGBOUNCER_IP"
+
+    check_exit_code_no_job $?
+
+    mys9s node --list --long
+    line=$(s9s node --list --long --batch | grep '^b')
+    if [ -z "$line" ]; then 
+        success "  o The PgBouncer node is no longer part of he cluster, ok."
+    else
+        failure "The PgBouncer is still there after unregistering the node."
+    fi
+
+    end_verbatim
+}
+
+function registerPgBouncer()
+{
+    local line
+    local retcode
+
+    print_title "Registering PgBouncer Node"
+    cat <<EOF | paragraph
+  This test will register the PgBouncer node that was previously unregistered.
+EOF
+
+    begin_verbatim
+   
+    #
+    # Registering the pgbouncer host here.
+    #
+    mys9s node \
+        --register \
+        --cluster-id=1 \
+        --nodes="PgBouncer://$PGBOUNCER_IP" \
+        --log 
+
+    check_exit_code $?
+       
+    line=$(s9s node --list --long --batch | grep '^b')
+    if [ -n "$line" ]; then 
+        success "  o The PgBouncer node is part of he cluster, ok."
+    else
+        failure "The PgBouncer is not part of the cluster."
+    fi
+
+    wait_for_node_state "$PGBOUNCER_IP" "CmonHostOnline"
+    mys9s node --list --long
+    end_verbatim
+}
+
 
 function destroyContainers()
 {
@@ -304,6 +373,8 @@ else
     runFunctionalTest accountTest
     runFunctionalTest checkPgBouncer
     runFunctionalTest testPgBouncerConnect
+    runFunctionalTest unregisterPgBouncer
+    runFunctionalTest registerPgBouncer
     runFunctionalTest destroyContainers
 fi
 
