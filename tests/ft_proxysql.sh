@@ -262,7 +262,7 @@ EOF
 
     check_exit_code $?
        
-    line=$(s9s node --list --long --batch | grep '^x')
+    line=$(s9s node --list --long --batch | grep '^y')
     if [ -n "$line" ]; then 
         success "  o The ProxySql node is part of he cluster, ok."
     else
