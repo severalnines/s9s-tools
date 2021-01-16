@@ -224,15 +224,24 @@ EOF
 #
 # This will create a container and check if the user can actually log in through
 # ssh.
+#                  cmoncloudserver.cpp:1357 : MESSAGE 192.168.0.231: googleapi: Error 400: Invalid value for field 'resource.machineType': 'zones/europe-west2-b/machineTypes/a2-highgpu-1g'. Machine type with name 'a2-highgpu-1g' does not exist in zone 'europe-west2-b'., invalid.
+#                 cmoncloudserver.cpp:1357 : MESSAGE 192.168.0.231: Removing instances.
 #
 function createContainer()
 {
     local owner
     local container_name="ft-containers-gce-00-$$"
     local template
+    local region
 
     print_title "Creating a Container on GCE"
     begin_verbatim
+
+    mys9s server --list-regions --long --cloud=gce
+    s9s server --list-templates --long --cloud=gce
+
+    region="europe-west2-b"
+    template="e2-standard-2"
 
     #
     # Creating a container on GCE.
@@ -243,7 +252,8 @@ function createContainer()
         --create \
         --volumes="vol1:15:hdd" \
         --cloud=gce \
-        --region="europe-west2-b" \
+        --region="$region" \
+        --template="$template" \
         $LOG_OPTION \
         "$container_name"
     
