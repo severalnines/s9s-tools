@@ -490,6 +490,8 @@ function createCluster()
         --cluster-id=$CLUSTER_ID \
         --nodes="proxysql://$node002" \
         --containers="$node002" \
+        --region="$region" \
+        --template="$template" \
         --cloud=gce \
         $LOG_OPTION
 
