@@ -415,12 +415,18 @@ function createCluster()
     local node001="ft-containers-gce-01-$$"
     local node002="ft-containers-gce-02-$$"
     local exitCode
+    local template
+    local region
 
     #
     # Creating a Cluster.
     #
     print_title "Creating a Cluster"
+
     begin_verbatim
+    region="europe-west2-b"
+    template="e2-standard-2"
+
     mys9s cluster \
         --create \
         --cluster-name="$CLUSTER_NAME" \
@@ -430,7 +436,8 @@ function createCluster()
         --nodes="$node001" \
         --containers="$node001" \
         --cloud=gce \
-        --region="europe-west2-b" \
+        --region="$region" \
+        --template="$template" \
         $LOG_OPTION
 
     exitCode=$?
