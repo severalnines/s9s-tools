@@ -238,7 +238,7 @@ function createContainer()
     begin_verbatim
 
     mys9s server --list-regions --long --cloud=gce
-    s9s server --list-templates --long --cloud=gce
+    mys9s server --list-templates --long --cloud=gce
 
     region="europe-west2-b"
     template="e2-standard-2"

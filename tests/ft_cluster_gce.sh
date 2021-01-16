@@ -175,11 +175,17 @@ function createContainer()
 {
     local config_dir="$HOME/.s9s"
     local container_name="ft-cluster-gce-01-$$"
-    local template
     local owner
+    local template
+    local region
 
     print_title "Creating Container on GCE"
     begin_verbatim
+
+    mys9s server --list-regions --long --cloud=gce
+    mys9s server --list-templates --long --cloud=gce
+    region="europe-west2-b"
+    template="e2-standard-2"
 
     #
     # Creating a container.
@@ -188,7 +194,8 @@ function createContainer()
         --create \
         --servers=$CMON_CLOUD_CONTAINER_SERVER \
         --cloud=gce \
-        --region="europe-west2-b" \
+        --region="$region" \
+        --template="$template" \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
         $LOG_OPTION \
@@ -276,12 +283,18 @@ function createCluster()
     local container_name2="ft-cluster-gce-12-$$"
     local node_ip
     local container_id
+    local template
+    local region
 
     #
     # Creating a Cluster.
     #
     print_title "Creating a Cluster on GCE"
     begin_verbatim
+    mys9s server --list-regions --long --cloud=gce
+    mys9s server --list-templates --long --cloud=gce
+    region="europe-west2-b"
+    template="e2-standard-2"
 
     mys9s cluster \
         --create \
@@ -290,7 +303,8 @@ function createCluster()
         --provider-version="5.7" \
         --vendor=percona \
         --cloud=gce \
-        --region="europe-west2-b" \
+        --region="$region" \
+        --template="$template" \
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
