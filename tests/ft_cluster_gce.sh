@@ -4,7 +4,7 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.1"
-LOG_OPTION="--log"
+LOG_OPTION="--wait"
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
