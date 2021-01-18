@@ -153,8 +153,8 @@ function createContainerFromImage()
     print_subtitle "Creating a Container"
     cat <<EOF | paragraph
   This test actually implements a subtask. It is creating a container on the
-  registered container server. Since the test might ned multiple containers this
-  might be executed several times. 
+  registered container server. Since the test might need multiple containers 
+  this might be executed several times. 
 
 EOF
 
@@ -210,11 +210,12 @@ EOF
     [ -z "$ip3" ] && return 1
 
 
-    begin_verbatim
 
     #
     # Creating a Galera cluster.
     #
+    print_subtitle "Creating the Cluster"
+    begin_verbatim
     mys9s cluster \
         --create \
         --job-tags="testCreateCluster" \
@@ -248,6 +249,7 @@ EOF
     [ -z "$ip" ] && return 1
 
 
+    print_subtitle "Adding the Node"
     begin_verbatim
     mys9s cluster \
         --add-node --cluster-id=1 \
