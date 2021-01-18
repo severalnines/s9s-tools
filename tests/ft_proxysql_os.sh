@@ -276,6 +276,8 @@ if [ "$OPTION_INSTALL" ]; then
         done
     else
         runFunctionalTest testRegisterLxcServer
+        runFunctionalTest testCreateCluster
+        runFunctionalTest testAddProxySql
     fi
 elif [ "$1" ]; then
     for testName in $*; do
