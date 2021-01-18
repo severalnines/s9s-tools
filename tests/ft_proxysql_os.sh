@@ -150,7 +150,7 @@ function createContainerFromImage()
         $NUMBER_OF_CREATED_CONTAINERS \
         "$$")
 
-    print_title "Creating a Container"
+    print_subtitle "Creating a Container"
     cat <<EOF | paragraph
   This test actually implements a subtask. It is creating a container on the
   registered container server. Since the test might ned multiple containers this
@@ -190,6 +190,12 @@ function testCreateCluster()
     local ip1
     local ip2
     local ip3
+    
+    print_title "Creating Galera Cluster"
+    cat <<EOF | paragraph
+  This test will create a three node Galera cluster on the containers created
+  previously.
+EOF
 
     createContainerFromImage
     ip1=$LAST_CONTAINER_IP
@@ -203,12 +209,6 @@ function testCreateCluster()
     ip3=$LAST_CONTAINER_IP
     [ -z "$ip3" ] && return 1
 
-    print_title "Creating Galera Cluster"
-    cat <<EOF | paragraph
-  This test will create a three node Galera cluster on the containers created
-  previously.
-
-EOF
 
     begin_verbatim
 
@@ -236,16 +236,17 @@ function testAddProxySql()
 {
     local ip
 
-    createContainerFromImage
-    ip=$LAST_CONTAINER_IP
-    [ -z "$ip" ] && return 1
-
     print_title "Adding a ProxySQL Node"
     cat <<EOF | paragraph
   This test installs a ProxySQL node on the previously created container as a
   part of the previously created cluster.
 
 EOF
+    
+    createContainerFromImage
+    ip=$LAST_CONTAINER_IP
+    [ -z "$ip" ] && return 1
+
 
     begin_verbatim
     mys9s cluster \

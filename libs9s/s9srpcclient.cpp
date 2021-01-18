@@ -3524,9 +3524,13 @@ S9sRpcClient::registerHost()
     {
         command = "haproxy";
         title   = "Register HaProxy Node";
+    } else if (protocol == "keepalived")
+    {
+        command = "keepalived";
+        title   = "Register Keepalived Node";
     } else {
-        PRINT_ERROR("Registering this type of node is not supported.");
-        return false;
+        command = protocol;
+        title   = "Register Node";
     }
 
     jobData["action"] = "register";
