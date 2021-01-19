@@ -10,6 +10,12 @@ DEBUG_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
+
+MYSQL_NODE1_IP=""
+MYSQL_NODE2_IP=""
+PROXYSQL_NODE1_IP=""
+PROXYSQL_NODE2_IP=""
+
 CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 PROXYSQL_IP=""
@@ -17,6 +23,8 @@ OPTION_INSTALL=""
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
+CONTAINER_NAME21="${MYBASENAME}_21_$$"
+CONTAINER_NAME22="${MYBASENAME}_22_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
 cd $MYDIR
@@ -152,15 +160,29 @@ function createCluster()
         $DEBUG_OPTION
 
     check_exit_code $?
+    
+    MYSQL_NODE1_IP=$(get_container_ip "$CONTAINER_NAME1")
+    MYSQL_NODE2_IP=$(get_container_ip "$CONTAINER_NAME2")
+    if [ -n "$MYSQL_NODE1_IP" ]; then
+        success "  o MySql node1 IP is $MYSQL_NODE1_IP, Ok."
+    else
+        failure "Could not find IP for container $CONTAINER_NAME1."
+    fi
+    
+    if [ -n "$MYSQL_NODE2_IP" ]; then
+        success "  o MySql node2 IP is $MYSQL_NODE2_IP, Ok."
+    else
+        failure "Could not find IP for container $CONTAINER_NAME2."
+    fi
+
     end_verbatim
 }
 
-#
-# This test will add a ProxySql node.
-#
-function testAddKeepalived()
+function testAddProxySql()
 {
-    print_title "Adding a Keepalived Node"
+    local exitCode
+
+    print_title "Adding ProxySql Nodes"
     begin_verbatim
 
     #
@@ -169,18 +191,75 @@ function testAddKeepalived()
     mys9s cluster \
         --add-node \
         --cluster-name="$CLUSTER_NAME" \
-        --nodes="keepalived://$CONTAINER_NAME9" \
+        --nodes="proxySql://$CONTAINER_NAME21" \
         --template="ubuntu" \
-        --containers="$CONTAINER_NAME9" \
+        --containers="$CONTAINER_NAME21" \
         $LOG_OPTION \
-        $DEBUG_OPTION \
-        $OPTION_POXYSQL_VERSION \
+        $DEBUG_OPTION 
+    
+    exitCode=$?
+    check_exit_code $exitCode
+
+    if [ "$exitCode" -ne 0 ]; then
+        end_verbatim
+        return 1
+    fi
+   
+    mysleep 60
+    mys9s cluster \
+        --add-node \
+        --cluster-name="$CLUSTER_NAME" \
+        --nodes="proxySql://$CONTAINER_NAME22" \
+        --template="ubuntu" \
+        --containers="$CONTAINER_NAME22" \
+        $LOG_OPTION \
+        $DEBUG_OPTION 
     
     check_exit_code $?
+   
+    mys9s node --list --long
+    mys9s container --list --long
+
+    PROXYSQL_NODE1_IP=$(get_container_ip "$CONTAINER_NAME21")
+    PROXYSQL_NODE2_IP=$(get_container_ip "$CONTAINER_NAME22")
     end_verbatim
+}
+
+#
+# This test will add a ProxySql node.
+#
+function testAddKeepalived()
+{
+    local nodes
+
+    print_title "Adding a Keepalived Node"
+    begin_verbatim
+
+    #
+    # Adding ProxySql to the cluster.
+    #
+    nodes="keepalived://$PROXYSQL_NODE1_IP"
+    nodes+=";keepalived://$PROXYSQL_NODE2_IP"
+
+    mys9s cluster \
+        --add-node \
+        --cluster-name="$CLUSTER_NAME" \
+        --nodes="$nodes" \
+        --print-request \
+        --log \
+        --debug
+
+#        $LOG_OPTION \
+#        $DEBUG_OPTION 
+    
+    check_exit_code $?
 
     mys9s node --list --long
+    
+    end_verbatim
+
     return 0
+
     #
     #
     #
@@ -201,143 +280,14 @@ function testAddKeepalived()
     end_verbatim
 }
 
-function unregisterProxySql()
-{
-    local line
-    local retcode
-
-    print_title "Unregistering ProxySql Node"
-    cat <<EOF | paragraph
-  This test will unregister the ProxySql node. 
-EOF
-
-    begin_verbatim
-
-    #
-    # Unregister by the owner should be possible.
-    #
-    mys9s node \
-        --unregister \
-        --nodes="proxysql://$PROXYSQL_IP:6032"
-
-    check_exit_code_no_job $?
-
-    mys9s node --list --long
-    line=$(s9s node --list --long --batch | grep '^y')
-    if [ -z "$line" ]; then 
-        success "  o The ProxySql node is no longer part of he cluster, ok."
-    else
-        failure "The ProxySql is still there after unregistering the node."
-    fi
-
-    end_verbatim
-}
-
-function registerProxySql()
-{
-    local line
-    local retcode
-
-    print_title "Registering ProxySql Node"
-    cat <<EOF | paragraph
-  This test will register the ProxySql node that was previously unregistered.
-EOF
-
-    begin_verbatim
-   
-    #
-    # Registering the maxscale host here.
-    #
-    mys9s node \
-        --register \
-        --cluster-id=1 \
-        --nodes="proxysql://$PROXYSQL_IP" \
-        --log 
-
-    check_exit_code $?
-    
-    mys9s node --list --long
-    line=$(s9s node --list --long --batch | grep '^y')
-    if [ -n "$line" ]; then 
-        success "  o The ProxySql node is part of he cluster, ok."
-    else
-        warning "The ProxySql is not part of the cluster."
-        
-        mysleep 15
-        line=$(s9s node --list --long --batch | grep '^y')
-        if [ -n "$line" ]; then 
-            success "  o The ProxySql node is part of he cluster, ok."
-        else
-            failure "The ProxySql is not part of the cluster."
-        fi
-    fi
-
-    wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
-    end_verbatim
-}
-
-
-function testStopProxySql()
-{
-    print_title "Stopping ProxySQL Node"
-    begin_verbatim
-
-    mys9s container --stop --wait "$CONTAINER_NAME9"
-    check_exit_code $?
-
-    #
-    # Checking that the ProxySql goes into offline state.
-    #
-    print_title "Waiting ProxySql to go Off-line"
-    wait_for_node_state "$PROXYSQL_IP" "CmonHostOffLine"
-
-    if [ $? -ne 0 ]; then
-        failure "ProxySql $PROXYSQL_IP is not in CmonHostOffLine state"
-        mys9s node --list --long
-        mys9s node --stat $PROXYSQL_IP
-    else
-        success "  o ProxySql $PROXYSQL_IP is in CmonHostOffLine state, OK."
-        mys9s node --stat $PROXYSQL_IP
-    fi
-
-    end_verbatim
-}
-
-function testStartProxySql()
-{
-    #
-    #
-    #
-    print_title "Starting ProxySQL Node"
-    begin_verbatim
-
-    mys9s container --start --wait "$CONTAINER_NAME9"
-    check_exit_code $?
-
-    #
-    # Checking that the ProxySql goes into online state.
-    #
-    wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
-
-    if [ $? -ne 0 ]; then
-        failure "ProxySql $PROXYSQL_IP is not in CmonHostOnLine state."
-        mys9s node --list --long
-        mys9s node --stat $PROXYSQL_IP
-    else
-        success "  o ProxySql $PROXYSQL_IP is in CmonHostOnLine state, OK."
-        mys9s node --stat $PROXYSQL_IP
-    fi
-
-    end_verbatim
-}
-
 function destroyContainers()
 {
     print_title "Destroying Containers"
     begin_verbatim
     mys9s container --delete --wait "$CONTAINER_NAME1"
     mys9s container --delete --wait "$CONTAINER_NAME2"
-    mys9s container --delete --wait "$CONTAINER_NAME9"
+    mys9s container --delete --wait "$CONTAINER_NAME21"
+    mys9s container --delete --wait "$CONTAINER_NAME22"
     end_verbatim
 }
 
@@ -365,12 +315,9 @@ elif [ "$1" ]; then
 else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
+    runFunctionalTest testAddProxySql
     runFunctionalTest testAddKeepalived
-    #runFunctionalTest unregisterProxySql
-    #runFunctionalTest registerProxySql
-    #runFunctionalTest testStopProxySql
-    #runFunctionalTest testStartProxySql
-    runFunctionalTest destroyContainers
+    runFunctionalTest --force destroyContainers
 fi
 
 endTests

@@ -4895,6 +4895,9 @@ S9sRpcClient::addKeepalived(
     if (!nodeAddresses.empty())
         jobData["node_addresses"] = nodeAddresses;
 
+    jobData["eth_interface"] = "eth0";
+    jobData["virtual_ip"]    = "192.168.11.10";
+
     // The jobspec describing the command.
     jobSpec["command"]    = "keepalived";
     jobSpec["job_data"]   = jobData;
