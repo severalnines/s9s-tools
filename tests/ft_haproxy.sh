@@ -196,7 +196,7 @@ EOF
     mys9s cluster \
         --create-database \
         --cluster-name="$CLUSTER_NAME" \
-        --db-name="testdatabase" \
+        --db-name="testdatabase" 
     
     check_exit_code $?
 

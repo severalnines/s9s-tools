@@ -51,7 +51,6 @@ SUPPORTED TESTS:
   o testCreateCluster  Creates a cluster.
   o testCreateDatabase Creates some accounts and databases (pipas:password).
   o testAddProxySql    Adds a ProxySQL node.
-  o testConnect01      Connects ProxySql with proxydemo.
   o testConnect02      Connects ProxySql with pipas.
   o testUploadData     Uploads data through the ProxySQL server as proxydemo.
 
@@ -384,54 +383,6 @@ function testAddProxySql1()
     end_verbatim
 }
 
-function testConnect01()
-{
-    local sql_host="$PROXY_SERVER"
-    local sql_port="6033"
-    local db_name="proxydemo"
-    local sql_user="proxydemo"
-    local sql_password="proxydemo"
-    local reply
-
-    print_title "Testing Connection ${sql_user}@${sql_host}."
-    begin_verbatim
-
-    #
-    # Executing a simple SQL statement using the account we created.
-    #
-cat <<EOF
-        mysql \
-            --disable-auto-rehash \
-            --batch \
-            -h$sql_host \
-            -P$sql_port \
-            -u$sql_user \
-            -p$sql_password \
-            $db_name \
-            -e "SELECT 41+1"
-EOF
-
-    reply=$(\
-            mysql \
-                --disable-auto-rehash \
-                --batch \
-                -h$sql_host \
-                -P$sql_port \
-                -u$sql_user \
-                -p$sql_password \
-                $db_name \
-                -e "SELECT 41+1" \
-        | \
-            tail -n +2 \
-        )
-    
-    if [ "$reply" != "42" ]; then
-        failure "Failed SQL statement on ${sql_user}@${sql_host}: '$reply'."
-    fi
-
-    end_verbatim
-}
-
 function testConnect02()
 {
     local sql_host="$PROXY_SERVER"
@@ -480,48 +431,6 @@ EOF
     end_verbatim
 }
 
-function testUploadData()
-{
-    local sql_server
-    local db_name="proxydemo"
-    local user_name="proxydemo"
-    local password="proxydemo"
-    
-    local reply
-    local count=0
-
-    print_title "Restoring mysqldump file."
-    #sql_server="$FIRST_ADDED_NODE"
-    sql_server="$PROXY_SERVER"
-
-    #
-    # Here we upload some tables. This part needs test data...
-    #
-    for file in /home/pipas/Desktop/stuff/tests/*.sql.gz; do
-        if [ ! -f "$file" ]; then
-            continue
-        fi
-
-        printf "%'6d " "$count"
-        printf "$XTERM_COLOR_RED$file$TERM_NORMAL"
-        printf "\n"
-        pv $file | \
-            gunzip | \
-            mysql --batch -h$PROXY_SERVER -P6033 -u$user_name -p$password $db_name
-
-        exitCode=$?
-        if [ "$exitCode" -ne 0 ]; then
-            failure "Exit code is $exitCode while uploading data."
-            break
-        fi
-
-        let count+=1
-        if [ "$count" -gt 99 ]; then
-            break
-        fi
-    done
-}
-
 #
 # Running the requested tests.
 #
@@ -539,7 +448,6 @@ if [ "$OPTION_INSTALL" ]; then
         runFunctionalTest testCreateCluster
         runFunctionalTest testCreateDatabase
         runFunctionalTest testAddProxySql
-        runFunctionalTest testAddProxySql1
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -550,9 +458,7 @@ else
     runFunctionalTest testCreateCluster
     runFunctionalTest testCreateDatabase
     runFunctionalTest testAddProxySql
-    runFunctionalTest testConnect01
     runFunctionalTest testConnect02
-    runFunctionalTest testUploadData
 fi
 
 endTests
