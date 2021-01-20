@@ -284,7 +284,7 @@ function testAddKeepalived()
 {
     local nodes
 
-    print_title "Adding a Keepalived Node"
+    print_title "Adding Keepalived Nodes"
     begin_verbatim
 
     #
