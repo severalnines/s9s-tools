@@ -318,27 +318,101 @@ function testAddKeepalived()
 
     end_verbatim
 
-    return 0
+    #
+    #
+    #
+#    print_subtitle "Checking Keepalived State"
+#    begin_verbatim
+#
+#    PROXYSQL_IP=$(proxysql_node_name)
+#
+#    wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
+#    if [ $? -ne 0 ]; then
+#        failure "ProxySql $PROXYSQL_IP is not in CmonHostOnline state"
+#    fi
+#
+#    end_verbatim
+}
 
-    #
-    #
-    #
-    print_subtitle "Checking Keepalived State"
+function unregisterKeepalived()
+{
+    local line
+    local retcode
+
+    print_title "Unregistering Keepalived Node"
+    cat <<EOF | paragraph
+  This test will unregister the Keepalived node. 
+EOF
+
     begin_verbatim
 
-    PROXYSQL_IP=$(proxysql_node_name)
+    #
+    # Unregister by the owner should be possible.
+    #
+    mys9s node \
+        --unregister \
+        --print-request \
+        --nodes="keepalived://$PROXYSQL_NODE1_IP:112"
 
-    wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
-    if [ $? -ne 0 ]; then
-        failure "ProxySql $PROXYSQL_IP is not in CmonHostOnline state"
-        mys9s node --list --long
-        mys9s node --stat $PROXYSQL_IP
-    else
-        mys9s node --stat $PROXYSQL_IP
-    fi
+    check_exit_code_no_job $?
+    mys9s node --list --long
+
+#    line=$(s9s node --list --long --batch | grep '^y')
+#    if [ -z "$line" ]; then 
+#        success "  o The ProxySql node is no longer part of he cluster, ok."
+#    else
+#        failure "The ProxySql is still there after unregistering the node."
+#    fi
 
     end_verbatim
 }
+
+function registerKeepalived()
+{
+    local line
+    local retcode
+
+    print_title "Registering Keepalived Node"
+    cat <<EOF | paragraph
+  This test will register the Keepalived node that was previously unregistered.
+EOF
+
+    begin_verbatim
+   
+    #
+    # Registering the keepalived host here.
+    #
+    mys9s node \
+        --register \
+        --cluster-id=1 \
+        --print-request \
+        --nodes="keepalived://$PROXYSQL_NODE1_IP" \
+        --virtual-ip="192.168.42.10" \
+        --log 
+
+    check_exit_code $?
+    mys9s node --list --long
+    
+#    mys9s node --list --long
+#    line=$(s9s node --list --long --batch | grep '^y')
+#    if [ -n "$line" ]; then 
+#        success "  o The ProxySql node is part of he cluster, ok."
+#    else
+#        warning "The ProxySql is not part of the cluster."
+#        
+#        mysleep 15
+#        line=$(s9s node --list --long --batch | grep '^y')
+#        if [ -n "$line" ]; then 
+#            success "  o The ProxySql node is part of he cluster, ok."
+#        else
+#            failure "The ProxySql is not part of the cluster."
+#        fi
+#    fi
+#
+#    wait_for_node_state "$PROXYSQL_IP" "CmonHostOnline"
+    end_verbatim
+}
+
 
 function destroyContainers()
 {
@@ -378,6 +452,8 @@ else
     runFunctionalTest testAddProxySql
     runFunctionalTest testAddKeepalivedFail
     runFunctionalTest testAddKeepalived
+    runFunctionalTest unregisterKeepalived
+    runFunctionalTest registerKeepalived
     runFunctionalTest --force destroyContainers
 fi
 

@@ -3528,6 +3528,9 @@ S9sRpcClient::registerHost()
     {
         command = "keepalived";
         title   = "Register Keepalived Node";
+    
+        jobData["eth_interface"] = options->getString("eth_interface");
+        jobData["virtual_ip"]    = options->getString("virtual_ip");
     } else {
         command = protocol;
         title   = "Register Node";
@@ -4876,6 +4879,10 @@ S9sRpcClient::addKeepalived(
     jobData["action"]   = "setupKeepalived";
     jobData["nodes"]    = nodesField(keepalivedNodes);        
     
+    // These are for keepalived.
+    jobData["eth_interface"] = options->getString("eth_interface");
+    jobData["virtual_ip"]    = options->getString("virtual_ip");
+    
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
         int       port;
@@ -4895,9 +4902,6 @@ S9sRpcClient::addKeepalived(
 
     if (!nodeAddresses.empty())
         jobData["node_addresses"] = nodeAddresses;
-
-    jobData["eth_interface"] = options->getString("eth_interface");
-    jobData["virtual_ip"]    = options->getString("virtual_ip");
 
     // The jobspec describing the command.
     jobSpec["command"]    = "keepalived";

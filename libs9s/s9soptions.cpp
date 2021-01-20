@@ -6565,6 +6565,9 @@ S9sOptions::readOptionsNode(
         { "graph",            required_argument, 0, OptionGraph           }, 
         { "begin",            required_argument, 0, OptionBegin           },
         { "end",              required_argument, 0, OptionEnd             },
+        
+        { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
+        { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
         { 0, 0, 0, 0 }
     };
@@ -6860,6 +6863,16 @@ S9sOptions::readOptionsNode(
             case OptionEnd:
                 // --end=DATE
                 m_options["end"] = optarg;
+                break;
+            
+            case OptionVirtualIp:
+                // --virtual-ip=IP
+                m_options["virtual_ip"] = optarg;
+                break;
+            
+            case OptionEthInterface:
+                // --eth-interface=INTERFACE
+                m_options["eth_interface"] = optarg;
                 break;
 
             case '?':
