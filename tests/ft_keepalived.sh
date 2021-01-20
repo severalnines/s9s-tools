@@ -228,6 +228,58 @@ function testAddProxySql()
 #
 # This test will add a ProxySql node.
 #
+function testAddKeepalivedFail()
+{
+    local nodes
+
+    print_title "Trying to a Keepalived Node"
+    begin_verbatim
+
+    nodes="keepalived://$PROXYSQL_NODE1_IP"
+    nodes+=";keepalived://$PROXYSQL_NODE2_IP"
+
+    #
+    # Trying to add ProxySql to the cluster with no eth interface.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-name="$CLUSTER_NAME" \
+        --nodes="$nodes" \
+        --virtual-ip="192.168.42.10" \
+        --print-request \
+        --log --debug
+
+    if [ $? -eq 0 ]; then
+        failure "This job should have failed."
+    else
+        success "  o Job failed, ok."
+    fi
+    
+    #
+    # Trying to add ProxySql to the cluster with no virtual IP address.
+    #
+    mys9s cluster \
+        --add-node \
+        --cluster-name="$CLUSTER_NAME" \
+        --nodes="$nodes" \
+        --eth-interface="eth0" \
+        --print-request \
+        --log --debug
+
+    if [ $? -eq 0 ]; then
+        failure "This job should have failed."
+    else
+        success "  o Job failed, ok."
+    fi
+
+    end_verbatim
+
+    return 0
+}
+
+#
+# This test will add a ProxySql node.
+#
 function testAddKeepalived()
 {
     local nodes
@@ -245,9 +297,10 @@ function testAddKeepalived()
         --add-node \
         --cluster-name="$CLUSTER_NAME" \
         --nodes="$nodes" \
+        --eth-interface="eth0" \
+        --virtual-ip="192.168.43.10" \
         --print-request \
-        --log \
-        --debug
+        --log --debug
 
 #        $LOG_OPTION \
 #        $DEBUG_OPTION 
@@ -255,7 +308,14 @@ function testAddKeepalived()
     check_exit_code $?
 
     mys9s node --list --long
+    mys9s node --stat 
     
+    mysleep 60
+    
+    mys9s node --list --long
+    mys9s node --stat 
+
+
     end_verbatim
 
     return 0
@@ -316,6 +376,7 @@ else
     runFunctionalTest registerServer
     runFunctionalTest createCluster
     runFunctionalTest testAddProxySql
+    runFunctionalTest testAddKeepalivedFail
     runFunctionalTest testAddKeepalived
     runFunctionalTest --force destroyContainers
 fi

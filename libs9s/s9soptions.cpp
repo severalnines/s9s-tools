@@ -382,6 +382,9 @@ enum S9sOptionType
     OptionSslCertFile,
     OptionSslKeyFile,
     OptionSslCaFile,
+
+    OptionVirtualIp,
+    OptionEthInterface,
 };
 
 /**
@@ -11487,9 +11490,9 @@ S9sOptions::readOptionsCluster(
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
-        { "available-upgrades",  no_argument,       0, OptionAvailableUpgrades  },
+        { "available-upgrades",  no_argument,    0, OptionAvailableUpgrades  },
         { "upgrade-cluster",  no_argument,       0, OptionUpgradeCluster  },
-        { "check-pkg-upgrades",  no_argument,       0, OptionCheckPkgUpgrades  },
+        { "check-pkg-upgrades",  no_argument,    0, OptionCheckPkgUpgrades  },
         { "import-sql-users", no_argument,       0, OptionImportSqlUsers  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
@@ -11605,6 +11608,9 @@ S9sOptions::readOptionsCluster(
         { "ssl-ca",              required_argument, 0, OptionSslCaFile     },
         { "ssl-cert",            required_argument, 0, OptionSslCertFile   },
         { "ssl-key",             required_argument, 0, OptionSslKeyFile    },
+        
+        { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
+        { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
         // Options for remove cluster/node.
         { "uninstall",           no_argument,    0, OptionUninstall        },
@@ -12274,6 +12280,16 @@ S9sOptions::readOptionsCluster(
             case OptionSslKeyFile:
                 // --ssl-key
                 m_options["ssl_key"] = optarg;
+                break;
+
+            case OptionVirtualIp:
+                // --virtual-ip=IP
+                m_options["virtual_ip"] = optarg;
+                break;
+            
+            case OptionEthInterface:
+                // --eth-interface=INTERFACE
+                m_options["eth_interface"] = optarg;
                 break;
 
             case '?':

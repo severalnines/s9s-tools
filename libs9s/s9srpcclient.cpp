@@ -4850,6 +4850,7 @@ bool
 S9sRpcClient::addKeepalived(
         const S9sVariantList &hosts)
 {
+    S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
@@ -4895,8 +4896,8 @@ S9sRpcClient::addKeepalived(
     if (!nodeAddresses.empty())
         jobData["node_addresses"] = nodeAddresses;
 
-    jobData["eth_interface"] = "eth0";
-    jobData["virtual_ip"]    = "192.168.11.10";
+    jobData["eth_interface"] = options->getString("eth_interface");
+    jobData["virtual_ip"]    = options->getString("virtual_ip");
 
     // The jobspec describing the command.
     jobSpec["command"]    = "keepalived";
