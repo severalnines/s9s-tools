@@ -122,7 +122,7 @@ ldapMemberAttributes   = "memberUid"
 
 [mapping1]
 ldapGroupId            = "ldapgroup"
-cmonGroupName          = "ldapgroup"
+cmonGroupName          = "myldapgroup"
 EOF
 
     return 0
@@ -242,7 +242,7 @@ function emit_ldap_settings_json()
     "ldapServerUri": "$ldap_url",
     "ldapUserSearchRoot": "dc=homelab,dc=local",
     "groupMappings": [ {
-        "cmonGroupName": "ldapgroup",
+        "cmonGroupName": "myldapgroup",
         "ldapGroupId": "ldapgroup",
         "sectionName": "mapping1"
       }  ],
@@ -321,7 +321,7 @@ EOF
         "^ldapEmailAttributes = \"mail\"" \
         "^ldapMemberAttributes = \"memberUid\"" \
         "^ldapGroupId   = \"ldapgroup\"" \
-        "^cmonGroupName = \"ldapgroup\"" \
+        "^cmonGroupName = \"myldapgroup\"" \
         "^ldapUsernameAttributes"
 
     end_verbatim
@@ -806,7 +806,7 @@ EOF
         ".ldap_configuration.ldapSettings.ldapMemberAttributes"    "memberUid" \
         ".ldap_configuration.ldapSettings.ldapRealnameAttributes"  "displayName,cn" \
         ".ldap_configuration.ldapSettings.ldapUsernameAttributes"  "cn" \
-        ".ldap_configuration.groupMappings[0].cmonGroupName"  "ldapgroup" \
+        ".ldap_configuration.groupMappings[0].cmonGroupName"  "myldapgroup" \
         ".ldap_configuration.groupMappings[0].ldapGroupId"  "ldapgroup"
 
     end_verbatim
@@ -885,7 +885,7 @@ EOF
         --full-name    "firstname lastname" \
         --email        "username@domain.hu" \
         --cdt-path     "/" \
-        --group        "ldapgroup" \
+        --group        "myldapgroup" \
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
 
@@ -929,7 +929,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testGetLdapConfig1
 
-    runFunctionalTest testCreateLdapGroup
+    runFunctionalTest testCreateLdapGroup --group-name myldapgroup
 
     # This is for reference when debugging.
     #runFunctionalTest testCreateLdapConfig

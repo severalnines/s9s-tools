@@ -170,7 +170,7 @@ function testCmonDbUser()
 }
 
 #
-# Checking the successful authentication of an LDAP user.
+# 
 #
 function testLdapUserFail1()
 {
