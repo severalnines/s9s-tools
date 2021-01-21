@@ -4293,5 +4293,43 @@ function S9S_LINES_CONTAINS()
     return $retval
 }
 
+function S9S_FILE_CONTAINS()
+{
+    local filename
+    local lines
+    local retval=0
+
+    filename="$1"
+    shift
+
+    if [ -n "$filename" ]; then
+        success "  o Checking file '$filename', ok"
+    else
+        failure "S9S_FILE_CONTAINS(): Filename is not provided."
+    fi
+
+    if [ -f "$filename" ]; then
+        success "  o File '$filename' exists, ok."
+        lines=$(cat "$filename");
+    else
+        failure "File '$filename' was not found."
+    fi
+
+
+    while [ -n "$1" ]; do
+        if echo "$lines" | grep -q "$1"; then
+            success "  o Text '$1' found, OK."
+        else
+            failure "Line '$1' was not found."
+            retval=1
+        fi
+
+        shift
+    done
+
+    return $retval
+}
+
+
 trap clean_up_after_test EXIT
 

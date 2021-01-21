@@ -306,6 +306,23 @@ EOF
             --color=always
 
     check_exit_code_no_job $?
+
+    cat $OPTION_LDAP_CONFIG_FILE | print_ini_file
+    S9S_FILE_CONTAINS "$OPTION_LDAP_CONFIG_FILE" \
+        "^enabled = true" \
+        "^ldapServerUri = \"ldap://ldap.homelab.local:389\"" \
+        "^ldapAdminUser = \"cn=admin,dc=homelab,dc=local\"" \
+        "^ldapAdminPassword = \"p\"" \
+        "^ldapUserSearchRoot = \"dc=homelab,dc=local\"" \
+        "^ldapGroupSearchRoot = \"dc=homelab,dc=local\"" \
+        "^ldapUsernameAttributes = \"cn\"" \
+        "^ldapRealnameAttributes = \"displayName,cn\"" \
+        "^ldapEmailAttributes = \"mail\"" \
+        "^ldapMemberAttributes = \"memberUid\"" \
+        "^ldapGroupId   = \"ldapgroup\"" \
+        "^cmonGroupName = \"ldapgroup\"" \
+        "^ldapUsernameAttributes"
+
     end_verbatim
 }
 
