@@ -281,7 +281,8 @@ function testSetLdapConfigEnabled()
     print_title "Setting LDAP Configuration"
     cat <<EOF | paragraph
   This test sets the LDAP configuration using the setLdapConfig call. The exit
-  code should show that the call succeeded.
+  code should show that the call succeeded and this LDAP configuration should
+  actually work as it is checked in the next test.
 EOF
     
     begin_verbatim
