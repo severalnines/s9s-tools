@@ -1,12 +1,22 @@
 #
 # Copyright (C) 2016-2018 severalnines.com
 #
+AM_LDFLAGS   = ""
 
 AM_CPPFLAGS  = -Wall -Werror -fno-strict-aliasing
 AM_CPPFLAGS += -std=c++0x
 AM_CPPFLAGS += -Wno-deprecated-declarations
 AM_CPPFLAGS += -fPIC -pipe
-MY_LDFLAGS = -Wl,--whole-archive libs9s.a -Wl,--no-whole-archive
+#MY_LDFLAGS = -Wl,--whole-archive libs9s.a -Wl,--no-whole-archive
+
+if COND_GCOV
+   AM_CPPFLAGS += -fprofile-arcs -ftest-coverage --no-inline
+endif
+
+if COND_GCOV
+    AM_LDFLAGS += -lgcov -coverage
+endif
+
 lib_LIBRARIES = libs9s.a
 
 #
