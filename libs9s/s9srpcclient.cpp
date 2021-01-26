@@ -3394,66 +3394,6 @@ S9sRpcClient::registerGaleraCluster(
     return executeRequest(uri, request);
 }
 
-#if 0
-// Deprecated, a generic method will be used. We just keep this code around
-// until the other version is tested.
-bool
-S9sRpcClient::registerHost()
-{
-    S9sOptions    *options      = S9sOptions::instance();
-    S9sVariantList hosts        = options->nodes();
-    bool           hasMaxScale  = false;
-    bool           hasPgBouncer = false;
-    bool           hasPBMAgent  = false;
-
-    if (hosts.empty())
-    {
-        PRINT_ERROR(
-                "Node list is empty while registering node.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    } else if (hosts.size() > 1u)
-    {
-        PRINT_ERROR("Registering nodes can only be done one-by-one.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-    
-    for (uint idx = 0u; idx < hosts.size(); ++idx)
-    {
-        S9sString protocol = hosts[idx].toNode().protocol().toLower();
-
-        if (protocol == "maxscale")
-            hasMaxScale = true;
-
-	    if (protocol == "pgbouncer")
-            hasPgBouncer = true;
-
-    	if (protocol == "pbmagent")
-            hasPBMAgent = true;
-    }
-   
-    if (hasMaxScale)
-    {
-        S9sNode node = hosts[0u].toNode();
-        return registerMaxScaleHost(node);
-    } else if (hasPgBouncer) {
-        S9sNode node = hosts[0u].toNode();
-        return registerPgBouncerHost(node);
-    } else if (hasPBMAgent) {
-        S9sNode node = hosts[0u].toNode();
-        return registerPBMAgentHost(node);
-    } else {
-        PRINT_ERROR("Registering this type of node is not supported.");
-        return false;
-    }
-
-    return true;
-}
-#else
 /**
  * This method will create a new job that will register a host into a cluster. 
  *
@@ -3545,143 +3485,6 @@ S9sRpcClient::registerHost()
 
     // The job instance describing how the job will be executed.
     job["title"]          = title;
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-    request["cluster_id"] = clusterId;
-
-    return executeRequest(uri, request);
-}
-#endif
-
-// Deprecated, will be removed.
-bool
-S9sRpcClient::registerMaxScaleHost(
-        const S9sNode &node)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
-    S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    S9sVariantList  nodes;
-
-    nodes << node;
-    if (options->hasClusterIdOption())
-    {
-        clusterId = options->clusterId();
-    } else {
-        PRINT_ERROR("Cluster ID is missing.");
-        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(nodes);
-    
-    // The jobspec describing the command.
-    jobSpec["command"]    = "maxscale";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Register MaxScale Node";
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-    request["cluster_id"] = clusterId;
-
-    return executeRequest(uri, request);
-}
-
-// Deprecated, will be removed.
-bool
-S9sRpcClient::registerPgBouncerHost(
-        const S9sNode &node)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
-    S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    S9sVariantList  nodes;
-
-    nodes << node;
-    if (options->hasClusterIdOption())
-    {
-        clusterId = options->clusterId();
-    } else {
-        PRINT_ERROR("Cluster ID is missing.");
-        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(nodes);
-    
-    //jobData["server_address"] = node.hostName();
-    
-    // The jobspec describing the command.
-    jobSpec["command"]    = "pgbouncer";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Register PgBouncer Node";
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-    request["cluster_id"] = clusterId;
-
-    return executeRequest(uri, request);
-}
-
-// Deprecated, will be removed.
-bool
-S9sRpcClient::registerPBMAgentHost(
-        const S9sNode &node)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
-    S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    S9sVariantList  nodes;
-
-    nodes << node;
-    if (options->hasClusterIdOption())
-    {
-        clusterId = options->clusterId();
-    } else {
-        PRINT_ERROR("Cluster ID is missing.");
-        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(nodes);
-    
-    //jobData["server_address"] = node.hostName();
-    
-    // The jobspec describing the command.
-    jobSpec["command"]    = "pbmagent";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Register PBMAgent Node";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -9664,6 +9467,12 @@ S9sRpcClient::addCredentialsToJobData(
         jobData["key_file"]    = options->sslKeyFile();
 }
 
+/**
+ * \returns The "job_data" structure or an empty map if an error happened.
+ *
+ * This method is used to create the "job_data" part of the request for requests
+ * that needs exactly one container to be passed.
+ */
 S9sVariantMap 
 S9sRpcClient::composeJobDataOneContainer() const
 {

@@ -564,6 +564,7 @@ class S9sOptions
         bool isStringMatchToServerOption(const S9sString &theString) const;
         bool isStringMatchToClientOption(const S9sString &theString) const;
 
+        void addExtraArgument(const S9sString &argument);
         uint nExtraArguments() const;
         S9sVariantList extraArguments() const;
         S9sString extraArgument(uint idx);

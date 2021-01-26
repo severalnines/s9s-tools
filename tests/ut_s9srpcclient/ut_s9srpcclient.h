@@ -32,8 +32,38 @@ class UtS9sRpcClient : public S9sUnitTest
         virtual bool finalizeRunTestCase();
 
     protected:
+        bool testCreate();
         bool testComposeRequest();
         bool testComposeJob();
+        bool testGetNextMaintenance();
+        bool testGetSqlProcesses();
+        bool testGetTopQueries();
+        bool testGetDatabases();
+        bool testGetTree();
+        bool testGetClusterConfig();
+        bool testPingController();
+        bool testGetCpuInfo();
+        bool testGetCpuStats();
+        bool testGetSqlStats();
+        bool testGetMemStats();
+        bool testGetMemoryStats();
+        bool testGetRunningProcesses();
+        bool testGetJobInstances();
+        bool testKillJobInstance();
+        bool testCloneJobInstance();
+
+        bool testCreateContainer();
+        bool testDeleteContainer();
+        bool testStartContainer();
+        bool testStopContainer();
+
+        bool testCreateCluster01();
+        bool testCreateCluster02();
+        bool testCreateCluster03();
+        bool testCreateCluster04();
+        bool testCreateCluster05();
+        bool testCreateCluster06();
+
         bool testGetAllClusterInfo();
         bool testGetCluster();
         bool testPing();

@@ -2885,6 +2885,10 @@ S9sOptions::volumes() const
     return retval;
 }
 
+/**
+ * Example:
+ * --volumes="vol1:5:hdd;vol2:10:hdd"
+ */
 bool
 S9sOptions::appendVolumes(
         const S9sString &stringRep)
@@ -5002,6 +5006,13 @@ S9sOptions::isStringMatchToClientOption(
         return true;
 
     return false;
+}
+
+void
+S9sOptions::addExtraArgument(
+        const S9sString &argument)
+{
+    m_extraArguments << argument;
 }
 
 /**
