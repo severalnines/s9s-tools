@@ -1,3 +1,10 @@
+s9s-tools (1.8.20210126-release1) UNRELEASED; urgency=medium
+
+  * Register (ProxySQL,Keepalived,HAProxy) host fixes
+  * Other small fixes + lots of tests updated and added
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 26 Jan 2021 11:55:36 +0100
+
 s9s-tools (1.8.20201113-release1) UNRELEASED; urgency=medium
 
   * Added s9s cluster --sync option (to sync backend with frontend database)
