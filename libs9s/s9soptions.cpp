@@ -172,7 +172,6 @@ enum S9sOptionType
     OptionAvailableUpgrades,
     OptionUpgradeCluster,
     OptionCheckPkgUpgrades,
-    OptionImportSqlUsers,
     OptionListDatabases,
     OptionListFiles,
     OptionAccount,
@@ -4860,16 +4859,6 @@ S9sOptions::isCheckPkgUpgradesRequested() const
 }
 
 /**
- * \returns true if the --check-pkg-upgrades command line option was provided when
- *   the program was started.
- */
-bool
-S9sOptions::isImportSqlUsersRequested() const
-{
-    return getBool("import_sql_users");
-}
-
-/**
  * \returns true if the --list-databases command line option was provided when
  *   the program was started.
  */
@@ -9340,9 +9329,6 @@ S9sOptions::checkOptionsCluster()
 
     if (isCheckPkgUpgradesRequested())
         countOptions++;
-
-    if (isImportSqlUsersRequested())
-        countOptions++;
     
     if (isListDatabasesRequested())
         countOptions++;
@@ -11517,7 +11503,6 @@ S9sOptions::readOptionsCluster(
         { "available-upgrades",  no_argument,    0, OptionAvailableUpgrades  },
         { "upgrade-cluster",  no_argument,       0, OptionUpgradeCluster  },
         { "check-pkg-upgrades",  no_argument,    0, OptionCheckPkgUpgrades  },
-        { "import-sql-users", no_argument,       0, OptionImportSqlUsers  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
         { "sync",             no_argument,       0, OptionSync            },
@@ -11849,11 +11834,6 @@ S9sOptions::readOptionsCluster(
             case OptionCheckPkgUpgrades:
                 // --check-pkg-upgrades
                 m_options["check_pkg_upgrades"] = true;
-                break;
-
-            case OptionImportSqlUsers:
-                // --import-sql-users
-                m_options["import_sql_users"] = true;
                 break;
             
             case OptionListDatabases:
