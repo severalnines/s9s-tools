@@ -1,0 +1,37 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:17:24.448Z",
+  "request_created": "2021-02-08T09:17:24.436Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:17:24.447Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 2,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "reports": [
+    {
+      "class_name": "CmonReport",
+      "cluster_id": 1,
+      "created": "2021-02-08T09:17:23.000Z",
+      "days": 7,
+      "owner": "pipas",
+      "path": "/tmp/cmon/unittest/1/galera/cmon-reports/testreport_2021-02-08_091723.html",
+      "recipients": "laszlo@severalnines.com",
+      "report_id": 1,
+      "report_type": "testreport",
+      "title": "Simple Test Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "cluster_id": 1,
+      "created": "2021-02-08T09:17:24.000Z",
+      "days": 7,
+      "owner": "pipas",
+      "path": "/tmp/cmon/unittest/1/galera/cmon-reports/report1_2021-02-08_091723.html",
+      "recipients": "laszlo@severalnines.com",
+      "report_id": 2,
+      "report_type": "report1",
+      "title": "System Report"
+    }
+  ]
+}

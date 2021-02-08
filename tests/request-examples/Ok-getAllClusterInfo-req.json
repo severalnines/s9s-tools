@@ -1,0 +1,8 @@
+{
+  "class_name": "CmonRpcRequest",
+  "operation": "getAllClusterInfo",
+  "request_created": "2021-02-08T11:22:30.993Z",
+  "request_id": 3,
+  "with_hosts": true,
+  "with_sheet_info": true
+}

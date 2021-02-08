@@ -1,0 +1,18 @@
+{
+  "operation": "createJobInstance",
+  "request_created": "2021-02-08T11:49:57.805Z",
+  "request_id": 2,
+  "job": {
+    "class_name": "CmonJobInstance",
+    "title": "Delete Container",
+    "job_spec": {
+      "command": "delete_container",
+      "job_data": {
+        "container": {
+          "class_name": "CmonContainer",
+          "alias": "ft_containers_lxc_13_37123"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "effective_privileges": "rwx",
+  "reply_received": "2021-02-08T09:08:18.462Z",
+  "request_created": "2021-02-08T09:08:18.454Z",
+  "request_id": 2,
+  "request_processed": "2021-02-08T09:08:18.461Z",
+  "request_status": "Ok",
+  "request_user_id": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ],
+  "ldap_configuration": {
+    "enabled": false,
+    "ldapAdminPassword": null,
+    "ldapAdminUser": null,
+    "ldapGroupSearchRoot": null,
+    "ldapServerUri": null,
+    "ldapUserSearchRoot": null,
+    "defaults": {
+      "enabled": false,
+      "ldapAdminPassword": "",
+      "ldapAdminUser": "CN=Administrator,CN=Users,DC=ldap,DC=mydomain,DC=com",
+      "ldapGroupSearchRoot": "CN=Groups,OU=IT,DC=ldap,DC=mydomain,DC=com",
+      "ldapServerUri": "ldaps://ldap.mydomain.com:686",
+      "ldapUserSearchRoot": "CN=Users,DC=ldap,DC=mydomain,DC=com",
+      "groupMappings": [  ],
+      "ldapSettings": {
+        "ldapEmailAttributes": "mail,userPrincipalName",
+        "ldapGroupClassName": "",
+        "ldapGroupIdAttributes": "dn,uid",
+        "ldapGroupNameAttribute": "cn",
+        "ldapMemberAttributes": "member,memberUid",
+        "ldapNetworkTimeout": 5,
+        "ldapProtocolVersion": 3,
+        "ldapQueryTimeLimit": 5,
+        "ldapRealnameAttributes": "cn,displayName",
+        "ldapUserClassName": "objectclass=*",
+        "ldapUsernameAttributes": "uid,sAMAccountName"
+      },
+      "security": {
+        "caCertFile": "/etc/ssl/certs/ldap-ca.crt",
+        "certFile": "/etc/ssl/certs/ldap.crt",
+        "keyFile": "/etc/ssl/certs/ldap.pem"
+      }
+    },
+    "groupMappings": [  ],
+    "ldapSettings": {
+      "ldapEmailAttributes": null,
+      "ldapGroupClassName": null,
+      "ldapGroupIdAttributes": null,
+      "ldapGroupNameAttribute": null,
+      "ldapMemberAttributes": null,
+      "ldapNetworkTimeout": null,
+      "ldapProtocolVersion": null,
+      "ldapQueryTimeLimit": null,
+      "ldapRealnameAttributes": null,
+      "ldapUserClassName": null,
+      "ldapUsernameAttributes": null
+    },
+    "security": {
+      "caCertFile": null,
+      "certFile": null,
+      "keyFile": null
+    }
+  }
+}

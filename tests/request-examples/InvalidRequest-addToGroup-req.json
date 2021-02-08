@@ -1,0 +1,11 @@
+{
+  "group_name": "admins",
+  "operation": "addToGroup",
+  "replace_primary_group": false,
+  "request_created": "2021-02-08T09:06:56.227Z",
+  "request_id": 3,
+  "user": {
+    "class_name": "CmonUser",
+    "user_name": "sisko"
+  }
+}

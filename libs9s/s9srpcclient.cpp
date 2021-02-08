@@ -9868,10 +9868,16 @@ S9sRpcClient::doExecuteRequest(
             m_priv->m_authenticated = false;
     }
 
+    saveRequestAndReply(request, m_priv->m_reply);
     //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));
     return true;
 }
 
+/**
+ * \param request The request to print out.
+ *
+ * This method is made for printing out the RPC requests for debugging.
+ */
 void
 S9sRpcClient::printRequestForDebug(
         S9sVariantMap &request)
@@ -9880,6 +9886,7 @@ S9sRpcClient::printRequestForDebug(
     bool            isBatch = options->isBatchRequested();
     bool     isPrintRequest = options->isJsonRequestRequested();
 
+    // We print out the requests only if this environment variable is set.
     if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL)
 	    isPrintRequest = true;
 
@@ -9892,6 +9899,48 @@ S9sRpcClient::printRequestForDebug(
             format = format | S9sFormatColor;
 
         ::fprintf(stderr, "%s\n", STR(request.toJsonString(format)));
+    }
+}
+
+void 
+S9sRpcClient::saveRequestAndReply(
+        const S9sVariantMap &request,
+        const S9sVariantMap &reply) const
+{
+    S9sString directory = getenv("S9S_DEBUG_SAVE_REQUEST_EXAMPLES");
+
+    if (!directory.empty())
+    {
+        S9sString operation, status, content;
+        S9sString fileName;
+        S9sFile   file;
+
+        if (request.contains("operation"))
+            operation = request.at("operation").toString();
+        
+        if (reply.contains("request_status"))
+            status = reply.at("request_status").toString();
+
+        if (operation.empty())
+            operation = "noOperation";
+
+        if (status.empty())
+            status = "NoStatus";
+
+        fileName.sprintf("%s/%s-%s-req.json", 
+                STR(directory), STR(status), STR(operation));
+        file = S9sFile(fileName);
+        content = request.toJsonString(S9sFormatIndent);
+        if (!file.writeTxtFile(content))
+        {
+            S9S_WARNING("ERROR: %s", STR(file.errorString()));
+        }
+
+        fileName.sprintf("%s/%s-%s-rep.json", 
+                STR(directory), STR(status), STR(operation));
+        file = S9sFile(fileName);
+        content = reply.toJsonString(S9sFormatIndent);
+        file.writeTxtFile(content);
     }
 }
 

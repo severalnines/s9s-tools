@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "error_string": "Cluster was not found.",
+  "reply_received": "2021-02-08T09:17:25.199Z",
+  "request_created": "2021-02-08T09:17:25.182Z",
+  "request_id": 2,
+  "request_processed": "2021-02-08T09:17:25.198Z",
+  "request_status": "InvalidRequest",
+  "request_user_id": 6,
+  "debug_messages": [ "RPC V2 authenticated user is 'grumio'."  ]
+}

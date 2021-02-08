@@ -1,0 +1,7 @@
+{
+  "operation": "checkAccess",
+  "path": "/",
+  "privileges": "rwx",
+  "request_created": "2021-02-08T11:19:11.485Z",
+  "request_id": 3
+}

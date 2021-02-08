@@ -1,0 +1,12 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T11:22:57.856Z",
+  "request_created": "2021-02-08T11:22:57.846Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T11:22:57.855Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 0,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "maintenance_records": [  ]
+}

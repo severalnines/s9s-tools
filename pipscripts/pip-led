@@ -12,6 +12,17 @@ OPTION_CHANNEL_RED=""
 OPTION_CHANNEL_BLUE=""
 OPTION_FLASH=""
 
+LINE1_OLD=""
+LINE2_OLD=""
+LINE3_OLD=""
+LINE4_OLD=""
+
+LINE1_NEW=""
+LINE2_NEW=""
+LINE3_NEW=""
+LINE4_NEW=""
+
+
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
 else
@@ -215,6 +226,37 @@ function led_test()
     set_color_to --dark
 }
 
+function line_update()
+{
+    local lines
+    
+    if [ "$LINE1_NEW" != "$LINE1_OLD" -o \
+        "$LINE2_NEW" != "$LINE2_OLD" -o \
+        "$LINE3_NEW" != "$LINE3_OLD" -o \
+        "$LINE4_NEW" != "$LINE4_OLD" ]; \
+    then
+        lines=$(pip-server-control --only-report --print-report --list)
+        LINE2_NEW="--------------------"
+        LINE3_NEW=$(echo "$lines" | head -n 1 | tr -d '\n')
+        LINE4_NEW=$(echo "$lines" | tail -n 1 | tr -d '\n')
+
+        sudo python lcdout.py \
+            "$LINE1_NEW" "$LINE2_NEW" "$LINE3_NEW" "$LINE4_NEW"
+
+        clear 
+        echo "$LINE1_NEW"
+        echo "$LINE2_NEW"
+        echo "$LINE3_NEW"
+        echo "$LINE4_NEW"
+
+        LINE1_OLD="$LINE1_NEW"
+        LINE2_OLD="$LINE2_NEW"
+        LINE3_OLD="$LINE3_NEW"
+        LINE4_OLD="$LINE4_NEW"
+    fi
+
+}
+
 trap atexit_handler EXIT
 
 led_test
@@ -222,6 +264,7 @@ led_test
 #
 #
 #
+count=0
 while true; do
     if [ "$ok" == "true" ]; then
         set_color_to --green
@@ -245,5 +288,12 @@ while true; do
     if [ $? -ne 0 ]; then 
         ok="false"
     fi
+
+
+    let count+=1
+    LINE1_NEW="$(date +"%V  %F %H:%M")"
+    #LINE1_NEW="$(date +"%F %H:%M:%S")"
+    #LINE2_NEW="$count"
+    line_update
 done
 

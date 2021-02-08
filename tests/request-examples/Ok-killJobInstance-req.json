@@ -1,0 +1,7 @@
+{
+  "job_id": 4,
+  "operation": "killJobInstance",
+  "request_created": "2021-02-08T09:26:22.433Z",
+  "request_id": 3,
+  "signal": 15
+}

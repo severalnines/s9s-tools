@@ -1,0 +1,19 @@
+{
+  "create_group": false,
+  "operation": "createUser",
+  "request_created": "2021-02-08T09:06:50.807Z",
+  "request_id": 3,
+  "user": {
+    "class_name": "CmonUser",
+    "title": "Captain",
+    "user_name": "kirk",
+    "groups": [ {
+        "class_name": "CmonGroup",
+        "group_name": "nosuchgroup"
+      }  ],
+    "public_keys": [ {
+        "name": "No Name",
+        "key": "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAxoabjik6v7fXhQM+3nLW+A8lFR0QlK0ajcHw5FZbcVK5KARWMXXW\ne3EqK36mJYHcrXfNxJlJmeA7E7ooIq1mUj8KLpJH8cPlLxUNEAffIVLmqD6NMmNM\n0R6oFl2yV67d8/MnEh9j3aCQcpSsgLGeCMi2EuNOzHBD+AGno2W27dEvaSMUbbqZ\nOvf5hrbqH5vey0elsdZspfVo/FkgMyEJP2Mjs2u4fMjpShwC+FlhxlKmyVDzPGZz\nosOnpIaN4EQPJoulWpxUdmmTT7HhOITmMW9Oj+gdAfYvVsLf4zjjygTxqArhoxdv\n8cfwxeCSrsyAtQHvh/L86cFNr+hCr5OKLwIDAQAB\n-----END RSA PUBLIC KEY-----\n"
+      }  ]
+  }
+}

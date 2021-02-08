@@ -128,6 +128,8 @@ function installCmonCloud()
     local binaryFile="/usr/sbin/cmon-cloud"
     local doUpdate
     local DOWNLOAD_URL='http://www.severalnines.com/downloads/cmon'
+    local line
+    local file
 
     print_title "Installing cmon-cloud"
     begin_verbatim
@@ -137,10 +139,24 @@ function installCmonCloud()
         return 1
     fi
 
-    if [ ! -f "/etc/apt/sources.list.d/s9s-repo-nightly.list" ]; then
-        echo "deb [arch=amd64] http://repo.severalnines.com/repos-nightly/deb ubuntu main" \
-            | sudo tee "/etc/apt/sources.list.d/s9s-repo-nightly.list"
+    #
+    # The repository.
+    #
+    line="deb [arch=amd64]"
+    line+=" http://repo.severalnines.com/repos-nightly/deb ubuntu main"
+    file="/etc/apt/sources.list.d/s9s-repo-nightly.list"
+    if [ -f "$file" ]; then
+        cat <<EOF
+# rm -f "$line"
+EOF
+        rm -f $line
+    fi
 
+    if [ ! -f "$file" ]; then
+        cat <<EOF
+# echo "$line" | sudo tee "$file"
+EOF
+        echo "$line" | sudo tee "$file"
         doUpdate="true"
     fi
 

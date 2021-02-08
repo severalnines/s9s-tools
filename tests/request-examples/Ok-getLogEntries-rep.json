@@ -1,0 +1,291 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:16:47.624Z",
+  "request_created": "2021-02-08T09:16:47.604Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:16:47.622Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 61,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "log_entries": [
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:46.168Z",
+      "log_class": "LogMessage",
+      "log_id": 150,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "cmonjobthread.cpp",
+        "sender_line": 73,
+        "sender_pid": 15660,
+        "tv_nsec": 168618199,
+        "tv_sec": 1612775806
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "Ending thread for 'Simulated Success' job (1:4)."
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:46.166Z",
+      "log_class": "JobEnded",
+      "log_id": 149,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "CmonCommandHandlerWorker.cpp",
+        "sender_line": 3240,
+        "sender_pid": 15660,
+        "tv_nsec": 166760620,
+        "tv_sec": 1612775806
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "Job 'Simulated Success' is ended.",
+        "job_instance": {
+          "class_name": "CmonJobInstance",
+          "can_be_aborted": false,
+          "can_be_deleted": true,
+          "cluster_id": 1,
+          "created": "2021-02-08T09:16:40.000Z",
+          "ended": "2021-02-08T09:16:46.000Z",
+          "exit_code": 0,
+          "group_id": 2,
+          "group_name": "users",
+          "has_progress": true,
+          "ip_address": "127.0.0.1",
+          "job_id": 4,
+          "progress_percent": 100,
+          "rpc_version": "2.0",
+          "started": "2021-02-08T09:16:40.000Z",
+          "status": "FINISHED",
+          "status_text": "Job 'success' ended",
+          "title": "Simulated Success",
+          "user_id": 4,
+          "user_name": "pipas",
+          "job_spec": {
+            "command": "success",
+            "job_data": {
+            }
+          }
+        }
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:43.152Z",
+      "log_class": "LogMessage",
+      "log_id": 148,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "cmonprocessmanager.cpp",
+        "sender_line": 1215,
+        "sender_pid": 15660,
+        "tv_nsec": 152706053,
+        "tv_sec": 1612775803
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "<em style='color: #f39c12;'>192.168.0.241</em>:3306: Identified MySQL config files '/etc/mysql/my.cnf' of PID 7739.",
+        "host": {
+          "class_name": "CmonHost",
+          "hostname": "192.168.0.241",
+          "nodetype": "galera",
+          "port": 3306,
+          "role": "master",
+          "status": "MYSQL_OK"
+        }
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:40.839Z",
+      "log_class": "JobStarted",
+      "log_id": 147,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "CmonCommandHandlerWorker.cpp",
+        "sender_line": 318,
+        "sender_pid": 15660,
+        "tv_nsec": 839593166,
+        "tv_sec": 1612775800
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "Job 'Simulated Success' just started.",
+        "job_instance": {
+          "class_name": "CmonJobInstance",
+          "can_be_aborted": false,
+          "can_be_deleted": false,
+          "cluster_id": 1,
+          "created": "2021-02-08T09:16:40.000Z",
+          "exit_code": 0,
+          "group_id": 2,
+          "group_name": "users",
+          "ip_address": "127.0.0.1",
+          "job_id": 4,
+          "rpc_version": "2.0",
+          "started": "2021-02-08T09:16:40.000Z",
+          "status": "RUNNING",
+          "status_text": "Simulated Success",
+          "title": "Simulated Success",
+          "user_id": 4,
+          "user_name": "pipas",
+          "job_spec": {
+            "command": "success",
+            "job_data": {
+            }
+          }
+        }
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:40.834Z",
+      "log_class": "LogMessage",
+      "log_id": 146,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "CmonCommandHandlerWorker.cpp",
+        "sender_line": 315,
+        "sender_pid": 15660,
+        "tv_nsec": 834128031,
+        "tv_sec": 1612775800
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "Starting a 'Simulated Success' job."
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:40.833Z",
+      "log_class": "LogMessage",
+      "log_id": 145,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "cmonjobthread.cpp",
+        "sender_line": 63,
+        "sender_pid": 15660,
+        "tv_nsec": 833035932,
+        "tv_sec": 1612775800
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "Started thread for 'Simulated Success' job (1:4)."
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "component": "Cluster",
+      "created": "2021-02-08T09:16:35.666Z",
+      "log_class": "ClusterStateChange",
+      "log_id": 142,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "cmoncluster.cpp",
+        "sender_line": 3641,
+        "sender_pid": 15660,
+        "tv_nsec": 666647361,
+        "tv_sec": 1612775795
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "cluster_state": "STARTED",
+        "message_text": "Cluster 001 state changed from '<strong style='color: #59a449;'>UNKNOWN</strong>' to '<strong style='color: #59a449;'>STARTED</strong>'.",
+        "previous_cluster_state": "UNKNOWN",
+        "reason": "All nodes are up and running."
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "component": "Node",
+      "created": "2021-02-08T09:16:35.657Z",
+      "log_class": "HostStateChange",
+      "log_id": 141,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "cmonhost.cpp",
+        "sender_line": 1024,
+        "sender_pid": 15660,
+        "tv_nsec": 657196143,
+        "tv_sec": 1612775795
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "host_state": "CmonHostOnline",
+        "message_text": "Host 192.168.0.241:3306 state changed from 'CmonHostUnknown' to 'CmonHostOnline'.",
+        "previous_host_state": "CmonHostUnknown",
+        "reason": "Setting to MYSQL_OK because the node is Synced",
+        "host": {
+          "hostname": "192.168.0.241",
+          "port": 3306
+        }
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:34.898Z",
+      "log_class": "LogMessage",
+      "log_id": 140,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "MySQLSlowLogParser.cpp",
+        "sender_line": 498,
+        "sender_pid": 15660,
+        "tv_nsec": 898847619,
+        "tv_sec": 1612775794
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "<em style='color: #f39c12;'>192.168.0.241</em>:3306: Setting long query time = 500000us (before: 3000000us)."
+      }
+    },
+    {
+      "class_name": "CmonLogMessage",
+      "created": "2021-02-08T09:16:33.592Z",
+      "log_class": "LogMessage",
+      "log_id": 139,
+      "severity": "LOG_INFO",
+      "log_origins": {
+        "sender_binary": "cmon",
+        "sender_file": "cmonabstractmysqlcluster.cpp",
+        "sender_line": 14258,
+        "sender_pid": 15660,
+        "tv_nsec": 592940249,
+        "tv_sec": 1612775793
+      },
+      "log_specifics": {
+        "cluster_id": 1,
+        "message_text": "Gathering database stats completed."
+      }
+    }
+  ],
+  "log_entry_counts": {
+    "component": {
+      "Cluster": 1,
+      "Node": 1,
+      "Unknown": 8
+    },
+    "hostname": {
+      "": 8,
+      "192.168.0.241": 2
+    },
+    "sender_binary": {
+      "cmon": 10
+    },
+    "severity": {
+      "LOG_INFO": 10
+    }
+  }
+}

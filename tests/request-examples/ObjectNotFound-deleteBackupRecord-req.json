@@ -1,0 +1,8 @@
+{
+  "operation": "deleteBackupRecord",
+  "request_created": "2021-02-08T09:17:23.060Z",
+  "request_id": 2,
+  "backup_record": {
+    "backup_id": 1
+  }
+}

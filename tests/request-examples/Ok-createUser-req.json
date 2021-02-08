@@ -1,0 +1,21 @@
+{
+  "create_group": true,
+  "new_password": "p",
+  "operation": "createUser",
+  "request_created": "2021-02-08T11:27:29.305Z",
+  "request_id": 2,
+  "user": {
+    "class_name": "CmonUser",
+    "email_address": "grumio@rome.com",
+    "first_name": "Grumio",
+    "user_name": "grumio",
+    "groups": [ {
+        "class_name": "CmonGroup",
+        "group_name": "plebs"
+      }  ],
+    "public_keys": [ {
+        "name": "No Name",
+        "key": "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAw8uBjxnu6ciGCJRolKMdg53W/CaFhy9VPh2DmJmAdvxoOcvHWQfI\n1UF+QggXNYLNNPZMyxEyxAFi/nMBURqIM6IJTbXce5oR2q9Iq3aT2EiYBXj9NsHk\nkSC2EMjyb5xqJKjjKcypbgecKSIzyejDXnbM9M4ZzaZKSpIaOIf7EH7p2pu99t/v\nzkQ+j2FSs16FK/43G+hjt/7Rf1QMF6p3FMWIMwpe2oLwTmZaK7ZYiK61D9QJi2ma\nHxa5nSzFwhZQl983lW/OFyGNR1VBf1t6wHDn5b6uXrfbcDHVmc7LuUUnJGWqZ/Z9\nCQg8lrMwnunbHft7ThBDfA1wYoow88xhywIDAQAB\n-----END RSA PUBLIC KEY-----\n"
+      }  ]
+  }
+}

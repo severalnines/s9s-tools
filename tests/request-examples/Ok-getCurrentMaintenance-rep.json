@@ -1,0 +1,23 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "found_maintenance": true,
+  "reply_received": "2021-02-08T11:22:30.398Z",
+  "request_created": "2021-02-08T11:22:30.390Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T11:22:30.397Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "ui_string": "Cluster 1 is under maintenance: testRecoveryJob",
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "maintenance_period": {
+    "class_name": "CmonMaintenanceDate",
+    "UUID": "4abfee27-ef8b-4802-b6f2-18172e9138eb",
+    "deadline": "2021-02-08T12:22:28.171Z",
+    "groupid": 1,
+    "groupname": "admins",
+    "initiate": "2021-02-08T11:22:28.171Z",
+    "reason": "testRecoveryJob",
+    "userid": 1,
+    "username": "system"
+  }
+}

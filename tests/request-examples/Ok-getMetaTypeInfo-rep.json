@@ -1,0 +1,38 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "description": "Statistical data about the number of jobs.",
+  "parent_type_name": "",
+  "reply_received": "2021-02-08T11:22:58.111Z",
+  "request_created": "2021-02-08T11:22:58.104Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T11:22:58.110Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "type_name": "CmonJobStatistics",
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "metatype_info": [
+    {
+      "class_name": "CmonParamSpec",
+      "description": "The number of jobs on the system grouped by their state.",
+      "is_counter": false,
+      "is_public": true,
+      "is_writable": false,
+      "owner_type_name": "CmonJobStatistics",
+      "property_name": "by_state",
+      "type_name": "Map",
+      "default_value": {
+      }
+    },
+    {
+      "class_name": "CmonParamSpec",
+      "default_value": -1,
+      "description": "The ID of the cluster.",
+      "is_counter": false,
+      "is_public": true,
+      "is_writable": false,
+      "owner_type_name": "CmonJobStatistics",
+      "property_name": "cluster_id",
+      "type_name": "Int"
+    }
+  ]
+}

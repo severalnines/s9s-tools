@@ -1,0 +1,37 @@
+{
+  "class_name": "CmonRpcRequest",
+  "operation": "setLdapConfig",
+  "request_created": "2021-02-08T09:08:19.665Z",
+  "request_id": 2,
+  "ldap_configuration": {
+    "enabled": true,
+    "ldapAdminPassword": "p",
+    "ldapAdminUser": "cn=admin,dc=homelab,dc=local",
+    "ldapGroupSearchRoot": "dc=homelab,dc=local",
+    "ldapServerUri": "ldap://ldap.homelab.local:389",
+    "ldapUserSearchRoot": "dc=homelab,dc=local",
+    "groupMappings": [ {
+        "cmonGroupName": "myldapgroup",
+        "ldapGroupId": "nosuchgroup",
+        "sectionName": "mapping1"
+      }  ],
+    "ldapSettings": {
+      "ldapEmailAttributes": "mail",
+      "ldapGroupClassName": null,
+      "ldapGroupIdAttributes": null,
+      "ldapGroupNameAttribute": null,
+      "ldapMemberAttributes": "memberUid",
+      "ldapNetworkTimeout": null,
+      "ldapProtocolVersion": null,
+      "ldapQueryTimeLimit": null,
+      "ldapRealnameAttributes": "displayName,cn",
+      "ldapUserClassName": null,
+      "ldapUsernameAttributes": "cn"
+    },
+    "security": {
+      "caCertFile": null,
+      "certFile": null,
+      "keyFile": null
+    }
+  }
+}

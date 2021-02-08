@@ -1,0 +1,9 @@
+{
+  "class_name": "CmonRpcRequest",
+  "ascending": false,
+  "cluster_id": 1,
+  "limit": 10,
+  "operation": "getLogEntries",
+  "request_created": "2021-02-08T09:16:47.526Z",
+  "request_id": 2
+}

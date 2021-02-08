@@ -1,0 +1,9 @@
+{
+  "operation": "createGroup",
+  "request_created": "2021-02-08T09:08:18.564Z",
+  "request_id": 3,
+  "group": {
+    "class_name": "CmonGroup",
+    "group_name": "myldapgroup"
+  }
+}

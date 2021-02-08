@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "file_content": " container_server_instance : 0x7f3bd8154090\n                      UUID : 52ff95f3-eeef-4b56-a4d2-69fa4f47bc61\n    container_server_class : CmonLxcServer\n               server_name : 192.168.0.201\n      number_of_containers : 0\n              last_command : None\n                     model : System x3850 X5 -[7143Y61]-\n                 cpu_model : Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz\n      number_of_processors : 4\n     number_of_cpu_threads : 80\n              total_memory : 17179869184\n        total_memory_gbyte : 16\n",
+  "reply_received": "2021-02-08T11:43:40.360Z",
+  "request_created": "2021-02-08T11:43:40.338Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T11:43:40.359Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+}

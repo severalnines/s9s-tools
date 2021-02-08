@@ -1,0 +1,49 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T11:22:11.414Z",
+  "request_created": "2021-02-08T11:22:11.406Z",
+  "request_id": 130,
+  "request_processed": "2021-02-08T11:22:11.414Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "job": {
+    "class_name": "CmonJobInstance",
+    "can_be_aborted": false,
+    "can_be_deleted": true,
+    "cluster_id": 0,
+    "created": "2021-02-08T11:20:04.000Z",
+    "ended": "2021-02-08T11:22:10.000Z",
+    "exit_code": 0,
+    "group_id": 4,
+    "group_name": "testgroup",
+    "has_progress": true,
+    "ip_address": "127.0.0.1",
+    "job_id": 1,
+    "progress_percent": 100,
+    "rpc_version": "2.0",
+    "started": "2021-02-08T11:20:04.000Z",
+    "status": "FINISHED",
+    "status_text": "Job finished.",
+    "title": "Creating PostgreSQL Cluster",
+    "user_id": 4,
+    "user_name": "pipas",
+    "job_spec": {
+      "command": "create_cluster",
+      "job_data": {
+        "cluster_name": "ft_maintenance_35233",
+        "cluster_type": "postgresql_single",
+        "enable_uninstall": true,
+        "install_software": true,
+        "postgre_password": "passwd12",
+        "postgre_user": "postmaster",
+        "type": "postgresql",
+        "version": "11",
+        "nodes": [ {
+            "hostname": "192.168.0.241"
+          }  ]
+      }
+    }
+  }
+}

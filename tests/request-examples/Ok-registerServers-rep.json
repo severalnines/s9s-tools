@@ -1,0 +1,1368 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T11:28:14.859Z",
+  "request_created": "2021-02-08T11:27:29.413Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T11:28:14.852Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "servers": [ {
+      "class_name": "CmonLxcServer",
+      "cdt_path": "/",
+      "owner_user_id": 4,
+      "owner_user_name": "pipas",
+      "owner_group_id": 4,
+      "owner_group_name": "testgroup",
+      "acl": "user::rwx,group::rwx,other::---",
+      "clusterid": 0,
+      "connected": true,
+      "hostId": 1,
+      "hostname": "core4",
+      "hoststatus": "CmonHostOnline",
+      "ip": "192.168.0.50",
+      "last_container_collect": 1612783694,
+      "last_hw_collect": 1612783652,
+      "lastseen": 1612783650,
+      "maintenance_mode": "none",
+      "maintenance_mode_active": false,
+      "max_containers": -1,
+      "max_containers_running": -1,
+      "message": "Up and running.",
+      "model": "System x3850 X5 -[7143Y61]-",
+      "statereason": "SSH is ok.",
+      "timestamp": 1612783694,
+      "unique_id": 1,
+      "version": "2.0.11",
+      "containers": [
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "asterisk",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/asterisk/config",
+          "hostname": "asterisk",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/asterisk/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.36"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "debian10",
+          "architecture": "linux64",
+          "autostart": false,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/debian10/config",
+          "hostname": "debian10",
+          "is_claimed": false,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/debian10/rootfs",
+          "status": "STOPPED",
+          "type": "lxc",
+          "version": 1,
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "desktop",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/desktop/config",
+          "hostname": "desktop",
+          "is_claimed": false,
+          "memory_limit": 34359738368,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/desktop/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.33"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "dns1",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/dns1/config",
+          "hostname": "dns1",
+          "is_claimed": false,
+          "memory_limit": 4294967296,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/dns1/rootfs",
+          "status": "RUNNING",
+          "template": "ubuntu",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.2"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "git",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/git/config",
+          "hostname": "git",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/git/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.49"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "kmatyas",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/kmatyas/config",
+          "hostname": "2620:9b::1913:7719",
+          "is_claimed": false,
+          "memory_limit": 34359738368,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/kmatyas/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "ipv6_addresses": [ "2620:9b::1913:7719"  ],
+          "network": {
+            "private_ip": [
+              "172.17.0.1",
+              "192.168.0.186"
+            ],
+            "public_ip": [ "25.19.119.25"  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "unknown",
+            "codename": "unknown",
+            "release": "unknown",
+            "type": "unknown"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "ldap",
+          "architecture": "x86_64",
+          "autostart": false,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/ldap/config",
+          "hostname": "ldap",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/ldap/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.55"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "mqtt",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/mqtt/config",
+          "hostname": "mqtt",
+          "is_claimed": false,
+          "memory_limit": 4294967296,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/mqtt/rootfs",
+          "status": "RUNNING",
+          "template": "ubuntu",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.5"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "nodered",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/nodered/config",
+          "hostname": "nodered",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/nodered/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.37"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "bionic",
+            "release": "18.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "pipevo",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/pipevo/config",
+          "hostname": "pipevo",
+          "is_claimed": false,
+          "memory_limit": 68719476736,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/pipevo/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.38"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "python",
+          "architecture": "x86_64",
+          "autostart": false,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/python/config",
+          "hostname": "python",
+          "is_claimed": false,
+          "memory_limit": 137438953472,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/python/rootfs",
+          "status": "STOPPED",
+          "type": "lxc",
+          "version": 1,
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "s9sdev",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/s9sdev/config",
+          "hostname": "s9sdev",
+          "is_claimed": false,
+          "memory_limit": 68719476736,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/s9sdev/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.51"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "ubuntu",
+          "architecture": "x86_64",
+          "autostart": false,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/ubuntu/config",
+          "hostname": "ubuntu",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/ubuntu/rootfs",
+          "status": "STOPPED",
+          "type": "lxc",
+          "version": 1,
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "ubuntu-s9s",
+          "architecture": "x86_64",
+          "autostart": false,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/ubuntu-s9s/config",
+          "hostname": "ubuntu-s9s",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/ubuntu-s9s/rootfs",
+          "status": "STOPPED",
+          "type": "lxc",
+          "version": 1,
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "ubuntu14.04",
+          "architecture": "linux64",
+          "autostart": false,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/ubuntu14.04/config",
+          "hostname": "ubuntu14.04",
+          "is_claimed": false,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/ubuntu14.04/rootfs",
+          "status": "STOPPED",
+          "type": "lxc",
+          "version": 1,
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "www",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/www/config",
+          "hostname": "www",
+          "is_claimed": false,
+          "memory_limit": 12884901888,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/www/rootfs",
+          "status": "RUNNING",
+          "template": "ubuntu",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.19"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        },
+        {
+          "class_name": "CmonContainer",
+          "cdt_path": "/core4/containers",
+          "owner_user_id": 4,
+          "owner_user_name": "pipas",
+          "owner_group_id": 4,
+          "owner_group_name": "testgroup",
+          "acl": "user::rwx,group::rwx,other::---",
+          "alias": "zoneminder",
+          "architecture": "x86_64",
+          "autostart": true,
+          "cluster_id": 0,
+          "configfile": "/var/lib/lxc/zoneminder/config",
+          "hostname": "zoneminder",
+          "is_claimed": false,
+          "memory_limit": 17179869184,
+          "parent_server": "core4",
+          "provider": "lxc",
+          "region": "region1",
+          "root_fs_path": "/var/lib/lxc/zoneminder/rootfs",
+          "status": "RUNNING",
+          "type": "lxc",
+          "version": 1,
+          "network": {
+            "private_ip": [ "192.168.0.42"  ],
+            "public_ip": [  ]
+          },
+          "os_version": {
+            "class_name": "CmonOsVersion",
+            "name": "ubuntu",
+            "codename": "xenial",
+            "release": "16.04",
+            "type": "debian"
+          },
+          "subnet": {
+            "class_name": "CmonSubnet",
+            "name": "br0",
+            "az": "region1",
+            "cidr": "192.168.0.50/16",
+            "id": "core4-br0",
+            "provider": "lxc",
+            "region": "region1",
+            "state": "available",
+            "vpc_id": "vpc-region1"
+          }
+        }
+      ],
+      "disk_devices": [
+        {
+          "class_name": "CmonDiskDevice",
+          "device": "/dev/mapper/core4--vg-root",
+          "filesystem": "ext4",
+          "free_mb": 85600,
+          "mountpoint": "/",
+          "total_mb": 103661
+        },
+        {
+          "class_name": "CmonDiskDevice",
+          "device": "/dev/sdb1",
+          "filesystem": "ext4",
+          "free_mb": 835555,
+          "mountpoint": "/var/lib/lxc",
+          "total_mb": 1121628
+        },
+        {
+          "class_name": "CmonDiskDevice",
+          "device": "/dev/sda2",
+          "filesystem": "ext2",
+          "free_mb": 286,
+          "mountpoint": "/boot",
+          "total_mb": 472
+        },
+        {
+          "class_name": "CmonDiskDevice",
+          "device": "/dev/sda1",
+          "filesystem": "vfat",
+          "free_mb": 510,
+          "mountpoint": "/boot/efi",
+          "total_mb": 510
+        },
+        {
+          "device": "/dev/sda",
+          "is_hardware_storage": true,
+          "model": "IBM ServeRAID M5015",
+          "total_mb": 139236,
+          "volumes": [
+            {
+              "description": "Windows FAT volume",
+              "device": "",
+              "filesystem": "fat",
+              "mount_point": "",
+              "total_mb": 510.984
+            },
+            {
+              "description": "EFI partition",
+              "device": "/dev/sda2",
+              "filesystem": "ext2",
+              "free_mb": 286,
+              "mount_point": "/boot",
+              "total_mb": 488
+            },
+            {
+              "description": "LVM Physical Volume",
+              "device": "/dev/sda3",
+              "filesystem": "",
+              "mount_point": "",
+              "total_mb": 138234
+            }
+          ]
+        },
+        {
+          "device": "/dev/sdb",
+          "is_hardware_storage": true,
+          "model": "IBM ServeRAID M5015",
+          "total_mb": 1.13964e+06,
+          "volumes": [ {
+              "description": "EXT4 volume",
+              "device": "/dev/sdb1",
+              "filesystem": "ext4",
+              "free_mb": 835555,
+              "mount_point": "/var/lib/lxc",
+              "total_mb": 1.13964e+06
+            }  ]
+        }
+      ],
+      "images": [
+        {
+          "name": "ubuntu_artful",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "ubuntu_bionic",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "ubuntu_trusty",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "ubuntu_xenial",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "debian_buster",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "debian_jessie",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "debian_sid",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "debian_stretch",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "debian_wheezy",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "alpine_3.4",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "alpine_3.5",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "alpine_3.6",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "alpine_3.7",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "alpine_edge",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "centos_6",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "centos_7",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "fedora_25",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "fedora_26",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "fedora_27",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "opensuse_42.2",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "opensuse_42.3",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "oracle_6",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "oracle_7",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "plamo_5.x",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "plamo_6.x",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "archlinux_current",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "gentoo_current",
+          "provider": "lxc",
+          "region": "region1"
+        }
+      ],
+      "memory": {
+        "class_name": "CmonMemoryInfo",
+        "memory_available_mb": 212012,
+        "memory_free_mb": 53885,
+        "memory_total_mb": 225678,
+        "swap_free_mb": 0,
+        "swap_total_mb": 0,
+        "banks": [
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "0",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "1",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "2",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "3",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "4",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "5",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "6",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "7",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "10",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "11",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "12",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "13",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "14",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "15",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "16",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "17",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "20",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "21",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "22",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "23",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "24",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "25",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "26",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "27",
+            "size": 4294967296
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "30",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "31",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "32",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "33",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "34",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "35",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "36",
+            "size": 8589934592
+          },
+          {
+            "name": "DIMM DDR3 Synchronous 1333 MHz (0.8 ns)",
+            "bank": "37",
+            "size": 8589934592
+          }
+        ]
+      },
+      "network_interfaces": [
+        {
+          "name": "eno1",
+          "gbits": 1,
+          "link": true,
+          "mac": "6c:ae:8b:78:69:40",
+          "model": "NetXtreme II BCM5709 Gigabit Ethernet"
+        },
+        {
+          "name": "eno2",
+          "gbits": 1,
+          "link": false,
+          "mac": "6c:ae:8b:78:69:42",
+          "model": "NetXtreme II BCM5709 Gigabit Ethernet"
+        },
+        {
+          "name": "vethMY4JC0",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:f9:8a:b5:be:ad",
+          "model": ""
+        },
+        {
+          "name": "enp0s29f0u2",
+          "gbits": 0,
+          "link": false,
+          "mac": "6e:ae:8b:79:e9:43",
+          "model": ""
+        },
+        {
+          "name": "vethLX52CX",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:2b:b7:ed:d0:23",
+          "model": ""
+        },
+        {
+          "name": "veth40AG7G",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:88:26:0c:a5:92",
+          "model": ""
+        },
+        {
+          "name": "vethT0L722",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:95:1f:49:98:44",
+          "model": ""
+        },
+        {
+          "name": "veth7P3PET",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:eb:68:a7:0f:b5",
+          "model": ""
+        },
+        {
+          "name": "veth28UN67",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:be:3d:58:7f:a8",
+          "model": ""
+        },
+        {
+          "name": "vethAQBU38",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:9c:08:60:df:ba",
+          "model": ""
+        },
+        {
+          "name": "veth8X3SWB",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:36:f3:5c:8f:06",
+          "model": ""
+        },
+        {
+          "name": "vethGGH4YV",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:77:03:5e:ae:ca",
+          "model": ""
+        },
+        {
+          "name": "veth88P8PM",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:42:bd:cd:1f:bb",
+          "model": ""
+        },
+        {
+          "name": "vethSFRYXW",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:e8:d6:c5:2a:bd",
+          "model": ""
+        },
+        {
+          "name": "veth6S3NVC",
+          "gbits": 0,
+          "link": true,
+          "mac": "fe:ab:4a:74:96:4e",
+          "model": ""
+        },
+        {
+          "name": "lxcbr0",
+          "gbits": 0,
+          "ip": "10.0.3.1",
+          "mac": "",
+          "model": ""
+        },
+        {
+          "name": "br0",
+          "gbits": 0,
+          "ip": "192.168.0.50",
+          "mac": "",
+          "model": ""
+        }
+      ],
+      "processors": [
+        {
+          "cores": 10,
+          "cpu_max_ghz": 1.064,
+          "id": 1,
+          "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
+          "siblings": 20,
+          "vendor": "Intel Corp."
+        },
+        {
+          "cores": 10,
+          "cpu_max_ghz": 2.395,
+          "id": 2,
+          "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
+          "siblings": 20,
+          "vendor": "Intel Corp."
+        },
+        {
+          "cores": 10,
+          "cpu_max_ghz": 2.395,
+          "id": 3,
+          "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
+          "siblings": 20,
+          "vendor": "Intel Corp."
+        },
+        {
+          "cores": 10,
+          "cpu_max_ghz": 1.064,
+          "id": 4,
+          "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
+          "siblings": 20,
+          "vendor": "Intel Corp."
+        }
+      ],
+      "regions": [ {
+          "name": "region1",
+          "has_credentials": true,
+          "provider": "lxc"
+        }  ],
+      "subnets": [
+        {
+          "class_name": "CmonSubnet",
+          "name": "br0",
+          "az": "region1",
+          "cidr": "192.168.0.50/16",
+          "id": "core4-br0",
+          "provider": "lxc",
+          "region": "region1",
+          "state": "available",
+          "vpc_id": "vpc-region1"
+        },
+        {
+          "class_name": "CmonSubnet",
+          "name": "lxcbr0",
+          "az": "core4-internal",
+          "cidr": "10.0.3.1/24",
+          "id": "core4-lxcbr0",
+          "provider": "lxc",
+          "region": "region1",
+          "state": "down",
+          "vpc_id": "vpc-core4-lxcbr0"
+        }
+      ],
+      "templates": [
+        {
+          "name": "debian10",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "python",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "ubuntu",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "ubuntu-s9s",
+          "provider": "lxc",
+          "region": "region1"
+        },
+        {
+          "name": "ubuntu14.04",
+          "provider": "lxc",
+          "region": "region1"
+        }
+      ]
+    }  ]
+}

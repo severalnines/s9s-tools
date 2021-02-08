@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "error_string": "Access to group 'admins' is denied for user 'student'.",
+  "reply_received": "2021-02-08T09:07:00.529Z",
+  "request_created": "2021-02-08T09:07:00.514Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:07:00.528Z",
+  "request_status": "AccessDenied",
+  "request_user_id": 15,
+  "debug_messages": [ "RPC V2 authenticated user is 'student'."  ]
+}

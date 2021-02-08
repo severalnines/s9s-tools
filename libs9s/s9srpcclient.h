@@ -456,6 +456,11 @@ class S9sRpcClient
 
         void printRequestForDebug(S9sVariantMap &request);
 
+        void 
+            saveRequestAndReply(
+                    const S9sVariantMap &request,
+                    const S9sVariantMap &reply) const;
+
     private:
         bool startNodeJob(
                 const S9sString &command,

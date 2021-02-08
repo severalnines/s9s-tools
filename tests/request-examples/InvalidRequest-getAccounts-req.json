@@ -1,0 +1,7 @@
+{
+  "class_name": "CmonRpcRequest",
+  "cluster_id": 1,
+  "operation": "getAccounts",
+  "request_created": "2021-02-08T09:17:25.267Z",
+  "request_id": 2
+}

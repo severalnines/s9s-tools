@@ -1,0 +1,9 @@
+{
+  "operation": "deleteReport",
+  "request_created": "2021-02-08T09:17:24.874Z",
+  "request_id": 3,
+  "report": {
+    "class_name": "CmonReport",
+    "report_id": 2
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T11:51:36.004Z",
+  "request_created": "2021-02-08T11:51:35.994Z",
+  "request_id": 100,
+  "request_processed": "2021-02-08T11:51:36.003Z",
+  "request_status": "Ok",
+  "request_user_id": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ],
+  "job": {
+    "class_name": "CmonJobInstance",
+    "can_be_aborted": false,
+    "can_be_deleted": true,
+    "cluster_id": 0,
+    "created": "2021-02-08T11:49:57.000Z",
+    "ended": "2021-02-08T11:51:35.000Z",
+    "exit_code": 0,
+    "group_id": 1,
+    "group_name": "admins",
+    "has_progress": true,
+    "ip_address": "127.0.0.1",
+    "job_id": 19,
+    "progress_percent": 85,
+    "rpc_version": "2.0",
+    "started": "2021-02-08T11:49:57.000Z",
+    "status": "FINISHED",
+    "status_text": "Collecting Data",
+    "title": "Delete Container",
+    "user_id": 1,
+    "user_name": "system",
+    "job_spec": {
+      "command": "delete_container",
+      "job_data": {
+        "container": {
+          "class_name": "CmonContainer",
+          "alias": "ft_containers_lxc_13_37123"
+        }
+      }
+    }
+  },
+  "messages": [ {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-08T11:51:35.000Z",
+      "file_name": "cmonlxcserver.cpp",
+      "job_id": 19,
+      "line_number": 1193,
+      "message_id": 459,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "The container has deleted."
+    }  ]
+}
