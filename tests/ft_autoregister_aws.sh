@@ -147,10 +147,10 @@ function installCmonCloud()
     file="/etc/apt/sources.list.d/s9s-repo-nightly.list"
     if [ -f "$file" ]; then
         cat <<EOF
-# sudo rm -f "$line"
+# sudo rm -f "$file"
 
 EOF
-        sudo rm -f $line
+        sudo rm -f $file
     fi
 
     if [ ! -f "$file" ]; then
