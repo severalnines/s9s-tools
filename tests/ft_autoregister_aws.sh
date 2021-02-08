@@ -205,27 +205,11 @@ function removeCmonCloud()
     print_title "Removing cmon-cloud"
     begin_verbatim
 
-    echo "# sudo systemctl stop cmon-cloud"
-    sudo systemctl stop cmon-cloud
+    my_exec sudo systemctl stop cmon-cloud
     sleep 5
     
-    echo "# sudo systemctl status cmon-cloud"
-    sudo systemctl status cmon-cloud
-
-    echo "# ps aux | grep cmon-cloud"
-    ps aux | grep cmon-cloud
-    
-    #echo "# killall cmon-cloud"
-    #killall cmon-cloud
-    
-    #echo "# killall -9 cmon-cloud"
-    #killall -9 cmon-cloud
-    
-    echo "# ps aux | grep cmon-cloud"
-    ps aux | grep cmon-cloud
-
-    echo "# sudo apt -y --force-yes remove clustercontrol-cloud"
-    sudo apt -y --force-yes remove clustercontrol-cloud
+    my_exec sudo systemctl status cmon-cloud
+    my_exec sudo apt -y --force-yes remove clustercontrol-cloud
     end_verbatim
 }
 
