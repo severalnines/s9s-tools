@@ -175,6 +175,12 @@ function my_command()
     echo ""
 }
 
+function my_exec()
+{
+    my_command $@
+    $@
+}
+
 function mys9s_singleline()
 {
     local prompt=$(prompt_string)

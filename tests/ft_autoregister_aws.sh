@@ -146,11 +146,7 @@ function installCmonCloud()
     line+=" http://repo.severalnines.com/repos-nightly/deb ubuntu main"
     file="/etc/apt/sources.list.d/s9s-repo-nightly.list"
     if [ -f "$file" ]; then
-        cat <<EOF
-# sudo rm -f "$file"
-
-EOF
-        sudo rm -f $file
+        my_exec sudo rm -f $file
     fi
 
     if [ ! -f "$file" ]; then
@@ -162,20 +158,19 @@ EOF
         doUpdate="true"
     fi
 
-    wget $DOWNLOAD_URL/s9s-repo.list -P /etc/apt/sources.list.d/
+    my_exec wget $DOWNLOAD_URL/s9s-repo.list -P /etc/apt/sources.list.d/
+    my_exec wget http://repo.severalnines.com/severalnines-repos.asc
+    my_exec sudo apt-key add severalnines-repos.asc
+    my_exec rm -f severalnines-repos.asc
 
-    wget http://repo.severalnines.com/severalnines-repos.asc
-    sudo apt-key add severalnines-repos.asc
-    rm -f severalnines-repos.asc
     doUpdate=true
 
 
     if [ -n "$doUpdate" ]; then
-        sudo apt -y update
+        my_exec sudo apt -y update
     fi
 
-    echo "# sudo apt -y --force-yes install clustercontrol-cloud"
-    sudo apt -y --force-yes install clustercontrol-cloud
+    my_exec sudo apt -y --force-yes install clustercontrol-cloud
     if [ $? -ne 0 ]; then
         failure "Failed to install 'clustercontrol-cloud'"
         end_verbatim
@@ -195,17 +190,14 @@ EOF
     #
     print_title "Starting cmon-cloud"
     begin_verbatim
-    echo "# sudo systemctl start cmon-cloud"
-    sudo systemctl start cmon-cloud
+    my_exec sudo systemctl start cmon-cloud
 
     #sleep 5
-    echo "# sudo systemctl status cmon-cloud"
-    sudo systemctl status cmon-cloud
+    my_exec sudo systemctl status cmon-cloud
 
     echo "# ps axu | grep cmon-cloud"
     ps axu | grep cmon-cloud
     end_verbatim
-
 }
 
 function removeCmonCloud()
