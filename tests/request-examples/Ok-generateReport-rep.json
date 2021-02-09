@@ -1,389 +1,45 @@
 {
   "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
-  "reply_received": "2021-02-08T09:17:24.249Z",
-  "request_created": "2021-02-08T09:17:23.328Z",
+  "reply_received": "2021-02-09T07:34:29.144Z",
+  "request_created": "2021-02-09T07:34:29.129Z",
   "request_id": 3,
-  "request_processed": "2021-02-08T09:17:24.247Z",
+  "request_processed": "2021-02-09T07:34:29.143Z",
   "request_status": "Ok",
   "request_user_id": 4,
   "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
   "report": {
     "class_name": "CmonReport",
-    "content": "IMAGE(Severalnines AB - ClusterControl)\n\n 001b[1m  System Report 001b[0;39m\n\n 001b[1m  Cluster Summary 001b[0;39m\n\n    The state of the cluster when the report was created.\n\n+------------+------------+--------+------------------+----------------+--------------------+\n|  001b[1mCluster ID 001b[0;39m |  001b[1mName       001b[0;39m |  001b[1mType   001b[0;39m |  001b[1mStatus           001b[0;39m |  001b[1mLicense Status 001b[0;39m |  001b[1mLicense Expiration 001b[0;39m |\n| 1          | galera_001 | Galera | Cluster started. | License found. | 325 days left.     |\n+------------+------------+--------+------------------+----------------+--------------------+\n\n\n 001b[1m  Nodes 001b[0;39m\n\n    The state of the database nodes when the report was created.\n\n+--------------------------------------------------------+-----------+--------+----------+-------------------+----------------------+\n| Server Address                                         | Node Type | Role   | Status   | Uptime (hh:mm:ss) | Operating System     |\n| <a href=#node_status_overview_2>192.168.0.241:3306 001b[0;39m | galera    | master | MYSQL_OK | 00:01:26          | ubuntu-16.04(xenial) |\n+--------------------------------------------------------+-----------+--------+----------+-------------------+----------------------+\n\n\n 001b[1m  galera_001 (1) - Backup Details 001b[0;39m\n\n    This section describes the backups that have been executed during the report\n  period.\n\n+-----------+-----------+----------+-----------------+---------------+--------------+-------------+---------------+----------------------------------------------------------------------+-----------------------------+------------+\n| Backup Id | Status    | Verified | Backup Time     | Backup Method | PITR Compat. | Backup Type | Backup Host   | Database                                                             | Storage Location            | Size       |\n|         1 | Completed | No       | Feb 08 09:17:03 | mysqldump     | No           | data,schema | 192.168.0.241 | mysql,domain_names_diff,domain_names_ngtlds_diff,whois_records_delta | 192.168.0.241:/tmp/BACKUP-1 | 157.62 KiB |\n+-----------+-----------+----------+-----------------+---------------+--------------+-------------+---------------+----------------------------------------------------------------------+-----------------------------+------------+\n\n\n 001b[1m  Top Queries Summary 001b[0;39m\n\n    This section describes the top queries during the report period.\n\n+---------------------------------------------------------+-------+-------------+---------------------+-----------------+-----------------+-----------------+\n| Db                                                      | Query | Total Count | Total Rows Examined | Total Rows Sent | Total Exec Time | Total Lock Time |\n| No queries found. Have you activated the Query Monitor? |       |             |                     |                 |                 |                 |\n+---------------------------------------------------------+-------+-------------+---------------------+-----------------+-----------------+-----------------+\n\n\n 001b[1m  Node status overview 001b[0;39m\n\n 001b[1m  Node 192.168.0.241 001b[0;39m\n\nGRAPH\n\nGRAPH\n\nGRAPH\n\nGRAPH\n\nGRAPH\n\nGRAPH\n\nGRAPH\n\nGRAPH\n\n\n    <br/> 001b[1mHow do you like this report? 001b[0;39m<br/>What else do you like to see or not see? We'd  001b[1;34m 001b[4mappreciate\n  your feedback 001b[0;39m. Thanks!<br/>\n\n",
+    "content": " 001b[1m  Simple Test Report 001b[0;39m\n\n    This report was created to test the report subsystem. The document was\n  created in the CmonReporter::buildTestReport() method. Here are some\n  properties of the reporter:\n\n   CmonReporter: 0x7ff9fc009940\n      clusterId: 1\n         loaded: 0 schedule(s)\n           date: Feb 09 07:34:29\n\n\n    Here is some information about the report that was requested:\n\n     reportType: testreport\n     recipients: laszlo@severalnines.com\n       interval: 7 day(s)\n        creator: pipas\n\n\n",
     "days": 7,
     "owner": "pipas",
-    "path": "/tmp/cmon/unittest/1/galera/cmon-reports/report1_2021-02-08_091723.html",
+    "path": "/tmp/cmon/unittest/1/galera/cmon-reports/testreport_2021-02-09_073429.html",
     "recipients": "laszlo@severalnines.com",
-    "report_id": 2,
-    "report_type": "report1",
+    "report_id": 1,
+    "report_type": "testreport",
     "text_format": "AnsiTerminal",
     "document": {
       "className": "CmonDocument",
       "elements": [
         {
-          "alternativeText": "Severalnines AB - ClusterControl",
-          "className": "CmonDocumentImage",
-          "height": 66,
-          "path": "../etc/assets/logo.png",
-          "width": 219,
-          "properties": {
-            "text-align": "right"
-          }
-        },
-        {
           "className": "CmonTitle",
-          "text": "System Report",
+          "text": "Simple Test Report",
           "titleLevel": 1
-        },
-        {
-          "className": "CmonDocumentSection",
-          "elements": [
-            {
-              "className": "CmonTitle",
-              "text": "Cluster Summary",
-              "titleLevel": 2
-            },
-            {
-              "className": "CmonParagraph",
-              "text": "The state of the cluster when the report was created."
-            },
-            {
-              "className": "CmonTable",
-              "cellStyles": [
-                [
-                  {
-                    "font-weight": "bold",
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "font-weight": "bold",
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "font-weight": "bold",
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "font-weight": "bold",
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "font-weight": "bold",
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "font-weight": "bold",
-                    "stylename": "tabletitle"
-                  }
-                ],
-                [
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null
-                ]
-              ],
-              "values": [
-                [
-                  "Cluster ID",
-                  "Name",
-                  "Type",
-                  "Status",
-                  "License Status",
-                  "License Expiration"
-                ],
-                [
-                  "1",
-                  "galera_001",
-                  "Galera",
-                  "Cluster started.",
-                  "License found.",
-                  "325 days left."
-                ]
-              ]
-            }
-          ]
-        },
-        {
-          "className": "CmonDocumentSection",
-          "elements": [
-            {
-              "className": "CmonTitle",
-              "text": "Nodes",
-              "titleLevel": 2
-            },
-            {
-              "className": "CmonParagraph",
-              "text": "The state of the database nodes when the report was created."
-            },
-            {
-              "className": "CmonTable",
-              "cellStyles": [
-                [
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  }
-                ],
-                [
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null
-                ]
-              ],
-              "values": [
-                [
-                  "Server Address",
-                  "Node Type",
-                  "Role",
-                  "Status",
-                  "Uptime (hh:mm:ss)",
-                  "Operating System"
-                ],
-                [
-                  "<a href=#node_status_overview_2>192.168.0.241:3306</a>",
-                  "galera",
-                  "master",
-                  "MYSQL_OK",
-                  "00:01:26",
-                  "ubuntu-16.04(xenial)"
-                ]
-              ]
-            }
-          ]
-        },
-        {
-          "className": "CmonDocumentSection",
-          "elements": [
-            {
-              "className": "CmonTitle",
-              "text": "galera_001 (1) - Backup Details",
-              "titleLevel": 2
-            },
-            {
-              "className": "CmonParagraph",
-              "text": "This section describes the backups that have been executed during the report period."
-            },
-            {
-              "className": "CmonTable",
-              "cellStyles": [
-                [
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  }
-                ],
-                [
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  {
-                    "textFormat": 19
-                  }
-                ]
-              ],
-              "values": [
-                [
-                  "Backup Id",
-                  "Status",
-                  "Verified",
-                  "Backup Time",
-                  "Backup Method",
-                  "PITR Compat.",
-                  "Backup Type",
-                  "Backup Host",
-                  "Database",
-                  "Storage Location",
-                  "Size"
-                ],
-                [
-                  1,
-                  "Completed",
-                  "No",
-                  "Feb 08 09:17:03",
-                  "mysqldump",
-                  "No",
-                  "data,schema",
-                  "192.168.0.241",
-                  "mysql,domain_names_diff,domain_names_ngtlds_diff,whois_records_delta",
-                  "192.168.0.241:/tmp/BACKUP-1",
-                  161401
-                ]
-              ]
-            }
-          ]
-        },
-        {
-          "className": "CmonDocumentSection",
-          "elements": [
-            {
-              "className": "CmonTitle",
-              "text": "Top Queries Summary",
-              "titleLevel": 2
-            },
-            {
-              "className": "CmonParagraph",
-              "text": "This section describes the top queries during the report period."
-            },
-            {
-              "className": "CmonTable",
-              "cellStyles": [
-                [
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  },
-                  {
-                    "stylename": "tabletitle"
-                  }
-                ],
-                [
-                  {
-                    "colspan": 10,
-                    "stylename": "tablesubtitle"
-                  },
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null
-                ]
-              ],
-              "values": [
-                [
-                  "Db",
-                  "Query",
-                  "Total Count",
-                  "Total Rows Examined",
-                  "Total Rows Sent",
-                  "Total Exec Time",
-                  "Total Lock Time"
-                ],
-                [
-                  "No queries found. Have you activated the Query Monitor?",
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null
-                ]
-              ]
-            }
-          ]
-        },
-        {
-          "className": "CmonTitle",
-          "text": "Node status overview",
-          "titleLevel": 1
-        },
-        {
-          "className": "CmonDocumentSection",
-          "elements": [
-            {
-              "className": "CmonTitle",
-              "text": "Node 192.168.0.241",
-              "titleLevel": 2
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            },
-            {
-              "className": "CmonGraph"
-            }
-          ]
         },
         {
           "className": "CmonParagraph",
-          "text": "<br/><b>How do you like this report?</b><br/>What else do you like to see or not see? We'd <a href=\"mailto:info@severalnines.com?subject=Operation Reports Feedback\">appreciate your feedback</a>. Thanks!<br/>"
+          "text": "This report was created to test the report subsystem. The document was created in the CmonReporter::buildTestReport() method. Here are some properties of the reporter:"
+        },
+        {
+          "className": "CmonVerbatim",
+          "text": "   CmonReporter: 0x7ff9fc009940\n      clusterId: 1\n         loaded: 0 schedule(s)\n           date: Feb 09 07:34:29\n"
+        },
+        {
+          "className": "CmonParagraph",
+          "text": "Here is some information about the report that was requested:"
+        },
+        {
+          "className": "CmonVerbatim",
+          "text": "     reportType: testreport\n     recipients: laszlo@severalnines.com\n       interval: 7 day(s)\n        creator: pipas\n"
         }
       ]
     }

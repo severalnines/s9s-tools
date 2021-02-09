@@ -1,51 +1,240 @@
 {
   "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
-  "reply_received": "2021-02-08T11:51:36.004Z",
-  "request_created": "2021-02-08T11:51:35.994Z",
-  "request_id": 100,
-  "request_processed": "2021-02-08T11:51:36.003Z",
+  "reply_received": "2021-02-09T09:33:46.625Z",
+  "request_created": "2021-02-09T09:33:46.609Z",
+  "request_id": 5,
+  "request_processed": "2021-02-09T09:33:46.623Z",
   "request_status": "Ok",
-  "request_user_id": 1,
-  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ],
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
   "job": {
     "class_name": "CmonJobInstance",
     "can_be_aborted": false,
     "can_be_deleted": true,
     "cluster_id": 0,
-    "created": "2021-02-08T11:49:57.000Z",
-    "ended": "2021-02-08T11:51:35.000Z",
+    "created": "2021-02-09T09:33:45.000Z",
+    "ended": "2021-02-09T09:33:45.000Z",
     "exit_code": 0,
-    "group_id": 1,
-    "group_name": "admins",
+    "group_id": 4,
+    "group_name": "testgroup",
     "has_progress": true,
     "ip_address": "127.0.0.1",
-    "job_id": 19,
-    "progress_percent": 85,
+    "job_id": 21,
+    "progress_percent": 0,
     "rpc_version": "2.0",
-    "started": "2021-02-08T11:49:57.000Z",
+    "started": "2021-02-09T09:33:45.000Z",
     "status": "FINISHED",
-    "status_text": "Collecting Data",
-    "title": "Delete Container",
-    "user_id": 1,
-    "user_name": "system",
+    "status_text": "Job finished.",
+    "title": "Execute imperative_010.js",
+    "user_id": 4,
+    "user_name": "pipas",
     "job_spec": {
-      "command": "delete_container",
+      "command": "execute",
       "job_data": {
-        "container": {
-          "class_name": "CmonContainer",
-          "alias": "ft_containers_lxc_13_37123"
-        }
+        "path": "/tests/imperative_010.js"
       }
     }
   },
-  "messages": [ {
+  "messages": [
+    {
       "class_name": "CmonJobMessage",
-      "created": "2021-02-08T11:51:35.000Z",
-      "file_name": "cmonlxcserver.cpp",
-      "job_id": 19,
-      "line_number": 1193,
-      "message_id": 459,
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "CmonCommandHandlerWorker.cpp",
+      "job_id": 21,
+      "line_number": 379,
+      "message_id": 814,
       "message_status": "JOB_SUCCESS",
-      "message_text": "The container has deleted."
-    }  ]
+      "message_text": "Using default SSH credentials."
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "CmonCommandHandlerWorker.cpp",
+      "job_id": 21,
+      "line_number": 380,
+      "message_id": 815,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "The username is '<strong style='color: #59a449;'>pipas</strong>'."
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 822,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup asterisk                 192.168.0.36     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 823,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "STOPPED  pipas    testgroup debian10                 -                "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 824,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup desktop                  192.168.0.33     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 825,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup dns1                     192.168.0.2      "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 826,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup ft_scripts_6683_node0    192.168.0.241    "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 827,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup git                      192.168.0.49     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 828,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup 2620:9b::1913:7719       25.19.119.25     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 829,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup ldap                     192.168.0.55     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 830,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup mqtt                     192.168.0.5      "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 831,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup nodered                  192.168.0.37     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 832,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup pipevo                   192.168.0.38     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 833,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "STOPPED  pipas    testgroup python                   -                "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 834,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup s9sdev                   192.168.0.51     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 835,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "STOPPED  pipas    testgroup ubuntu                   -                "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 836,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "STOPPED  pipas    testgroup ubuntu-s9s               -                "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 837,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "STOPPED  pipas    testgroup ubuntu14.04              -                "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 838,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup www                      192.168.0.19     "
+    },
+    {
+      "class_name": "CmonJobMessage",
+      "created": "2021-02-09T09:33:45.000Z",
+      "file_name": "/tests/imperative_010.js",
+      "job_id": 21,
+      "line_number": 35,
+      "message_id": 839,
+      "message_status": "JOB_SUCCESS",
+      "message_text": "RUNNING  pipas    testgroup zoneminder               192.168.0.42     "
+    }
+  ]
 }

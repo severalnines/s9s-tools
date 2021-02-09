@@ -1,10 +1,8 @@
 {
   "ascending": true,
-  "job_id": 19,
+  "job_id": 21,
   "limit": 300,
-  "log_level": "DEBUG",
-  "offset": 11,
   "operation": "getJobLog",
-  "request_created": "2021-02-08T11:51:35.994Z",
-  "request_id": 100
+  "request_created": "2021-02-09T09:33:46.609Z",
+  "request_id": 5
 }

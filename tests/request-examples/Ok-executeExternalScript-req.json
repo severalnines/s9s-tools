@@ -1,0 +1,10 @@
+{
+  "class_name": "CmonRpcRequest",
+  "arguments": "",
+  "cluster_id": 1,
+  "content": "/*\n * A very simple test to check the exit() function.\n */\nfunction main()\n{\n    variable1 = 10 * (2 + 8);\n    variable2 = 10 * 2 + 8;\n\n    passed = variable1 == 100 && variable2 == 28;\n    print(\"variable1:\", variable1);\n    print(\"variable2:\", variable2);\n    print(\"passed:\", passed);\n\n    exit(passed);\n}\n",
+  "filename": "./scripts/test-scripts/imperative_001.js",
+  "operation": "executeExternalScript",
+  "request_created": "2021-02-09T09:32:38.684Z",
+  "request_id": 3
+}

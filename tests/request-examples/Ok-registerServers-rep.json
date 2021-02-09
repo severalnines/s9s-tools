@@ -1,9 +1,9 @@
 {
   "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
-  "reply_received": "2021-02-08T11:28:14.859Z",
-  "request_created": "2021-02-08T11:27:29.413Z",
+  "reply_received": "2021-02-09T10:05:18.149Z",
+  "request_created": "2021-02-09T10:04:32.488Z",
   "request_id": 3,
-  "request_processed": "2021-02-08T11:28:14.852Z",
+  "request_processed": "2021-02-09T10:05:18.143Z",
   "request_status": "Ok",
   "request_user_id": 4,
   "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
@@ -17,13 +17,13 @@
       "acl": "user::rwx,group::rwx,other::---",
       "clusterid": 0,
       "connected": true,
-      "hostId": 1,
+      "hostId": 2,
       "hostname": "core4",
       "hoststatus": "CmonHostOnline",
       "ip": "192.168.0.50",
-      "last_container_collect": 1612783694,
-      "last_hw_collect": 1612783652,
-      "lastseen": 1612783650,
+      "last_container_collect": 1612865118,
+      "last_hw_collect": 1612865075,
+      "lastseen": 1612865073,
       "maintenance_mode": "none",
       "maintenance_mode_active": false,
       "max_containers": -1,
@@ -31,8 +31,8 @@
       "message": "Up and running.",
       "model": "System x3850 X5 -[7143Y61]-",
       "statereason": "SSH is ok.",
-      "timestamp": 1612783694,
-      "unique_id": 1,
+      "timestamp": 1612865118,
+      "unique_id": 2,
       "version": "2.0.11",
       "containers": [
         {
@@ -773,7 +773,7 @@
           "class_name": "CmonDiskDevice",
           "device": "/dev/mapper/core4--vg-root",
           "filesystem": "ext4",
-          "free_mb": 85600,
+          "free_mb": 85587,
           "mountpoint": "/",
           "total_mb": 103661
         },
@@ -781,7 +781,7 @@
           "class_name": "CmonDiskDevice",
           "device": "/dev/sdb1",
           "filesystem": "ext4",
-          "free_mb": 835555,
+          "free_mb": 831648,
           "mountpoint": "/var/lib/lxc",
           "total_mb": 1121628
         },
@@ -840,7 +840,7 @@
               "description": "EXT4 volume",
               "device": "/dev/sdb1",
               "filesystem": "ext4",
-              "free_mb": 835555,
+              "free_mb": 831648,
               "mount_point": "/var/lib/lxc",
               "total_mb": 1.13964e+06
             }  ]
@@ -985,8 +985,8 @@
       ],
       "memory": {
         "class_name": "CmonMemoryInfo",
-        "memory_available_mb": 212012,
-        "memory_free_mb": 53885,
+        "memory_available_mb": 209992,
+        "memory_free_mb": 46816,
         "memory_total_mb": 225678,
         "swap_free_mb": 0,
         "swap_total_mb": 0,
@@ -1277,7 +1277,7 @@
       "processors": [
         {
           "cores": 10,
-          "cpu_max_ghz": 1.064,
+          "cpu_max_ghz": 2.395,
           "id": 1,
           "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
           "siblings": 20,
@@ -1285,7 +1285,7 @@
         },
         {
           "cores": 10,
-          "cpu_max_ghz": 2.395,
+          "cpu_max_ghz": 1.064,
           "id": 2,
           "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
           "siblings": 20,
@@ -1301,7 +1301,7 @@
         },
         {
           "cores": 10,
-          "cpu_max_ghz": 1.064,
+          "cpu_max_ghz": 1.33,
           "id": 4,
           "model": "Intel(R) Xeon(R) CPU E7- 4870 @ 2.40GHz",
           "siblings": 20,

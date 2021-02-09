@@ -1,0 +1,67 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-09T07:34:29.014Z",
+  "request_created": "2021-02-09T07:34:29.006Z",
+  "request_id": 3,
+  "request_processed": "2021-02-09T07:34:29.013Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "reports": [
+    {
+      "class_name": "CmonReport",
+      "report_type": "default",
+      "title": "Default System Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "report1",
+      "title": "System Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "standard",
+      "title": "Standard System Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "testreport",
+      "title": "Simple Test Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "availability",
+      "title": "Database Availability Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "backup",
+      "title": "Backup Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "upgrade",
+      "title": "Upgrade Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "schemachange",
+      "title": "Schema Change Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "dbgrowth",
+      "title": "Database Growth Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "capacity",
+      "title": "Capacity Report"
+    },
+    {
+      "class_name": "CmonReport",
+      "report_type": "incident_report",
+      "title": "Incident Report"
+    }
+  ]
+}

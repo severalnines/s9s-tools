@@ -1,9 +1,9 @@
 {
   "operation": "unregisterServers",
-  "request_created": "2021-02-08T11:43:40.494Z",
+  "request_created": "2021-02-09T10:04:32.278Z",
   "request_id": 3,
   "servers": [ {
       "class_name": "CmonLxcServer",
-      "hostname": "192.168.0.201"
+      "hostname": "core4"
     }  ]
 }

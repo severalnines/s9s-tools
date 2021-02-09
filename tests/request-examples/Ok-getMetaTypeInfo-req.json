@@ -1,7 +1,7 @@
 {
   "class_name": "CmonRpcRequest",
   "operation": "getMetaTypeInfo",
-  "request_created": "2021-02-08T11:22:58.104Z",
+  "request_created": "2021-02-09T07:28:12.965Z",
   "request_id": 3,
-  "type-name": "CmonJobStatistics"
+  "type-name": "CmonFile"
 }

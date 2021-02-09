@@ -1,17 +1,14 @@
 {
   "operation": "createJobInstance",
-  "request_created": "2021-02-08T11:49:57.805Z",
-  "request_id": 2,
+  "request_created": "2021-02-09T09:33:45.589Z",
+  "request_id": 3,
   "job": {
     "class_name": "CmonJobInstance",
-    "title": "Delete Container",
+    "title": "Execute imperative_010.js",
     "job_spec": {
-      "command": "delete_container",
+      "command": "execute",
       "job_data": {
-        "container": {
-          "class_name": "CmonContainer",
-          "alias": "ft_containers_lxc_13_37123"
-        }
+        "path": "/tests/imperative_010.js"
       }
     }
   }

@@ -1,101 +1,67 @@
 {
   "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
-  "reply_received": "2021-02-08T11:26:29.261Z",
-  "request_created": "2021-02-08T11:26:29.246Z",
+  "reply_received": "2021-02-09T09:24:47.221Z",
+  "request_created": "2021-02-09T09:24:47.208Z",
   "request_id": 3,
-  "request_processed": "2021-02-08T11:26:29.260Z",
+  "request_processed": "2021-02-09T09:24:47.220Z",
   "request_status": "Ok",
   "request_user_id": 4,
-  "total": 7,
+  "total": 2,
   "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
   "jobs": [
     {
       "class_name": "CmonJobInstance",
-      "tags": [
-        "testRecurringJob",
-        "recurrence"
-      ],
       "can_be_aborted": false,
-      "can_be_deleted": true,
-      "cluster_id": 1,
-      "created": "2021-02-08T11:26:00.000Z",
-      "ended": "2021-02-08T11:26:09.000Z",
+      "can_be_deleted": false,
+      "cluster_id": 0,
+      "created": "2021-02-09T09:24:39.000Z",
       "exit_code": 0,
       "group_id": 4,
       "group_name": "testgroup",
       "has_progress": true,
       "ip_address": "127.0.0.1",
-      "job_id": 7,
-      "parent_job_id": 5,
-      "progress_percent": 100,
+      "job_id": 2,
+      "progress_percent": 0,
       "rpc_version": "2.0",
-      "started": "2021-02-08T11:26:04.000Z",
-      "status": "FINISHED",
-      "status_text": "Job 'success' ended",
-      "title": "Simulated Success",
+      "started": "2021-02-09T09:24:39.000Z",
+      "status": "RUNNING",
+      "status_text": "Running...",
+      "title": "Execute shell_script_003.sh",
       "user_id": 4,
       "user_name": "pipas",
       "job_spec": {
-        "command": "success",
+        "command": "execute",
         "job_data": {
+          "path": "/tests/shell_script_003.sh",
+          "timeout": 15
         }
       }
     },
     {
       "class_name": "CmonJobInstance",
-      "tags": [
-        "testRecurringJob",
-        "recurrence"
-      ],
       "can_be_aborted": false,
       "can_be_deleted": true,
-      "cluster_id": 1,
-      "created": "2021-02-08T11:24:00.000Z",
-      "ended": "2021-02-08T11:24:09.000Z",
+      "cluster_id": 0,
+      "created": "2021-02-09T09:24:30.000Z",
+      "ended": "2021-02-09T09:24:34.000Z",
       "exit_code": 0,
       "group_id": 4,
       "group_name": "testgroup",
       "has_progress": true,
       "ip_address": "127.0.0.1",
-      "job_id": 6,
-      "parent_job_id": 5,
-      "progress_percent": 100,
+      "job_id": 1,
+      "progress_percent": 0,
       "rpc_version": "2.0",
-      "started": "2021-02-08T11:24:03.000Z",
-      "status": "FINISHED",
-      "status_text": "Job 'success' ended",
-      "title": "Simulated Success",
+      "started": "2021-02-09T09:24:30.000Z",
+      "status": "ABORTED",
+      "status_text": "Job aborted.",
+      "title": "Execute imperative_002.js",
       "user_id": 4,
       "user_name": "pipas",
       "job_spec": {
-        "command": "success",
+        "command": "execute",
         "job_data": {
-        }
-      }
-    },
-    {
-      "class_name": "CmonJobInstance",
-      "tags": [ "testRecurringJob"  ],
-      "can_be_aborted": false,
-      "can_be_deleted": true,
-      "cluster_id": 1,
-      "created": "2021-02-08T11:23:28.000Z",
-      "exit_code": 0,
-      "group_id": 4,
-      "group_name": "testgroup",
-      "ip_address": "127.0.0.1",
-      "job_id": 5,
-      "last_executed": "2021-02-08T11:26:09.637Z",
-      "recurrence": "TZ=UTC */2 * * * *",
-      "rpc_version": "2.0",
-      "status": "SCHEDULED",
-      "status_text": "Scheduled",
-      "title": "Simulated Success",
-      "user_id": 4,
-      "user_name": "pipas",
-      "job_spec": {
-        "command": "success",
-        "job_data": {
+          "path": "/tests/imperative_002.js"
         }
       }
     }
