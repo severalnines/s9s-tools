@@ -21,7 +21,7 @@ TEST_EMAIL="laszlo@severalnines.com"
 # creating a documentation (not all the requests/replies are saved, only one of
 # every request types).
 #
-export S9S_DEBUG_SAVE_REQUEST_EXAMPLES="request-examples"
+#export S9S_DEBUG_SAVE_REQUEST_EXAMPLES="request-examples"
 
 if [ "${S9S_TEST_EMAIL}" != "" ]; then
 	export TEST_EMAIL=${S9S_TEST_EMAIL}
