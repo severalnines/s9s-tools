@@ -559,6 +559,9 @@ class S9sRpcClient
 
         bool addNFSClient(
                 const S9sVariantList &hosts);
+
+        bool addNFSServer(
+                const S9sVariantList &hosts);
         
         bool addProxySql(
                 const S9sVariantList &hosts);

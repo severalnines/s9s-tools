@@ -4243,6 +4243,7 @@ S9sRpcClient::createNode()
     bool           hasPgBouncer  = false;
     bool           hasPBMAgent   = false;
     bool           hasNFSClient  = false;
+    bool           hasNFSServer  = false;
     bool           hasProxySql   = false;
     bool           hasMaxScale   = false;
     bool           hasMongo      = false;
@@ -4279,6 +4280,9 @@ S9sRpcClient::createNode()
     	} else if (protocol == "nfsclient")
         {
             hasNFSClient = true;
+    	} else if (protocol == "nfsserver")
+        {
+            hasNFSServer = true;
         } else if (protocol == "proxysql")
         {
             hasProxySql = true;
@@ -4365,6 +4369,9 @@ S9sRpcClient::createNode()
     } else if (hasNFSClient)
     {
         success = addNFSClient(hosts);
+    } else if (hasNFSServer)
+    {
+        success = addNFSServer(hosts);
     } else if (hasMaxScale)
     {
         success = addMaxScale(hosts);
@@ -5013,6 +5020,57 @@ S9sRpcClient::addProxySql(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Add ProxySQL to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::addNFSServer(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request             = composeRequest();
+    S9sVariantMap  job                 = composeJob();
+    S9sVariantMap  jobData             = composeJobData();
+    S9sString      uri                 = "/v2/jobs/";
+    S9sVariantMap  jobSpec;
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "nfsserver");
+
+    if (nodes.size() != 1u)
+    {
+        PRINT_ERROR(
+            "To add NFSServer one needs to specify"
+            " exactly one NFSServer node.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setup";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "nfsserver";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add NFSServer to Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
