@@ -170,6 +170,7 @@ function emit_ldap_settings_json()
     local enabled="true"
     local ldap_url="$LDAP_URL"
     local ldapAdminUser="cn=admin,dc=homelab,dc=local"
+    local ldapGroupSearchRoot="dc=homelab,dc=local"
     local ldapAdminPassword="p"
     local ldapProtocolVersion="null"
     local caCertFile="null"
@@ -231,6 +232,11 @@ function emit_ldap_settings_json()
                 ldapGroup="$2"
                 shift 2
                 ;;
+            
+            --group-search-root)
+                ldapGroupSearchRoot="$2"
+                shift 2
+                ;;
 
             *)
                 failure "emit_ldap_settings_json(): Unknown option '$1'."
@@ -244,7 +250,7 @@ function emit_ldap_settings_json()
     "enabled": $enabled,
     "ldapAdminPassword": "$ldapAdminPassword",
     "ldapAdminUser": "$ldapAdminUser",
-    "ldapGroupSearchRoot": "dc=homelab,dc=local",
+    "ldapGroupSearchRoot": "$ldapGroupSearchRoot",
     "ldapServerUri": "$ldap_url",
     "ldapUserSearchRoot": "dc=homelab,dc=local",
     "groupMappings": [ {
@@ -341,7 +347,7 @@ function testSetLdapConfigWrongLdapGroup()
 {
     print_title "Setting LDAP Configuration with Wrong Group"
     cat <<EOF | paragraph
-  This test will save an LDAP configuration that has the worng group mapping 
+  This test will save an LDAP configuration that has the wrong group mapping 
   (an unexisting LDAP group, no existing LDAP group). This intended to ruin
   the configuration so that we can test that users will not be able top log 
   in even if they logged in before.
@@ -393,6 +399,60 @@ EOF
     end_verbatim
 }
 
+function testSetLdapConfigWrongGroupSearchRoot()
+{
+    print_title "Setting LDAP Configuration with Wrong Group Search Root"
+    cat <<EOF | paragraph
+  This test will save an LDAP configuration that has the wrong group search
+  root. This intended to ruin the configuration so that we can test that users
+  will not be able top log in even if they logged in before.
+EOF
+    
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json \\
+            --group-search-root "dc=nosuch,dc=local" \\
+        |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always
+EOF
+
+    emit_ldap_settings_json    \
+            --group-search-root "dc=nosuch,dc=local" \
+        |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json       \
+            --color=always
+
+    check_exit_code_no_job $?
+
+    cat $OPTION_LDAP_CONFIG_FILE | print_ini_file
+    S9S_FILE_CONTAINS "$OPTION_LDAP_CONFIG_FILE" \
+        "^enabled = true" \
+        "^ldapServerUri = \"ldap://ldap.homelab.local:389\"" \
+        "^ldapAdminUser = \"cn=admin,dc=homelab,dc=local\"" \
+        "^ldapAdminPassword = \"p\"" \
+        "^ldapUserSearchRoot = \"dc=homelab,dc=local\"" \
+        "^ldapGroupSearchRoot = \"dc=nosuch,dc=local\"" \
+        "^ldapUsernameAttributes = \"cn\"" \
+        "^ldapRealnameAttributes = \"displayName,cn\"" \
+        "^ldapEmailAttributes = \"mail\"" \
+        "^ldapMemberAttributes = \"memberUid\"" \
+        "^ldapGroupId   = \"ldapgroup\"" \
+        "^cmonGroupName = \"myldapgroup\"" \
+        "^ldapUsernameAttributes"
+
+    end_verbatim
+}
 
 #
 # Checking the successful authentication of an LDAP user with the user 
@@ -488,7 +548,15 @@ else
     runFunctionalTest testSetLdapConfig
     runFunctionalTest testLdapUser1
 
+    # One kind of failure.
     runFunctionalTest testSetLdapConfigWrongLdapGroup
+    runFunctionalTest testLdapUser1Fail
+
+    # Then this should be ok again.
+    runFunctionalTest testSetLdapConfig
+    runFunctionalTest testLdapUser1
+
+    runFunctionalTest testSetLdapConfigWrongGroupSearchRoot
     runFunctionalTest testLdapUser1Fail
 fi
 

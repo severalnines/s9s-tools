@@ -863,6 +863,9 @@ EOF
 
     begin_verbatim
 
+    #
+    # Testing the user once.
+    #
     mys9s user \
         --list \
         --long \
@@ -871,6 +874,9 @@ EOF
 
     check_exit_code_no_job $?
    
+    #
+    # Again...
+    # 
     mys9s user \
         --stat \
         --long \
@@ -888,6 +894,31 @@ EOF
         --group        "myldapgroup" \
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    #
+    # Now with uppercase letters.
+    #
+    username="USERNAME"
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    check_exit_code_no_job $?
+
+    lines=$(s9s user --list --long --batch);
+    if echo "$lines" | grep -q "USERNAME"; then
+        failure "The 'USERNAME' user should not be created."
+    else
+        success "  o No 'USERNAME' user is created, ok."
+    fi
+    
+    if echo "$lines" | grep -q "username"; then
+        success "  o The 'username' user is created, ok."
+    else
+        failure "The 'username' user should be created."
+    fi
 
     end_verbatim
 }
@@ -939,7 +970,7 @@ else
 
     runFunctionalTest testGetLdapConfig2
     runFunctionalTest testLdapUser1
-    
+#if false; then    
     runFunctionalTest testSetLdapConfigDisabled
     runFunctionalTest testGetLdapConfig3
 
@@ -957,6 +988,7 @@ else
     runFunctionalTest testSetLdapConfigWrongProtocol
 
     runFunctionalTest testLdapUser1Again
+#fi
 fi
 
 runFunctionalTest --force endTests
