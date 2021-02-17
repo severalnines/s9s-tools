@@ -414,12 +414,11 @@ function testFailWrongPassword()
     # Using the wrong password.
     #
     print_title "Trying a Wrong Password"
-    cat <<EOF
+    cat <<EOF | paragraph
   This test will try to authenticate the system user with a wrong password
   and check that both the return value and the error message shows the failure.
   Then the test checks that the failed attempty is indicated in both the user
   stats and the logs.
-
 EOF
 
     begin_verbatim
@@ -470,7 +469,7 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    expected="Username or password is incorrect."
+    expected="User 'sys' was not found."
     if [ "$output" != "$expected" ]; then
         failure "Wrong error message when using the wrong username."
         failure "    output: '$output'"

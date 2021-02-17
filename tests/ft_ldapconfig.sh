@@ -946,6 +946,35 @@ EOF
     end_verbatim
 }
 
+function testLdapUser1Fail()
+{
+    local username="username"
+
+    print_title "Checking Disabled LDAP Authentication with user '$username'"
+
+    cat <<EOF | paragraph
+  This test checks the LDAP authentication using the simple name. The user
+  should not be able to authenticate.
+EOF
+
+    begin_verbatim
+
+    #
+    # Testing the user once.
+    #
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    if [ $? == 0 ]; then
+        failure "The user should not be able to log in."
+    else
+        success "  o The user could not authenticate, ok."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -973,6 +1002,7 @@ else
 #if false; then    
     runFunctionalTest testSetLdapConfigDisabled
     runFunctionalTest testGetLdapConfig3
+    runFunctionalTest testLdapUser1Fail
 
     # First setting the LDAP to a working configuration, then try various wrong
     # configurations, then we check the the original good configuration is kept
