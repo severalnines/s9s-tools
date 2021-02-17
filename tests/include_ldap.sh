@@ -98,7 +98,10 @@ EOF
         failure "No group name is provided."
     fi
 
-    mys9s group --create $groupName 
+    mys9s group \
+        --cmon-user="system" \
+        --password="secret" \
+        --create $groupName 
     check_exit_code_no_job $?
 
     check_group \
