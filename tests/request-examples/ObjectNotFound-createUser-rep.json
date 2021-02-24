@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "error_string": "Group 'nosuchgroup' does not exists.",
+  "reply_received": "2021-02-08T09:06:50.824Z",
+  "request_created": "2021-02-08T09:06:50.807Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:06:50.823Z",
+  "request_status": "ObjectNotFound",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+}

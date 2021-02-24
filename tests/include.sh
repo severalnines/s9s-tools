@@ -9,6 +9,20 @@ PRINT_PIP_COMMANDS=""
 OPTION_KEEP_NODES=""
 TEST_EMAIL="laszlo@severalnines.com"
 
+# 
+# If this variable is exported all the requests will be printed for debugging
+# purposes.
+#
+#export S9S_DEBUG_PRINT_REQUEST="true"
+
+#
+# If this variable is exported one request and the reply will be saved of every
+# type into this directory. This is not really for debugging, it is mostly for
+# creating a documentation (not all the requests/replies are saved, only one of
+# every request types).
+#
+#export S9S_DEBUG_SAVE_REQUEST_EXAMPLES="request-examples"
+
 if [ "${S9S_TEST_EMAIL}" != "" ]; then
 	export TEST_EMAIL=${S9S_TEST_EMAIL}
 fi
@@ -159,6 +173,12 @@ function my_command()
     done
 
     echo ""
+}
+
+function my_exec()
+{
+    my_command $@
+    $@
 }
 
 function mys9s_singleline()
@@ -4292,6 +4312,44 @@ function S9S_LINES_CONTAINS()
 
     return $retval
 }
+
+function S9S_FILE_CONTAINS()
+{
+    local filename
+    local lines
+    local retval=0
+
+    filename="$1"
+    shift
+
+    if [ -n "$filename" ]; then
+        success "  o Checking file '$filename', ok"
+    else
+        failure "S9S_FILE_CONTAINS(): Filename is not provided."
+    fi
+
+    if [ -f "$filename" ]; then
+        success "  o File '$filename' exists, ok."
+        lines=$(cat "$filename");
+    else
+        failure "File '$filename' was not found."
+    fi
+
+
+    while [ -n "$1" ]; do
+        if echo "$lines" | grep -q "$1"; then
+            success "  o Text '$1' found, OK."
+        else
+            failure "Line '$1' was not found."
+            retval=1
+        fi
+
+        shift
+    done
+
+    return $retval
+}
+
 
 trap clean_up_after_test EXIT
 

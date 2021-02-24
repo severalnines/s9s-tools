@@ -1,0 +1,15 @@
+{
+  "operation": "createJobInstance",
+  "request_created": "2021-02-09T09:33:45.589Z",
+  "request_id": 3,
+  "job": {
+    "class_name": "CmonJobInstance",
+    "title": "Execute imperative_010.js",
+    "job_spec": {
+      "command": "execute",
+      "job_data": {
+        "path": "/tests/imperative_010.js"
+      }
+    }
+  }
+}

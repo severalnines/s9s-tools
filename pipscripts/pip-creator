@@ -335,7 +335,7 @@ function emit_object_p_h()
 /**
  * \brief The private part of the $name class.
  */
-class ${name}Private : public PevObjectPrivate
+class ${name}Private : public ${prefix}ObjectPrivate
 {
     public:
         ${name}Private();

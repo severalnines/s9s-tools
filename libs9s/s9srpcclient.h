@@ -139,9 +139,6 @@ class S9sRpcClient
 
         bool unregisterHost();
         bool registerHost();
-        bool registerMaxScaleHost(const S9sNode &node);
-        bool registerPgBouncerHost(const S9sNode &node);
-        bool registerPBMAgentHost(const S9sNode &node);
 
         bool getContainers();
         bool getServers();
@@ -245,8 +242,6 @@ class S9sRpcClient
 
         bool deleteAccount();
         bool createDatabase();
-
-        bool importSqlUsers();
 
         /*
          * Requests related to scripts.
@@ -460,6 +455,11 @@ class S9sRpcClient
                 const S9sString &errorCode = "ConnectError");
 
         void printRequestForDebug(S9sVariantMap &request);
+
+        void 
+            saveRequestAndReply(
+                    const S9sVariantMap &request,
+                    const S9sVariantMap &reply) const;
 
     private:
         bool startNodeJob(

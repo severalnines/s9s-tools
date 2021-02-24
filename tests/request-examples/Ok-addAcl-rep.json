@@ -1,0 +1,15 @@
+{
+  "owner_user_name": "system",
+  "owner_group_name": "users",
+  "acl": "user::rwx,user:pipas:r-x,group::r-x,other::---",
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "object_name": "jobExecutorDeleteOldJobs",
+  "object_path": "/.runtime/jobs",
+  "reply_received": "2021-02-09T10:03:44.378Z",
+  "request_created": "2021-02-09T10:03:44.363Z",
+  "request_id": 2,
+  "request_processed": "2021-02-09T10:03:44.378Z",
+  "request_status": "Ok",
+  "request_user_id": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ]
+}

@@ -1,0 +1,11 @@
+{
+  "controller_id": "8d6df450-aa7b-47d3-a941-15fc322189bd",
+  "error_string": "No CmonCluster instance is available for cluster ft_clustersave_49441.",
+  "reply_received": "2021-02-09T06:41:19.844Z",
+  "request_created": "2021-02-09T06:41:19.838Z",
+  "request_id": 2,
+  "request_processed": "2021-02-09T06:41:19.843Z",
+  "request_status": "ObjectNotFound",
+  "request_user_id": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ]
+}

@@ -1,0 +1,9 @@
+{
+  "operation": "unregisterServers",
+  "request_created": "2021-02-08T11:43:40.421Z",
+  "request_id": 2,
+  "servers": [ {
+      "class_name": "CmonLxcServer",
+      "hostname": "192.168.0.201"
+    }  ]
+}

@@ -1,0 +1,13 @@
+{
+  "class_name": "CmonRpcRequest",
+  "account": {
+    "class_name": "CmonAccount",
+    "grants": "*.*:ALL",
+    "password": "pipas",
+    "user_name": "pipas"
+  },
+  "cluster_name": "galera_001",
+  "operation": "createAccount",
+  "request_created": "2021-02-08T09:17:24.975Z",
+  "request_id": 3
+}

@@ -1,0 +1,9 @@
+{
+  "cluster_id": 1,
+  "deadline": "2021-02-08T11:22:52.000Z",
+  "initiate": "2021-02-08T11:22:47.000Z",
+  "operation": "addMaintenance",
+  "reason": "cluster_maintenance_35233",
+  "request_created": "2021-02-08T11:22:47.526Z",
+  "request_id": 3
+}

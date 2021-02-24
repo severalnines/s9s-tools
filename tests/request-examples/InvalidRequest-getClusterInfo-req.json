@@ -1,0 +1,7 @@
+{
+  "cluster_id": 1,
+  "operation": "getClusterInfo",
+  "request_created": "2021-02-08T09:17:03.439Z",
+  "request_id": 2,
+  "with_databases": true
+}

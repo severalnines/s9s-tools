@@ -26,6 +26,8 @@
 #define WARNING
 #include "s9sdebug.h"
 
+#define JOB_DATA "/job/job_spec/job_data/"
+
 /******************************************************************************
  *
  */
@@ -89,8 +91,39 @@ UtS9sRpcClient::runTest(
 {
     bool retval = true;
 
+    PERFORM_TEST(testCreate,              retval);
     PERFORM_TEST(testComposeRequest,      retval);
     PERFORM_TEST(testComposeJob,          retval);
+    PERFORM_TEST(testGetNextMaintenance,  retval);
+    PERFORM_TEST(testGetSqlProcesses,     retval);
+    PERFORM_TEST(testGetTopQueries,       retval);
+    PERFORM_TEST(testGetDatabases,        retval);
+    PERFORM_TEST(testGetTree,             retval);
+    PERFORM_TEST(testGetClusterConfig,    retval);
+    PERFORM_TEST(testPingController,      retval);
+    PERFORM_TEST(testGetCpuInfo,          retval);
+    PERFORM_TEST(testGetCpuStats,         retval);
+    PERFORM_TEST(testGetSqlStats,         retval);
+    PERFORM_TEST(testGetMemStats,         retval);
+    PERFORM_TEST(testGetMemoryStats,      retval);
+    PERFORM_TEST(testGetRunningProcesses, retval);
+    PERFORM_TEST(testGetJobInstances,     retval);
+    PERFORM_TEST(testKillJobInstance,     retval);
+    PERFORM_TEST(testCloneJobInstance,    retval);
+
+    PERFORM_TEST(testCreateContainer,     retval);
+    PERFORM_TEST(testDeleteContainer,     retval);
+    PERFORM_TEST(testStartContainer,      retval);
+    PERFORM_TEST(testStopContainer,       retval);
+
+    PERFORM_TEST(testCreateCluster01,     retval);
+    PERFORM_TEST(testCreateCluster02,     retval);
+    PERFORM_TEST(testCreateCluster03,     retval);
+    PERFORM_TEST(testCreateCluster04,     retval);
+    PERFORM_TEST(testCreateCluster05,     retval);
+    PERFORM_TEST(testCreateCluster06,     retval);
+
+
     PERFORM_TEST(testGetAllClusterInfo,   retval);
     PERFORM_TEST(testGetCluster,          retval);
     PERFORM_TEST(testPing,                retval);
@@ -150,6 +183,29 @@ UtS9sRpcClient::finalizeRunTestCase()
     return retval;
 }
 
+bool
+UtS9sRpcClient::testCreate()
+{
+    S9sRpcClient client1("myhost.com", 4242, "/path", true);
+    S9sRpcClient client2(client1);
+    S9sRpcClient client3;
+
+    client3 = client2;
+
+    S9S_COMPARE(client1.hostName(), "myhost.com");
+    S9S_COMPARE(client2.hostName(), client1.hostName());
+    S9S_COMPARE(client3.hostName(), client1.hostName());
+    
+    S9S_COMPARE(client1.useTls(), true);
+    S9S_COMPARE(client2.useTls(), client1.useTls());
+    S9S_COMPARE(client3.useTls(), client1.useTls());
+
+    S9S_COMPARE(client1.port(), 4242);
+    S9S_COMPARE(client2.port(), client1.port());
+    S9S_COMPARE(client3.port(), client1.port());
+    return true;
+}
+
 /**
  * Testing the composeRequest() method.
  */
@@ -174,12 +230,893 @@ UtS9sRpcClient::testComposeRequest()
 bool
 UtS9sRpcClient::testComposeJob()
 {
-    S9sRpcClientTester client;
-    S9sVariantMap      job;
+    S9sRpcClientTester  client;
+    S9sVariantMap       job;
 
     job = client.composeJob();
     if (isVerbose())
         printDebug(job);
+
+    return true;
+}
+
+/**
+ * Testing the getNextMaintenance() method.
+ */
+bool
+UtS9sRpcClient::testGetNextMaintenance()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getNextMaintenance());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 4);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getNextMaintenance");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetSqlProcesses()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    options->m_options["limit"]      = 43;
+    S9S_VERIFY(client.getSqlProcesses());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 6);
+    S9S_COMPARE(payload["limit"].toInt(), 43);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getSqlProcesses");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetTopQueries()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    options->m_options["limit"]      = 43;
+    options->m_options["offset"]     = 44;
+    S9S_VERIFY(client.getTopQueries());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    //S9S_COMPARE(payload.size(), 6);
+    S9S_COMPARE(payload["limit"].toInt(), 43);
+    S9S_COMPARE(payload["offset"].toInt(), 44);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getTopQueries");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetDatabases()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getDatabases());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    //S9S_COMPARE(payload.size(), 6);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["with_databases"].toBoolean(), true);
+    S9S_COMPARE(payload["operation"].toString(), "getClusterInfo");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetTree()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    
+    options->addExtraArgument("/myPath");
+    options->m_options["refresh"] = true;
+
+    S9S_VERIFY(client.getTree(true));
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    //S9S_COMPARE(payload.size(), 6);
+    S9S_COMPARE(payload["with_dot_dot"].toBoolean(), true);
+    S9S_COMPARE(payload["refresh_now"].toBoolean(), true);
+    S9S_COMPARE(payload["path"].toString(), "/myPath");
+    S9S_COMPARE(payload["operation"].toString(), "getTree");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetClusterConfig()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getClusterConfig());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 5);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getConfig");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testPingController()
+{
+    //S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    S9S_VERIFY(client.pingController());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 3);
+    S9S_COMPARE(payload["operation"].toString(), "ping");
+    S9S_VERIFY(payload["request_created"].toString().startsWith("20"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetCpuInfo()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getCpuInfo(42));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 4);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getCpuPhysicalInfo");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetCpuStats()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getCpuStats(42));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 8);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "statByName");
+    S9S_COMPARE(payload["name"].toString(), "cpustat");
+    S9S_COMPARE(payload["with_hosts"].toBoolean(), true);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetSqlStats()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getSqlStats(42));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 8);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "statByName");
+    S9S_COMPARE(payload["name"].toString(), "sqlstat");
+    S9S_COMPARE(payload["with_hosts"].toBoolean(), true);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetMemStats()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getMemStats(42));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 8);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "statByName");
+    S9S_COMPARE(payload["name"].toString(), "memorystat");
+    S9S_COMPARE(payload["with_hosts"].toBoolean(), true);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetMemoryStats()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getMemoryStats(42));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 5);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "statByName");
+    S9S_COMPARE(payload["name"].toString(), "memorystat");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetRunningProcesses()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getRunningProcesses());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 5);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getRunningProcesses");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetJobInstances()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_id"] = 42;
+    options->m_options["limit"] = 10;
+    options->m_options["offset"] = 100;
+    S9S_VERIFY(client.getJobInstances("clustername", 42));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 7);
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
+    S9S_COMPARE(payload["operation"].toString(), "getJobInstances");
+    S9S_COMPARE(payload["limit"].toInt(), 10);
+    S9S_COMPARE(payload["offset"].toInt(), 100);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testKillJobInstance()
+{
+    //S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    //options->m_options["cluster_id"] = 42;
+    //options->m_options["limit"] = 10;
+    //options->m_options["offset"] = 100;
+    S9S_VERIFY(client.killJobInstance(142));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 5);
+    S9S_COMPARE(payload["operation"].toString(), "killJobInstance");
+    S9S_COMPARE(payload["signal"].toInt(), 15);
+    S9S_COMPARE(payload["job_id"].toInt(), 142);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCloneJobInstance()
+{
+    //S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    //options->m_options["cluster_id"] = 42;
+    //options->m_options["limit"] = 10;
+    //options->m_options["offset"] = 100;
+    S9S_VERIFY(client.cloneJobInstance(142));
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 5);
+    S9S_COMPARE(payload["operation"].toString(), "cloneJobInstance");
+    S9S_COMPARE(payload["job_id"].toInt(), 142);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateContainer()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantList      containerList;
+    S9sVariantMap       properties;
+
+    /*
+     * Setting up the options.
+     */
+    options->appendVolumes("vol1:5:hdd;vol2:10:hdd");
+    options->setServers("lxc://host01");
+    options->setContainers("containername1;containername2");
+
+    options->m_options["template"] = "templatename";
+    options->m_options["image"] = "imagename";
+    options->m_options["image_os_user"] = "username";
+    options->m_options["cloud"] = "cloudname";
+    options->m_options["subnet_id"] = "subnetname";
+    options->m_options["vpc_id"] = "vpcname";
+
+    /*
+     * Calling the test function to emit a request.
+     */
+    S9S_VERIFY(client.createContainerWithJob());
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    /*
+     * Checking the emitted request.
+     */
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Create Containers");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_containers");
+    
+    containerList = payload.valueByPath(JOB_DATA "containers").toVariantList();
+    S9S_COMPARE(containerList.size(), 2);
+
+    // Checking the properties of the first container.
+    properties = containerList[0].toVariantMap();
+    S9S_COMPARE(properties["class_name"], "CmonContainer");
+    S9S_COMPARE(properties["alias"], "containername1");
+    S9S_COMPARE(properties["image"], "imagename");
+    S9S_COMPARE(properties["image_os_user"], "username");
+    S9S_COMPARE(properties["parent_server"], "host01");
+    S9S_COMPARE(properties["provider"], "cloudname");
+    S9S_COMPARE(properties["template"], "templatename");
+    S9S_COMPARE(properties["subnet"]["id"], "subnetname");
+    S9S_COMPARE(properties["subnet"]["vpc_id"], "vpcname");
+    
+    S9S_COMPARE(properties["volumes"][0]["name"], "vol1");
+    S9S_COMPARE(properties["volumes"][0]["size"], 5);
+    S9S_COMPARE(properties["volumes"][0]["type"], "hdd");
+    
+    S9S_COMPARE(properties["volumes"][1]["name"], "vol2");
+    S9S_COMPARE(properties["volumes"][1]["size"], 10);
+    S9S_COMPARE(properties["volumes"][1]["type"], "hdd");
+    
+    // Checking the properties of the second container.
+    properties = containerList[1].toVariantMap();
+    S9S_COMPARE(properties["class_name"], "CmonContainer");
+    S9S_COMPARE(properties["alias"], "containername2");
+    S9S_COMPARE(properties["image"], "imagename");
+    S9S_COMPARE(properties["image_os_user"], "username");
+    S9S_COMPARE(properties["parent_server"], "host01");
+    S9S_COMPARE(properties["provider"], "cloudname");
+    S9S_COMPARE(properties["template"], "templatename");
+    S9S_COMPARE(properties["subnet"]["id"], "subnetname");
+    S9S_COMPARE(properties["subnet"]["vpc_id"], "vpcname");
+    
+    S9S_COMPARE(properties["volumes"][0]["name"], "vol1");
+    S9S_COMPARE(properties["volumes"][0]["size"], 5);
+    S9S_COMPARE(properties["volumes"][0]["type"], "hdd");
+    
+    S9S_COMPARE(properties["volumes"][1]["name"], "vol2");
+    S9S_COMPARE(properties["volumes"][1]["size"], 10);
+    S9S_COMPARE(properties["volumes"][1]["type"], "hdd");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDeleteContainer()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload, tmpMap;
+    
+    /*
+     * Setting up the options.
+     */
+    options->setContainers("containername");
+    
+    /*
+     * Calling the test function to emit a request.
+     */
+    S9S_VERIFY(client.deleteContainerWithJob());
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    /*
+     * Checking the emitted request.
+     */
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Delete Container");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "delete_container");
+    
+    tmpMap =  payload.valueByPath(JOB_DATA "container").toVariantMap();
+    S9S_COMPARE(tmpMap["class_name"], "CmonContainer");
+    S9S_COMPARE(tmpMap["alias"], "containername");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testStartContainer()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload, tmpMap;
+    
+    /*
+     * Setting up the options.
+     */
+    options->setContainers("containername");
+    S9S_VERIFY(client.startContainerWithJob());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Start Container");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "start_container");
+    
+    tmpMap =  payload.valueByPath(JOB_DATA "container").toVariantMap();
+    S9S_COMPARE(tmpMap["class_name"], "CmonContainer");
+    S9S_COMPARE(tmpMap["alias"], "containername");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testStopContainer()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload, tmpMap;
+    
+    /*
+     * Setting up the options.
+     */
+    options->setContainers("containername");
+    S9S_VERIFY(client.stopContainerWithJob());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Stop Container");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "stop_container");
+    
+    tmpMap =  payload.valueByPath(JOB_DATA "container").toVariantMap();
+    S9S_COMPARE(tmpMap["class_name"], "CmonContainer");
+    S9S_COMPARE(tmpMap["alias"], "containername");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateCluster01()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_type"]      = "galera";
+    options->m_options["vendor"]            = "myvendor";
+    options->m_options["provider_version"]  = "myversion";
+
+    options->setNodes("NODE1:42;NODE2:42;NODE3:42");
+    options->setContainers("NODE1;NODE2;NODE3");
+    S9S_VERIFY(client.createCluster());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Create Galera Cluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+   
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "galera");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "install_software").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "vendor").toString(),
+            "myvendor");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "version").toString(),
+            "myversion");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateCluster02()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_type"]      = "mysqlreplication";
+    options->m_options["vendor"]            = "myvendor";
+    options->m_options["provider_version"]  = "myversion";
+
+    options->setNodes("NODE1:42;NODE2:42;NODE3:42");
+    options->setContainers("NODE1;NODE2;NODE3");
+    S9S_VERIFY(client.createCluster());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Create MySQL Replication Cluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+   
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "replication");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "install_software").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "vendor").toString(),
+            "myvendor");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "version").toString(),
+            "myversion");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateCluster03()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_type"]      = "groupreplication";
+    options->m_options["vendor"]            = "myvendor";
+    options->m_options["provider_version"]  = "myversion";
+
+    options->setNodes("NODE1:42;NODE2:42;NODE3:42");
+    options->setContainers("NODE1;NODE2;NODE3");
+    S9S_VERIFY(client.createCluster());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Create MySQL Replication Cluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+   
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "group_replication");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "install_software").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "vendor").toString(),
+            "myvendor");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "version").toString(),
+            "myversion");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateCluster04()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_type"]      = "postgresql";
+    //options->m_options["vendor"]            = "myvendor";
+    options->m_options["provider_version"]  = "myversion";
+
+    options->setNodes("NODE1:42;NODE2:42;NODE3:42");
+    options->setContainers("NODE1;NODE2;NODE3");
+    S9S_VERIFY(client.createCluster());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Creating PostgreSQL Cluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+   
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "postgresql_single");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "install_software").toBoolean(),
+            true);
+    
+    //S9S_COMPARE(
+    //        payload.valueByPath(JOB_DATA "vendor").toString(),
+    //        "myvendor");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "version").toString(),
+            "myversion");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateCluster05()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_type"]      = "mongodb";
+    options->m_options["vendor"]            = "myvendor";
+    options->m_options["provider_version"]  = "myversion";
+
+    options->setNodes("NODE1:42;NODE2:42;NODE3:42");
+    options->setContainers("NODE1;NODE2;NODE3");
+    S9S_VERIFY(client.createCluster());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Create Mongo Cluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+   
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "mongodb");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "install_software").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "vendor").toString(),
+            "myvendor");
+    
+    // FIXME: MongoDb has a different "version" name.
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "mongodb_version").toString(),
+            "myversion");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateCluster06()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    
+    options->m_options["cluster_type"]      = "ndbcluster";
+    options->m_options["vendor"]            = "myvendor";
+    options->m_options["provider_version"]  = "myversion";
+
+    options->setNodes("NODE1:42;NODE2:42;NODE3:42");
+    options->setContainers("NODE1;NODE2;NODE3");
+    S9S_VERIFY(client.createCluster());
+    
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Create NDB Cluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+   
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "mysqlcluster");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "install_software").toBoolean(),
+            true);
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "vendor").toString(),
+            "myvendor");
+    
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "version").toString(),
+            "myversion");
 
     return true;
 }

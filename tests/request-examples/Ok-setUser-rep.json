@@ -1,0 +1,47 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:06:49.680Z",
+  "request_created": "2021-02-08T09:06:49.666Z",
+  "request_id": 2,
+  "request_processed": "2021-02-08T09:06:49.679Z",
+  "request_status": "Ok",
+  "request_user_id": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ],
+  "user": {
+    "class_name": "CmonUser",
+    "cdt_path": "/",
+    "owner_user_id": 2,
+    "owner_user_name": "nobody",
+    "owner_group_id": 1,
+    "owner_group_name": "admins",
+    "acl": "user::rwx,group::r--,other::r--",
+    "created": "2021-02-08T09:06:39.134Z",
+    "disabled": false,
+    "email_address": "nobody@mynewdomain.com",
+    "first_name": "Default",
+    "last_name": "User",
+    "origin": "CmonDb",
+    "suspended": false,
+    "user_id": 2,
+    "user_name": "nobody",
+    "groups": [ {
+        "class_name": "CmonGroup",
+        "cdt_path": "/groups",
+        "owner_user_id": 1,
+        "owner_user_name": "system",
+        "owner_group_id": 1,
+        "owner_group_name": "admins",
+        "acl": "user::rwx,group::rwx,other::---",
+        "created": "2021-02-08T09:06:39.109Z",
+        "group_id": 3,
+        "group_name": "nobody"
+      }  ],
+    "timezone": {
+      "class_name": "CmonTimeZone",
+      "name": "Central European Time",
+      "abbreviation": "CET",
+      "offset": -3600,
+      "use_dst": false
+    }
+  }
+}

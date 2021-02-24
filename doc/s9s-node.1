@@ -81,7 +81,7 @@ s9s node \\
 
 
 .TP
-.B \-\-restart
+.B --restart
 Restart the node. This means the process that provides the main functionality on
 the node (e.g. the MySql daemon on a Galera node) will be stopped then start
 again.
@@ -93,6 +93,33 @@ s9s node \\
     --cluster-id="1" \\
     --nodes="192.168.0.72" \\
     --wait
+.fi
+
+.TP
+.B --register
+Register and start managing a node that is already set up and configured.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --register \\
+    --cluster-id="1" \\
+    --nodes="PgBouncer://192.168.0.204" \\
+    --log 
+
+s9s node \\
+    --register \\
+    --cluster-id="1" \\
+    --nodes="proxysql://192.168.0.81" \\
+    --log 
+
+s9s node \\
+    --register \\
+    --cluster-id="1" \\
+    --print-request \\
+    --nodes="keepalived://192.168.0.87" \\
+    --virtual-ip="192.168.42.10" \\
+    --log 
 .fi
 
 .TP

@@ -1,0 +1,10 @@
+{
+  "operation": "setUser",
+  "request_created": "2021-02-08T09:06:49.842Z",
+  "request_id": 2,
+  "user": {
+    "class_name": "CmonUser",
+    "email_address": "nobody@mynewdomain.com",
+    "user_name": "nonexistinguser"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-09T10:04:32.297Z",
+  "request_created": "2021-02-09T10:04:32.278Z",
+  "request_id": 3,
+  "request_processed": "2021-02-09T10:04:32.295Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "messages": [ "Unregistered server 'core4'."  ]
+}

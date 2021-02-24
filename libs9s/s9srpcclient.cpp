@@ -3400,66 +3400,6 @@ S9sRpcClient::registerGaleraCluster(
     return executeRequest(uri, request);
 }
 
-#if 0
-// Deprecated, a generic method will be used. We just keep this code around
-// until the other version is tested.
-bool
-S9sRpcClient::registerHost()
-{
-    S9sOptions    *options      = S9sOptions::instance();
-    S9sVariantList hosts        = options->nodes();
-    bool           hasMaxScale  = false;
-    bool           hasPgBouncer = false;
-    bool           hasPBMAgent  = false;
-
-    if (hosts.empty())
-    {
-        PRINT_ERROR(
-                "Node list is empty while registering node.\n"
-                "Use the --nodes command line option to provide the node list."
-                );
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    } else if (hosts.size() > 1u)
-    {
-        PRINT_ERROR("Registering nodes can only be done one-by-one.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-    
-    for (uint idx = 0u; idx < hosts.size(); ++idx)
-    {
-        S9sString protocol = hosts[idx].toNode().protocol().toLower();
-
-        if (protocol == "maxscale")
-            hasMaxScale = true;
-
-	    if (protocol == "pgbouncer")
-            hasPgBouncer = true;
-
-    	if (protocol == "pbmagent")
-            hasPBMAgent = true;
-    }
-   
-    if (hasMaxScale)
-    {
-        S9sNode node = hosts[0u].toNode();
-        return registerMaxScaleHost(node);
-    } else if (hasPgBouncer) {
-        S9sNode node = hosts[0u].toNode();
-        return registerPgBouncerHost(node);
-    } else if (hasPBMAgent) {
-        S9sNode node = hosts[0u].toNode();
-        return registerPBMAgentHost(node);
-    } else {
-        PRINT_ERROR("Registering this type of node is not supported.");
-        return false;
-    }
-
-    return true;
-}
-#else
 /**
  * This method will create a new job that will register a host into a cluster. 
  *
@@ -3534,6 +3474,9 @@ S9sRpcClient::registerHost()
     {
         command = "keepalived";
         title   = "Register Keepalived Node";
+    
+        jobData["eth_interface"] = options->getString("eth_interface");
+        jobData["virtual_ip"]    = options->getString("virtual_ip");
     } else {
         command = protocol;
         title   = "Register Node";
@@ -3548,143 +3491,6 @@ S9sRpcClient::registerHost()
 
     // The job instance describing how the job will be executed.
     job["title"]          = title;
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-    request["cluster_id"] = clusterId;
-
-    return executeRequest(uri, request);
-}
-#endif
-
-// Deprecated, will be removed.
-bool
-S9sRpcClient::registerMaxScaleHost(
-        const S9sNode &node)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
-    S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    S9sVariantList  nodes;
-
-    nodes << node;
-    if (options->hasClusterIdOption())
-    {
-        clusterId = options->clusterId();
-    } else {
-        PRINT_ERROR("Cluster ID is missing.");
-        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(nodes);
-    
-    // The jobspec describing the command.
-    jobSpec["command"]    = "maxscale";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Register MaxScale Node";
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-    request["cluster_id"] = clusterId;
-
-    return executeRequest(uri, request);
-}
-
-// Deprecated, will be removed.
-bool
-S9sRpcClient::registerPgBouncerHost(
-        const S9sNode &node)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
-    S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    S9sVariantList  nodes;
-
-    nodes << node;
-    if (options->hasClusterIdOption())
-    {
-        clusterId = options->clusterId();
-    } else {
-        PRINT_ERROR("Cluster ID is missing.");
-        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(nodes);
-    
-    //jobData["server_address"] = node.hostName();
-    
-    // The jobspec describing the command.
-    jobSpec["command"]    = "pgbouncer";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Register PgBouncer Node";
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-    request["cluster_id"] = clusterId;
-
-    return executeRequest(uri, request);
-}
-
-// Deprecated, will be removed.
-bool
-S9sRpcClient::registerPBMAgentHost(
-        const S9sNode &node)
-{
-    S9sOptions     *options = S9sOptions::instance();
-    int             clusterId;
-    S9sVariantMap   request;
-    S9sVariantMap   job = composeJob();
-    S9sVariantMap   jobData = composeJobData();
-    S9sVariantMap   jobSpec;
-    S9sString       uri = "/v2/jobs/";
-    S9sVariantList  nodes;
-
-    nodes << node;
-    if (options->hasClusterIdOption())
-    {
-        clusterId = options->clusterId();
-    } else {
-        PRINT_ERROR("Cluster ID is missing.");
-        PRINT_ERROR("Use the --cluster-id to provide the cluster ID.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(nodes);
-    
-    //jobData["server_address"] = node.hostName();
-    
-    // The jobspec describing the command.
-    jobSpec["command"]    = "pbmagent";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Register PBMAgent Node";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -4934,6 +4740,7 @@ bool
 S9sRpcClient::addKeepalived(
         const S9sVariantList &hosts)
 {
+    S9sOptions    *options   = S9sOptions::instance();
     S9sVariantMap  request = composeRequest();
     S9sVariantMap  job = composeJob();
     S9sVariantMap  jobData = composeJobData();
@@ -4958,6 +4765,10 @@ S9sRpcClient::addKeepalived(
     // The job_data describing the cluster.
     jobData["action"]   = "setupKeepalived";
     jobData["nodes"]    = nodesField(keepalivedNodes);        
+    
+    // These are for keepalived.
+    jobData["eth_interface"] = options->getString("eth_interface");
+    jobData["virtual_ip"]    = options->getString("virtual_ip");
     
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
@@ -8317,70 +8128,6 @@ S9sRpcClient::createDatabase()
     return retval;
 }
 
-/**
- * \param clusterId The ID of the cluster.
- * \returns true if the request sent and a return is received (even if the reply
- *   is an error message).
- *
- */
-bool
-S9sRpcClient::importSqlUsers()
-{
-    S9sOptions    *options = S9sOptions::instance();
-    S9sVariantMap  request = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
-    S9sVariantMap  jobSpec;
-    S9sString      uri = "/v2/jobs/";
-    S9sVariantList hosts;
-    S9sVariantList nodes;
-    S9sVariantList otherNodes;
-    bool           retval;
-
-    hosts = options->nodes();
-    if (hosts.empty())
-    {
-        PRINT_ERROR(
-            "To import users to load balancer one needs to specify "
-            "one or more load balancer nodes. "
-            "For now, only PgBouncer is supported.");
-
-        return false;
-    }
-
-    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pgbouncer");
-
-    if (nodes.size() < 1u)
-    {
-        PRINT_ERROR(
-            "To import users to load balancer one needs to specify "
-            "one or more load balancer nodes. "
-            "For now, only PgBouncer is supported.");
-
-        return false;
-    }
-
-    // The job_data describing the cluster.
-    jobData["action"]      = "importsqlusers";
-    jobData["nodes"]       = nodesField(nodes);
-
-    // The jobspec describing the command.
-    jobSpec["command"]    = "pgbouncer";
-    jobSpec["job_data"]   = jobData;
-    
-    // The job instance describing how the job will be executed.
-    job["title"]          = "Import SQL users into Load Balancer";
-    job["job_spec"]       = jobSpec;
-
-    // The request describing we want to register a job instance.
-    request["operation"]  = "createJobInstance";
-    request["job"]        = job;
-
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
-
 bool
 S9sRpcClient::saveScript(
         S9sString remoteFileName,
@@ -9740,6 +9487,12 @@ S9sRpcClient::addCredentialsToJobData(
         jobData["key_file"]    = options->sslKeyFile();
 }
 
+/**
+ * \returns The "job_data" structure or an empty map if an error happened.
+ *
+ * This method is used to create the "job_data" part of the request for requests
+ * that needs exactly one container to be passed.
+ */
 S9sVariantMap 
 S9sRpcClient::composeJobDataOneContainer() const
 {
@@ -10199,10 +9952,16 @@ S9sRpcClient::doExecuteRequest(
             m_priv->m_authenticated = false;
     }
 
+    saveRequestAndReply(request, m_priv->m_reply);
     //printf("-> \n%s\n", STR(m_priv->m_reply.toString()));
     return true;
 }
 
+/**
+ * \param request The request to print out.
+ *
+ * This method is made for printing out the RPC requests for debugging.
+ */
 void
 S9sRpcClient::printRequestForDebug(
         S9sVariantMap &request)
@@ -10211,6 +9970,7 @@ S9sRpcClient::printRequestForDebug(
     bool            isBatch = options->isBatchRequested();
     bool     isPrintRequest = options->isJsonRequestRequested();
 
+    // We print out the requests only if this environment variable is set.
     if (getenv("S9S_DEBUG_PRINT_REQUEST") != NULL)
 	    isPrintRequest = true;
 
@@ -10223,6 +9983,48 @@ S9sRpcClient::printRequestForDebug(
             format = format | S9sFormatColor;
 
         ::fprintf(stderr, "%s\n", STR(request.toJsonString(format)));
+    }
+}
+
+void 
+S9sRpcClient::saveRequestAndReply(
+        const S9sVariantMap &request,
+        const S9sVariantMap &reply) const
+{
+    S9sString directory = getenv("S9S_DEBUG_SAVE_REQUEST_EXAMPLES");
+
+    if (!directory.empty())
+    {
+        S9sString operation, status, content;
+        S9sString fileName;
+        S9sFile   file;
+
+        if (request.contains("operation"))
+            operation = request.at("operation").toString();
+        
+        if (reply.contains("request_status"))
+            status = reply.at("request_status").toString();
+
+        if (operation.empty())
+            operation = "noOperation";
+
+        if (status.empty())
+            status = "NoStatus";
+
+        fileName.sprintf("%s/%s-%s-req.json", 
+                STR(directory), STR(status), STR(operation));
+        file = S9sFile(fileName);
+        content = request.toJsonString(S9sFormatIndent);
+        if (!file.writeTxtFile(content))
+        {
+            S9S_WARNING("ERROR: %s", STR(file.errorString()));
+        }
+
+        fileName.sprintf("%s/%s-%s-rep.json", 
+                STR(directory), STR(status), STR(operation));
+        file = S9sFile(fileName);
+        content = reply.toJsonString(S9sFormatIndent);
+        file.writeTxtFile(content);
     }
 }
 

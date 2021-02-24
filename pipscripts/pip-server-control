@@ -6,9 +6,11 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
+
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
 OPTION_USER="pipas"
+LONG_OPTION=""
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
@@ -22,10 +24,16 @@ SUM_OFF_LINE_SERVERS=0
 SUM_TESTING_SERVERS=0
 SUM_PROTECTED_SERVERS=0
 SUM_IDLE_SERVERS=0
+SUM_ON_SERVERS=0
+
 SUM_CORES=0
 SUM_MEMORY=0
 SUM_DISK=0
 SUM_CONTAINERS=0
+
+SUM_CORES_ONLINE=0
+SUM_MEMORY_ONLINE=0
+SUM_DISK_ONLINE=0
 
 OPTION_STATE_FILTER=""
 
@@ -533,6 +541,7 @@ EOF
 function print_summary()
 {
     local disk_terabytes
+    local disk_terabytes_online
 
     if [ -z "$OPTION_PRINT_REPORT" ]; then
         return 0
@@ -540,21 +549,38 @@ function print_summary()
 
     let disk_terabytes=SUM_DISK
     let disk_terabytes/=1000
+    
+    let disk_terabytes_online=SUM_DISK_ONLINE
+    let disk_terabytes_online/=1000
 
-    if [ -z "$OPTION_PRINT_JSON" ]; then
+    if [ -z "$OPTION_PRINT_JSON" -a -n "$LONG_OPTION" ]; then
         printf "\n"
         printf "Summary:\n"
-        printf "         Total: %'6d server(s)\n" "$SUM_SERVERS" 
-        printf "       Testing: %'6d server(s)\n" "$SUM_TESTING_SERVERS" 
-        printf "          Idle: %'6d server(s)\n" "$SUM_IDLE_SERVERS" 
-        printf "      Off-line: %'6d server(s)\n" "$SUM_OFF_LINE_SERVERS" 
-        printf "     Protected: %'6d server(s)\n" "$SUM_PROTECTED_SERVERS" 
-        printf "    Containers: %'6d instance(s)\n" "$SUM_CONTAINERS"
+        printf "         Total: %'6d server(s)\n"   "$SUM_SERVERS" 
+        printf "       Testing: %'6d server(s)\n"   "$SUM_TESTING_SERVERS" 
+        printf "          Idle: %'6d server(s)\n"   "$SUM_IDLE_SERVERS" 
+        printf "      Off-line: %'6d server(s)\n"   "$SUM_OFF_LINE_SERVERS" 
+        printf "     Protected: %'6d server(s)\n"   "$SUM_PROTECTED_SERVERS" 
+
+#        printf "    Containers: %'6d instance(s)\n" "$SUM_CONTAINERS"
         printf "\n"
-        printf "     Processor: %'6d thread(s)\n" "$SUM_CORES" 
-        printf "  Total memory: %6d GBytes\n" "$SUM_MEMORY"
-        printf "   Total Disks: %6d TBytes\n" "$disk_terabytes"
+        printf "Total\n"
+        printf "     Processor: %'6d thread(s)\n"  "$SUM_CORES" 
+        printf "  Total memory: %6d GBytes\n"      "$SUM_MEMORY"
+        printf "   Total Disks: %6d TBytes\n"      "$disk_terabytes"
         printf "\n"
+        printf "Online\n"
+        printf "     Processor: %'6d thread(s)\n"  "$SUM_CORES_ONLINE" 
+        printf "  Total memory: %6d GBytes\n"      "$SUM_MEMORY_ONLINE"
+        printf "   Total Disks: %6d TBytes\n" "$disk_terabytes_online"
+        printf "\n"
+    elif [ -z "$OPTION_PRINT_JSON" ]; then
+        printf "%3dsrv %4did %4dtt\n"  \
+            "$SUM_ON_SERVERS" "$SUM_IDLE_SERVERS" "$SUM_TESTING_SERVERS"
+
+        printf "%3dthr %4dGB %4dTB\n" \
+            "$SUM_CORES_ONLINE" "$SUM_MEMORY_ONLINE" "$disk_terabytes_online"
+
     else
         cat <<EOF
 {
@@ -670,7 +696,7 @@ function print_host_list_long()
         fi
     
         [ -z "$HOST_STATUS" ] && HOST_STATUS="OFF-LINE"
-        [ -n "$CONF_HOST_PROTECTED" ] && HOST_STATUS="PROTECTED"
+        [ -n "$CONF_HOST_PROTECTED" -a "$HOST_STATUS" != "OFF-LINE" ] && HOST_STATUS="PROTECTED"
 
         if [ -f "$info_file" ]; then
             fileAge="$(fileAgeInSeconds "$info_file")"
@@ -720,19 +746,32 @@ function print_host_list_long()
             TESTING)
                 let SUM_TESTING_SERVERS+=1
                 let SUM_SERVERS+=1
+                let SUM_CORES_ONLINE+=NUMBER_OF_CORES
+                let SUM_MEMORY_ONLINE+=MEMORY_GIGABYTES
+                let SUM_DISK_ONLINE+=DISK_GIGABYTES
+                let SUM_ON_SERVERS+=1
                 ;;
            
             PROTECTED)
                 let SUM_PROTECTED_SERVERS+=1
                 let SUM_SERVERS+=1
+                let SUM_CORES_ONLINE+=NUMBER_OF_CORES
+                let SUM_MEMORY_ONLINE+=MEMORY_GIGABYTES
+                let SUM_DISK_ONLINE+=DISK_GIGABYTES
+                let SUM_ON_SERVERS+=1
                 ;;
 
             IDLE)
                 let SUM_IDLE_SERVERS+=1
                 let SUM_SERVERS+=1
+                let SUM_CORES_ONLINE+=NUMBER_OF_CORES
+                let SUM_MEMORY_ONLINE+=MEMORY_GIGABYTES
+                let SUM_DISK_ONLINE+=DISK_GIGABYTES
+                let SUM_ON_SERVERS+=1
                 ;;
 
             *)
+                echo "--> HOST_STATUS: $HOST_STATUS"
                 let SUM_SERVERS+=1
                 ;;
         esac

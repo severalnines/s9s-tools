@@ -1,0 +1,7 @@
+{
+  "operation": "checkAccess",
+  "path": "/.runtime/user_manager",
+  "privileges": "r",
+  "request_created": "2021-02-08T09:33:16.797Z",
+  "request_id": 3
+}

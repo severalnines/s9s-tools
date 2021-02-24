@@ -1,0 +1,47 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-09T07:34:29.322Z",
+  "request_created": "2021-02-09T07:34:29.308Z",
+  "request_id": 3,
+  "request_processed": "2021-02-09T07:34:29.321Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "report": {
+    "class_name": "CmonReport",
+    "content": " 001b[1m  Simple Test Report 001b[0;39m\n\n    This report was created to test the report subsystem. The document was\n  created in the CmonReporter::buildTestReport() method. Here are some\n  properties of the reporter:\n\n   CmonReporter: 0x7ff9fc009940\n      clusterId: 1\n         loaded: 0 schedule(s)\n           date: Feb 09 07:34:29\n\n\n    Here is some information about the report that was requested:\n\n     reportType: testreport\n     recipients: laszlo@severalnines.com\n       interval: 7 day(s)\n        creator: pipas\n\n\n",
+    "created": "2021-02-09T07:34:29.000Z",
+    "days": 7,
+    "owner": "pipas",
+    "path": "/tmp/cmon/unittest/1/galera/cmon-reports/testreport_2021-02-09_073429.html",
+    "recipients": "laszlo@severalnines.com",
+    "report_id": 1,
+    "report_type": "testreport",
+    "document": {
+      "className": "CmonDocument",
+      "elements": [
+        {
+          "className": "CmonTitle",
+          "text": "Simple Test Report",
+          "titleLevel": 1
+        },
+        {
+          "className": "CmonParagraph",
+          "text": "This report was created to test the report subsystem. The document was created in the CmonReporter::buildTestReport() method. Here are some properties of the reporter:"
+        },
+        {
+          "className": "CmonVerbatim",
+          "text": "   CmonReporter: 0x7ff9fc009940\n      clusterId: 1\n         loaded: 0 schedule(s)\n           date: Feb 09 07:34:29\n"
+        },
+        {
+          "className": "CmonParagraph",
+          "text": "Here is some information about the report that was requested:"
+        },
+        {
+          "className": "CmonVerbatim",
+          "text": "     reportType: testreport\n     recipients: laszlo@severalnines.com\n       interval: 7 day(s)\n        creator: pipas\n"
+        }
+      ]
+    }
+  }
+}

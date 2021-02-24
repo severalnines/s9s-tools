@@ -1,0 +1,17 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:16:47.949Z",
+  "request_created": "2021-02-08T09:16:47.922Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:16:47.947Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "database": {
+    "class_name": "CmonDataBase",
+    "owner_user_id": 4,
+    "owner_group_id": 2,
+    "database_name": "whois_records_delta"
+  },
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "messages": [ "Database 'whois_records_delta' created."  ]
+}

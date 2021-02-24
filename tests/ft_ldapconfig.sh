@@ -122,7 +122,7 @@ ldapMemberAttributes   = "memberUid"
 
 [mapping1]
 ldapGroupId            = "ldapgroup"
-cmonGroupName          = "ldapgroup"
+cmonGroupName          = "myldapgroup"
 EOF
 
     return 0
@@ -242,7 +242,7 @@ function emit_ldap_settings_json()
     "ldapServerUri": "$ldap_url",
     "ldapUserSearchRoot": "dc=homelab,dc=local",
     "groupMappings": [ {
-        "cmonGroupName": "ldapgroup",
+        "cmonGroupName": "myldapgroup",
         "ldapGroupId": "ldapgroup",
         "sectionName": "mapping1"
       }  ],
@@ -281,7 +281,8 @@ function testSetLdapConfigEnabled()
     print_title "Setting LDAP Configuration"
     cat <<EOF | paragraph
   This test sets the LDAP configuration using the setLdapConfig call. The exit
-  code should show that the call succeeded.
+  code should show that the call succeeded and this LDAP configuration should
+  actually work as it is checked in the next test.
 EOF
     
     begin_verbatim
@@ -306,6 +307,23 @@ EOF
             --color=always
 
     check_exit_code_no_job $?
+
+    cat $OPTION_LDAP_CONFIG_FILE | print_ini_file
+    S9S_FILE_CONTAINS "$OPTION_LDAP_CONFIG_FILE" \
+        "^enabled = true" \
+        "^ldapServerUri = \"ldap://ldap.homelab.local:389\"" \
+        "^ldapAdminUser = \"cn=admin,dc=homelab,dc=local\"" \
+        "^ldapAdminPassword = \"p\"" \
+        "^ldapUserSearchRoot = \"dc=homelab,dc=local\"" \
+        "^ldapGroupSearchRoot = \"dc=homelab,dc=local\"" \
+        "^ldapUsernameAttributes = \"cn\"" \
+        "^ldapRealnameAttributes = \"displayName,cn\"" \
+        "^ldapEmailAttributes = \"mail\"" \
+        "^ldapMemberAttributes = \"memberUid\"" \
+        "^ldapGroupId   = \"ldapgroup\"" \
+        "^cmonGroupName = \"myldapgroup\"" \
+        "^ldapUsernameAttributes"
+
     end_verbatim
 }
 
@@ -788,7 +806,7 @@ EOF
         ".ldap_configuration.ldapSettings.ldapMemberAttributes"    "memberUid" \
         ".ldap_configuration.ldapSettings.ldapRealnameAttributes"  "displayName,cn" \
         ".ldap_configuration.ldapSettings.ldapUsernameAttributes"  "cn" \
-        ".ldap_configuration.groupMappings[0].cmonGroupName"  "ldapgroup" \
+        ".ldap_configuration.groupMappings[0].cmonGroupName"  "myldapgroup" \
         ".ldap_configuration.groupMappings[0].ldapGroupId"  "ldapgroup"
 
     end_verbatim
@@ -845,6 +863,9 @@ EOF
 
     begin_verbatim
 
+    #
+    # Testing the user once.
+    #
     mys9s user \
         --list \
         --long \
@@ -853,6 +874,9 @@ EOF
 
     check_exit_code_no_job $?
    
+    #
+    # Again...
+    # 
     mys9s user \
         --stat \
         --long \
@@ -867,9 +891,34 @@ EOF
         --full-name    "firstname lastname" \
         --email        "username@domain.hu" \
         --cdt-path     "/" \
-        --group        "ldapgroup" \
+        --group        "myldapgroup" \
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
+
+    #
+    # Now with uppercase letters.
+    #
+    username="USERNAME"
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    check_exit_code_no_job $?
+
+    lines=$(s9s user --list --long --batch);
+    if echo "$lines" | grep -q "USERNAME"; then
+        failure "The 'USERNAME' user should not be created."
+    else
+        success "  o No 'USERNAME' user is created, ok."
+    fi
+    
+    if echo "$lines" | grep -q "username"; then
+        success "  o The 'username' user is created, ok."
+    else
+        failure "The 'username' user should be created."
+    fi
 
     end_verbatim
 }
@@ -897,6 +946,35 @@ EOF
     end_verbatim
 }
 
+function testLdapUser1Fail()
+{
+    local username="username"
+
+    print_title "Checking Disabled LDAP Authentication with user '$username'"
+
+    cat <<EOF | paragraph
+  This test checks the LDAP authentication using the simple name. The user
+  should not be able to authenticate.
+EOF
+
+    begin_verbatim
+
+    #
+    # Testing the user once.
+    #
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
+
+    if [ $? == 0 ]; then
+        failure "The user should not be able to log in."
+    else
+        success "  o The user could not authenticate, ok."
+    fi
+}
+
 #
 # Running the requested tests.
 #
@@ -911,7 +989,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testGetLdapConfig1
 
-    runFunctionalTest testCreateLdapGroup
+    runFunctionalTest testCreateLdapGroup --group-name myldapgroup
 
     # This is for reference when debugging.
     #runFunctionalTest testCreateLdapConfig
@@ -921,9 +999,10 @@ else
 
     runFunctionalTest testGetLdapConfig2
     runFunctionalTest testLdapUser1
-    
+#if false; then    
     runFunctionalTest testSetLdapConfigDisabled
     runFunctionalTest testGetLdapConfig3
+    runFunctionalTest testLdapUser1Fail
 
     # First setting the LDAP to a working configuration, then try various wrong
     # configurations, then we check the the original good configuration is kept
@@ -939,6 +1018,7 @@ else
     runFunctionalTest testSetLdapConfigWrongProtocol
 
     runFunctionalTest testLdapUser1Again
+#fi
 fi
 
 runFunctionalTest --force endTests

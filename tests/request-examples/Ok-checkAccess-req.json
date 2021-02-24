@@ -1,0 +1,7 @@
+{
+  "operation": "checkAccess",
+  "path": "/ft_scripts_6683/tests/imperative_cluster_007.js",
+  "privileges": "rwx",
+  "request_created": "2021-02-09T09:32:40.056Z",
+  "request_id": 3
+}

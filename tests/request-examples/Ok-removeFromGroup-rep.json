@@ -1,0 +1,51 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:06:56.343Z",
+  "request_created": "2021-02-08T09:06:56.328Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:06:56.342Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "user": {
+    "class_name": "CmonUser",
+    "cdt_path": "/",
+    "owner_user_id": 7,
+    "owner_user_name": "sisko",
+    "owner_group_id": 1,
+    "owner_group_name": "admins",
+    "acl": "user::rwx,user:pipas:rwx,group::r--,other::r--",
+    "created": "2021-02-08T09:06:51.801Z",
+    "disabled": false,
+    "email_address": "sisko@ds9.com",
+    "first_name": "Benjamin",
+    "last_failed_login": "",
+    "last_login": "2021-02-08T09:06:56.027Z",
+    "last_name": "Sisko",
+    "n_failed_logins": 0,
+    "origin": "CmonDb",
+    "suspended": false,
+    "title": "Captain",
+    "user_id": 7,
+    "user_name": "sisko",
+    "groups": [ {
+        "class_name": "CmonGroup",
+        "cdt_path": "/groups",
+        "owner_user_id": 1,
+        "owner_user_name": "system",
+        "owner_group_id": 1,
+        "owner_group_name": "admins",
+        "acl": "user::rwx,group::rwx,other::---",
+        "created": "2021-02-08T09:06:51.793Z",
+        "group_id": 6,
+        "group_name": "ds9"
+      }  ],
+    "timezone": {
+      "class_name": "CmonTimeZone",
+      "name": "Central European Time",
+      "abbreviation": "CET",
+      "offset": -3600,
+      "use_dst": true
+    }
+  }
+}

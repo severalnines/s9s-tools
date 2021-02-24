@@ -1,0 +1,11 @@
+{
+  "class_name": "CmonRpcRequest",
+  "cluster_name": "galera_001",
+  "operation": "createDatabase",
+  "request_created": "2021-02-08T09:16:47.922Z",
+  "request_id": 3,
+  "database": {
+    "class_name": "CmonDataBase",
+    "database_name": "whois_records_delta"
+  }
+}

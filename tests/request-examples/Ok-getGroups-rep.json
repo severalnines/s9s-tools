@@ -1,0 +1,73 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:08:18.749Z",
+  "request_created": "2021-02-08T09:08:18.739Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:08:18.749Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 5,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "groups": [
+    {
+      "class_name": "CmonGroup",
+      "cdt_path": "/groups",
+      "owner_user_id": 1,
+      "owner_user_name": "system",
+      "owner_group_id": 1,
+      "owner_group_name": "admins",
+      "acl": "user::rwx,group::rwx,other::---",
+      "created": "2021-02-08T09:08:05.413Z",
+      "group_id": 1,
+      "group_name": "admins"
+    },
+    {
+      "class_name": "CmonGroup",
+      "cdt_path": "/groups",
+      "owner_user_id": 1,
+      "owner_user_name": "system",
+      "owner_group_id": 1,
+      "owner_group_name": "admins",
+      "acl": "user::rwx,group::rwx,other::---",
+      "created": "2021-02-08T09:08:05.419Z",
+      "group_id": 2,
+      "group_name": "users"
+    },
+    {
+      "class_name": "CmonGroup",
+      "cdt_path": "/groups",
+      "owner_user_id": 1,
+      "owner_user_name": "system",
+      "owner_group_id": 1,
+      "owner_group_name": "admins",
+      "acl": "user::rwx,group::rwx,other::---",
+      "created": "2021-02-08T09:08:05.424Z",
+      "group_id": 3,
+      "group_name": "nobody"
+    },
+    {
+      "class_name": "CmonGroup",
+      "cdt_path": "/groups",
+      "owner_user_id": 1,
+      "owner_user_name": "system",
+      "owner_group_id": 1,
+      "owner_group_name": "admins",
+      "acl": "user::rwx,group::rwx,other::---",
+      "created": "2021-02-08T09:08:17.603Z",
+      "group_id": 4,
+      "group_name": "testgroup"
+    },
+    {
+      "class_name": "CmonGroup",
+      "cdt_path": "/groups",
+      "owner_user_id": 4,
+      "owner_user_name": "pipas",
+      "owner_group_id": 4,
+      "owner_group_name": "testgroup",
+      "acl": "user::rwx,group::rwx,other::---",
+      "created": "2021-02-08T09:08:18.578Z",
+      "group_id": 5,
+      "group_name": "myldapgroup"
+    }
+  ]
+}

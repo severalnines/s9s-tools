@@ -1,0 +1,160 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-09T07:28:13.140Z",
+  "request_created": "2021-02-09T07:28:13.130Z",
+  "request_id": 3,
+  "request_processed": "2021-02-09T07:28:13.138Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 6,
+  "cluster_type_names": [
+    "galera",
+    "replication",
+    "groupreplication",
+    "myqlcluster",
+    "postgresql",
+    "mongodb"
+  ],
+  "cluster_type_properties": {
+    "galera": {
+      "intro_url": "http://galeracluster.com/products/",
+      "long_name": "Galera Cluster for MySQL",
+      "short_name": "Galera",
+      "type_name": "galera",
+      "vendors": [
+        {
+          "name": "mariadb",
+          "versions": [
+            "5.5",
+            "10.1",
+            "10.2",
+            "10.3",
+            "10.4",
+            "10.5"
+          ]
+        },
+        {
+          "name": "codership",
+          "versions": [
+            "5.5",
+            "5.6",
+            "5.7"
+          ]
+        },
+        {
+          "name": "percona",
+          "versions": [
+            "5.6",
+            "5.7",
+            "8.0"
+          ]
+        }
+      ]
+    },
+    "groupreplication": {
+      "intro_url": "http://mysqlhighavailability.com/gr/doc/index.html",
+      "long_name": "MySQL Group Replication",
+      "short_name": "Group Replication",
+      "type_name": "groupreplication",
+      "vendors": [ {
+          "name": "oracle",
+          "versions": [ "5.7"  ]
+        }  ]
+    },
+    "mongodb": {
+      "intro_url": "https://www.mongodb.com/what-is-mongodb",
+      "long_name": "MongoDB Cluster",
+      "short_name": "MongoDB",
+      "type_name": "mongodb",
+      "vendors": [
+        {
+          "name": "10gen",
+          "versions": [
+            "3.6",
+            "4.0",
+            "4.2"
+          ]
+        },
+        {
+          "name": "percona",
+          "versions": [
+            "3.6",
+            "4.0",
+            "4.2"
+          ]
+        }
+      ]
+    },
+    "myqlcluster": {
+      "long_name": "MySQL NDB Cluster",
+      "nick_name": "ndb",
+      "short_name": "NDB Cluster",
+      "type_name": "myqlcluster",
+      "vendors": [ {
+          "name": "oracle",
+          "versions": [ "7.4"  ]
+        }  ]
+    },
+    "postgresql": {
+      "intro_url": "https://www.postgresql.org/about/",
+      "long_name": "PostgreSQL Cluster",
+      "short_name": "PostgreSQL",
+      "type_name": "postgresql",
+      "vendors": [ {
+          "name": "postgresql",
+          "versions": [
+            "9.5",
+            "9.6",
+            "10",
+            "11",
+            "12",
+            "13"
+          ]
+        }  ]
+    },
+    "replication": {
+      "long_name": "MySQL Replication",
+      "nick_name": "mysqlreplication",
+      "short_name": "Replication",
+      "type_name": "replication",
+      "vendors": [
+        {
+          "name": "mariadb",
+          "versions": [
+            "5.5",
+            "10.1",
+            "10.2",
+            "10.3",
+            "10.4",
+            "10.5"
+          ]
+        },
+        {
+          "name": "codership",
+          "versions": [
+            "5.5",
+            "5.6",
+            "5.7"
+          ]
+        },
+        {
+          "name": "percona",
+          "versions": [
+            "5.5",
+            "5.6",
+            "5.7",
+            "8.0"
+          ]
+        },
+        {
+          "name": "oracle",
+          "versions": [
+            "5.7",
+            "8.0"
+          ]
+        }
+      ]
+    }
+  },
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+}

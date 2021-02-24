@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "error_string": "Read access to configuration 0 for user 'pipas'is denied.",
+  "reply_received": "2021-02-08T09:16:39.922Z",
+  "request_created": "2021-02-08T09:16:39.907Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:16:39.921Z",
+  "request_status": "InvalidRequest",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+}

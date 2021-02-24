@@ -1,0 +1,1939 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:16:40.555Z",
+  "request_created": "2021-02-08T09:16:40.532Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:16:40.544Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "configuration": {
+    "values": [
+      {
+        "name": "controller_id",
+        "current_value": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+        "default_value": null,
+        "description": "An arbitrary identifier string of this controller instance.",
+        "keys": [ "controller_id"  ],
+        "sql_keys": [ "CONTROLLER_ID"  ]
+      },
+      {
+        "name": "cluster_type",
+        "current_value": "galera",
+        "default_value": null,
+        "description": "The type of the cluster.",
+        "keys": [
+          "cluster_type",
+          "type"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "config_file_path",
+        "current_value": "/tmp/cmon_1.cnf",
+        "default_value": null,
+        "description": "The config file path. This configuration value is read-only.",
+        "keys": [
+          "config_file_path",
+          "cmon_config_path"
+        ],
+        "sql_keys": [ "CMON_CONFIG_PATH"  ]
+      },
+      {
+        "name": "logfile",
+        "current_value": "/tmp/cmon_1.log",
+        "default_value": null,
+        "description": "The log file absolute path.",
+        "keys": [ "logfile"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "name",
+        "current_value": "galera_001",
+        "default_value": null,
+        "description": "The name of the cluster for easy identification.",
+        "keys": [
+          "name",
+          "cluster_name"
+        ],
+        "sql_keys": [ "CLUSTER_NAME"  ]
+      },
+      {
+        "name": "os",
+        "current_value": "debian",
+        "default_value": null,
+        "description": "The OS type. Possible values are 'debian' or 'redhat'.",
+        "keys": [ "os"  ],
+        "sql_keys": [ "OS"  ]
+      },
+      {
+        "name": "enable_node_autorecovery",
+        "current_value": true,
+        "default_value": true,
+        "description": "Node auto-recovery setting.",
+        "keys": [ "enable_node_autorecovery"  ],
+        "sql_keys": [ "ENABLE_NODE_AUTORECOVERY"  ]
+      },
+      {
+        "name": "enable_cluster_autorecovery",
+        "current_value": true,
+        "default_value": true,
+        "description": "If true the Cmon Controller will perform cluster auto-recovery, if false no cluster recovery will be done automatically.",
+        "keys": [ "enable_cluster_autorecovery"  ],
+        "sql_keys": [ "ENABLE_CLUSTER_AUTORECOVERY"  ]
+      },
+      {
+        "name": "enable_mysql_timemachine",
+        "current_value": false,
+        "default_value": false,
+        "description": "",
+        "keys": [ "enable_mysql_timemachine"  ],
+        "sql_keys": [ "ENABLE_MYSQL_TIMEMACHINE"  ]
+      },
+      {
+        "name": "disable_backup_email",
+        "current_value": false,
+        "default_value": false,
+        "description": "This setting controls if emails are sent or not if a backup finished or failed. This feature is disabled by default, meaning backup emails are sent.",
+        "keys": [
+          "disable_backup_email",
+          "disable_backup_emails"
+        ],
+        "sql_keys": [ "DISABLE_BACKUP_EMAIL"  ]
+      },
+      {
+        "name": "cmon_db",
+        "current_value": "ft_install_testdb",
+        "default_value": "cmon",
+        "description": "The cmon database name.",
+        "keys": [
+          "cmon_db",
+          "cmondb_database"
+        ],
+        "sql_keys": [ "CMON_DB"  ]
+      },
+      {
+        "name": "cluster_id",
+        "current_value": 1,
+        "default_value": null,
+        "description": "The cluster ID.",
+        "keys": [ "cluster_id"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "db_configdir",
+        "current_value": "/etc/mysql/",
+        "default_value": null,
+        "description": "The database server config directory.",
+        "keys": [
+          "db_configdir",
+          "configdir"
+        ],
+        "sql_keys": [ "CONFIGDIR"  ]
+      },
+      {
+        "name": "created_by_job",
+        "current_value": 3,
+        "default_value": null,
+        "description": "The ID of the job created this cluster.",
+        "keys": [ "created_by_job"  ],
+        "sql_keys": [ "CREATED_BY_JOB"  ]
+      },
+      {
+        "name": "ssh_opts",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSH options, used only for rsync-ing.",
+        "keys": [
+          "ssh_opts",
+          "ssh_options"
+        ],
+        "sql_keys": [ "SSH_OPTS"  ]
+      },
+      {
+        "name": "ssh_opts_bg",
+        "current_value": null,
+        "default_value": null,
+        "description": "An old deprecated setting.",
+        "keys": [ "ssh_opts_bg"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "libssh_timeout",
+        "current_value": 30,
+        "default_value": 30,
+        "description": "Network timeout value for SSH connections.",
+        "keys": [
+          "libssh_timeout",
+          "ssh_timeout"
+        ],
+        "sql_keys": [ "LIBSSH_TIMEOUT"  ]
+      },
+      {
+        "name": "libssh_loglevel",
+        "current_value": null,
+        "default_value": null,
+        "description": "Setting for libssh logging verbosity to stdout.",
+        "keys": [ "libssh_loglevel"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "ssh_acquire_tty",
+        "current_value": true,
+        "default_value": true,
+        "description": "Setting for libssh: should it acquire a remote tty.",
+        "keys": [ "ssh_acquire_tty"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "ssh_keypath",
+        "current_value": "/home/pipas/.ssh/id_rsa",
+        "default_value": null,
+        "description": "The SSH key file used for connection to nodes.",
+        "keys": [
+          "ssh_keypath",
+          "ssh_identity",
+          "identity_file"
+        ],
+        "sql_keys": [
+          "SSH_KEYPATH",
+          "SSH_IDENTITY"
+        ]
+      },
+      {
+        "name": "ssh_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "The SSH password used for connection to nodes.",
+        "keys": [ "ssh_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "net_read_timeout",
+        "current_value": 10,
+        "default_value": 10,
+        "description": "Network read timeout value in seconds (DB connections).",
+        "keys": [ "net_read_timeout"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "net_write_timeout",
+        "current_value": 10,
+        "default_value": 10,
+        "description": "Network write timeout value in seconds (DB connections).",
+        "keys": [ "net_write_timeout"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "connect_timeout",
+        "current_value": 10,
+        "default_value": 10,
+        "description": "Network connect timeout value in seconds (DB connections).",
+        "keys": [ "connect_timeout"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "server_selection_try_once",
+        "current_value": true,
+        "default_value": true,
+        "description": "Mongo connection URI option. Defines if server selection should be repeated on failure until a server selection timeout expires, or just return with failure at once.",
+        "keys": [ "server_selection_try_once"  ],
+        "sql_keys": [ "SERVER_SELECTION_TRY_ONCE"  ]
+      },
+      {
+        "name": "server_selection_timeout_ms",
+        "current_value": 30000,
+        "default_value": 30000,
+        "description": "Mongo connection URI option. Defines the timeout value till mongodriver should try to do a successful server selection operation.",
+        "keys": [ "server_selection_timeout_ms"  ],
+        "sql_keys": [ "SERVER_SELECTION_TIMEOUT_MS"  ]
+      },
+      {
+        "name": "backup_user",
+        "current_value": "backupuser",
+        "default_value": null,
+        "description": "The username of the database account used for managing backups.",
+        "keys": [ "backup_user"  ],
+        "sql_keys": [ "BACKUP_USER"  ]
+      },
+      {
+        "name": "backup_create_hash",
+        "current_value": "true",
+        "default_value": true,
+        "description": "Configures cmon if it has to calculate md5hash on the created backup files and verify them.",
+        "keys": [ "backup_create_hash"  ],
+        "sql_keys": [ "BACKUP_CREATE_HASH"  ]
+      },
+      {
+        "name": "backup_encryption_key",
+        "current_value": null,
+        "default_value": null,
+        "description": "The AES encryption key to encrypt backups. The format of the string is base64 encoded.",
+        "keys": [ "backup_encryption_key"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "pitr_retention_hours",
+        "current_value": 0,
+        "default_value": 0,
+        "description": "Retention hours (to erase old WAL archive logs) for PITR.",
+        "keys": [
+          "pitr_retention_hours",
+          "wal_retention_hours"
+        ],
+        "sql_keys": [ "PITR_RETENTION_HOURS"  ]
+      },
+      {
+        "name": "owner",
+        "current_value": 4,
+        "default_value": null,
+        "description": "The Cmon user ID of the owner of the cluster object.",
+        "keys": [ "owner"  ],
+        "sql_keys": [ "OWNER"  ]
+      },
+      {
+        "name": "group_owner",
+        "current_value": 2,
+        "default_value": null,
+        "description": "The Cmon group ID of the group that owns the cluster object.",
+        "keys": [ "group_owner"  ],
+        "sql_keys": [ "GROUP_OWNER"  ]
+      },
+      {
+        "name": "cdt_path",
+        "current_value": "/",
+        "default_value": null,
+        "description": "The location of the cluster object in the Cmon Drirectory Tree.",
+        "keys": [ "cdt_path"  ],
+        "sql_keys": [ "CDT_PATH"  ]
+      },
+      {
+        "name": "tags",
+        "current_value": null,
+        "default_value": null,
+        "description": "A set of strings the user can specify.",
+        "keys": [ "tags"  ],
+        "sql_keys": [ "TAGS"  ]
+      },
+      {
+        "name": "acl",
+        "current_value": null,
+        "default_value": null,
+        "description": "The Access Control List as a string controlling the access to the cluster object.",
+        "keys": [ "acl"  ],
+        "sql_keys": [ "ACL"  ]
+      },
+      {
+        "name": "db_exporter_user",
+        "current_value": "cmonexporter",
+        "default_value": "cmonexporter",
+        "description": "The username for the database statistics collector exporter (agent).",
+        "keys": [
+          "db_exporter_user",
+          "db_exporter_username"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "db_exporter_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "The password for the database statistics collector exporter (agent).",
+        "keys": [ "db_exporter_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "db_exporter_use_nonlocal_address",
+        "current_value": null,
+        "default_value": null,
+        "description": "Specifies if exporter should connect to the non-local address of the DB services.",
+        "keys": [ "db_exporter_use_nonlocal_address"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "backup_user_password",
+        "current_value": "by3k4D74XV@tayq{YFasK2L}4IP5=Mc4",
+        "default_value": null,
+        "description": "The database password for backup user.",
+        "keys": [ "backup_user_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "disable_numa",
+        "current_value": null,
+        "default_value": null,
+        "description": "Not to use NUMA support dependent features.",
+        "keys": [ "disable_numa"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongodb_user",
+        "current_value": null,
+        "default_value": null,
+        "description": "The MongoDB username.",
+        "keys": [ "mongodb_user"  ],
+        "sql_keys": [ "MONGODB_USER"  ]
+      },
+      {
+        "name": "mongodb_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "The MongoDB password.",
+        "keys": [ "mongodb_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongodb_authdb",
+        "current_value": null,
+        "default_value": null,
+        "description": "The database containing user information to use for authentication.",
+        "keys": [ "mongodb_authdb"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongodb_cluster_key",
+        "current_value": null,
+        "default_value": null,
+        "description": "The cluster's nodes authenticating to each other using this key.",
+        "keys": [ "mongodb_cluster_key"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongodb_basedir",
+        "current_value": null,
+        "default_value": null,
+        "description": "The basedir for MongoDB installation.",
+        "keys": [ "mongodb_basedir"  ],
+        "sql_keys": [ "MONGODB_BASEDIR"  ]
+      },
+      {
+        "name": "mongodb_server_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The list of MongoDB database instances.",
+        "keys": [ "mongodb_server_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongos_server_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The list of MongoDB shard instances.",
+        "keys": [ "mongos_server_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongocfg_server_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The list of MongoDB config instances.",
+        "keys": [ "mongocfg_server_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mongoarbiter_server_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The list of MongoDB arbiter instances.",
+        "keys": [ "mongoarbiter_server_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "basedir",
+        "current_value": "/usr",
+        "default_value": null,
+        "description": "The basedir for MySQL installation.",
+        "keys": [
+          "basedir",
+          "mysql_basedir"
+        ],
+        "sql_keys": [ "MYSQL_BASEDIR"  ]
+      },
+      {
+        "name": "mysql_scriptdir",
+        "current_value": "/usr/bin/",
+        "default_value": null,
+        "description": "The scripts dir of MySQL installation.",
+        "keys": [
+          "mysql_scriptdir",
+          "scriptdir"
+        ],
+        "sql_keys": [ "SCRIPTDIR"  ]
+      },
+      {
+        "name": "cc_basedir",
+        "current_value": "/usr/local/cmon/",
+        "default_value": null,
+        "description": "Clustercontrol basedir of a legacy installation.",
+        "keys": [ "cc_basedir"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mysql_hostname",
+        "current_value": "127.0.0.1",
+        "default_value": "127.0.0.1",
+        "description": "The cmon database MySQL server hostname.",
+        "keys": [
+          "mysql_hostname",
+          "cmon_mysql_hostname",
+          "cmondb_hostname",
+          "local_mysql_hostname",
+          "cmon_local_mysql_hostname"
+        ],
+        "sql_keys": [ "CMONDB_HOSTNAME"  ]
+      },
+      {
+        "name": "mysql_socket",
+        "current_value": "",
+        "default_value": null,
+        "description": "The local unix socket file to be used for MySQL connection (if set TCP will not be used).",
+        "keys": [ "mysql_socket"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mysql_port",
+        "current_value": 3306,
+        "default_value": 3306,
+        "description": "The cmon database MySQL server port.",
+        "keys": [
+          "mysql_port",
+          "cmon_mysql_port",
+          "cmondb_port"
+        ],
+        "sql_keys": [ "MYSQL_PORT"  ]
+      },
+      {
+        "name": "skip_name_resolve",
+        "current_value": null,
+        "default_value": null,
+        "description": "Setting to disable name resolution.",
+        "keys": [ "skip_name_resolve"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "enable_icmp_ping",
+        "current_value": true,
+        "default_value": true,
+        "description": "Toggles if controller shall measure the ICMP ping times to the host.",
+        "keys": [ "enable_icmp_ping"  ],
+        "sql_keys": [ "ENABLE_ICMP_PING"  ]
+      },
+      {
+        "name": "host_stats_collection_interval",
+        "current_value": 120,
+        "default_value": 3,
+        "description": "Setting for host (CPU, memory..) collection interval.",
+        "keys": [ "host_stats_collection_interval"  ],
+        "sql_keys": [ "HOST_STATS_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "host_stats_window_size",
+        "current_value": 180,
+        "default_value": 180,
+        "description": "Setting the window size (in seconds) to examine of (CPU, memory..) stats to raise/clear host stats alarms.",
+        "keys": [ "host_stats_window_size"  ],
+        "sql_keys": [ "HOST_STATS_WINDOW_SIZE"  ]
+      },
+      {
+        "name": "db_stats_collection_interval",
+        "current_value": 30,
+        "default_value": 30,
+        "description": "Setting for database stats collection interval.",
+        "keys": [ "db_stats_collection_interval"  ],
+        "sql_keys": [ "DB_STATS_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "db_proc_stats_collection_interval",
+        "current_value": 5,
+        "default_value": 5,
+        "description": "Setting for database process stats collection interval.Min allowed value is  1 second. Requires a cmon restart.",
+        "keys": [ "db_proc_stats_collection_interval"  ],
+        "sql_keys": [ "DB_PROC_STATS_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "lb_stats_collection_interval",
+        "current_value": 15,
+        "default_value": 15,
+        "description": "Setting for loadbalancer stats collection interval.",
+        "keys": [ "lb_stats_collection_interval"  ],
+        "sql_keys": [ "LB_STATS_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "db_schema_stats_collection_interval",
+        "current_value": 10800,
+        "default_value": 108000,
+        "description": "Setting for schema stats monitoring interval.",
+        "keys": [ "db_schema_stats_collection_interval"  ],
+        "sql_keys": [ "DB_SCHEMA_STATS_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "db_schema_max_objects",
+        "current_value": null,
+        "default_value": null,
+        "description": "If the number of schema objects (tables, triggers, views) are greater than db_schema_max_objects then no schema analysis will be done. Not used.",
+        "keys": [ "db_schema_max_objects"  ],
+        "sql_keys": [ "DB_SCHEMA_MAX_OBJECTS"  ]
+      },
+      {
+        "name": "db_long_query_time_alarm",
+        "current_value": 0,
+        "default_value": 0,
+        "description": "Not used.",
+        "keys": [ "db_long_query_time_alarm"  ],
+        "sql_keys": [ "DB_LONG_QUERY_TIME_ALARM"  ]
+      },
+      {
+        "name": "db_deadlock_check_interval",
+        "current_value": 0,
+        "default_value": 0,
+        "description": "How often to check for deadlocks. 0 means disabled (default). Specified in seconds. Deadlock detection will affect CPU usage on database nodes.",
+        "keys": [ "db_deadlock_check_interval"  ],
+        "sql_keys": [ "DB_DEADLOCK_CHECK_INTERVAL"  ]
+      },
+      {
+        "name": "db_log_collection_interval",
+        "current_value": 600,
+        "default_value": 600,
+        "description": "Controls the interval between logfile collections.",
+        "keys": [
+          "db_log_collection_interval",
+          "log_collection_interval"
+        ],
+        "sql_keys": [ "LOG_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "db_hourly_stats_collection_interval",
+        "current_value": 5,
+        "default_value": 5,
+        "description": "Controls how many seconds are between every individual samples in the hourly range statistics.",
+        "keys": [ "db_hourly_stats_collection_interval"  ],
+        "sql_keys": [ "DB_HOURLY_STATS_COLLECTION_INTERVAL"  ]
+      },
+      {
+        "name": "sudo_opts",
+        "current_value": "sudo -n 2>/dev/null",
+        "default_value": null,
+        "description": "The command used to obtain superuser privileges.",
+        "keys": [
+          "sudo_opts",
+          "sudo"
+        ],
+        "sql_keys": [ "SUDO"  ]
+      },
+      {
+        "name": "stagingdir",
+        "current_value": "/tmp/cmon/unittest",
+        "default_value": null,
+        "description": "A staging path for temporary files.",
+        "keys": [
+          "stagingdir",
+          "staging_dir"
+        ],
+        "sql_keys": [ "STAGING_DIR"  ]
+      },
+      {
+        "name": "ssh_port",
+        "current_value": 22,
+        "default_value": 22,
+        "description": "The port for SSH connections to the nodes.",
+        "keys": [ "ssh_port"  ],
+        "sql_keys": [ "SSH_PORT"  ]
+      },
+      {
+        "name": "local_repo_name",
+        "current_value": null,
+        "default_value": null,
+        "description": "The used local repository names for cluster deployment.",
+        "keys": [ "local_repo_name"  ],
+        "sql_keys": [ "LOCAL_REPO_NAME"  ]
+      },
+      {
+        "name": "coredir",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [
+          "coredir",
+          "cmon_core_dir"
+        ],
+        "sql_keys": [ "COREDIR"  ]
+      },
+      {
+        "name": "mysql_bindir",
+        "current_value": "/usr/bin",
+        "default_value": null,
+        "description": "The /bin directory of the MySQL installation.",
+        "keys": [
+          "mysql_bindir",
+          "bindir"
+        ],
+        "sql_keys": [ "BINDIR"  ]
+      },
+      {
+        "name": "cmon_multi_tenant",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [
+          "cmon_multi_tenant",
+          "multi_tenant"
+        ],
+        "sql_keys": [ "MULTI_TENANT"  ]
+      },
+      {
+        "name": "cmon_preinstalled_image",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [
+          "cmon_preinstalled_image",
+          "pre_installed_image"
+        ],
+        "sql_keys": [ "PRE_INSTALLED_IMAGE"  ]
+      },
+      {
+        "name": "local_mysql_port",
+        "current_value": 3306,
+        "default_value": 3306,
+        "description": "The monitored MySQL servers port number.",
+        "keys": [
+          "local_mysql_port",
+          "monitored_mysql_port",
+          "cmon_local_mysql_port"
+        ],
+        "sql_keys": [ "MONITORED_MYSQL_PORT"  ]
+      },
+      {
+        "name": "netcat_port",
+        "current_value": "9999,9990-9998",
+        "default_value": "9999,9990-9998",
+        "description": "List of netcat ports and port ranges used to stream backups. Defaults to '9999,9990-9998' and port 9999 will be preferred if available.",
+        "keys": [ "netcat_port"  ],
+        "sql_keys": [ "NETCAT_PORT"  ]
+      },
+      {
+        "name": "local_mysql_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "local_mysql_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mysql_password",
+        "current_value": "p",
+        "default_value": null,
+        "description": "The cmon database password.",
+        "keys": [
+          "mysql_password",
+          "cmon_mysql_password",
+          "cmondb_password"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_user",
+        "current_value": "root",
+        "default_value": "cmon",
+        "description": "The account name for accessing the cmon database.",
+        "keys": [
+          "cmon_user",
+          "cmondb_user"
+        ],
+        "sql_keys": [ "CMON_USER"  ]
+      },
+      {
+        "name": "cmon_pool_size",
+        "current_value": "64",
+        "default_value": 64,
+        "description": "The connection pool size to the cmon database.",
+        "keys": [ "cmon_pool_size"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "ndb_connectstring",
+        "current_value": "127.0.0.1:1186",
+        "default_value": "127.0.0.1:1186",
+        "description": "The NDB connect string setting for MySQL Cluster.",
+        "keys": [ "ndb_connectstring"  ],
+        "sql_keys": [ "NDB_CONNECTSTRING"  ]
+      },
+      {
+        "name": "ndbd_datadir",
+        "current_value": null,
+        "default_value": null,
+        "description": "The datadir of the NDBD nodes.",
+        "keys": [ "ndbd_datadir"  ],
+        "sql_keys": [ "NDBD_DATADIR"  ]
+      },
+      {
+        "name": "mgmd_datadir",
+        "current_value": null,
+        "default_value": null,
+        "description": "The datadir of the NDB MGMD nodes.",
+        "keys": [ "mgmd_datadir"  ],
+        "sql_keys": [ "MGMD_DATADIR"  ]
+      },
+      {
+        "name": "monitored_mysql_root_password",
+        "current_value": "ZQU965hS{wS9Z8/E0a7tceOd8!dbPYo!",
+        "default_value": null,
+        "description": "",
+        "keys": [ "monitored_mysql_root_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "monitored_mysql_root_user",
+        "current_value": "root",
+        "default_value": "root",
+        "description": "",
+        "keys": [ "monitored_mysql_root_user"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "hostname",
+        "current_value": "192.168.0.51",
+        "default_value": null,
+        "description": "The controller hostname.",
+        "keys": [
+          "hostname",
+          "cmon_hostname"
+        ],
+        "sql_keys": [ "CMON_HOSTNAME"  ]
+      },
+      {
+        "name": "frontend_url",
+        "current_value": null,
+        "default_value": null,
+        "description": "The URL sent in the emails to direct the recipient to the Cmon Contoller web interface.",
+        "keys": [ "frontend_url"  ],
+        "sql_keys": [ "FRONTEND_URL"  ]
+      },
+      {
+        "name": "add_node_timeout",
+        "current_value": 28800,
+        "default_value": 28800,
+        "description": "A timeout value for waiting the new node to reach the synchronized state.",
+        "keys": [
+          "add_node_timeout",
+          "node_recovery_timeout"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "add_cluster_timeout",
+        "current_value": 28800,
+        "default_value": 28800,
+        "description": "Timeout value for cluster start during deployment (currently NDB only).",
+        "keys": [ "add_cluster_timeout"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "save_history_days",
+        "current_value": 7,
+        "default_value": 7,
+        "description": "A setting how long controller shall keep data. Measured in days, jobs, job messages, alarms, collected logs, operational reports, database growth information older than this will be deleted.",
+        "keys": [
+          "save_history_days",
+          "purge"
+        ],
+        "sql_keys": [ "PURGE"  ]
+      },
+      {
+        "name": "osuser",
+        "current_value": "pipas",
+        "default_value": null,
+        "description": "The SSH username used for accessing nodes.",
+        "keys": [
+          "osuser",
+          "os_user",
+          "ssh_user"
+        ],
+        "sql_keys": [
+          "OS_USER",
+          "SSH_USER"
+        ]
+      },
+      {
+        "name": "repl_user",
+        "current_value": null,
+        "default_value": null,
+        "description": "The replication username.",
+        "keys": [ "repl_user"  ],
+        "sql_keys": [ "REPL_USER"  ]
+      },
+      {
+        "name": "repl_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "The replication user password.",
+        "keys": [ "repl_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "osuser_home",
+        "current_value": null,
+        "default_value": null,
+        "description": "The HOME directory of the user used on nodes.",
+        "keys": [
+          "osuser_home",
+          "os_user_home",
+          "ssh_user_home"
+        ],
+        "sql_keys": [ "OS_USER_HOME"  ]
+      },
+      {
+        "name": "monitored_mountpoints",
+        "default_value": null,
+        "description": "The list of mount points to be monitored.",
+        "current_value": [ "/var/lib/mysql/"  ],
+        "keys": [
+          "monitored_mountpoints",
+          "monitored_mount_points"
+        ],
+        "sql_keys": [ "MONITORED_MOUNTPOINTS"  ]
+      },
+      {
+        "name": "monitored_nics",
+        "current_value": null,
+        "default_value": null,
+        "description": "The list of network interfaces to be monitored.",
+        "keys": [ "monitored_nics"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mgmnode_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The NDB MGMD node addresses.",
+        "keys": [ "mgmnode_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "mysql_server_addresses",
+        "default_value": null,
+        "description": "The MySQL (inc. Galera) server instances. In case of Galera cluster you can add ?slave or ?bvs to the URL so clustercontrol will register the node accordingly.",
+        "current_value": [ "192.168.0.241:3306"  ],
+        "keys": [ "mysql_server_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "datanode_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The NDBD node addresses.",
+        "keys": [ "datanode_addresses"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "vendor",
+        "current_value": "percona",
+        "default_value": null,
+        "description": "The database vendor name used for deployments.",
+        "keys": [
+          "vendor",
+          "galera_vendor",
+          "mongodb_vendor"
+        ],
+        "sql_keys": [ "VENDOR"  ]
+      },
+      {
+        "name": "galera_version",
+        "current_value": "3.x",
+        "default_value": null,
+        "description": "The used Galera version number.",
+        "keys": [ "galera_version"  ],
+        "sql_keys": [ "GALERA_VERSION"  ]
+      },
+      {
+        "name": "mysql_version",
+        "current_value": "5.6",
+        "default_value": null,
+        "description": "The used database server version for deployments.",
+        "keys": [
+          "mysql_version",
+          "server_version"
+        ],
+        "sql_keys": [ "SERVER_VERSION"  ]
+      },
+      {
+        "name": "cmon_mail_sender",
+        "current_value": null,
+        "default_value": null,
+        "description": "The used e-mail sender for sent mails.",
+        "keys": [ "cmon_mail_sender"  ],
+        "sql_keys": [ "CMON_MAIL_SENDER"  ]
+      },
+      {
+        "name": "postgresql_server_addresses",
+        "current_value": null,
+        "default_value": null,
+        "description": "The PostgreSQL node instances.",
+        "keys": [
+          "postgresql_server_addresses",
+          "postgre_server_addresses"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "postgresql_user",
+        "current_value": null,
+        "default_value": null,
+        "description": "The PostgreSQL user name.",
+        "keys": [
+          "postgresql_user",
+          "postgre_user"
+        ],
+        "sql_keys": [ "POSTGRESQL_USER"  ]
+      },
+      {
+        "name": "postgresql_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "The password used for PostgreSQL user.",
+        "keys": [
+          "postgresql_password",
+          "postgre_password"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "pgbouncer_admin",
+        "current_value": null,
+        "default_value": null,
+        "description": "The PgBouncer admin user name.",
+        "keys": [ "pgbouncer_admin"  ],
+        "sql_keys": [ "PGBOUNCER_ADMIN"  ]
+      },
+      {
+        "name": "pgbouncer_admin_password",
+        "current_value": null,
+        "default_value": null,
+        "description": "The password used for PgBouncer admin user.",
+        "keys": [ "pgbouncer_admin_password"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "init_name",
+        "current_value": null,
+        "default_value": null,
+        "description": "The OS service name used for starting/stopping the DB servers.",
+        "keys": [
+          "init_name",
+          "init_service_name"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "rpc_key",
+        "current_value": null,
+        "default_value": null,
+        "description": "The authentication token/key.",
+        "keys": [
+          "rpc_key",
+          "rpc_api_key"
+        ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "plugin_dir",
+        "current_value": null,
+        "default_value": null,
+        "description": "The path of plugins directory.",
+        "keys": [
+          "plugin_dir",
+          "plugin_path"
+        ],
+        "sql_keys": [ "PLUGIN_DIR"  ]
+      },
+      {
+        "name": "cmondb_ssl_key",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSL private key used for cmon database connection.",
+        "keys": [ "cmondb_ssl_key"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmondb_ssl_cert",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSL certificate used for cmon database connection.",
+        "keys": [ "cmondb_ssl_cert"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmondb_ssl_ca",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSL CA certificate for cmon database connection.",
+        "keys": [ "cmondb_ssl_ca"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cluster_certs_store",
+        "current_value": "/etc/mysql/certs",
+        "default_value": null,
+        "description": "The deployed/generated certificates path.",
+        "keys": [ "cluster_certs_store"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cluster_ssl_key",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSL private key for connection to nodes.",
+        "keys": [ "cluster_ssl_key"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cluster_ssl_cert",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSL certificate for connection to nodes.",
+        "keys": [ "cluster_ssl_cert"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cluster_ssl_ca",
+        "current_value": null,
+        "default_value": null,
+        "description": "SSL CA certificate for connection to nodes.",
+        "keys": [ "cluster_ssl_ca"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cluster_ssl_enforce",
+        "current_value": null,
+        "default_value": null,
+        "description": "If set to true, then SSL is required. Default false.",
+        "keys": [ "cluster_ssl_enforce"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "use_internal_repos",
+        "current_value": false,
+        "default_value": false,
+        "description": "Setting which disabled the 3rd party repository to be set up.",
+        "keys": [ "use_internal_repos"  ],
+        "sql_keys": [ "USE_INTERNAL_REPOS"  ]
+      },
+      {
+        "name": "backupdir",
+        "current_value": "/home/pipas/backups",
+        "default_value": null,
+        "description": "The default backup directory, to be pre-filled in Frontend.",
+        "keys": [ "backupdir"  ],
+        "sql_keys": [ "BACKUPDIR"  ]
+      },
+      {
+        "name": "datadir_backup_path",
+        "current_value": null,
+        "default_value": null,
+        "description": "During restore/rebuild operations a backup (filesystem copy) of the existing datadir maybe performed (user decides). Unless specified, the default datadir backup location is DATADIR_bak, e.g /var/lib/mysql_bak if the datadir is /var/lib/mysql.",
+        "keys": [ "datadir_backup_path"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "backup_subdir",
+        "current_value": "BACKUP-%I",
+        "default_value": null,
+        "description": "Set the name of the backup subdirectory. This string may hold standard \"%X\" field separators, the \"%06I\" for example will be replaced by the numerical ID of the backup in 6 field wide format that uses '0' as leading fill characters.\nDefault value: \"BACKUP-%I\"\nHere is the list of fields the backend currently supports:\n- B The date and time when the backup creation was beginning.\n- H The name of the backup host, the host that created the backup.\n- i The numerical ID of the cluster.\n- I The numerical ID of the backup.\n- J The numerical ID of the job that created the backup.\n- M The backup method (e.g. \"mysqldump\").\n- O The name of the user who initiated the backup job.\n- S The name of the storage host, the host that stores the backup files.\n- % The percent sign itself. Use two percent signs, \"%%\" the same way the standard printf() function interprets it as one percent sign.",
+        "keys": [ "backup_subdir"  ],
+        "sql_keys": [ "BACKUP_SUBDIR"  ]
+      },
+      {
+        "name": "imagedir",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "imagedir"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "rrd_datadir",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "rrd_datadir"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "rrdtool",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "rrdtool"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_port",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "cmon_port"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "pidfile",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "pidfile"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "nodaemon",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "nodaemon"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "agentless",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "agentless"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "wwwroot",
+        "current_value": null,
+        "default_value": null,
+        "description": "",
+        "keys": [ "wwwroot"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "ops_report_retention",
+        "current_value": 31,
+        "default_value": 31,
+        "description": "Setting of how many days to keep operational reports. Operational Reports matching retention period are removed.",
+        "keys": [ "ops_report_retention"  ],
+        "sql_keys": [ "OPS_REPORT_RETENTION"  ]
+      },
+      {
+        "name": "backup_retention",
+        "current_value": 31,
+        "default_value": 31,
+        "description": "Setting of how many days to keep the backups. Backups matching retention period are removed.",
+        "keys": [ "backup_retention"  ],
+        "sql_keys": [ "BACKUP_RETENTION"  ]
+      },
+      {
+        "name": "backup_cloud_retention",
+        "current_value": 180,
+        "default_value": 180,
+        "description": "Setting of how many days to keep the backups uploaded to a cloud. Backups matching retention period are removed.",
+        "keys": [ "backup_cloud_retention"  ],
+        "sql_keys": [ "BACKUP_CLOUD_RETENTION"  ]
+      },
+      {
+        "name": "backup_n_safety_copies",
+        "current_value": 1,
+        "default_value": 1,
+        "description": "Setting of how many completed full backups will be kept regardless of their retention status.",
+        "keys": [ "backup_n_safety_copies"  ],
+        "sql_keys": [ "BACKUP_N_SAFETY_COPIES"  ]
+      },
+      {
+        "name": "mysqlmemory_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for MySQL memory.",
+        "keys": [ "mysqlmemory_warning"  ],
+        "sql_keys": [ "MYSQLMEMORY_WARNING"  ]
+      },
+      {
+        "name": "mysqlmemory_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for MySQL memory.",
+        "keys": [ "mysqlmemory_critical"  ],
+        "sql_keys": [ "MYSQLMEMORY_CRITICAL"  ]
+      },
+      {
+        "name": "ram_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for RAM usage.",
+        "keys": [ "ram_warning"  ],
+        "sql_keys": [ "RAM_WARNING"  ]
+      },
+      {
+        "name": "ram_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for RAM usage.",
+        "keys": [ "ram_critical"  ],
+        "sql_keys": [ "RAM_CRITICAL"  ]
+      },
+      {
+        "name": "diskspace_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm treshold for disk usage.",
+        "keys": [ "diskspace_warning"  ],
+        "sql_keys": [ "DISKSPACE_WARNING"  ]
+      },
+      {
+        "name": "diskspace_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for disk usage.",
+        "keys": [ "diskspace_critical"  ],
+        "sql_keys": [ "DISKSPACE_CRITICAL"  ]
+      },
+      {
+        "name": "cpu_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for CPU usage.",
+        "keys": [ "cpu_warning"  ],
+        "sql_keys": [ "CPU_WARNING"  ]
+      },
+      {
+        "name": "cpu_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for CPU usage.",
+        "keys": [ "cpu_critical"  ],
+        "sql_keys": [ "CPU_CRITICAL"  ]
+      },
+      {
+        "name": "cpu_steal_warning",
+        "current_value": 10,
+        "default_value": 10,
+        "description": "Warning alarm threshold for CPU steal.",
+        "keys": [ "cpu_steal_warning"  ],
+        "sql_keys": [ "CPU_STEAL_WARNING"  ]
+      },
+      {
+        "name": "cpu_steal_critical",
+        "current_value": 20,
+        "default_value": 20,
+        "description": "Critical alarm threshold for CPU steal.",
+        "keys": [ "cpu_steal_critical"  ],
+        "sql_keys": [ "CPU_STEAL_CRITICAL"  ]
+      },
+      {
+        "name": "cpu_iowait_warning",
+        "current_value": 50,
+        "default_value": 50,
+        "description": "Warning alarm threshold for CPU IO Wait.",
+        "keys": [ "cpu_iowait_warning"  ],
+        "sql_keys": [ "CPU_IOWAIT_WARNING"  ]
+      },
+      {
+        "name": "cpu_iowait_critical",
+        "current_value": 60,
+        "default_value": 60,
+        "description": "Critical alarm threshold for CPU IO Wait.",
+        "keys": [ "cpu_iowait_critical"  ],
+        "sql_keys": [ "CPU_IOWAIT_CRITICAL"  ]
+      },
+      {
+        "name": "monitor_cpu_temperature",
+        "current_value": false,
+        "default_value": false,
+        "description": "Whether to monitor CPU temperature.",
+        "keys": [ "monitor_cpu_temperature"  ],
+        "sql_keys": [ "MONITOR_CPU_TEMPERATURE"  ]
+      },
+      {
+        "name": "swap_warning",
+        "current_value": 20,
+        "default_value": 20,
+        "description": "Warning alarm threshold for swap usage.",
+        "keys": [ "swap_warning"  ],
+        "sql_keys": [ "SWAP_WARNING"  ]
+      },
+      {
+        "name": "swap_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for swap usage.",
+        "keys": [ "swap_critical"  ],
+        "sql_keys": [ "SWAP_CRITICAL"  ]
+      },
+      {
+        "name": "redobuffer_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for redo buffer usage.",
+        "keys": [ "redobuffer_warning"  ],
+        "sql_keys": [ "REDOBUFFER_WARNING"  ]
+      },
+      {
+        "name": "redobuffer_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for redo buffer usage.",
+        "keys": [ "redobuffer_critical"  ],
+        "sql_keys": [ "REDOBUFFER_CRITICAL"  ]
+      },
+      {
+        "name": "indexmemory_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for index memory usage.",
+        "keys": [ "indexmemory_warning"  ],
+        "sql_keys": [ "INDEXMEMORY_WARNING"  ]
+      },
+      {
+        "name": "indexmemory_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for index memory usage.",
+        "keys": [ "indexmemory_critical"  ],
+        "sql_keys": [ "INDEXMEMORY_CRITICAL"  ]
+      },
+      {
+        "name": "datamemory_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for data memory usage.",
+        "keys": [ "datamemory_warning"  ],
+        "sql_keys": [ "DATAMEMORY_WARNING"  ]
+      },
+      {
+        "name": "datamemory_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for data memory usage.",
+        "keys": [ "datamemory_critical"  ],
+        "sql_keys": [ "DATAMEMORY_CRITICAL"  ]
+      },
+      {
+        "name": "tablespace_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for table space buffer memory usage.",
+        "keys": [ "tablespace_warning"  ],
+        "sql_keys": [ "TABLESPACE_WARNING"  ]
+      },
+      {
+        "name": "tablespace_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for table space buffer memory usage.",
+        "keys": [ "tablespace_critical"  ],
+        "sql_keys": [ "TABLESPACE_CRITICAL"  ]
+      },
+      {
+        "name": "redolog_warning",
+        "current_value": 80,
+        "default_value": 80,
+        "description": "Warning alarm threshold for redo log usage.",
+        "keys": [ "redolog_warning"  ],
+        "sql_keys": [ "REDOLOG_WARNING"  ]
+      },
+      {
+        "name": "redolog_critical",
+        "current_value": 90,
+        "default_value": 90,
+        "description": "Critical alarm threshold for redo log usage.",
+        "keys": [ "redolog_critical"  ],
+        "sql_keys": [ "REDOLOG_CRITICAL"  ]
+      },
+      {
+        "name": "max_replication_lag",
+        "current_value": 10,
+        "default_value": 10,
+        "description": "Max allowed replication lag in seconds before sending an Alarm.",
+        "keys": [ "max_replication_lag"  ],
+        "sql_keys": [ "MAX_REPLICATION_LAG"  ]
+      },
+      {
+        "name": "galera_port",
+        "current_value": 4567,
+        "default_value": 4567,
+        "description": "The galera port to be used when adding nodes/garbd, and constructing wsrep_cluster_address. Do not change at runtime.",
+        "keys": [ "galera_port"  ],
+        "sql_keys": [ "GALERA_PORT"  ]
+      },
+      {
+        "name": "cmon_use_mail",
+        "current_value": false,
+        "default_value": false,
+        "description": "Setting to use the 'mail' command for e-mailing.",
+        "keys": [ "cmon_use_mail"  ],
+        "sql_keys": [ "CMON_USE_MAIL"  ]
+      },
+      {
+        "name": "enable_html_emails",
+        "current_value": true,
+        "default_value": true,
+        "description": "Enables sending of HTML e-mails.",
+        "keys": [ "enable_html_emails"  ],
+        "sql_keys": [ "ENABLE_HTML_EMAILS"  ]
+      },
+      {
+        "name": "long_query_time",
+        "current_value": "0.5",
+        "default_value": "0.5",
+        "description": "Threshold value for slow query checking.",
+        "keys": [ "long_query_time"  ],
+        "sql_keys": [ "LONG_QUERY_TIME"  ]
+      },
+      {
+        "name": "log_queries_not_using_indexes",
+        "current_value": false,
+        "default_value": false,
+        "description": "Set query monitor to detect queries not using indexes.",
+        "keys": [ "log_queries_not_using_indexes"  ],
+        "sql_keys": [ "LOG_QUERIES_NOT_USING_INDEXES"  ]
+      },
+      {
+        "name": "query_monitor_use_local_settings",
+        "current_value": false,
+        "default_value": false,
+        "description": "",
+        "keys": [
+          "query_monitor_use_local_settings",
+          "mysql_local_query_override"
+        ],
+        "sql_keys": [ "MYSQL_LOCAL_QUERY_OVERRIDE"  ]
+      },
+      {
+        "name": "enable_query_monitor",
+        "current_value": 1,
+        "default_value": 1,
+        "description": "Controls the query monitor interval in seconds, -1 means no query monitoring.",
+        "keys": [
+          "enable_query_monitor",
+          "query_monitor_enabled",
+          "query_sample_interval"
+        ],
+        "sql_keys": [ "QUERY_SAMPLE_INTERVAL"  ]
+      },
+      {
+        "name": "enable_query_monitor_auto_purge_ps",
+        "current_value": false,
+        "default_value": false,
+        "description": "If enabled the P_S table events_statements_summary_by_digest will be auto-purged (TRUNCATE TABLE) every hour. By default this is disabled ('false'). Enable by setting it to 'true'.",
+        "keys": [
+          "enable_query_monitor_auto_purge_ps",
+          "query_monitor_auto_purge_ps"
+        ],
+        "sql_keys": [ "QUERY_MONITOR_AUTO_PURGE_PS"  ]
+      },
+      {
+        "name": "auto_manage_readonly",
+        "current_value": true,
+        "default_value": true,
+        "description": "Allow cmon to manage the read-only flag of the managed mysql servers.",
+        "keys": [ "auto_manage_readonly"  ],
+        "sql_keys": [ "AUTO_MANAGE_READONLY"  ]
+      },
+      {
+        "name": "replication_stop_on_error",
+        "current_value": true,
+        "default_value": true,
+        "description": "Controls if the failover/switchover procedures should fail if errors are encountered that may cause data loss.",
+        "keys": [ "replication_stop_on_error"  ],
+        "sql_keys": [ "REPLICATION_STOP_ON_ERROR"  ]
+      },
+      {
+        "name": "replication_auto_rebuild_slave",
+        "current_value": false,
+        "default_value": false,
+        "description": "If the SQL THREAD is stopped and error code is non-zero then the slave will be automatically rebuilt. 1 means enable, 0 means disable (default).",
+        "keys": [ "replication_auto_rebuild_slave"  ],
+        "sql_keys": [ "REPLICATION_AUTO_REBUILD_SLAVE"  ]
+      },
+      {
+        "name": "replication_failover_blacklist",
+        "current_value": null,
+        "default_value": null,
+        "description": "Comma separated list of hostname:port pairs. Blacklisted servers will not be considered as a candidate during failover. replication_failover_blacklist is ignored if replication_failover_whitelist is set.",
+        "keys": [ "replication_failover_blacklist"  ],
+        "sql_keys": [ "REPLICATION_FAILOVER_BLACKLIST"  ]
+      },
+      {
+        "name": "replication_failover_whitelist",
+        "current_value": null,
+        "default_value": null,
+        "description": "Comma separated list of hostname:port pairs. Only whitelisted servers will be considered as a candidate during failover. If no server on the whitelist is available (up/connected) the failover will fail. replication_failover_blacklist is ignored if replication_failover_whitelist is set.",
+        "keys": [ "replication_failover_whitelist"  ],
+        "sql_keys": [ "REPLICATION_FAILOVER_WHITELIST"  ]
+      },
+      {
+        "name": "replication_skip_apply_missing_txs",
+        "current_value": false,
+        "default_value": false,
+        "description": "Force failover/switchover by skipping applying transactions from other slaves. Default disabled. 1 means enabled.",
+        "keys": [ "replication_skip_apply_missing_txs"  ],
+        "sql_keys": [ "REPLICATION_SKIP_APPLY_MISSING_TXS"  ]
+      },
+      {
+        "name": "replication_failover_wait_to_apply_timeout",
+        "current_value": -1,
+        "default_value": -1,
+        "description": "Candidate waits up to this many seconds to apply outstanding relay log (retrieved_gtids) before failing over. Default -1 seconds means wait forever, 0 means immediate failover.",
+        "keys": [ "replication_failover_wait_to_apply_timeout"  ],
+        "sql_keys": [ "REPLICATION_FAILOVER_WAIT_TO_APPLY_TIMEOUT"  ]
+      },
+      {
+        "name": "replication_onfail_failover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script executed as soon as it has been discovered that a failover is needed. If the script returns non-zero it will force the failover to abort.\n If the script returns non-zero the failover will be aborted.\n If the script specified script does not exists the failover will be aborted.\n Four arguments are supplied to the script and set if they are known, else empty: arg1='all servers'  arg2='failed master' arg3='selected candidate', arg4='slaves of oldmaster (the candidates)' and passed like this: 'scripname arg1 arg2 arg3 arg4'\n The script must be accessible on the controller and executable.",
+        "keys": [ "replication_onfail_failover_script"  ],
+        "sql_keys": [ "REPLICATION_ONFAIL_FAILOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_pre_failover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script executed before the failover happens, but after a candidate has been elected and it is possible to continue the failover process.\n If the script returns non-zero the failover will be aborted.\n If the script specified script does not exists the failover will be aborted.\n Four arguments are supplied to the script and set if they are known, else empty: arg1='all servers'  arg2='failed master' arg3='selected candidate', arg4='slaves of oldmaster (the candidates)' and passed like this: 'scripname arg1 arg2 arg3 arg4'\n The script must be accessible on the controller and executable.",
+        "keys": [ "replication_pre_failover_script"  ],
+        "sql_keys": [ "REPLICATION_PRE_FAILOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_post_failover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script executed after the failover happened ( a new master is elected and up and running).\n If the script returns non-zero the failover will be aborted.\n If the script specified script does not exists the failover will be aborted.\n Four arguments are supplied to the script and set if they are known, else empty.: arg1='all servers'  arg2='failed master' arg3='selected candidate', arg4='slaves of oldmaster (the candidates)' and passed like this: 'scripname arg1 arg2 arg3 arg4'\n The script must be accessible on the controller and executable.",
+        "keys": [ "replication_post_failover_script"  ],
+        "sql_keys": [ "REPLICATION_POST_FAILOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_post_unsuccessful_failover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script executed if the failover attempt failed.  If the script returns non-zero the failover will be aborted.\n If the script specified script does not exists the failover will be aborted.\n Four arguments are supplied to the script and set if they are known, else empty.: arg1='all servers'  arg2='failed master' arg3='selected candidate', arg4='slaves of oldmaster (the candidates)' and passed like this: 'scripname arg1 arg2 arg3 arg4'\n The script must be accessible on the controller and executable.",
+        "keys": [ "replication_post_unsuccessful_failover_script"  ],
+        "sql_keys": [ "REPLICATION_POST_UNSUCCESSFUL_FAILOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_failed_reslave_failover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script is executed after that a new master has been promoted and if the reslaving of the slaves to the new master fails. If the script returns non-zero a Warning will be written in the job log. The script must be accessible on the controller and executable.",
+        "keys": [ "replication_failed_reslave_failover_script"  ],
+        "sql_keys": [ "REPLICATION_FAILED_RESLAVE_FAILOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_pre_switchover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script executed before the switchover happens. If the script returns non-zero it will force the switchover to fail. If the script returns 0, the switchover procedure will continue to execute. Four arguments are supplied to the script: $1='all servers' $2='oldmaster', $3='candidate', $4='slaves of oldmaster' and passed like this: If the script is defined but not found, the switchover will be aborted. The script must be accessible on the controller and executable.",
+        "keys": [ "replication_pre_switchover_script"  ],
+        "sql_keys": [ "REPLICATION_PRE_SWITCHOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_post_switchover_script",
+        "current_value": null,
+        "default_value": null,
+        "description": "This script executed after the switchover happened. If the script returns non-zero a Warning will be written in the job log. Four arguments are supplied to the script: $1='all servers' $2='oldmaster', $3='candidate', $4='slaves of oldmaster' and passed like this: The script must be accessible on the controller and executable.",
+        "keys": [ "replication_post_switchover_script"  ],
+        "sql_keys": [ "REPLICATION_POST_SWITCHOVER_SCRIPT"  ]
+      },
+      {
+        "name": "replication_check_external_bf_failover",
+        "current_value": true,
+        "default_value": true,
+        "description": "Before attempting a failover, perform extended checks by checking the slave status to detect if the master is truly down, and also check if ProxySQL (if installed) can still see the master. If the master is detected to be functioning, then no failover will be performed. Default is 1 meaning the checks are enabled.",
+        "keys": [ "replication_check_external_bf_failover"  ],
+        "sql_keys": [ "REPLICATION_CHECK_EXTERNAL_BF_FAILOVER"  ]
+      },
+      {
+        "name": "replication_check_binlog_filtration_bf_failover",
+        "current_value": false,
+        "default_value": false,
+        "description": "Before attempting a failover, verify filtration (binlog_do/ignore_db) and replication_* are identically configured on the candidate and the slaves. Default is 0 meaning the checks are disabled.",
+        "keys": [ "replication_check_binlog_filtration_bf_failover"  ],
+        "sql_keys": [ "REPLICATION_CHECK_BINLOG_FILTRATION_BF_FAILOVER"  ]
+      },
+      {
+        "name": "replication_failover_events",
+        "current_value": false,
+        "default_value": false,
+        "description": "Automatically failover events (SLAVESIDE_DISABLED) eand nable the event_scheduler after a replication failover/switchover action. Default is disabled. Enabled by setting it to 1.",
+        "keys": [ "replication_failover_events"  ],
+        "sql_keys": [ "REPLICATION_FAILOVER_EVENTS"  ]
+      },
+      {
+        "name": "synchronous_replication",
+        "current_value": null,
+        "default_value": null,
+        "description": "Enforce synchronous replication is enabled during failover and add/rebuild slave.",
+        "keys": [ "synchronous_replication"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "swap_inout_period",
+        "current_value": 0,
+        "default_value": 0,
+        "description": "The interval for swap I/O alarms (<= 0 disables).",
+        "keys": [ "swap_inout_period"  ],
+        "sql_keys": [ "SWAP_INOUT_PERIOD"  ]
+      },
+      {
+        "name": "swap_inout_warning",
+        "current_value": 10240,
+        "default_value": 10240,
+        "description": "The number of pages swapped I/O in the specified interval (swap_inout_period, by default 10 minutes) for warning.",
+        "keys": [ "swap_inout_warning"  ],
+        "sql_keys": [ "SWAP_INOUT_WARNING"  ]
+      },
+      {
+        "name": "swap_inout_critical",
+        "current_value": 102400,
+        "default_value": 102400,
+        "description": "The number of pages swapped I/O in the specified interval (swap_inout_period, by default 10 minutes) for critical.",
+        "keys": [ "swap_inout_critical"  ],
+        "sql_keys": [ "SWAP_INOUT_CRITICAL"  ]
+      },
+      {
+        "name": "slow_ssh_warning",
+        "current_value": 6,
+        "default_value": 6,
+        "description": "An Warning alarm will be raised if it takes longer than the specified time to setup an SSH connection (secs).",
+        "keys": [ "slow_ssh_warning"  ],
+        "sql_keys": [ "SLOW_SSH_WARNING"  ]
+      },
+      {
+        "name": "slow_ssh_critical",
+        "current_value": 12,
+        "default_value": 12,
+        "description": "An Critical alarm will be raised if it takes longer than the specified time to setup an SSH connection (secs).",
+        "keys": [ "slow_ssh_critical"  ],
+        "sql_keys": [ "SLOW_SSH_CRITICAL"  ]
+      },
+      {
+        "name": "send_clear_cluster_failure",
+        "current_value": true,
+        "default_value": true,
+        "description": "Toggles the email sending in case of cluster alarms being cleared.",
+        "keys": [
+          "send_clear_cluster_failure",
+          "send_clear_alarm"
+        ],
+        "sql_keys": [ "SEND_CLEAR_ALARM"  ]
+      },
+      {
+        "name": "schema_change_detection_address",
+        "current_value": null,
+        "default_value": null,
+        "description": "Checks will be executed (using SHOW TABLES/SHOW CREATE TABLE) to determine if the schema has changed. The checks are executed on the address specified and is of the format HOSTNAME:PORT. The schema_change_detection_databases must also be set. A diff of a changed table is created.",
+        "keys": [ "schema_change_detection_address"  ],
+        "sql_keys": [ "schema_change_detection_address"  ]
+      },
+      {
+        "name": "schema_change_detection_databases",
+        "current_value": null,
+        "default_value": null,
+        "description": "Comma separated list of databases to monitor for schema changes. If empty, no checks are made.",
+        "keys": [ "schema_change_detection_databases"  ],
+        "sql_keys": [ "schema_change_detection_databases"  ]
+      },
+      {
+        "name": "schema_change_detection_pause_time_ms",
+        "current_value": 0,
+        "default_value": 0,
+        "description": "Pause time in ms between each SHOW CREATE TABLE. The pause time will affect the duration of the detection process. Default is 0, no pause.",
+        "keys": [ "schema_change_detection_pause_time_ms"  ],
+        "sql_keys": [ "schema_change_detection_pause_time_ms"  ]
+      },
+      {
+        "name": "enable_is_queries",
+        "current_value": true,
+        "default_value": true,
+        "description": "Specifies whether queries to the information_schema will be executed or not. Queries to the information_schema may not be suitable when having many schema objects (100s of databases, 100s of tables in each database, triggers, users, events, sprocs). If disabled, the query that would be executed will be logged so it can be determined if the query is suitable in your environment. Default is 1 (enabled). Disable with 0.",
+        "keys": [ "enable_is_queries"  ],
+        "sql_keys": [ "ENABLE_IS_QUERIES"  ]
+      },
+      {
+        "name": "query_monitor_alert_long_running_query",
+        "current_value": true,
+        "default_value": true,
+        "description": "Raises an alarm if a query executed for longer than query_monitor_long_running_query_ms.",
+        "keys": [ "query_monitor_alert_long_running_query"  ],
+        "sql_keys": [ "QUERY_MONITOR_ALERT_LONG_RUNNING_QUERY"  ]
+      },
+      {
+        "name": "query_monitor_kill_long_running_query",
+        "current_value": false,
+        "default_value": false,
+        "description": "Kill the query if the query executed for longerthan query_monitor_long_running_query_ms. Default is 0 (Disabled). Enable with 1.",
+        "keys": [ "query_monitor_kill_long_running_query"  ],
+        "sql_keys": [ "QUERY_MONITOR_KILL_LONG_RUNNING_QUERY"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_ms",
+        "current_value": 30000,
+        "default_value": 30000,
+        "description": "Raises an alarm if a query executed for longer than query_monitor_long_running_query_ms. Default 30000ms. Minimum value is 1000.",
+        "keys": [
+          "query_monitor_long_running_query_ms",
+          "query_monitor_long_running_query_time_ms"
+        ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_TIME_MS"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_info",
+        "current_value": null,
+        "default_value": null,
+        "description": "Match only queries with a 'Info' only matching this POSIX regex. No default value, match any Info",
+        "keys": [ "query_monitor_long_running_query_matching_info"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_INFO"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_info_negate",
+        "current_value": false,
+        "default_value": false,
+        "description": "Negate the result of query_monitor_long_running_query_matching_info.",
+        "keys": [ "query_monitor_long_running_query_matching_info_negate"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_INFO_NEGATE"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_host",
+        "current_value": null,
+        "default_value": null,
+        "description": "Match only queries with a 'Host' only matching this POSIX regex. No default value, match any Host.",
+        "keys": [ "query_monitor_long_running_query_matching_host"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_HOST"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_db",
+        "current_value": null,
+        "default_value": null,
+        "description": "Match only queries with a 'Db' only matching this POSIX regex. No default value, match any Db.",
+        "keys": [ "query_monitor_long_running_query_matching_db"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_DB"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_user",
+        "current_value": null,
+        "default_value": null,
+        "description": "Match only queries with a 'User' only matching this POSIX regex. No default value, match any User.",
+        "keys": [ "query_monitor_long_running_query_matching_user"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_USER"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_user_negate",
+        "current_value": false,
+        "default_value": false,
+        "description": "Negate the result of query_monitor_long_running_query_matching_user.",
+        "keys": [ "query_monitor_long_running_query_matching_user_negate"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_USER_NEGATE"  ]
+      },
+      {
+        "name": "query_monitor_long_running_query_matching_command",
+        "current_value": "Query",
+        "default_value": "Query",
+        "description": "Match only queries with a 'Command' only matching this POSIX regex. Defaults to 'Query'.",
+        "keys": [ "query_monitor_long_running_query_matching_command"  ],
+        "sql_keys": [ "QUERY_MONITOR_LONG_RUNNING_QUERY_MATCHING_COMMAND"  ]
+      },
+      {
+        "name": "software_packagedir",
+        "current_value": null,
+        "default_value": null,
+        "description": "This is the storage location of software packages, i.e, all necessary files to successfully install a node, if there is no yum/apt repository available, must be placed here. Applies mainly to MySQL Cluster or older Codership/Galera installations.",
+        "keys": [ "software_packagedir"  ],
+        "sql_keys": [ "SOFTWARE_PACKAGEDIR"  ]
+      },
+      {
+        "name": "node_recovery_lock_file",
+        "current_value": null,
+        "default_value": null,
+        "description": "Specify a lock file and if present on a node,  the node will not recover. It is the responsibilty of the administrator to create/remove the file.",
+        "keys": [ "node_recovery_lock_file"  ],
+        "sql_keys": [ "NODE_RECOVERY_LOCK_FILE"  ]
+      },
+      {
+        "name": "cmon_ha_heartbeat_network_timeout",
+        "current_value": 5,
+        "default_value": 5,
+        "description": "Cmon HA heartbeat network connection timeout measured in seconds.",
+        "keys": [ "cmon_ha_heartbeat_network_timeout"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_ha_heartbeat_interval_millis",
+        "current_value": 1000,
+        "default_value": 1000,
+        "description": "Cmon HA heartbeat interval measured in millisecods.",
+        "keys": [ "cmon_ha_heartbeat_interval_millis"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_ha_max_send_retry",
+        "current_value": 15,
+        "default_value": 15,
+        "description": "Cmon HA log send max retry count.",
+        "keys": [ "cmon_ha_max_send_retry"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_ha_send_retry_delay",
+        "current_value": 3,
+        "default_value": 3,
+        "description": "Cmon HA log send retry delay in seconds.",
+        "keys": [ "cmon_ha_send_retry_delay"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_ha_heartbeat_timeout_millis",
+        "current_value": 5000,
+        "default_value": 5000,
+        "description": "Cmon HA timeout for heartbeats in milliseconds.",
+        "keys": [ "cmon_ha_heartbeat_timeout_millis"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "cmon_ha_heartbeat_millis_rand_max",
+        "current_value": 2500,
+        "default_value": 2500,
+        "description": "Cmon HA timeout random component max value.",
+        "keys": [ "cmon_ha_heartbeat_millis_rand_max"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "error_report_dir",
+        "current_value": "/tmp/cmon/unittest",
+        "default_value": null,
+        "description": "Storage location of error reports.",
+        "keys": [ "error_report_dir"  ],
+        "sql_keys": [ "ERROR_REPORT_DIR"  ]
+      },
+      {
+        "name": "vault_addr",
+        "current_value": "https://127.0.0.1:8200",
+        "default_value": "https://127.0.0.1:8200",
+        "description": "Address of the Vault server.",
+        "keys": [ "vault_addr"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "vault_token",
+        "current_value": null,
+        "default_value": null,
+        "description": "The authentication token to the Vault server.",
+        "keys": [ "vault_token"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "vault_path",
+        "current_value": "clustercontrol",
+        "default_value": "clustercontrol",
+        "description": "The secrets path prefix for clustercontrol credentials.",
+        "keys": [ "vault_path"  ],
+        "sql_keys": [  ]
+      },
+      {
+        "name": "vault_auto_migrate",
+        "current_value": false,
+        "default_value": false,
+        "description": "Enable this to auto-move all the secrets to the configured Vault instance.",
+        "keys": [ "vault_auto_migrate"  ],
+        "sql_keys": [  ]
+      }
+    ]
+  },
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+}

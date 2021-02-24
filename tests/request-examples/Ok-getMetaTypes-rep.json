@@ -1,0 +1,427 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-09T07:28:12.634Z",
+  "request_created": "2021-02-09T07:28:12.620Z",
+  "request_id": 3,
+  "request_processed": "2021-02-09T07:28:12.631Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "metatype_info": [
+    {
+      "description": "An account outside of the Cmon Controller.",
+      "parent_type_name": "",
+      "type_name": "CmonAccount"
+    },
+    {
+      "description": "An action to be taken by the administrator of the cluster.",
+      "parent_type_name": "",
+      "type_name": "CmonAdvice"
+    },
+    {
+      "description": "Represents one particular incident.",
+      "parent_type_name": "",
+      "type_name": "CmonAlarm"
+    },
+    {
+      "description": "Statistical data about alarms.",
+      "parent_type_name": "",
+      "type_name": "CmonAlarmStatistics"
+    },
+    {
+      "description": "A scheduled backup.",
+      "parent_type_name": "",
+      "type_name": "CmonBackupSchedule"
+    },
+    {
+      "description": "A folder in the object tree.",
+      "parent_type_name": "",
+      "type_name": "CmonCdtEntry"
+    },
+    {
+      "description": "A class representing a server with cmon-cloud containers.",
+      "parent_type_name": "CmonContainerServer",
+      "type_name": "CmonCloudServer"
+    },
+    {
+      "description": "A set of configuration files.",
+      "parent_type_name": "",
+      "type_name": "CmonClusterConfig"
+    },
+    {
+      "description": "Basic information about a cluster.",
+      "parent_type_name": "",
+      "type_name": "CmonClusterInfo"
+    },
+    {
+      "description": "A virtual machine running on a CmonContainerServer.",
+      "parent_type_name": "",
+      "type_name": "CmonContainer"
+    },
+    {
+      "description": "A class representing a server with virtual computers.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonContainerServer"
+    },
+    {
+      "description": "A class that represents a Cmon Controller host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonController"
+    },
+    {
+      "description": "CPU statistics.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonCpuStats"
+    },
+    {
+      "description": "Represents a database.",
+      "parent_type_name": "",
+      "type_name": "CmonDataBase"
+    },
+    {
+      "description": "Statistics about a database.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonDatabaseStats"
+    },
+    {
+      "description": "A type implementing date & time.",
+      "parent_type_name": "",
+      "type_name": "CmonDateTime"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonDbStat"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonDbStats"
+    },
+    {
+      "description": "Information about disks and partitions.",
+      "parent_type_name": "",
+      "type_name": "CmonDiskInfo"
+    },
+    {
+      "description": "Statistics about disks.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonDiskStats"
+    },
+    {
+      "description": "A class to handle human readable formatted documents.",
+      "parent_type_name": "",
+      "type_name": "CmonDocument"
+    },
+    {
+      "description": "Event that happened inside or discovered by the Cmon Controller.",
+      "parent_type_name": "",
+      "type_name": "CmonEvent"
+    },
+    {
+      "description": "A filesystem entry.",
+      "parent_type_name": "",
+      "type_name": "CmonFile"
+    },
+    {
+      "description": "A set of instructions executed by the Cmon Controller.",
+      "parent_type_name": "",
+      "type_name": "CmonFunction"
+    },
+    {
+      "description": "A host class used for Galera clusters.",
+      "parent_type_name": "CmonMySqlHost",
+      "type_name": "CmonGaleraHost"
+    },
+    {
+      "description": "A graph element in a formatted document.",
+      "parent_type_name": "",
+      "type_name": "CmonGraph"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonGroup"
+    },
+    {
+      "description": "A host class used for group replication clusters.",
+      "parent_type_name": "CmonMySqlHost",
+      "type_name": "CmonGroupReplHost"
+    },
+    {
+      "description": "A class representing a HaProxy host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonHaProxyHost"
+    },
+    {
+      "description": "Statistics about HAProxy.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonHaProxyStats"
+    },
+    {
+      "description": "Class representing a general purpose computer.",
+      "parent_type_name": "",
+      "type_name": "CmonHost"
+    },
+    {
+      "description": "A complex task performed by the Cmon Controller.",
+      "parent_type_name": "CmonMetaClass",
+      "type_name": "CmonJob"
+    },
+    {
+      "description": "A class representing a job executed by the controller.",
+      "parent_type_name": "",
+      "type_name": "CmonJobInstance"
+    },
+    {
+      "description": "Holds one message that was created in relation of a job.",
+      "parent_type_name": "",
+      "type_name": "CmonJobMessage"
+    },
+    {
+      "description": "Statistical data about the number of jobs.",
+      "parent_type_name": "",
+      "type_name": "CmonJobStatistics"
+    },
+    {
+      "description": "Represents a keepalived host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonKeepalivedHost"
+    },
+    {
+      "description": "A message that is made for a log file.",
+      "parent_type_name": "",
+      "type_name": "CmonLogMessage"
+    },
+    {
+      "description": "A class representing a server with LXC containers.",
+      "parent_type_name": "CmonContainerServer",
+      "type_name": "CmonLxcServer"
+    },
+    {
+      "description": "A class representing a MaxScale host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonMaxScaleHost"
+    },
+    {
+      "description": "Statistical data about memory.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonMemoryStats"
+    },
+    {
+      "description": "Parent class for the metatype system.",
+      "parent_type_name": "",
+      "type_name": "CmonMetaClass"
+    },
+    {
+      "description": "A class for MongoDb hosts.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonMongoHost"
+    },
+    {
+      "description": "Statistics about MongoDb.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonMongoStats"
+    },
+    {
+      "description": "A class that represents a MySql host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonMySqlHost"
+    },
+    {
+      "description": "A class representing a NFS host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonNFSClientHost"
+    },
+    {
+      "description": "A class representing a NFS host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonNFSServerHost"
+    },
+    {
+      "description": "Represents NDB Management, and Data (API) nodes.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonNdbHost"
+    },
+    {
+      "description": "",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonNdbStats"
+    },
+    {
+      "description": "Network statistics.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonNetworkStats"
+    },
+    {
+      "description": "A class representing a PBMAgent host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonPBMAgentHost"
+    },
+    {
+      "description": "A paragraph, continuous text in a document.",
+      "parent_type_name": "",
+      "type_name": "CmonParagraph"
+    },
+    {
+      "description": "A class representing a PgBouncer host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonPgBouncerHost"
+    },
+    {
+      "description": "A class representing a PostgreSQL host.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonPostgreSqlHost"
+    },
+    {
+      "description": "A class for Prometheus servers.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonPrometheusHost"
+    },
+    {
+      "description": "A host that runs the ProxySql service.",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlCluster"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlGaleraHostgroup"
+    },
+    {
+      "description": "A class for ProxySQL hosts.",
+      "parent_type_name": "CmonHost",
+      "type_name": "CmonProxySqlHost"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlHostgroup"
+    },
+    {
+      "description": "Top query on a ProxySql server.",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlProcessList"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlQueryRule"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlSchedule"
+    },
+    {
+      "description": "A host that runs the ProxySql service.",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlServer"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlServers"
+    },
+    {
+      "description": "Statistics about ProxySQL.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonProxySqlStats"
+    },
+    {
+      "description": "Top query on a ProxySql server.",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlTopQuery"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlUser"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonProxySqlVariable"
+    },
+    {
+      "description": "RAW unformatted text in a document.",
+      "parent_type_name": "",
+      "type_name": "CmonRawElement"
+    },
+    {
+      "description": "",
+      "parent_type_name": "CmonMetaClass",
+      "type_name": "CmonRegExp"
+    },
+    {
+      "description": "A report created by the Cmon Controller.",
+      "parent_type_name": "",
+      "type_name": "CmonReport"
+    },
+    {
+      "description": "SQL statistics.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonSqlStats"
+    },
+    {
+      "description": "A set set of instructions operating on a stack machine.",
+      "parent_type_name": "CmonFunction",
+      "type_name": "CmonStackFunction"
+    },
+    {
+      "description": "Basic type for statistical data.",
+      "parent_type_name": "",
+      "type_name": "CmonStats"
+    },
+    {
+      "description": "A table with rows and columns in a document.",
+      "parent_type_name": "",
+      "type_name": "CmonTable"
+    },
+    {
+      "description": "Table of contents part of a document.",
+      "parent_type_name": "",
+      "type_name": "CmonTableOfContents"
+    },
+    {
+      "description": "",
+      "parent_type_name": "",
+      "type_name": "CmonTableStat"
+    },
+    {
+      "description": "TCP statistics.",
+      "parent_type_name": "CmonStats",
+      "type_name": "CmonTcpStats"
+    },
+    {
+      "description": "An external template file to be filled with content.",
+      "parent_type_name": "",
+      "type_name": "CmonTemplateElement"
+    },
+    {
+      "description": "Time zone information.",
+      "parent_type_name": "",
+      "type_name": "CmonTimeZone"
+    },
+    {
+      "description": "Title in a document.",
+      "parent_type_name": "",
+      "type_name": "CmonTitle"
+    },
+    {
+      "description": "A user of the Cmon Controller.",
+      "parent_type_name": "",
+      "type_name": "CmonUser"
+    },
+    {
+      "description": "General purpose variable type data representation.",
+      "parent_type_name": "",
+      "type_name": "CmonVariant"
+    },
+    {
+      "description": "A pre-formatted paragraph.",
+      "parent_type_name": "",
+      "type_name": "CmonVerbatim"
+    }
+  ]
+}

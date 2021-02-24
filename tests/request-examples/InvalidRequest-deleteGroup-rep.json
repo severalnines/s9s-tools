@@ -1,0 +1,11 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "error_string": "Group 'Group#1' can not be deleted for it has 1 member(s).",
+  "reply_received": "2021-02-08T09:07:01.483Z",
+  "request_created": "2021-02-08T09:07:01.470Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:07:01.482Z",
+  "request_status": "InvalidRequest",
+  "request_user_id": 4,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+}

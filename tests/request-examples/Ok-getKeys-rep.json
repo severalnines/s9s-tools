@@ -1,0 +1,59 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:06:48.461Z",
+  "request_created": "2021-02-08T09:06:48.450Z",
+  "request_id": 3,
+  "request_processed": "2021-02-08T09:06:48.460Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 2,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "public_keys": [
+    {
+      "name": "No Name",
+      "key": "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAxWWdZe1eT0sCayh0vgob+aviD1hoEuQarns8u/gIAJOCpYsg4101\n3RE/x4HATvcaad3Ckt/R4C71SuRsMXbXUzVpRhyCRD9dps4Z9/jm8glTae3QpC+9\njYEsZmADzM++SZn6lZruBay4UoP6PGhluB/wLqFKfPkmvCU9v8L8mS6428iNcPCn\nfoNJQ8NsvmJaASTOTSo8aeDoz6So8dBkvBmi+yTDP44JgFd07Q0qfNtU8sZEHF5k\n5mrcVTgeal5Bg9zw3Ih2DnPwMrsoV3pJ3mOXspdqh6p8y6kgnXb6dAtbji3Omr6a\n48IVRo+duMMOQU36fhUwAFami28wR0c/cQIDAQAB\n-----END RSA PUBLIC KEY-----\n"
+    },
+    {
+      "name": "The_SSH_key",
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDhm60Gq2qNpYlRDLznV38Do8oZK90fZGzH2SKZzcVT1riIKeAZNssLE+AQg1VDD/kF/amsdg9kFT/zoRMumBIN0zcvP/yldKPe8zKlhfPnLN5dtr0adfGVLpvXyig3FC6d57VSqTMTeOJIMWIDks32tRH1Mu/vfoXLCmiTyIXgsKJ8Vv8izvf1YoNQ1FIWHZ/0+6jMR8D4rIN/rMlRSqtQBsNvysEE5Q9QPXhVOtg/Sgl79fuPyM4nxrT7o0sLsKWh03Z/NccLQSQhW/Z0BjbBr+FQlUixDmmnqQeYt6MvzFjIrapRV1p68DaBtil7bv/QqCxVL2+NYhEH9cSerDnl pipas@lpere-home\n"
+    }
+  ],
+  "user": {
+    "class_name": "CmonUser",
+    "cdt_path": "/",
+    "owner_user_id": 4,
+    "owner_user_name": "pipas",
+    "owner_group_id": 1,
+    "owner_group_name": "admins",
+    "acl": "user::rwx,group::r--,other::r--",
+    "tags": [ "testUser"  ],
+    "created": "2021-02-08T09:06:47.481Z",
+    "disabled": false,
+    "last_failed_login": "",
+    "last_login": "2021-02-08T09:06:48.434Z",
+    "n_failed_logins": 0,
+    "origin": "CmonDb",
+    "suspended": false,
+    "user_id": 4,
+    "user_name": "pipas",
+    "groups": [ {
+        "class_name": "CmonGroup",
+        "cdt_path": "/groups",
+        "owner_user_id": 1,
+        "owner_user_name": "system",
+        "owner_group_id": 1,
+        "owner_group_name": "admins",
+        "acl": "user::rwx,group::rwx,other::---",
+        "created": "2021-02-08T09:06:47.469Z",
+        "group_id": 4,
+        "group_name": "testgroup"
+      }  ],
+    "timezone": {
+      "class_name": "CmonTimeZone",
+      "name": "Central European Time",
+      "abbreviation": "CET",
+      "offset": -3600,
+      "use_dst": true
+    }
+  }
+}

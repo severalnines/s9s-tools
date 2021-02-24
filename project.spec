@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Tue Jan 26 2021 David Kedves <kedazo@severalnines.com> 1.8.20210126
+- Register (ProxySQL,Keepalived,HAProxy) host fixes
+- Other small fixes + lots of tests updated and added
 * Fri Nov 13 2020 David Kedves <kedazo@severalnines.com> 1.8.20201113
 - Added s9s cluster --sync option (to sync backend with frontend database)
 - Percona Backup for MongoDB support

@@ -1,0 +1,7 @@
+{
+  "content": "/*\n * A executing shell commands on a host using the system() tag function.\n */\nfunction main()\n{\n    var hosts = cluster::hosts();\n    var retval = true;\n    var command;\n    var result;\n    var value;\n\n    command = \n        \"for f in $(seq 1 3); do\" +\n        \"  echo  $f;\" +\n        \"  sleep 1;\" +\n        \"done\";\n\n    for (idx = 0; idx < hosts.size(); ++idx)\n    {\n        print(\"\");\n\n        result = hosts[idx].system(command);\n\n        print(\"hostName: \", hosts[idx].hostName());\n        print(\" command: \", command);\n        print(\"  result: \", result);\n\n        continue;\n        if (result[\"errorMessage\"] != \"Success.\")\n        {\n            error(\"Error message:\", result[\"errorMessage\"]);\n            retval = false;\n        }\n\n        if (!result[\"success\"])\n        {\n            error(\"Retcode is:\", result[\"success\"]);\n            retval = false;\n        }\n\n        value = result[\"result\"].toString().escape();\n        if (value != \"42\")\n        {\n            error(\"Result is:\", value);\n            retval = false;\n        }\n    }\n\n    return retval;\n}\n",
+  "operation": "setcontent",
+  "path": "/ft_scripts_6683/tests/imperative_cluster_007.js",
+  "request_created": "2021-02-09T09:32:39.956Z",
+  "request_id": 3
+}

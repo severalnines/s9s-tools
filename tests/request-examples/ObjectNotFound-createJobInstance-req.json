@@ -1,0 +1,16 @@
+{
+  "class_name": "CmonRpcRequest",
+  "cluster_name": "galera_001",
+  "operation": "createJobInstance",
+  "request_created": "2021-02-08T09:16:40.729Z",
+  "request_id": 2,
+  "job": {
+    "class_name": "CmonJobInstance",
+    "title": "Simulated Success",
+    "job_spec": {
+      "command": "success",
+      "job_data": {
+      }
+    }
+  }
+}

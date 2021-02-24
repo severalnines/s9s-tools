@@ -172,7 +172,6 @@ enum S9sOptionType
     OptionAvailableUpgrades,
     OptionUpgradeCluster,
     OptionCheckPkgUpgrades,
-    OptionImportSqlUsers,
     OptionListDatabases,
     OptionListFiles,
     OptionAccount,
@@ -382,6 +381,9 @@ enum S9sOptionType
     OptionSslCertFile,
     OptionSslKeyFile,
     OptionSslCaFile,
+
+    OptionVirtualIp,
+    OptionEthInterface,
 };
 
 /**
@@ -2882,6 +2884,10 @@ S9sOptions::volumes() const
     return retval;
 }
 
+/**
+ * Example:
+ * --volumes="vol1:5:hdd;vol2:10:hdd"
+ */
 bool
 S9sOptions::appendVolumes(
         const S9sString &stringRep)
@@ -4853,16 +4859,6 @@ S9sOptions::isCheckPkgUpgradesRequested() const
 }
 
 /**
- * \returns true if the --check-pkg-upgrades command line option was provided when
- *   the program was started.
- */
-bool
-S9sOptions::isImportSqlUsersRequested() const
-{
-    return getBool("import_sql_users");
-}
-
-/**
  * \returns true if the --list-databases command line option was provided when
  *   the program was started.
  */
@@ -4999,6 +4995,13 @@ S9sOptions::isStringMatchToClientOption(
         return true;
 
     return false;
+}
+
+void
+S9sOptions::addExtraArgument(
+        const S9sString &argument)
+{
+    m_extraArguments << argument;
 }
 
 /**
@@ -6193,13 +6196,12 @@ S9sOptions::printHelpNode()
     printf(
 "Options for the \"node\" command:\n"
 "  --change-config            Change the configuration for a node.\n"
-"  --unset-config             Unset the configuration for a node.\n"
+"  --enable-binary-logging    Enables binary logs on a node.\n"
 "  --list-config              Print the configuration for a node.\n"
 "  --list                     List the jobs found on the controller.\n"
 "  --pull-config              Copy configuration files from a node.\n"
 "  --push-config              Copy configuration files to a node.\n"
-"  --enable-binary-logging    Enables binary logs on a node.\n"
-"  --register                 Register a node that already is working.\n"
+"  --register                 Start managing an already installed node.\n"
 "  --restart                  Stop, then start the node.\n"
 "  --set                      Change the properties of a node.\n"
 "  --set-read-only            Set the node to read-only mode.\n"
@@ -6208,6 +6210,7 @@ S9sOptions::printHelpNode()
 "  --stat                     Print detailed node information.\n"
 "  --stop                     Stop the node.\n"
 "  --unregister               Drop and stop managing the node.\n"
+"  --unset-config             Unset the configuration for a node.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster in which the node is.\n"
 "  --cluster-name=NAME        Name of the cluster to list.\n"
@@ -6562,6 +6565,9 @@ S9sOptions::readOptionsNode(
         { "graph",            required_argument, 0, OptionGraph           }, 
         { "begin",            required_argument, 0, OptionBegin           },
         { "end",              required_argument, 0, OptionEnd             },
+        
+        { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
+        { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
         { 0, 0, 0, 0 }
     };
@@ -6857,6 +6863,16 @@ S9sOptions::readOptionsNode(
             case OptionEnd:
                 // --end=DATE
                 m_options["end"] = optarg;
+                break;
+            
+            case OptionVirtualIp:
+                // --virtual-ip=IP
+                m_options["virtual_ip"] = optarg;
+                break;
+            
+            case OptionEthInterface:
+                // --eth-interface=INTERFACE
+                m_options["eth_interface"] = optarg;
                 break;
 
             case '?':
@@ -9313,9 +9329,6 @@ S9sOptions::checkOptionsCluster()
 
     if (isCheckPkgUpgradesRequested())
         countOptions++;
-
-    if (isImportSqlUsersRequested())
-        countOptions++;
     
     if (isListDatabasesRequested())
         countOptions++;
@@ -11487,10 +11500,9 @@ S9sOptions::readOptionsCluster(
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
-        { "available-upgrades",  no_argument,       0, OptionAvailableUpgrades  },
+        { "available-upgrades",  no_argument,    0, OptionAvailableUpgrades  },
         { "upgrade-cluster",  no_argument,       0, OptionUpgradeCluster  },
-        { "check-pkg-upgrades",  no_argument,       0, OptionCheckPkgUpgrades  },
-        { "import-sql-users", no_argument,       0, OptionImportSqlUsers  },
+        { "check-pkg-upgrades",  no_argument,    0, OptionCheckPkgUpgrades  },
         { "create",           no_argument,       0, OptionCreate          },
         { "create-report",    no_argument,       0, OptionCreateReport    },
         { "sync",             no_argument,       0, OptionSync            },
@@ -11605,6 +11617,9 @@ S9sOptions::readOptionsCluster(
         { "ssl-ca",              required_argument, 0, OptionSslCaFile     },
         { "ssl-cert",            required_argument, 0, OptionSslCertFile   },
         { "ssl-key",             required_argument, 0, OptionSslKeyFile    },
+        
+        { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
+        { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
         // Options for remove cluster/node.
         { "uninstall",           no_argument,    0, OptionUninstall        },
@@ -11819,11 +11834,6 @@ S9sOptions::readOptionsCluster(
             case OptionCheckPkgUpgrades:
                 // --check-pkg-upgrades
                 m_options["check_pkg_upgrades"] = true;
-                break;
-
-            case OptionImportSqlUsers:
-                // --import-sql-users
-                m_options["import_sql_users"] = true;
                 break;
             
             case OptionListDatabases:
@@ -12274,6 +12284,16 @@ S9sOptions::readOptionsCluster(
             case OptionSslKeyFile:
                 // --ssl-key
                 m_options["ssl_key"] = optarg;
+                break;
+
+            case OptionVirtualIp:
+                // --virtual-ip=IP
+                m_options["virtual_ip"] = optarg;
+                break;
+            
+            case OptionEthInterface:
+                // --eth-interface=INTERFACE
+                m_options["eth_interface"] = optarg;
                 break;
 
             case '?':

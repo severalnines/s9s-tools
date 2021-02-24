@@ -1,0 +1,48 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-09T09:30:56.595Z",
+  "request_created": "2021-02-09T09:30:56.588Z",
+  "request_id": 223,
+  "request_processed": "2021-02-09T09:30:56.594Z",
+  "request_status": "Ok",
+  "request_user_id": 4,
+  "total": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ],
+  "job": {
+    "class_name": "CmonJobInstance",
+    "can_be_aborted": false,
+    "can_be_deleted": true,
+    "cluster_id": 0,
+    "created": "2021-02-09T09:27:15.000Z",
+    "ended": "2021-02-09T09:30:56.000Z",
+    "exit_code": 0,
+    "group_id": 4,
+    "group_name": "testgroup",
+    "has_progress": true,
+    "ip_address": "127.0.0.1",
+    "job_id": 13,
+    "progress_percent": 100,
+    "rpc_version": "2.0",
+    "started": "2021-02-09T09:27:15.000Z",
+    "status": "FINISHED",
+    "status_text": "Job finished.",
+    "title": "Create Galera Cluster",
+    "user_id": 4,
+    "user_name": "pipas",
+    "job_spec": {
+      "command": "create_cluster",
+      "job_data": {
+        "cluster_name": "ft_scripts_6683",
+        "cluster_type": "galera",
+        "enable_uninstall": true,
+        "install_software": true,
+        "mysql_password": "",
+        "vendor": "percona",
+        "version": "5.6",
+        "nodes": [ {
+            "hostname": "192.168.0.241"
+          }  ]
+      }
+    }
+  }
+}

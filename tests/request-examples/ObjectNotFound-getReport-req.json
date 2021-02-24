@@ -1,0 +1,10 @@
+{
+  "operation": "getReport",
+  "request_created": "2021-02-08T09:17:24.703Z",
+  "request_id": 3,
+  "report": {
+    "class_name": "CmonReport",
+    "report_id": 1,
+    "text_format": "AnsiTerminal"
+  }
+}

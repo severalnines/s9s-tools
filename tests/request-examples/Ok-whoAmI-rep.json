@@ -1,0 +1,55 @@
+{
+  "controller_id": "75f0bd5f-def6-40f1-86c9-a61ff820b632",
+  "reply_received": "2021-02-08T09:07:02.592Z",
+  "request_created": "2021-02-08T09:07:02.575Z",
+  "request_id": 2,
+  "request_processed": "2021-02-08T09:07:02.591Z",
+  "request_status": "Ok",
+  "request_user_id": 1,
+  "debug_messages": [ "RPC V2 authenticated user is 'system'."  ],
+  "user": {
+    "class_name": "CmonUser",
+    "cdt_path": "/",
+    "owner_user_id": 1,
+    "owner_user_name": "system",
+    "owner_group_id": 1,
+    "owner_group_name": "admins",
+    "acl": "user::rwx,group::r--,other::r--",
+    "created": "2021-02-08T09:06:39.127Z",
+    "disabled": false,
+    "email_address": "system@mynewdomain.com",
+    "first_name": "System",
+    "last_failed_login": "",
+    "last_login": "2021-02-08T09:07:02.562Z",
+    "last_name": "User",
+    "n_failed_logins": 0,
+    "origin": "CmonDb",
+    "suspended": false,
+    "user_id": 1,
+    "user_name": "system",
+    "groups": [ {
+        "class_name": "CmonGroup",
+        "cdt_path": "/groups",
+        "owner_user_id": 1,
+        "owner_user_name": "system",
+        "owner_group_id": 1,
+        "owner_group_name": "admins",
+        "acl": "user::rwx,group::rwx,other::---",
+        "created": "2021-02-08T09:06:39.097Z",
+        "group_id": 1,
+        "group_name": "admins"
+      }  ],
+    "timezone": {
+      "class_name": "CmonTimeZone",
+      "name": "Central European Time",
+      "abbreviation": "CET",
+      "offset": -3600,
+      "use_dst": false
+    }
+  },
+  "user_extended_privileges": {
+    "class_name": "CmonExtendedPrivileges",
+    "can_create_clusters": true,
+    "can_execute_jobs": true
+  }
+}
