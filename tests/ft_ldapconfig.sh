@@ -960,19 +960,27 @@ EOF
     begin_verbatim
 
     #
-    # Testing the user once.
+    # 
     #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="$username" \
-        --password=p
+    mys9s user --list --long
 
-    if [ $? == 0 ]; then
-        failure "The user should not be able to log in."
-    else
-        success "  o The user could not authenticate, ok."
-    fi
+    for n in 1 2 3 4 5 6; do
+        mys9s user \
+            --list \
+            --long \
+            --cmon-user="$username" \
+            --password=p
+
+        if [ $? == 0 ]; then
+            failure "The user should not be able to log in."
+        else
+            success "  o The user could not authenticate, ok."
+        fi
+    done
+
+    mys9s user --stat $username
+
+    end_verbatim
 }
 
 #
