@@ -983,6 +983,7 @@ if [ -n "$OPTION_UPLOAD" ]; then
     printVerbose "***    JENKINS_TOKEN: $JENKINS_TOKEN"
     printVerbose "***  JENKINS_APIUSER: $JENKINS_APIUSER"
     printVerbose "***  JENKINS_JOB_URL: $JENKINS_JOB_URL"
+    printVerbose "*** JENKINS_SSH_PORT: $JENKINS_SSH_PORT"
 
     if [ -z "$JENKINS_DESTFILE" ]; then
         printError "Jenkins config is invalid, aborting..."
@@ -1100,17 +1101,36 @@ if [ -n "$OPTION_UPLOAD" ]; then
     tar -cjpf results.tar.bz2 *.txt *.xml *.html
 
     printVerbose "Uploading tarball to Jenkins..."
-    scp $SSH_KEY \
-        results.tar.bz2 \
-        jenkins@jenkins.severalnines.com:${JENKINS_DESTFILE}
 
-    # trigger jenkins job to process
+    #
+    # Upload the file and trigger Jenkins to process it.
+    #
+cat <<EOF
+    scp $SSH_KEY \\
+        -oPort="$JENKINS_SSH_PORT" \\
+        results.tar.bz2 \\
+        jenkins@${JENKINS_IP}:${JENKINS_DESTFILE}
+
     curl --user "${JENKINS_APIUSER}" "${JENKINS_JOB_URL}"
+EOF
 
+    scp $SSH_KEY \
+        -oPort="$JENKINS_SSH_PORT" \
+        results.tar.bz2 \
+        jenkins@${JENKINS_IP}:${JENKINS_DESTFILE}
+    
     if [ $? -eq 0 ]; then
         printVerbose "Uploaded"
     else
         printError "Failed to upload"
+    fi
+
+    curl --user "${JENKINS_APIUSER}" "${JENKINS_JOB_URL}"
+
+    if [ $? -eq 0 ]; then
+        printVerbose "Triggered"
+    else
+        printError "Failed to trigger"
     fi
 
     popd
