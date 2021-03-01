@@ -293,6 +293,8 @@ EOF
     clusterState=$(cluster_state $CLUSTER_ID)
     if [ "$clusterState" == "STARTED" ]; then
         failure "Cluster state should not be '$clusterState'."
+        end_verbatim
+        return 1
     fi
 
 
