@@ -264,6 +264,7 @@ EOF
 function testAlarms()
 {
     local container_name1="${MYBASENAME}_11_$$"
+    local clusterState
     local line
 
     print_title "Checking Alarms"
@@ -285,6 +286,15 @@ EOF
     mys9s container --list --long
     mys9s node --list --long
     mys9s cluster --list --long
+
+    mysleep 40
+    mys9s job --list
+    mys9s cluster --list --long
+    clusterState=$(cluster_state $CLUSTER_ID)
+    if [ "$clusterState" == "STARTED" ]; then
+        failure "Cluster state should not be '$clusterState'."
+    fi
+
 
     # Check active alarms with the owner using the cluster ID.
     mys9s alarm --list --long --cluster-id=1 
