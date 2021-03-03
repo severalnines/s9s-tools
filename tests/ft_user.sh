@@ -718,10 +718,12 @@ EOF
     check_log_messages \
         "Creating new cmon user 'jadzia'"
 
+    #
+    #
+    #
+    print_subtitle "Creating user 'worf'"
     mys9s user \
         --create \
-        --cmon-user=system \
-        --password=secret \
         --title="Lt." \
         --first-name="Worf" \
         --last-name="" \
@@ -733,6 +735,10 @@ EOF
         "worf"
     
     check_exit_code_no_job $?
+
+    mys9s tree --get-acl /worf
+    mys9s user --stat worf
+    
 
     #mys9s user --stat worf
     #mys9s user --whoami --print-json --cmon-user worf
