@@ -111,6 +111,8 @@ function emit_ldap_settings_json()
     local certFile="null"
     local keyFile="null"
     local ldapUserSearchRoot="dc=homelab,dc=local"
+    local ldapUserClassName="objectclass=*"
+    local ldapGroupClassName=""
 
     while [ -n "$1" ]; do
         case "$1" in
@@ -167,6 +169,16 @@ function emit_ldap_settings_json()
                 shift 2
                 ;;
 
+            --ldap-user-class-name)
+                ldapUserClassName="$2"
+                shift 2
+                ;;
+
+            --ldap-group-class-name)
+                ldapGroupClassName="$2"
+                shift 2
+                ;;
+
             *)
                 failure "emit_ldap_settings_json(): Unknown option '$1'."
                 return 1
@@ -189,7 +201,7 @@ function emit_ldap_settings_json()
       }  ],
     "ldapSettings": {
       "ldapEmailAttributes": "mail",
-      "ldapGroupClassName": null,
+      "ldapGroupClassName": "$ldapGroupClassName",
       "ldapGroupIdAttributes": null,
       "ldapGroupNameAttribute": null,
       "ldapMemberAttributes": "memberUid",
@@ -197,7 +209,7 @@ function emit_ldap_settings_json()
       "ldapProtocolVersion": $ldapProtocolVersion,
       "ldapQueryTimeLimit": null,
       "ldapRealnameAttributes": "displayName,cn",
-      "ldapUserClassName": null,
+      "ldapUserClassName": "$ldapUserClassName",
       "ldapUsernameAttributes": "cn"
     },
     "security": {
@@ -283,6 +295,78 @@ EOF
     end_verbatim
 }
 
+function testSetLdapConfigWrongUserClassName()
+{
+    print_title "Setting LDAP Configuration with Wrong User Search Root"
+    cat <<EOF | paragraph
+    ...
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json \\
+        --ldap-user-class-name "objectclass=wrong" \\
+        |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always 
+EOF
+
+    emit_ldap_settings_json \
+        --ldap-user-class-name "objectclass=wrong" \
+        |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json       \
+            --color=always 
+
+    check_exit_code_no_job $?
+    end_verbatim
+}
+
+function testSetLdapConfigWrongGroupClassName()
+{
+    print_title "Setting LDAP Configuration with Wrong User Search Root"
+    cat <<EOF | paragraph
+    ...
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json \\
+        --ldap-group-class-name "objectclass=wrong" \\
+        |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always 
+EOF
+
+    emit_ldap_settings_json \
+        --ldap-group-class-name "objectclass=wrong" \
+        |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json       \
+            --color=always 
+
+    check_exit_code_no_job $?
+    end_verbatim
+}
+
 function testLdapUser1Succeeds()
 {
     local username="username"
@@ -324,23 +408,21 @@ EOF
     #
     # 
     #
-    mys9s user --list --long
+    #mys9s user --list --long
 
-    for n in 1 2 3 4 5 6; do
-        mys9s user \
-            --list \
-            --long \
-            --cmon-user="$username" \
-            --password=p
+    mys9s user \
+        --list \
+        --long \
+        --cmon-user="$username" \
+        --password=p
 
-        if [ $? == 0 ]; then
-            failure "The user should not be able to log in."
-        else
-            success "  o The user could not authenticate, ok."
-        fi
-    done
+    if [ $? == 0 ]; then
+        failure "The user should not be able to log in."
+    else
+        success "  o The user could not authenticate, ok."
+    fi
 
-    mys9s user --stat $username
+    #mys9s user --stat $username
 
     end_verbatim
 }
@@ -361,9 +443,18 @@ else
 
     runFunctionalTest testSetLdapConfig
     runFunctionalTest testLdapUser1Succeeds
-
-    runFunctionalTest testSetLdapConfigWrongUserSearch
+    
+    runFunctionalTest testSetLdapConfigWrongUserClassName
     runFunctionalTest testLdapUser1Fail
+    
+    runFunctionalTest testSetLdapConfigWrongGroupClassName
+    runFunctionalTest testLdapUser1Fail
+    
+    runFunctionalTest testSetLdapConfig
+    runFunctionalTest testLdapUser1Succeeds
+
+    #runFunctionalTest testSetLdapConfigWrongUserSearch
+    #runFunctionalTest testLdapUser1Fail
 fi
 
 runFunctionalTest --force endTests
