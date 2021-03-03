@@ -519,6 +519,8 @@ function testFailNoGroup()
     #
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Captain" \
         --generate-key \
         --group=nosuchgroup \
@@ -719,7 +721,8 @@ EOF
         "Creating new cmon user 'jadzia'"
 
     #
-    #
+    # Trying to create a user as normal user (this feature was removed) and then
+    # as system user (this should succeed of course.
     #
     print_subtitle "Creating user 'worf'"
     mys9s user \
@@ -733,12 +736,35 @@ EOF
         --create-group \
         --batch \
         "worf"
+  
+    retcode=$?
+    if [ $retcode == 0 ]; then
+        failure "Normal user should not be able to create new users (retcode = $retcode)."
+        mys9s user --list --long
+    else
+        success "  o Normal user can not create new user, OK"
+    fi
+
     
+    mys9s user \
+        --create \
+        --cmon-user=system \
+        --password=secret \
+        --title="Lt." \
+        --first-name="Worf" \
+        --last-name="" \
+        --email-address="warrior@ds9.com" \
+        --generate-key \
+        --group=ds9 \
+        --create-group \
+        --batch \
+        "worf"
+
     check_exit_code_no_job $?
 
     mys9s tree --get-acl /worf
     mys9s user --stat worf
-    
+    mys9s user --list --long
 
     #mys9s user --stat worf
     #mys9s user --whoami --print-json --cmon-user worf
