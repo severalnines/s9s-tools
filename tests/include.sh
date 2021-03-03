@@ -186,6 +186,7 @@ function mys9s_singleline()
 {
     local prompt=$(prompt_string)
     local nth=0
+    local retcode
 
     if [ "$PRINT_COMMANDS" ]; then
         echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
@@ -211,15 +212,20 @@ function mys9s_singleline()
 
     LAST_COMMAND_OUTPUT=""
     $S9S --color=always "$@"  2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
+    retcode=$?
+    
     if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
         LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
     fi
+    
+    return $retcode
 }
 
 function mys9s_multiline()
 {
     local prompt=$(prompt_string)
     local nth=0
+    local retcode
 
     if [ "$PRINT_COMMANDS" ]; then
         echo ""
@@ -247,9 +253,13 @@ function mys9s_multiline()
 
     LAST_COMMAND_OUTPUT=""
     $S9S --color=always "$@" 2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
+    retcode=$?
+
     if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
         LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
     fi
+
+    return $retcode
 }
 
 function S9S_LAST_OUTPUT_CONTAINS()
