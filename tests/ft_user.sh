@@ -140,7 +140,7 @@ function testUser()
     # 
     #
     print_title "Testing --whoami"
-    cat <<EOF
+    cat <<EOF | paragraph
 Checking that the authenticated user is what it is expected and it can reach
 information about itself. Checking if the keys are ok.
 EOF
@@ -166,6 +166,24 @@ EOF
     fi
 
     end_verbatim
+}
+
+function testUserManager()
+{
+    local userName="$USER"
+    print_title "Giving the Right to Create Users"
+    cat <<EOF | paragraph
+Giving the user '$userName' the right to create other users.
+EOF
+
+    mys9s tree \
+        --add-acl \
+        --cmon-user="system" \
+        --password="secret" \
+        --acl="user:${userName}:rwx" \
+        /.runtime/user_manager
+
+    check_exit_code_no_job $?
 }
 
 #
@@ -1721,6 +1739,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testUser
+    runFunctionalTest testUserManager
     runFunctionalTest testStat
     runFunctionalTest testTree
     runFunctionalTest testCmonGroup
