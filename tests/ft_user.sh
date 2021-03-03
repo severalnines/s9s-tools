@@ -176,6 +176,7 @@ function testUserManager()
 Giving the user '$userName' the right to create other users.
 EOF
 
+    begin_verbatim
     mys9s tree \
         --add-acl \
         --cmon-user="system" \
@@ -184,6 +185,7 @@ EOF
         /.runtime/user_manager
 
     check_exit_code_no_job $?
+    end_verbatim
 }
 
 #
@@ -529,6 +531,9 @@ function testFailNoGroup()
     else
         success "  o user was not created, ok"
     fi
+
+    S9S_LAST_OUTPUT_CONTAINS \
+        "Group 'nosuchgroup' does not exists."
 
     #
     # Creating the user with no group. The user will end up in the "users"

@@ -45,6 +45,7 @@ export THIRD_ADDED_NODE=""
 export FOURTH_ADDED_NODE=""
 export FIFTH_ADDED_NODE=""
 export LAST_ADDED_NODE=""
+export LAST_COMMAND_OUTPUT=""
 
 NUMBER_OF_SUCCESS_CHECKS=0
 NUMBER_OF_WARNING_CHECKS=0
@@ -208,7 +209,11 @@ function mys9s_singleline()
         echo ""
     fi
 
-    $S9S --color=always "$@"
+    LAST_COMMAND_OUTPUT=""
+    $S9S --color=always "$@"  2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
+    if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
+        LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+    fi
 }
 
 function mys9s_multiline()
@@ -240,7 +245,29 @@ function mys9s_multiline()
         echo ""
     fi
 
-    $S9S --color=always "$@"
+    LAST_COMMAND_OUTPUT=""
+    $S9S --color=always "$@" 2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
+    if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
+        LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+    fi
+}
+
+function S9S_LAST_OUTPUT_CONTAINS()
+{
+    local retval=0
+
+    while [ -n "$1" ]; do
+        if echo "$LAST_COMMAND_OUTPUT" | grep -q "$1"; then
+            success "  o Text '$1' found, OK in the output."
+        else
+            failure "Line '$1' was not found in the output."
+            retval=1
+        fi
+
+        shift
+    done
+
+    return retval
 }
 
 #
