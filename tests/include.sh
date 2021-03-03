@@ -212,10 +212,11 @@ function mys9s_singleline()
 
     LAST_COMMAND_OUTPUT=""
     $S9S --color=always "$@"  2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
-    retcode=$?
+    retcode=${PIPESTATUS[0]}
     
     if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
         LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+        rm -f /tmp/LAST_COMMAND_OUTPUT
     fi
     
     return $retcode
@@ -253,10 +254,11 @@ function mys9s_multiline()
 
     LAST_COMMAND_OUTPUT=""
     $S9S --color=always "$@" 2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
-    retcode=$?
+    retcode=${PIPESTATUS[0]}
 
     if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
         LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+        rm -f /tmp/LAST_COMMAND_OUTPUT
     fi
 
     return $retcode
