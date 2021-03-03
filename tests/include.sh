@@ -270,7 +270,7 @@ function S9S_LAST_OUTPUT_CONTAINS()
 
     while [ -n "$1" ]; do
         if echo "$LAST_COMMAND_OUTPUT" | grep -q "$1"; then
-            success "  o Text '$1' found, OK in the output."
+            success "  o Text '$1' found in the output, OK."
         else
             failure "Line '$1' was not found in the output."
             retval=1
@@ -279,7 +279,7 @@ function S9S_LAST_OUTPUT_CONTAINS()
         shift
     done
 
-    return retval
+    return $retval
 }
 
 #
