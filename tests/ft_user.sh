@@ -489,7 +489,7 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    expected="User 'sys' was not found."
+    expected="Username or password is incorrect."
     if [ "$output" != "$expected" ]; then
         failure "Wrong error message when using the wrong username."
         failure "    output: '$output'"
