@@ -175,7 +175,8 @@ function emit_ldap_settings_json()
     local caCertFile="null"
     local certFile="null"
     local keyFile="null"
-    
+    local ldapUserSearchRoot="dc=homelab,dc=local"
+
     while [ -n "$1" ]; do
         case "$1" in
             --enabled)
@@ -226,6 +227,11 @@ function emit_ldap_settings_json()
                 shift 2
                 ;;
 
+            --ldap-user-search-root)
+                ldapUserSearchRoot="$2"
+                shift 2
+                ;;
+
             *)
                 failure "emit_ldap_settings_json(): Unknown option '$1'."
                 return 1
@@ -240,7 +246,7 @@ function emit_ldap_settings_json()
     "ldapAdminUser": "$ldapAdminUser",
     "ldapGroupSearchRoot": "dc=homelab,dc=local",
     "ldapServerUri": "$ldap_url",
-    "ldapUserSearchRoot": "dc=homelab,dc=local",
+    "ldapUserSearchRoot": "$ldapUserSearchRoot",
     "groupMappings": [ {
         "cmonGroupName": "myldapgroup",
         "ldapGroupId": "ldapgroup",
@@ -351,6 +357,42 @@ EOF
 
     emit_ldap_settings_json \
         --disabled \
+        |  \
+        s9s controller         \
+            --cmon-user=system \
+            --password=secret  \
+            --set-ldap-config  \
+            --print-request    \
+            --print-json       \
+            --color=always 
+
+    check_exit_code_no_job $?
+    end_verbatim
+}
+
+function testSetLdapConfigWrongUserSearch()
+{
+    print_title "Setting LDAP Configuration with Wrong User Search Root"
+    cat <<EOF | paragraph
+    ...
+EOF
+
+    begin_verbatim
+    cat <<EOF
+    # emit_ldap_settings_json \\
+        --ldap-user-search-root "dc=wrong,dc=local" \\
+        |  \\
+        s9s controller         \\
+            --cmon-user=system \\
+            --password=secret  \\
+            --set-ldap-config  \\
+            --print-request    \\
+            --print-json       \\
+            --color=always 
+EOF
+
+    emit_ldap_settings_json \
+        --ldap-user-search-root "dc=wrong,dc=local" \
         |  \
         s9s controller         \
             --cmon-user=system \
@@ -950,7 +992,7 @@ function testLdapUser1Fail()
 {
     local username="username"
 
-    print_title "Checking Disabled LDAP Authentication with user '$username'"
+    print_title "Checking That LDAP User '$username' Can Not Log In"
 
     cat <<EOF | paragraph
   This test checks the LDAP authentication using the simple name. The user
@@ -960,19 +1002,27 @@ EOF
     begin_verbatim
 
     #
-    # Testing the user once.
+    # 
     #
-    mys9s user \
-        --list \
-        --long \
-        --cmon-user="$username" \
-        --password=p
+    mys9s user --list --long
 
-    if [ $? == 0 ]; then
-        failure "The user should not be able to log in."
-    else
-        success "  o The user could not authenticate, ok."
-    fi
+    for n in 1 2 3 4 5 6; do
+        mys9s user \
+            --list \
+            --long \
+            --cmon-user="$username" \
+            --password=p
+
+        if [ $? == 0 ]; then
+            failure "The user should not be able to log in."
+        else
+            success "  o The user could not authenticate, ok."
+        fi
+    done
+
+    mys9s user --stat $username
+
+    end_verbatim
 }
 
 #
@@ -999,10 +1049,14 @@ else
 
     runFunctionalTest testGetLdapConfig2
     runFunctionalTest testLdapUser1
-#if false; then    
+
     runFunctionalTest testSetLdapConfigDisabled
     runFunctionalTest testGetLdapConfig3
     runFunctionalTest testLdapUser1Fail
+
+    runFunctionalTest testSetLdapConfigWrongUserSearch
+    runFunctionalTest testLdapUser1Fail
+
 
     # First setting the LDAP to a working configuration, then try various wrong
     # configurations, then we check the the original good configuration is kept
@@ -1018,7 +1072,6 @@ else
     runFunctionalTest testSetLdapConfigWrongProtocol
 
     runFunctionalTest testLdapUser1Again
-#fi
 fi
 
 runFunctionalTest --force endTests

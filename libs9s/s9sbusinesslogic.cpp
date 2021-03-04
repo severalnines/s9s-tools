@@ -2819,6 +2819,7 @@ S9sBusinessLogic::executeCreateUserThroughRpc(
             user, options->newPassword(), options->createGroup());
 
     client.printMessages("User created.", success);
+    client.setExitStatus();
 }
 
 

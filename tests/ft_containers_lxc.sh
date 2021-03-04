@@ -154,6 +154,7 @@ EOF
         --servers="lxc://$CONTAINER_SERVER" 
 
     check_exit_code_no_job $?
+    end_verbatim
 
     #
     # Checking the state and the class name... 
@@ -163,7 +164,6 @@ EOF
         --server-name  "$CONTAINER_SERVER" \
         --cloud        "lxc"
 
-    end_verbatim
 }
 
 #

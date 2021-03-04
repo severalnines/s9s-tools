@@ -140,7 +140,7 @@ function testUser()
     # 
     #
     print_title "Testing --whoami"
-    cat <<EOF
+    cat <<EOF | paragraph
 Checking that the authenticated user is what it is expected and it can reach
 information about itself. Checking if the keys are ok.
 EOF
@@ -165,6 +165,26 @@ EOF
         success "  o the keys are there, ok"
     fi
 
+    end_verbatim
+}
+
+function testUserManager()
+{
+    local userName="$USER"
+    print_title "Giving the Right to Create Users"
+    cat <<EOF | paragraph
+Giving the user '$userName' the right to create other users.
+EOF
+
+    begin_verbatim
+    mys9s tree \
+        --add-acl \
+        --cmon-user="system" \
+        --password="secret" \
+        --acl="user:${userName}:rwx" \
+        /.runtime/user_manager
+
+    check_exit_code_no_job $?
     end_verbatim
 }
 
@@ -469,7 +489,7 @@ EOF
         success "  o exit code is $exitCode, ok"
     fi
 
-    expected="User 'sys' was not found."
+    expected="Username or password is incorrect."
     if [ "$output" != "$expected" ]; then
         failure "Wrong error message when using the wrong username."
         failure "    output: '$output'"
@@ -499,6 +519,8 @@ function testFailNoGroup()
     #
     mys9s user \
         --create \
+        --cmon-user=system \
+        --password=secret \
         --title="Captain" \
         --generate-key \
         --group=nosuchgroup \
@@ -511,6 +533,9 @@ function testFailNoGroup()
     else
         success "  o user was not created, ok"
     fi
+
+    S9S_LAST_OUTPUT_CONTAINS \
+        "Group 'nosuchgroup' does not exists."
 
     #
     # Creating the user with no group. The user will end up in the "users"
@@ -695,6 +720,32 @@ EOF
     check_log_messages \
         "Creating new cmon user 'jadzia'"
 
+    #
+    # Trying to create a user as normal user (this feature was removed) and then
+    # as system user (this should succeed of course.
+    #
+    print_subtitle "Creating user 'worf'"
+    mys9s user \
+        --create \
+        --title="Lt." \
+        --first-name="Worf" \
+        --last-name="" \
+        --email-address="warrior@ds9.com" \
+        --generate-key \
+        --group=ds9 \
+        --create-group \
+        --batch \
+        "worf"
+  
+    retcode=$?
+    if [ $retcode == 0 ]; then
+        failure "Normal user should not be able to create new users (retcode = $retcode)."
+        mys9s user --list --long
+    else
+        success "  o Normal user can not create new user, OK"
+    fi
+
+    
     mys9s user \
         --create \
         --cmon-user=system \
@@ -708,8 +759,12 @@ EOF
         --create-group \
         --batch \
         "worf"
-    
+
     check_exit_code_no_job $?
+
+    mys9s tree --get-acl /worf
+    mys9s user --stat worf
+    mys9s user --list --long
 
     #mys9s user --stat worf
     #mys9s user --whoami --print-json --cmon-user worf
@@ -1721,6 +1776,7 @@ if [ "$1" ]; then
 else
     runFunctionalTest testPing
     runFunctionalTest testUser
+    runFunctionalTest testUserManager
     runFunctionalTest testStat
     runFunctionalTest testTree
     runFunctionalTest testCmonGroup

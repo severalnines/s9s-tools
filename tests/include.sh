@@ -45,6 +45,7 @@ export THIRD_ADDED_NODE=""
 export FOURTH_ADDED_NODE=""
 export FIFTH_ADDED_NODE=""
 export LAST_ADDED_NODE=""
+export LAST_COMMAND_OUTPUT=""
 
 NUMBER_OF_SUCCESS_CHECKS=0
 NUMBER_OF_WARNING_CHECKS=0
@@ -185,6 +186,7 @@ function mys9s_singleline()
 {
     local prompt=$(prompt_string)
     local nth=0
+    local retcode
 
     if [ "$PRINT_COMMANDS" ]; then
         echo -ne "$prompt ${XTERM_COLOR_YELLOW}s9s${TERM_NORMAL} "
@@ -208,13 +210,23 @@ function mys9s_singleline()
         echo ""
     fi
 
-    $S9S --color=always "$@"
+    LAST_COMMAND_OUTPUT=""
+    $S9S --color=always "$@"  2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
+    retcode=${PIPESTATUS[0]}
+    
+    if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
+        LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+        rm -f /tmp/LAST_COMMAND_OUTPUT
+    fi
+    
+    return $retcode
 }
 
 function mys9s_multiline()
 {
     local prompt=$(prompt_string)
     local nth=0
+    local retcode
 
     if [ "$PRINT_COMMANDS" ]; then
         echo ""
@@ -240,7 +252,34 @@ function mys9s_multiline()
         echo ""
     fi
 
-    $S9S --color=always "$@"
+    LAST_COMMAND_OUTPUT=""
+    $S9S --color=always "$@" 2>&1 | tee /tmp/LAST_COMMAND_OUTPUT
+    retcode=${PIPESTATUS[0]}
+
+    if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
+        LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+        rm -f /tmp/LAST_COMMAND_OUTPUT
+    fi
+
+    return $retcode
+}
+
+function S9S_LAST_OUTPUT_CONTAINS()
+{
+    local retval=0
+
+    while [ -n "$1" ]; do
+        if echo "$LAST_COMMAND_OUTPUT" | grep -q "$1"; then
+            success "  o Text '$1' found in the output, OK."
+        else
+            failure "Line '$1' was not found in the output."
+            retval=1
+        fi
+
+        shift
+    done
+
+    return $retval
 }
 
 #
