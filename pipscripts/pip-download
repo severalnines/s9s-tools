@@ -1111,6 +1111,8 @@ cat <<EOF
         results.tar.bz2 \\
         jenkins@${JENKINS_IP}:${JENKINS_DESTFILE}
 
+    ssh $SSH_KEY -oPort="$JENKINS_SSH_PORT" \\
+        jenkins@${JENKINS_IP} -- \\
     curl --user "${JENKINS_APIUSER}" "${JENKINS_JOB_URL}"
 EOF
 
