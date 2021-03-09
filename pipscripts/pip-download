@@ -1125,7 +1125,9 @@ EOF
         printError "Failed to upload"
     fi
 
-    curl --user "${JENKINS_APIUSER}" "${JENKINS_JOB_URL}"
+    ssh $SSH_KEY -oPort="$JENKINS_SSH_PORT" \
+        jenkins@${JENKINS_IP} -- \
+        curl --user "${JENKINS_APIUSER}" "${JENKINS_JOB_URL}"
 
     if [ $? -eq 0 ]; then
         printVerbose "Triggered"
