@@ -258,6 +258,8 @@ function mys9s_multiline()
 
     if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
         LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
+        echo "Will delete"
+        echo "/tmp/LAST_COMMAND_OUTPUT"
         rm -f "/tmp/LAST_COMMAND_OUTPUT"
     fi
 
