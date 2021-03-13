@@ -6,8 +6,8 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="1.0.0"
 
-LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
