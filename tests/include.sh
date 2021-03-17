@@ -258,9 +258,15 @@ function mys9s_multiline()
 
     if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
         LAST_COMMAND_OUTPUT=$(cat /tmp/LAST_COMMAND_OUTPUT)
-        echo "Will delete"
-        echo "/tmp/LAST_COMMAND_OUTPUT"
+        echo "Will delete" >&2
+        echo "/tmp/LAST_COMMAND_OUTPUT" >&2
         rm -f "/tmp/LAST_COMMAND_OUTPUT"
+        echo "rm returned" >&2
+        if [ -f /tmp/LAST_COMMAND_OUTPUT ]; then
+            failure "the file is still there" >&2
+        else
+            success "the file is deleted"
+        fi
     fi
 
     return $retcode
