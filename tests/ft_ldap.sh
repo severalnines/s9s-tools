@@ -165,6 +165,7 @@ function testCmonDbUser()
         --dn           "-" \
         --origin       "CmonDb"    
 
+    mys9s user --stat pipas --print-json
     end_verbatim
 }
 
@@ -240,6 +241,8 @@ EOF
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
 
+    mys9s user --stat pipas --print-json
+    
     end_verbatim
 }
 

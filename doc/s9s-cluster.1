@@ -78,7 +78,7 @@ s9s cluster \\
 .fi
 
 .TP
-.B \-\-create\-account
+.B --create-account
 Create a new account to be used on the cluster to access the database(s).
 Creating accounts is also possible using the \fBaccount\fP mode, check
 s9s-account(1) for further details.
@@ -635,7 +635,7 @@ The name of the initial OS user defined in the image for the first login. Use
 this option to create containers based on custom images.
 
 .TP
-.BI \-\^\-nodes= NODELIST
+.BI --nodes= NODELIST
 The list of nodes or hosts enumerated in a special string using a semicolon as
 field separator (e.g. "192.168.1.1;192.168.1.2"). 
 The strings in the node list are urls that can have the following protocols:
@@ -746,7 +746,7 @@ This option can also be set in the s9s configuration file using the
 \fBuse_internal_repos\fP keyword (check s9s.conf(5) for further details).
 
 .TP
-.BI \-\^\-volumes= LIST
+.BI --volumes= LIST
 When a new container is created this command line option can be used to pass a
 list of volumes that will be created for the container. 
 
@@ -997,6 +997,14 @@ s9s cluster \\
     --backup-id=214
 .fi
 
+.TP
+.B --with-database
+Create a new database for the account when creating a new database user account.
+
+.TP 
+.B --without-ssl 
+Do not set up SSL while creating a new cluster.
+
 .TP 
 .BI --without-tags= LIST
 When listing the existing clusters this option can be used to limit the list of
@@ -1007,6 +1015,10 @@ clusters for those that has none of the enlisted tags set.
 s9s cluster --list --long --without-tags="myTag;atCreate"
 s9s cluster --stat --without-tags=myTag
 .fi
+
+.TP
+.B --with-ssl
+Set up SSL while creating a new cluster.
 
 .TP
 .BI --with-tags= LIST

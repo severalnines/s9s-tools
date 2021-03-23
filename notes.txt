@@ -115,3 +115,94 @@ s9s server --create --servers="lxc://storage01?hostgrouppath=myservers"
 s9s server --create --servers="lxc://core1?hostgrouppath=myservers"
 
 s9s node --set --nodes=core1 --properties="hostgrouppath=myservers"
+
+
+
+TIMEZONE FOR CMNDB CREATED USER
+
+   {
+      "class_name": "CmonUser",
+      "cdt_path": "/",
+      "owner_user_id": 1,
+      "owner_user_name": "system",
+      "owner_group_id": 1,
+      "owner_group_name": "admins",
+      "acl": "user::rwx,group::r--,other::r--",
+      "created": "2021-03-18T09:46:36.529Z",
+      "disabled": false,
+      "effective_privileges": "r--",
+      "first_name": "System",
+      "last_failed_login": "",
+      "last_login": "2021-03-18T09:47:49.553Z",
+      "last_name": "User",
+      "n_failed_logins": 0,
+      "origin": "CmonDb",
+      "suspended": false,
+      "user_id": 1,
+      "user_name": "system",
+      "groups": [ {
+          "class_name": "CmonGroup",
+          "cdt_path": "/groups",
+          "owner_user_id": 1,
+          "owner_user_name": "system",
+          "owner_group_id": 1,
+          "owner_group_name": "admins",
+          "acl": "user::rwx,group::rwx,other::---",
+          "created": "2021-03-18T09:46:36.514Z",
+          "group_id": 1,
+          "group_name": "admins"
+        }  ],
+      "timezone": {
+        "class_name": "CmonTimeZone",
+        "name": "Central European Time",
+        "abbreviation": "CET",
+        "offset": -3600,
+        "use_dst": false
+      }
+    },
+
+    {
+      "class_name": "CmonUser",
+      "cdt_path": "/",
+      "owner_user_id": 5,
+      "owner_user_name": "username",
+      "owner_group_id": 1,
+      "owner_group_name": "admins",
+      "acl": "user::rwx,group::r--,other::r--",
+      "created": "2021-03-18T09:47:51.072Z",
+      "disabled": false,
+      "distinguished_name": "cn=username,dc=homelab,dc=local",
+      "effective_privileges": "r--",
+      "email_address": "username@domain.hu",
+      "first_name": "firstname",
+      "last_failed_login": "",
+      "last_login": "2021-03-18T09:47:51.171Z",
+      "last_name": "lastname",
+      "n_failed_logins": 0,
+      "origin": "LDAP",
+      "suspended": false,
+      "user_id": 5,
+      "user_name": "username",
+      "groups": [ {
+          "class_name": "CmonGroup",
+          "cdt_path": "/groups",
+          "owner_user_id": 1,
+          "owner_user_name": "system",
+          "owner_group_id": 1,
+          "owner_group_name": "admins",
+          "acl": "user::rwx,group::rwx,other::---",
+          "created": "2021-03-18T09:47:50.461Z",
+          "group_id": 5,
+          "group_name": "ldapgroup"
+        }  ],
+      "timezone": {
+        "class_name": "CmonTimeZone",
+        "name": "Central European Time",
+        "abbreviation": "CET",
+        "offset": -3600,
+        "use_dst": true
+      }
+    }
+  ]
+}
+

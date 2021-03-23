@@ -321,6 +321,8 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionWithSsl,
+    OptionWithoutSsl,
     
     OptionJobTags,
     OptionWithTags,
@@ -6135,7 +6137,9 @@ S9sOptions::printHelpCluster()
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
+"  --without-ssl              Do not set up ssl while installing cluster.\n"
 "  --without-tags=LIST        Limit the list of printed clusters by tags.\n"
+"  --with-ssl                 Set up ssl while installing cluster.\n"
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "\n"
@@ -11598,16 +11602,19 @@ S9sOptions::readOptionsCluster(
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
         { "image-os-user",    required_argument, 0, OptionImageOsUser     },
-        { "os-key-file",      required_argument, 0, OptionOsKeyFile       },
-        { "os-password",      required_argument, 0, OptionOsPassword      },
-        { "os-user",          required_argument, 0, OptionOsUser          },
-        { "region",           required_argument, 0, OptionRegion          },
-        { "servers",          required_argument, 0, OptionServers         },
-        { "subnet-id",        required_argument, 0, OptionSubnetId        },
+        { "os-key-file",      required_argument, 0, OptionOsKeyFile        },
+        { "os-password",      required_argument, 0, OptionOsPassword       },
+        { "os-user",          required_argument, 0, OptionOsUser           },
+        { "region",           required_argument, 0, OptionRegion           },
+        { "servers",          required_argument, 0, OptionServers          },
+        { "subnet-id",        required_argument, 0, OptionSubnetId         },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
-        { "template",         required_argument, 0, OptionTemplate        },
+        { "template",         required_argument, 0, OptionTemplate         },
+        
+        { "with-ssl",         no_argument,       0, OptionWithSsl          },
+        { "without-ssl",      no_argument,       0, OptionWithoutSsl       },
         
         // Options for maintenance
         { "maintenance-minutes", required_argument, 0, OptionMinutes       },
@@ -12238,6 +12245,16 @@ S9sOptions::readOptionsCluster(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionWithSsl:
+                // --with-ssl
+                m_options["with_ssl"] = true;
+                break;
+
+            case OptionWithoutSsl:
+                // --without-ssl
+                m_options["without_ssl"] = true;
                 break;
 
             case OptionVolumes:

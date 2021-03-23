@@ -9299,6 +9299,15 @@ S9sRpcClient::composeJobData(
 
     addCredentialsToJobData(jobData);
 
+    /*
+     * --with-ssl  --> /job_data/enable_ssl = true
+     * --without-ssl  --> /job_data/enable_ssl = false
+     */
+    if (options->getBool("with_ssl"))
+        jobData["enable_ssl"] = true;
+    else if (options->getBool("without_ssl"))
+        jobData["enable_ssl"] = false;
+
     if (options->dry())
         jobData["dry_run"] = true;
 
