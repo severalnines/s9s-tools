@@ -1,7 +1,7 @@
 %define build_timestamp %(date +"%Y%m%d")
 
 Name: s9s-tools
-Version: 1.8
+Version: 1.9
 Release: %{build_timestamp}%{?dist}
 Summary: Severalnines ClusterControl CLI Tools
 
@@ -42,6 +42,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Wed Apr 07 2021 David Kedves <kedazo@severalnines.com> 1.9.20210407
+- nightly build for inside testing
 * Tue Jan 26 2021 David Kedves <kedazo@severalnines.com> 1.8.20210126
 - Register (ProxySQL,Keepalived,HAProxy) host fixes
 - Other small fixes + lots of tests updated and added
