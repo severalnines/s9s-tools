@@ -554,6 +554,9 @@ class S9sRpcClient
         bool addPgBouncer(
                 const S9sVariantList &hosts);
 
+        bool addPgBackRest(
+                const S9sVariantList &hosts);
+
         bool addPBMAgent(
                 const S9sVariantList &hosts);
 

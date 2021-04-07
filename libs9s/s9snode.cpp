@@ -92,6 +92,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonHaProxyHost";
         else if (m_url.protocol().toLower() == "pgbouncer")
             m_properties["class_name"] = "CmonPgBouncerHost";
+        else if (m_url.protocol().toLower() == "pgbackrest")
+            m_properties["class_name"] = "CmonPgBackRestHost";
         else if (m_url.protocol().toLower() == "pbmagent")
             m_properties["class_name"] = "CmonPBMAgentHost";
         else if (m_url.protocol().toLower() == "nfsclient")
@@ -1085,6 +1087,8 @@ S9sNode::nodeTypeFlag() const
         return 'h';
     else if (theNodeType == "pgbouncer")
         return 'b';
+    else if (theNodeType == "pgbackrest")
+        return 'B';
     else if (theNodeType == "pbmagent")
         return 't';
     else if (theNodeType == "nfsclient")

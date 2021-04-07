@@ -3458,6 +3458,10 @@ S9sRpcClient::registerHost()
     {
         command = "pgbouncer";
         title   = "Register PgBouncer Node";
+    } else if (protocol == "pgbackrest")
+    {
+        command = "pgbackrest";
+        title   = "Register PgBackRest Node";
     } else if (protocol == "pbmagent")
     {
         command = "pbmagent";
@@ -4241,6 +4245,7 @@ S9sRpcClient::createNode()
     bool           hasHaproxy    = false;
     bool           hasKeepalived = false;
     bool           hasPgBouncer  = false;
+    bool           hasPgBackRest = false;
     bool           hasPBMAgent   = false;
     bool           hasNFSClient  = false;
     bool           hasNFSServer  = false;
@@ -4274,6 +4279,9 @@ S9sRpcClient::createNode()
     	} else if (protocol == "pgbouncer")
         {
             hasPgBouncer = true;
+    	} else if (protocol == "pgbackrest")
+        {
+            hasPgBackRest = true;
     	} else if (protocol == "pbmagent")
         {
             hasPBMAgent = true;
@@ -4330,6 +4338,13 @@ S9sRpcClient::createNode()
                 "in one call.");
 
         return false;
+    } else if (hasPgBackRest && hasProxySql) 
+    {
+        PRINT_ERROR(
+                "It is not possible to add a PgBackRest and a ProxySql node "
+                "in one call.");
+
+        return false;
     } else if (hasHaproxy && hasProxySql) 
     {
         PRINT_ERROR(
@@ -4363,6 +4378,9 @@ S9sRpcClient::createNode()
     } else if (hasPgBouncer)
     {
         success = addPgBouncer(hosts);
+    } else if (hasPgBackRest)
+    {
+        success = addPgBackRest(hosts);
     } else if (hasPBMAgent)
     {
         success = addPBMAgent(hosts);
@@ -4803,6 +4821,57 @@ S9sRpcClient::addKeepalived(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Add Keepalived to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::addPgBackRest(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pgbackrest");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To add a PgBackRest one needs to specify"
+            " one or more PgBackRest nodes.");
+        
+        return false;
+    }
+    
+    // The job_data describing the cluster.
+    jobData["action"]   = "setup";
+    jobData["nodes"]    = nodesField(nodes);        
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pgbackrest";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add PgBackRest to Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
