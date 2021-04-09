@@ -4440,6 +4440,7 @@ S9sRpcClient::reinstallNode()
     S9sRpcReply    reply;
     bool           hasPBMAgent   = false;
     bool           hasNFSClient  = false;
+    bool           hasPgBackRest = false;
     bool           success       = true;
 
     hosts = options->nodes();
@@ -4464,6 +4465,9 @@ S9sRpcClient::reinstallNode()
     	} else if (protocol == "nfsclient")
         {
             hasNFSClient = true;
+        } else if (protocol == "pgbackrest")
+        {
+            hasPgBackRest = true;
         } else {
             PRINT_ERROR(
                     "The protocol '%s' is not supported.", 
@@ -4483,6 +4487,9 @@ S9sRpcClient::reinstallNode()
     } else if (hasNFSClient)
     {
         success = reinstallNFSClient(hosts);
+    } else if (hasPgBackRest)
+    {
+        success = reinstallPgBackRest(hosts);
     }
 
     return success;
@@ -4500,6 +4507,7 @@ S9sRpcClient::reconfigureNode()
     S9sRpcReply    reply;
     bool           hasPBMAgent   = false;
     bool           hasNFSClient  = false;
+    bool           hasPgBackRest = false;
     bool           success       = true;
 
     hosts = options->nodes();
@@ -4524,6 +4532,9 @@ S9sRpcClient::reconfigureNode()
     	} else if (protocol == "nfsclient")
         {
             hasNFSClient = true;
+        } else if (protocol == "pgbackrest")
+        {
+            hasPgBackRest = true;
         } else {
             PRINT_ERROR(
                     "The protocol '%s' is not supported.", 
@@ -4543,6 +4554,9 @@ S9sRpcClient::reconfigureNode()
     } else if (hasNFSClient)
     {
         success = reconfigureNFSClient(hosts);
+    } else if (hasPgBackRest)
+    {
+        success = reconfigurePgBackRest(hosts);
     }
 
     return success;
@@ -5416,6 +5430,57 @@ S9sRpcClient::reconfigureNFSClient(
  *
  */
 bool
+S9sRpcClient::reconfigurePgBackRest(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pgbackrest");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To reconfigure PgBackRest one needs to specify"
+            " one or more PgBackRest nodes.");
+
+        return false;
+    }
+
+    // The job_data describing the cluster.
+    jobData["action"]   = "reconfigure";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pgbackrest";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Reconfigure PgBackRest node of Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
 S9sRpcClient::reinstallPBMAgent(
         const S9sVariantList &hosts)
 {
@@ -5500,6 +5565,57 @@ S9sRpcClient::reinstallNFSClient(
     
     // The job instance describing how the job will be executed.
     job["title"]          = "Reinstall NFSClient node in Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ */
+bool
+S9sRpcClient::reinstallPgBackRest(
+        const S9sVariantList &hosts)
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantList nodes;
+    S9sVariantList otherNodes;
+    bool           retval;
+
+    S9sNode::selectByProtocol(hosts, nodes, otherNodes, "pgbackrest");
+
+    if (nodes.size() < 1u)
+    {
+        PRINT_ERROR(
+            "To reinstall PgBackRest one needs to specify"
+            " one or more PgBackRest nodes.");
+
+        return false;
+    }
+
+    // The job_data describing the cluster.
+    jobData["action"]   = "reinstall";
+    jobData["nodes"]    = nodesField(nodes);
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "pgbackrest";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Reinstall PgBackRest node of Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.

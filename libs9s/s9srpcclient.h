@@ -583,12 +583,18 @@ class S9sRpcClient
         bool reinstallNFSClient(
                 const S9sVariantList &hosts);
 
+        bool reinstallPgBackRest(
+                const S9sVariantList &hosts);
+
         // Low level methods that reconfigures a node as an attempt to fix it.
 
         bool reconfigurePBMAgent(
                 const S9sVariantList &hosts);
 
         bool reconfigureNFSClient(
+                const S9sVariantList &hosts);
+
+        bool reconfigurePgBackRest(
                 const S9sVariantList &hosts);
 
         static S9sVariant 
