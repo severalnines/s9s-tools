@@ -1242,8 +1242,11 @@ function testBackupOfDbList()
     
     end_verbatim
 
-    print_title "Creating acount tester with privileges the test databases."
-
+    #
+    #
+    #
+    print_title "Creating account tester with privileges the test databases."
+    begin_verbatim
     PRIVS="testdatabase1.*:INSERT,UPDATE,DELETE,DROP,CREATE,SELECT"
     PRIVS+=";testdatabase2.*:INSERT,UPDATE,DELETE,DROP,CREATE,SELECT"
     PRIVS+=";testdatabase3.*:INSERT,UPDATE,DELETE,DROP,CREATE,SELECT"
@@ -1284,8 +1287,9 @@ function testBackupOfDbList()
             --command="CREATE TABLE IF NOT EXISTS testtable3(a INT)" \
     )'
 
-    print_title "Creating Backup of testdatabase1 and testdatabase2 only"
+    end_verbatim
 
+    print_title "Creating Backup of testdatabase1 and testdatabase2 only"
     begin_verbatim
     #
     # Creating a backup using the cluster ID to reference the cluster.
@@ -1327,9 +1331,12 @@ function testBackupOfDbList()
             --cmon-user=system \
             --password=secret
     fi
+    end_verbatim
 
+    #
+    #
+    #
     print_title "Restoring the previously made backup"
-
     begin_verbatim
     backupId=$(\
         $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
