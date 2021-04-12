@@ -930,21 +930,19 @@ else
     runFunctionalTest testRestartNode
     runFunctionalTest testStopStartNode
 
-    runFunctionalTest testCreateAccount
-    runFunctionalTest testCreateDatabase
+    #runFunctionalTest testCreateAccount
+    #runFunctionalTest testCreateDatabase
 
-    runFunctionalTest testAddNode
+    #runFunctionalTest testAddNode
 
-    runFunctionalTest testAddRemoveProxySql
-    runFunctionalTest testAddRemoveHaProxy
-    runFunctionalTest testAddRemoveMaxScale
-    # This is not yet functional...
-    #runFunctionalTest testAddRemoveKeepalived
+    #runFunctionalTest testAddRemoveProxySql
+    #runFunctionalTest testAddRemoveHaProxy
+    #runFunctionalTest testAddRemoveMaxScale
 
-    runFunctionalTest testRemoveNode
-    runFunctionalTest testRollingRestart
-    runFunctionalTest testStop
-    runFunctionalTest testStart
+    #runFunctionalTest testRemoveNode
+    #runFunctionalTest testRollingRestart
+    #runFunctionalTest testStop
+    #runFunctionalTest testStart
 fi
 
 endTests
