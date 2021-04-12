@@ -59,6 +59,7 @@ EOF
     begin_verbatim
     ssh_to_controller "sudo apt install -y pkg-config"
     ssh_to_controller "sudo apt install -y libldap2-dev"
+    ssh_to_controller "sudo apt install -y libhiredis-dev"
     end_verbatim
 
     print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
