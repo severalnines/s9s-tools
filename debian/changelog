@@ -1,3 +1,9 @@
+s9s-tools (1.9.20210412-release1) UNRELEASED; urgency=medium
+
+  * nightly build for inside testing
+
+ -- David Kedves <kedazo@severalnines.com>  Mon, 12 Apr 2021 12:25:25 +0200
+
 s9s-tools (1.9.20210407-release1) UNRELEASED; urgency=medium
 
   * nightly build for inside testing
