@@ -522,6 +522,11 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &psqlVersion);
 
+        bool createRedisSentinel(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &psqlVersion);
+
         bool createMongoCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
@@ -549,10 +554,16 @@ class S9sRpcClient
         bool addPgBouncer(
                 const S9sVariantList &hosts);
 
+        bool addPgBackRest(
+                const S9sVariantList &hosts);
+
         bool addPBMAgent(
                 const S9sVariantList &hosts);
 
         bool addNFSClient(
+                const S9sVariantList &hosts);
+
+        bool addNFSServer(
                 const S9sVariantList &hosts);
         
         bool addProxySql(
@@ -572,12 +583,18 @@ class S9sRpcClient
         bool reinstallNFSClient(
                 const S9sVariantList &hosts);
 
+        bool reinstallPgBackRest(
+                const S9sVariantList &hosts);
+
         // Low level methods that reconfigures a node as an attempt to fix it.
 
         bool reconfigurePBMAgent(
                 const S9sVariantList &hosts);
 
         bool reconfigureNFSClient(
+                const S9sVariantList &hosts);
+
+        bool reconfigurePgBackRest(
                 const S9sVariantList &hosts);
 
         static S9sVariant 

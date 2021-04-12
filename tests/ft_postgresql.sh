@@ -9,6 +9,8 @@ VERSION="0.0.4"
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
 
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
@@ -43,6 +45,7 @@ Usage:
  --log               Print the logs while waiting for the job to be ended.
  --server=SERVER     The name of the server that will hold the containers.
  --print-commands    Do not print unit test info, print the executed commands.
+ --keep-nodes        Do not destroy the nodes at exit.
  --install           Just install the cluster and exit.
  --reset-config      Remove and re-generate the ~/.s9s directory.
  
@@ -75,7 +78,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,install,reset-config,\
+        -l "help,verbose,log,server:,print-commands,keep-nodes,install,reset-config,\
 provider-version:" \
         -- "$@")
 
@@ -112,6 +115,11 @@ while true; do
             shift
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
+            ;;
+
+        --keep-nodes)
+            shift
+            OPTION_KEEP_NODES="true"
             ;;
 
         --install)
@@ -1202,6 +1210,159 @@ function testRemoveBackup()
     end_verbatim
 }
 
+function testBackupOfDbList()
+{
+    local backupId
+    local message_id
+
+    print_title "Creating Database testdatabase1, testdatabase2 and testdatabase3"
+
+    begin_verbatim
+
+    mys9s cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testdatabase1"
+   
+    check_exit_code_no_job $?
+
+    mys9s cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testdatabase2"
+   
+    check_exit_code_no_job $?
+
+    mys9s cluster \
+        --create-database \
+        --cluster-id=$CLUSTER_ID \
+        --db-name="testdatabase3"
+   
+    check_exit_code_no_job $?
+    
+    end_verbatim
+
+    print_title "Creating acount tester with privileges the test databases."
+
+    PRIVS="testdatabase1.*:INSERT,UPDATE,DELETE,DROP,CREATE,SELECT"
+    PRIVS+=";testdatabase2.*:INSERT,UPDATE,DELETE,DROP,CREATE,SELECT"
+    PRIVS+=";testdatabase3.*:INSERT,UPDATE,DELETE,DROP,CREATE,SELECT"
+
+    mys9s account \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --account="tester:password" \
+        --privileges="${PRIVS}"
+    
+    check_exit_code_no_job $?
+
+    print_title "Creating test tables in test databases"
+
+    MASTER_IP=$(s9s node --list --long | grep "^poM" | awk '{print $5}')
+
+    ${SSH} '( PGPASSWORD="$password" \
+    psql \
+            -t \
+            --username="tester" \
+            --dbname="testdatabase1" \
+            --command="CREATE TABLE IF NOT EXISTS testtable1(a INT)" \
+    )'
+
+    ${SSH} '( PGPASSWORD="$password" \
+    psql \
+            -t \
+            --username="tester" \
+            --dbname="testdatabase2" \
+            --command="CREATE TABLE IF NOT EXISTS testtable2(a INT)" \
+    )'
+
+    ${SSH} '( PGPASSWORD="$password" \
+    psql \
+            -t \
+            --username="tester" \
+            --dbname="testdatabase3" \
+            --command="CREATE TABLE IF NOT EXISTS testtable3(a INT)" \
+    )'
+
+    print_title "Creating Backup of testdatabase1 and testdatabase2 only"
+
+    begin_verbatim
+    #
+    # Creating a backup using the cluster ID to reference the cluster.
+    #
+    mys9s backup \
+        --create \
+        --cluster-id=$CLUSTER_ID \
+        --nodes=$FIRST_ADDED_NODE \
+        --backup-method=pgdump \
+	--encrypt-backup \
+	--on-controller \
+        --backup-directory=/tmp \
+	--databases="testdatabase1,testdatabase2" \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+    
+    check_exit_code $?
+    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "backup")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+    else
+        failure "JobEnded message was not found."
+        
+        log_format=""
+        log_format+='%I '
+        log_format+='%c '
+        log_format+='${/log_specifics/job_instance/job_spec/command} '
+        log_format+='\n'
+        mys9s log \
+            --list \
+            --batch \
+            --log-format="$log_format" \
+            --cluster-id="$CLUSTER_ID" \
+            --cmon-user=system \
+            --password=secret
+    fi
+
+    print_title "Restoring the previously made backup"
+
+    begin_verbatim
+    backupId=$(\
+        $S9S backup --list --long --batch --cluster-id=$CLUSTER_ID | \
+        head -n1 | \
+        awk '{print $1}')
+
+    #
+    # Restoring the backup. 
+    #
+    mys9s backup \
+        --restore \
+        --cluster-id=$CLUSTER_ID \
+        --backup-id=$backupId \
+        $LOG_OPTION \
+        $DEBUG_OPTION
+
+    check_exit_code $?
+    
+    # The JobEnded log message.
+    message_id=$(get_log_message_id \
+        --job-class   "JobEnded" \
+        --job-command "restore_backup")
+
+    if [ -n "$message_id" ]; then
+        success "  o Found JobEnded message at ID $message_id, ok."
+        #print_log_message "$message_id"
+    else
+        failure "JobEnded message was not found."
+    fi
+
+    end_verbatim
+}
+
 #
 # 
 #
@@ -1354,6 +1515,8 @@ else
     runFunctionalTest testCreateAccount04
     runFunctionalTest testCreateAccount05
     runFunctionalTest testCreateAccount06
+
+    runFunctionalTest testBackupOfDbList
 
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup

@@ -92,6 +92,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonHaProxyHost";
         else if (m_url.protocol().toLower() == "pgbouncer")
             m_properties["class_name"] = "CmonPgBouncerHost";
+        else if (m_url.protocol().toLower() == "pgbackrest")
+            m_properties["class_name"] = "CmonPgBackRestHost";
         else if (m_url.protocol().toLower() == "pbmagent")
             m_properties["class_name"] = "CmonPBMAgentHost";
         else if (m_url.protocol().toLower() == "nfsclient")
@@ -106,6 +108,10 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonMaxScaleHost";
         else if (m_url.protocol().toLower() == "keepalived")
             m_properties["class_name"] = "CmonKeepalivedHost";
+        else if (m_url.protocol().toLower() == "redis")
+            m_properties["class_name"] = "CmonRedisHost";
+        else if (m_url.protocol().toLower() == "redis-sentinel")
+            m_properties["class_name"] = "CmonRedisSentinelHost";
         else
             m_properties["protocol"] = m_url.protocol();
     }
@@ -1081,6 +1087,8 @@ S9sNode::nodeTypeFlag() const
         return 'h';
     else if (theNodeType == "pgbouncer")
         return 'b';
+    else if (theNodeType == "pgbackrest")
+        return 'B';
     else if (theNodeType == "pbmagent")
         return 't';
     else if (theNodeType == "nfsclient")
