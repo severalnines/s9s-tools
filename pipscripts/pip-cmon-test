@@ -1354,6 +1354,11 @@ function install_packages_on_test_server()
         message "Installing bc..."
         sudo apt-get -y --force-yes install bc
     fi
+
+    if [ ! -f "/usr/include/hiredis/hiredis.h" ]; then
+        message "Installing hiredis..."
+        sudo apt-get -y --force-yes install libhiredis-dev
+    fi
 }
 
 #
