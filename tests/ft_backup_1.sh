@@ -238,7 +238,7 @@ EOF
         --vendor="$OPTION_VENDOR" \
         --cluster-name="$cluster_name" \
         --provider-version=$PROVIDER_VERSION \
-        --backup-id=2 \
+        --backup-id=1 \
         $LOG_OPTION \
         $DEBUG_OPTION
 
