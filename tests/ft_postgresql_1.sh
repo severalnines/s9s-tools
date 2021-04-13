@@ -1189,6 +1189,10 @@ function testRemoveBackup()
     local backupId
 
     print_title "Removing a Backup"
+    cat <<EOF
+  Well, this was possible before, but it seems now the deleting of a backup on a
+  remote node is prohibited.
+EOF
 
     begin_verbatim
     backupId=$(\
@@ -1206,7 +1210,12 @@ function testRemoveBackup()
         --print-request \
         --print-json
     
-    check_exit_code $?
+    if [ $? -eq 0 ]; then
+        failure "This should've failed."
+    else
+        success "  o Failed, ok."
+    fi
+
     end_verbatim
 }
 
