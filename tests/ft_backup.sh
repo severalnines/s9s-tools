@@ -201,56 +201,6 @@ function testCreateCluster()
     end_verbatim
 }
 
-function testCreateClusterFromBackup()
-{
-    local container_name
-    local nodes
-    local nodeName
-    local exitCode
-    local nNodes=$OPTION_NUMBER_OF_NODES
-    local cluster_name="${CLUSTER_NAME}_copy"
-
-
-    print_title "Creating a Galera Cluster from Backup"
-    cat <<EOF | paragraph
-  This test will create a new galera cluster from an existing backup.
-EOF
-
-    begin_verbatim
-    for ((n=0;n<nNodes;++n)); do
-        echo "Creating container #${n}."
-        container_name="$(printf "ft_backup_%08d_node1%02d" "$$" "$n")"
-        nodeName=$(create_node --autodestroy $container_name)
-        nodes+="$nodeName;"
-    done
-
-    mys9s debug --list --long
-    mys9s cluster --list --long 
-    mys9s node --list --long
-       
-    #
-    # Creating a Galera cluster.
-    #
-    mys9s cluster \
-        --create \
-        --cluster-type=galera \
-        --nodes="$nodes" \
-        --vendor="$OPTION_VENDOR" \
-        --cluster-name="$cluster_name" \
-        --provider-version=$PROVIDER_VERSION \
-        --backup-id=2 \
-        $LOG_OPTION \
-        $DEBUG_OPTION
-
-    check_exit_code $?
-    
-    mys9s cluster --list --long
-    mys9s nodes   --list --long
-    mys9s job     --list
-
-    wait_for_cluster_started "$cluster_name"
-    end_verbatim
-}
 
 #
 # Creating a new account on the cluster.
@@ -879,7 +829,6 @@ else
     runFunctionalTest testCreateBackup05
     runFunctionalTest testCreateBackup06
     runFunctionalTest testScheduledBackup
-    #runFunctionalTest testCreateClusterFromBackup
     runFunctionalTest testRestore
     runFunctionalTest testDeleteBackup
     runFunctionalTest testDeleteOld
