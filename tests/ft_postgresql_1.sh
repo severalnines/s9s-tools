@@ -1203,9 +1203,8 @@ function testRemoveBackup()
         --delete \
         --backup-id=$backupId \
         --batch \
-        --verbose \
-        $LOG_OPTION \
-        $DEBUG_OPTION
+        --print-request \
+        --print-json
     
     check_exit_code $?
     end_verbatim
