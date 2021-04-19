@@ -225,6 +225,7 @@ function testAddSlave()
 This test will add a new node as slave to the cluster created in the previous
 test as a single node postgresql cluster.
 EOF
+    begin_verbatim
 
     container_name="$(printf "ft_galeraslave_%08d_slave%02d" "$$" "$n")"
     nodeName=$(create_node --autodestroy $container_name)
@@ -245,6 +246,7 @@ EOF
 
     mys9s node --list --long
     mys9s node --stat    
+    end_verbatim
 }
 
 #

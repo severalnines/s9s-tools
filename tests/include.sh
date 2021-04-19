@@ -1981,7 +1981,8 @@ function create_node()
 
     if [ "$PRINT_PIP_COMMANDS" ]; then
         cat <<EOF >&2
-            pip-container-create \\
+
+pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
             $template_option \\
