@@ -223,7 +223,7 @@ function testAddSlave()
     print_title "Adding a New Node as Slave"
     cat <<EOF
 This test will add a new node as slave to the cluster created in the previous
-test as a single node postgresql cluster.
+test as a two node Galera cluster.
 EOF
     begin_verbatim
 
