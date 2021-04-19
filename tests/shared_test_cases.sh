@@ -74,7 +74,7 @@ EOF
 
     print_title "Compiling Source"
     begin_verbatim
-    ssh_to_controller "cd $sdir && make -j15 >/dev/null"
+    ssh_to_controller "cd $sdir && make >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to compile."
         return 1
