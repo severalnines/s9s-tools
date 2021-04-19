@@ -154,7 +154,12 @@ function testCreateCluster()
         echo "Creating container #${n}."
         container_name="$(printf "ft_backup_%08d_node0%02d" "$$" "$n")"
         nodeName=$(create_node --autodestroy $container_name)
-        nodes+="$nodeName;"
+
+        if [ -n "$nodes" ]; then
+            nodes+=";"
+        fi
+
+        nodes+="$nodeName"
     
         if [ "$n" == "0" ]; then
             FIRST_ADDED_NODE=$nodeName
@@ -189,6 +194,8 @@ function testCreateCluster()
     fi
 
     wait_for_cluster_started "$CLUSTER_NAME"
+    mys9s job --log --job-id=2
+    mys9s job --log --job-id=3
 
     #mys9s cluster --list --long
     #sleep 60
