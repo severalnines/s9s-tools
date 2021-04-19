@@ -5,8 +5,8 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
-LOG_OPTION="--wait"
-DEBUG_OPTION=""
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
