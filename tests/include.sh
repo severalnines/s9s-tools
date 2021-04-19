@@ -5,7 +5,7 @@ TEST_SUITE_NAME=""
 TEST_NAME=""
 DONT_PRINT_TEST_MESSAGES=""
 PRINT_COMMANDS=""
-PRINT_PIP_COMMANDS=""
+PRINT_PIP_COMMANDS="true"
 OPTION_KEEP_NODES=""
 TEST_EMAIL="laszlo@severalnines.com"
 
@@ -1978,6 +1978,7 @@ function create_node()
     else
         echo -n "Creating container... $os_vendor$os_release" >&2
     fi
+
     if [ "$PRINT_PIP_COMMANDS" ]; then
         print_command \
             "pip-container-create" \
