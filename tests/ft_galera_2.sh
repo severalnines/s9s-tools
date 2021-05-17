@@ -922,22 +922,22 @@ else
     runFunctionalTest testPing
 
     runFunctionalTest testCreateCluster
-    runFunctionalTest testSetupAudit
+    #runFunctionalTest testSetupAudit
 
-    runFunctionalTest testSetConfig01
-    runFunctionalTest testSetConfig02
+    #runFunctionalTest testSetConfig01
+    #runFunctionalTest testSetConfig02
 
-    runFunctionalTest testRestartNode
-    runFunctionalTest testStopStartNode
+    #runFunctionalTest testRestartNode
+    #runFunctionalTest testStopStartNode
 
     #runFunctionalTest testCreateAccount
     #runFunctionalTest testCreateDatabase
 
     #runFunctionalTest testAddNode
 
-    #runFunctionalTest testAddRemoveProxySql
-    #runFunctionalTest testAddRemoveHaProxy
-    #runFunctionalTest testAddRemoveMaxScale
+    runFunctionalTest testAddRemoveProxySql
+    runFunctionalTest testAddRemoveHaProxy
+    runFunctionalTest testAddRemoveMaxScale
 
     #runFunctionalTest testRemoveNode
     #runFunctionalTest testRollingRestart

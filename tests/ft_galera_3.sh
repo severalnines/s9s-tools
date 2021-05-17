@@ -922,13 +922,13 @@ else
     runFunctionalTest testPing
 
     runFunctionalTest testCreateCluster
-    runFunctionalTest testSetupAudit
+    #runFunctionalTest testSetupAudit
 
-    runFunctionalTest testSetConfig01
-    runFunctionalTest testSetConfig02
+    #runFunctionalTest testSetConfig01
+    #runFunctionalTest testSetConfig02
 
-    runFunctionalTest testRestartNode
-    runFunctionalTest testStopStartNode
+    #runFunctionalTest testRestartNode
+    #runFunctionalTest testStopStartNode
 
     #runFunctionalTest testCreateAccount
     #runFunctionalTest testCreateDatabase
@@ -940,9 +940,9 @@ else
     #runFunctionalTest testAddRemoveMaxScale
 
     #runFunctionalTest testRemoveNode
-    #runFunctionalTest testRollingRestart
-    #runFunctionalTest testStop
-    #runFunctionalTest testStart
+    runFunctionalTest testRollingRestart
+    runFunctionalTest testStop
+    runFunctionalTest testStart
 fi
 
 endTests

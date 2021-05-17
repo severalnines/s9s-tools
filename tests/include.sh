@@ -1978,14 +1978,17 @@ function create_node()
     else
         echo -n "Creating container... $os_vendor$os_release" >&2
     fi
+
     if [ "$PRINT_PIP_COMMANDS" ]; then
-        print_command \
-            "pip-container-create" \
-            $os_vendor_option \
-            $os_release_option \
-            $template_option \
-            $verbose_option \
-            --server=$CONTAINER_SERVER $container_name
+        cat <<EOF >&2
+
+pip-container-create \\
+            $os_vendor_option \\
+            $os_release_option \\
+            $template_option \\
+            $verbose_option \\
+            --server=$CONTAINER_SERVER $container_name 
+EOF
     fi
     ip=$(pip-container-create \
         $os_vendor_option \

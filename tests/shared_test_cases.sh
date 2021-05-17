@@ -59,6 +59,7 @@ EOF
     begin_verbatim
     ssh_to_controller "sudo apt install -y pkg-config"
     ssh_to_controller "sudo apt install -y libldap2-dev"
+    ssh_to_controller "sudo apt install -y libhiredis-dev"
     end_verbatim
 
     print_title "Running autogen.sh on $SECONDARY_CONTROLLER_IP"
@@ -73,7 +74,7 @@ EOF
 
     print_title "Compiling Source"
     begin_verbatim
-    ssh_to_controller "cd $sdir && make -j15 >/dev/null"
+    ssh_to_controller "cd $sdir && make >/dev/null"
     if [ $? -ne 0 ]; then
         failure "Failed to compile."
         return 1

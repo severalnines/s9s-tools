@@ -508,14 +508,19 @@ EOF
 function testFailNoGroup()
 {
     local user_name
+    local retCode
 
     print_title "Creating User without Group"
 
     begin_verbatim
+
     #
     # Yes, this is a problem, we can't get an error message back from the pipe.
     # The group here does not exists and we did not request the creation of the
     # group, so this will fail, but we still get the AOK back from the program.
+    #
+    # But when the request is sent through the RPC v2 the error should be
+    # properly detected.
     #
     mys9s user \
         --create \
@@ -525,6 +530,13 @@ function testFailNoGroup()
         --generate-key \
         --group=nosuchgroup \
         "kirk"
+
+    retCode=$?
+    if [ "$retCode" -eq 0 ]; then
+        failure "This is a failure, the return code should not be 0."
+    else
+        success "  o The return code is $retCode, OK."
+    fi
 
     user_name=$(s9s user --list kirk 2>/dev/null)
     if [ "$user_name" ]; then
