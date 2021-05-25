@@ -847,30 +847,45 @@ function old_email_stuff()
 function test_names()
 {
     local test_dir
+    local test_dirs
+    local script_file
+    local retval
 
     if [ -n "$OPTION_TESTS" ]; then
         echo $OPTION_TESTS
         return 0
     fi
 
+    #
+    # The s9s tests.
+    #
     test_dir="$HOME/Desktop/stuff/work/s9s-tools/tests"
     if [ ! -d "$test_dir" ]; then
         test_dir="$HOME/s9s-tools/tests"
     fi
 
-    if [ -d "$test_dir" ]; then
-        for script_file in $test_dir/ft_*.sh; do
-            if [ ! -f "$script_file" ]; then
-                continue
-            fi
+    test_dirs+=" $test_dir"
 
-            echo $(basename $script_file)
-        done
+    #
+    # The cmon tests.
+    #
+    test_dirs+=" $HOME/clustercontrol-enterprise/tests"
 
-        return 0
-    fi
+    retval=1
+    for test_dir in $test_dirs; do
+        if [ -d "$test_dir" ]; then
+            for script_file in $test_dir/ft_*; do
+                if [ ! -f "$script_file" ]; then
+                    continue
+                fi
 
-    return 1
+                echo $(basename $script_file)
+                retval=0
+            done
+        fi
+    done
+
+    return $retval
 }
 
 function plural_test()
