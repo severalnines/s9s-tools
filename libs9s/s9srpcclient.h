@@ -242,6 +242,7 @@ class S9sRpcClient
 
         bool deleteAccount();
         bool createDatabase();
+        bool createDeleteDatabaseJob();
 
         /*
          * Requests related to scripts.

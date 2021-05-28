@@ -169,6 +169,7 @@ enum S9sOptionType
     OptionCheckHosts,
     OptionDeleteAccount,
     OptionCreateDatabase,
+    OptionDeleteDatabase,
     OptionAvailableUpgrades,
     OptionUpgradeCluster,
     OptionCheckPkgUpgrades,
@@ -4831,6 +4832,16 @@ S9sOptions::isCreateDatabaseRequested() const
 }
 
 /**
+ * \returns true if the --delete-database command line option was provided when
+ *   the program was started.
+ */
+bool
+S9sOptions::isDeleteDatabaseRequested() const
+{
+    return getBool("delete_database");
+}
+
+/**
  * \returns true if the --available_upgrades command line option was provided when
  *   the program was started.
  */
@@ -9324,6 +9335,9 @@ S9sOptions::checkOptionsCluster()
 
     if (isCreateDatabaseRequested())
         countOptions++;
+    
+    if (isDeleteDatabaseRequested())
+        countOptions++;
 
     if (isAvailableUpgradesRequested())
         countOptions++;
@@ -11504,6 +11518,7 @@ S9sOptions::readOptionsCluster(
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
+        { "delete-database",  no_argument,       0, OptionDeleteDatabase  },
         { "available-upgrades",  no_argument,    0, OptionAvailableUpgrades  },
         { "upgrade-cluster",  no_argument,       0, OptionUpgradeCluster  },
         { "check-pkg-upgrades",  no_argument,    0, OptionCheckPkgUpgrades  },
@@ -11826,6 +11841,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateDatabase:
                 // --create-database
                 m_options["create_database"] = true;
+                break;
+            
+            case OptionDeleteDatabase:
+                // --delete-database
+                m_options["delete_database"] = true;
                 break;
 
             case OptionAvailableUpgrades:

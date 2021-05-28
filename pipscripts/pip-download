@@ -713,7 +713,7 @@ EOF
 
     test_case_names=$(get_test_names_html --html-file "$html_file")
     for test_case_name in $test_case_names; do
-        printVerbose "  Processing $test_case_name..."
+        printVerbose "  Processing test $test_case_name..."
         cut_test_case_html \
             --html-file "$html_file" \
             --output-file "$slice_file" \
@@ -855,6 +855,12 @@ function test_names()
         echo $OPTION_TESTS
         return 0
     fi
+    
+    #
+    # The cmon tests.
+    #
+    test_dirs+=" $HOME/clustercontrol-enterprise/tests"
+
 
     #
     # The s9s tests.
@@ -866,15 +872,21 @@ function test_names()
 
     test_dirs+=" $test_dir"
 
-    #
-    # The cmon tests.
-    #
-    test_dirs+=" $HOME/clustercontrol-enterprise/tests"
-
     retval=1
     for test_dir in $test_dirs; do
         if [ -d "$test_dir" ]; then
-            for script_file in $test_dir/ft_*; do
+            for script_file in $test_dir/ft_cmonha*; do
+                basename=$(basename $script_file)
+
+                if [ ! -f "$script_file/$basename" ]; then
+                    continue
+                fi
+
+                echo $basename
+                retval=0
+            done
+            
+            for script_file in $test_dir/ft_*.sh; do
                 if [ ! -f "$script_file" ]; then
                     continue
                 fi
@@ -1068,10 +1080,12 @@ printVerbose "Removed $n_files_removed old files (XML, HTML)."
 for testscript in $mytests; do
     HTML_FILE=$(download_html_file "$testscript")
     if [ -z "$HTML_FILE" ]; then
+        printWarning "HTML file for $testscript was not found..."
         continue
     fi
 
     if [ ! -f "$HTML_FILE" ]; then
+        printWarning "File $HTML_FILE was not found..."
         continue
     fi
 

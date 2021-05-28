@@ -1003,7 +1003,7 @@ function testCreateDatabase()
     local group
 
     #
-    #
+    # 
     #
     print_title "Creating Databases"
     cat <<EOF
@@ -1037,10 +1037,16 @@ EOF
     
     check_exit_code_no_job $?
 
-    # FIXME: We wait here, we should not need to.
-    sleep 15
-
     mys9s tree --list --long "$CLUSTER_NAME/databases"
+
+    S9S_LAST_OUTPUT_CONTAINS \
+        "domain_names_diff" \
+        "domain_names_ngtlds_diff" \
+        "whois_records_delta"
+
+    # FIXME: We wait here, we should not need to.
+    #mysleep 15
+    #mys9s tree --list --long "$CLUSTER_NAME/databases"
     
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch "$CLUSTER_NAME/databases")
@@ -1190,6 +1196,30 @@ EOF
         success "  o Outsider can not see databases, ok."
     fi
 
+    end_verbatim
+}
+
+function testDeleteDatabase()
+{
+    #
+    # 
+    #
+    print_title "Deleting Databases"
+    cat <<EOF
+Here we try to delete some databases created in a previous tests.
+
+EOF
+
+    begin_verbatim
+    mys9s cluster \
+        --delete-database \
+        --cluster-name="$CLUSTER_NAME" \
+        --db-name="domain_names_ngtlds_diff" \
+        --log 
+
+    check_exit_code $?
+    
+    mys9s tree --list --long "$CLUSTER_NAME/databases"
     end_verbatim
 }
 
@@ -1990,6 +2020,7 @@ else
     runFunctionalTest testLogAccess
     runFunctionalTest testCreateDatabase
     runFunctionalTest testDatabaseAccess
+    runFunctionalTest testDeleteDatabase
     runFunctionalTest testBackupAccess
     runFunctionalTest testAlarmAccess
     runFunctionalTest testReportAccess

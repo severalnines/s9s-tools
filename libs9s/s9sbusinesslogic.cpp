@@ -254,6 +254,10 @@ S9sBusinessLogic::execute()
             success = client.createDatabase();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isDeleteDatabaseRequested())
+        {
+            success = client.createDeleteDatabaseJob();
+            maybeJobRegistered(client, clusterId, success); 
         } else if (options->isAvailableUpgradesRequested())
         {
             S9sRpcReply reply;

@@ -259,6 +259,31 @@ function mys9s_multiline()
     return $retcode
 }
 
+#
+# Prints the s9s command line and also executes it.
+#   $@   The command line options and arguments for the s9s program.
+#
+function mys9s()
+{
+    local n_arguments=0
+    local argument
+
+    for argument in $*; do
+        let n_arguments+=1
+    done
+
+    if [ "$n_arguments" -lt 4 ]; then
+        mys9s_singleline "$@"
+    else
+        mys9s_multiline "$@"
+    fi
+}
+
+#
+# A method to check that the last executed command had the given text(s) printed
+# to the standard outputs. Use the mys9s to run an s9s command and this method
+# to check that it indeed printed something.
+#
 function S9S_LAST_OUTPUT_CONTAINS()
 {
     local retval=0
@@ -282,25 +307,6 @@ function S9S_LAST_OUTPUT_CONTAINS()
     return $retval
 }
 
-#
-# Prints the s9s command line and also executes it.
-#   $@   The command line options and arguments for the s9s program.
-#
-function mys9s()
-{
-    local n_arguments=0
-    local argument
-
-    for argument in $*; do
-        let n_arguments+=1
-    done
-
-    if [ "$n_arguments" -lt 4 ]; then
-        mys9s_singleline "$@"
-    else
-        mys9s_multiline "$@"
-    fi
-}
 
 function print_command()
 {
@@ -3666,7 +3672,7 @@ function runFunctionalTest ()
     let t1_counter+=1
     let t2_counter=0
 
-    TEST_NAME=$1
+    TEST_NAME="$1"
     shift
 
     # This shows the beginning of the test.

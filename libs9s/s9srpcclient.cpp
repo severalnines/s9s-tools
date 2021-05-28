@@ -8347,16 +8347,18 @@ S9sRpcClient::deleteAccount()
 }
 
 /**
- * \returns true if the request sent and a return is received (even if the reply
+ * \returns True if the request sent and a return is received (even if the reply
  *   is an error message).
- *
+ * 
+ * This method will send a request that will create a database. This is not a
+ * job, just a single request.
  */
 bool
 S9sRpcClient::createDatabase()
 {
-    S9sOptions    *options = S9sOptions::instance();
-    S9sString      uri     = "/v2/clusters/";
-    S9sVariantMap  request = composeRequest();
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri       = "/v2/clusters/";
+    S9sVariantMap  request   = composeRequest();
     S9sVariantMap  database;
     bool           retval;
 
@@ -8369,6 +8371,37 @@ S9sRpcClient::createDatabase()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * Creates a "delete_database" job, a job that will delete a database from a
+ * cluster.
+ */
+bool
+S9sRpcClient::createDeleteDatabaseJob()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri       = "/v2/jobs/";
+    
+    jobData["database"]   = options->dbName();
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "delete_database";
+    jobSpec["job_data"]   = jobData;
+    
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Delete Database";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    return executeRequest(uri, request);
 }
 
 bool
