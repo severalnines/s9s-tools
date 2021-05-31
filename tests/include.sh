@@ -307,6 +307,28 @@ function S9S_LAST_OUTPUT_CONTAINS()
     return $retval
 }
 
+function S9S_LAST_OUTPUT_NOT_CONTAINS()
+{
+    local retval=0
+
+    if [ ! -f "/tmp/LAST_COMMAND_OUTPUT" ]; then
+        failure "File '/tmp/LAST_COMMAND_OUTPUT' was not found."
+        return 1
+    fi
+
+    while [ -n "$1" ]; do
+        if cat "/tmp/LAST_COMMAND_OUTPUT" | grep -q "$1"; then
+            failure "Text '$1' found in the output."
+            retval=1
+        else
+            success "  o Line '$1' was not found in the output, ok."
+        fi
+
+        shift
+    done
+
+    return $retval
+}
 
 function print_command()
 {

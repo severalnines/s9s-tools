@@ -1213,6 +1213,7 @@ EOF
     begin_verbatim
     mys9s cluster \
         --delete-database \
+        --print-request \
         --cluster-name="$CLUSTER_NAME" \
         --db-name="domain_names_ngtlds_diff" \
         --log 
@@ -1220,6 +1221,9 @@ EOF
     check_exit_code $?
     
     mys9s tree --list --long "$CLUSTER_NAME/databases"
+    S9S_LAST_OUTPUT_NOT_CONTAINS \
+        "domain_names_ngtlds_diff"
+
     end_verbatim
 }
 
@@ -2018,14 +2022,17 @@ else
     runFunctionalTest testJobCreate
     runFunctionalTest testJobAccess
     runFunctionalTest testLogAccess
+    
     runFunctionalTest testCreateDatabase
     runFunctionalTest testDatabaseAccess
     runFunctionalTest testDeleteDatabase
+
     runFunctionalTest testBackupAccess
     runFunctionalTest testAlarmAccess
     runFunctionalTest testReportAccess
     runFunctionalTest testCreateAccount
     runFunctionalTest testAccountAccess
+
     runFunctionalTest testMoveObjects
     runFunctionalTest testStats
     runFunctionalTest testAclChroot
@@ -2034,6 +2041,7 @@ else
     runFunctionalTest testChangeOwner
     runFunctionalTest testTree
     runFunctionalTest testMoveBack
+    
     runFunctionalTest --force deleteContainers
 fi
 

@@ -196,6 +196,19 @@ s9s cluster \\
     --account=tmpaccount@192.168.0.127
 .fi
 
+.TP
+.B --delete-database
+Creates a new job that will delete a database from the cluster.
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --delete-database \\
+    --print-request \\
+    --cluster-name="galera_001" \\
+    --db-name="my_database" \\
+    --log
+.fi
+
 .TP 
 .B --disable-recovery
 This command line option will create a new job that will disable the

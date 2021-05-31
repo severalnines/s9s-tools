@@ -6077,8 +6077,6 @@ S9sOptions::printHelpCluster()
     printf(
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
-"  --reinstall-node           Reinstalls software and also reconfigures it on nodes.\n"
-"  --reconfigure-node         Reconfigures specified nodes of the cluster.\n"
 "  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
@@ -6087,6 +6085,7 @@ S9sOptions::printHelpCluster()
 "  --create-database          Create a database on the cluster.\n"
 "  --create-report            Starts a job that will create an error report.\n"
 "  --delete-account           Delete a user account on the cluster.\n"
+"  --delete-database          Creating a job that will delete a database.\n"
 "  --demote-node              Demote a node to slave.\n"
 "  --deploy-agents            Starts a job to deploy agents to the nodes.\n"
 "  --disable-recovery         Disable automatic recovery from a job.\n"
@@ -6100,7 +6099,9 @@ S9sOptions::printHelpCluster()
 "  --list                     List the clusters.\n"
 "  --ping                     Check the connection to the controller.\n"
 "  --promote-slave            Promote a slave to become a master.\n"
+"  --reconfigure-node         Reconfigures specified nodes of the cluster.\n"
 "  --register                 Register a pre-existing cluster.\n"
+"  --reinstall-node           Reinstalls software and also reconfigures it on nodes.\n"
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --set-read-only            Set the entire cluster into read-only mode.\n"
@@ -6109,6 +6110,7 @@ S9sOptions::printHelpCluster()
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
 "  --sync                     Synchronize cluster list with UI Frontend.\n"
+
 
 "\n"
 "  --account=NAME[:PASSWD][@HOST] Account to be created on the cluster.\n"
