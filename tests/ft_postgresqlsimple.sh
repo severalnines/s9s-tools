@@ -250,6 +250,18 @@ EOF
     end_verbatim
 }
 
+function testLog()
+{
+    print_title "Checking Logs"
+    begin_verbatim
+    mys9s log \
+        --list \
+        --limit=10 \
+        --print-request \
+        --print-json
+    end_verbatim
+}
+
 #
 # This test will add one new node to the cluster.
 #
@@ -437,6 +449,7 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
+    runFunctionalTest testLog
     runFunctionalTest testAddNode
     runFunctionalTest testCreateDatabase
     runFunctionalTest testDrop
