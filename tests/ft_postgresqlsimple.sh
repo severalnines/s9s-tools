@@ -256,9 +256,12 @@ function testLog()
     begin_verbatim
     mys9s log \
         --list \
-        --limit=10 \
+        --limit=2 \
         --print-request \
         --print-json
+
+    S9S_LAST_OUTPUT_NOT_CONTAINS \
+        "error_string"
     end_verbatim
 }
 
