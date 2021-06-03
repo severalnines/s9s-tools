@@ -26,3 +26,16 @@ of the option.
 .B --list
 Lists the active alarms.
 
+.TP
+.B --stat
+Prints a simple list about the number of alarms.
+
+.B EXAMPLE
+.nf
+s9s alarm --stat
+1,0,0
+.fi
+
+The list will contain three number for every line. The first is the cluster ID,
+the second is the number of critical alarms and the third is the warning level
+alarms for the given cluster.
