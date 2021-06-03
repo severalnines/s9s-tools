@@ -262,6 +262,16 @@ function testLog()
 
     S9S_LAST_OUTPUT_NOT_CONTAINS \
         "error_string"
+
+    mys9s alarm \
+        --list \
+        --long \
+        --print-request \
+        --print-json
+    
+    S9S_LAST_OUTPUT_NOT_CONTAINS \
+        "error_string"
+
     end_verbatim
 }
 
