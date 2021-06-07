@@ -298,7 +298,9 @@ EOF
     fi
 
 
-    # Check active alarms with the owner using the cluster ID.
+    #
+    # Active alarms, owner, cluster ID.
+    #
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
     if s9s alarm --list --long --cluster-id=1 --batch | grep CRITICAL; then
@@ -306,25 +308,7 @@ EOF
     else
         failure "Owner can't see the alarm?"
     fi
-
-    # Active alarms, owner, no cluster ID.
-    mys9s alarm --list --long 
-    check_exit_code $?
-    if s9s alarm --list --long --batch | grep CRITICAL; then
-        success "  o Owner can see the alarm about disconnected nodes, ok."
-    else
-        failure "Owner can't see the alarm?"
-    fi
-
-    # Active alarms, outsider, cluster ID is provided.
-    mys9s alarm --list --long --cluster-id=1 --cmon-user=grumio --password=p
-    if [ $? -eq 0 ]; then
-        failure "Outsiders should get false return value."
-    else
-        success "  o Outsiders get false return value, ok."
-    fi
-   
-    # Checking stats.
+    
     mys9s alarm --stat --cluster-id=1
     if [ $? -eq 0 ]; then
         success "  o Owner gets a true return value on stats, ok."
@@ -332,6 +316,35 @@ EOF
         failure "Owner got a false return value on stats."
     fi
 
+
+    #
+    # Active alarms, owner, no cluster ID.
+    #
+    mys9s alarm --list --long 
+    check_exit_code $?
+    if s9s alarm --list --long --batch | grep -q CRITICAL; then
+        success "  o Owner can see the alarm about disconnected nodes, ok."
+    else
+        failure "Owner can't see the alarm?"
+    fi
+    
+    mys9s alarm --stat 
+    if [ $? -eq 0 ]; then
+        success "  o Owner gets a true return value on stats, ok."
+    else
+        failure "Owner got a false return value on stats."
+    fi
+
+    #
+    # Active alarms, outsider, cluster ID is provided.
+    #
+    mys9s alarm --list --long --cluster-id=1 --cmon-user=grumio --password=p
+    if [ $? -eq 0 ]; then
+        failure "Outsiders should get false return value."
+    else
+        success "  o Outsiders get false return value, ok."
+    fi
+   
     mys9s alarm --stat --cluster-id=1 --cmon-user="grumio" --password="p"
     if [ $? -eq 0 ]; then
         failure "Outsiders should get false return value on stats."
@@ -346,7 +359,9 @@ EOF
     check_exit_code $?
     mysleep 120
 
+    #
     # No alarms, owner, cluster ID provided.
+    #
     mys9s alarm --list --long --cluster-id=1 
     check_exit_code $?
     if s9s alarm --list --long --cluster-id=1 --batch | grep -q CRITICAL; then
@@ -364,6 +379,8 @@ EOF
     else
         success "  o Alarm disappeared, ok."
     fi
+    
+    mys9s alarm --stat --cluster-id=1
 
     end_verbatim
 }

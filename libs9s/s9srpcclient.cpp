@@ -1918,21 +1918,11 @@ S9sRpcClient::getLogStatistics()
 bool
 S9sRpcClient::getAlarms()
 {
-    S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/alarm/";
-    S9sVariantMap  request;
+    S9sVariantMap  request   = composeRequest();
 
     // Building the request.
     request["operation"]  = "getAlarms";
-    
-    if (options->hasClusterIdOption())
-    {
-        request["cluster_id"] = options->clusterId();
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
-    }
-
     return executeRequest(uri, request);
 }
 

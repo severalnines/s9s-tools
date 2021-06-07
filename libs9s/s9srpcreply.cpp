@@ -3948,6 +3948,37 @@ S9sRpcReply::printReportTemplateListBrief()
     }
 }
 
+/**
+ * Prints the alarm statistics reply.
+ *
+ * The reply for the "getStatistics" request of the "/v2/alarm/" URI looks like
+ * this:
+ *
+ * \code{.js}
+ * {
+ *   "controller_id": "8aa116e9-b5fd-47df-9dbf-0d4108f971f3",
+ *   "reply_received": "2021-06-03T05:43:19.208Z",
+ *   "request_created": "2021-06-03T05:43:19.203Z",
+ *   "request_id": 3,
+ *   "request_processed": "2021-06-03T05:43:19.208Z",
+ *   "request_status": "Ok",
+ *   "request_user_id": 4,
+ *   "alarm_statistics": [ {
+ *       "class_name": "CmonAlarmStatistics",
+ *       "cluster_id": 1,
+ *       "created_after": "1970-01-01T00:00:00.000Z",
+ *       "critical": 0,
+ *       "reported_after": "1970-01-01T00:00:00.000Z",
+ *       "warning": 0
+ *     }  ],
+ *   "debug_messages": [ "RPC V2 authenticated user is 'pipas'."  ]
+ * }
+ * \endcode
+ *
+ * This method will print the statistics in a simple list. Every line will hold
+ * three numbers, the cluster ID, the number of critical alarms and then the
+ * number of warbning level alarms.
+ */
 void
 S9sRpcReply::printAlarmStatistics()
 {

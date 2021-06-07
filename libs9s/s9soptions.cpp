@@ -6448,6 +6448,7 @@ S9sOptions::printHelpAlarm()
 "Options for the \"alarm\" command:\n"
 "  --delete                   Set the alarm to be ignored.\n"
 "  --list                     List the alarms.\n"
+"  --stat                     Prints a short list about the number of alarms.\n"
 "\n"
     );
 }
