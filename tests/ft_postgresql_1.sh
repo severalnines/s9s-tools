@@ -1191,7 +1191,7 @@ function testRemoveBackup()
     print_title "Removing a Backup"
     cat <<EOF
   Well, this was possible before, but it seems now the deleting of a backup on a
-  remote node is prohibited.
+  remote node is prohibited. Ah, now it is again possible...
 EOF
 
     begin_verbatim
@@ -1211,9 +1211,9 @@ EOF
         --print-json
     
     if [ $? -eq 0 ]; then
-        failure "This should've failed."
+        success "Removed backup"
     else
-        success "  o Failed, ok."
+        falure "Removing backup has been failed."
     fi
 
     end_verbatim
