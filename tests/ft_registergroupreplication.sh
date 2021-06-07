@@ -123,7 +123,7 @@ function testCreateCluster()
         --nodes="$NODES" \
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.7 \
+        --provider-version=8.0 \
         $LOG_OPTION
 
     check_exit_code $?
