@@ -1099,9 +1099,14 @@ S9sNode::nodeTypeFlag() const
         return 'a';
     else if (theNodeType == "grouprepl")
         return 'r';
-
+    
     if (className() == "CmonMySqlHost")
         return 's';
+    
+    if (className() == "CmonRedisSentinelHost")
+        return 'S';
+    if (className() == "CmonRedisHost")
+        return 'R';
     
     return '?';
 }
