@@ -2840,8 +2840,13 @@ S9sRpcReply::printExtendedConfigLong()
 
         if (syntaxHighlight)
             ::printf("%s", TERM_NORMAL);
-        
-        ::printf("%s", STR(value.toJsonString(0, S9sFormatColor)));
+       
+        if (syntaxHighlight)
+        {
+            ::printf("%s", STR(value.toJsonString(0, S9sFormatColor)));
+        } else {
+            ::printf("%s", STR(value.toJsonString(0, S9sFormatNormal)));
+        }
 
         ::printf("\n");
     }
