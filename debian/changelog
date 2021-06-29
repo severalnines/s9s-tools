@@ -4,6 +4,18 @@ s9s-tools (1.9.20210629-release1) UNRELEASED; urgency=medium
 
  -- David Kedves <kedazo@severalnines.com>  Tue, 29 Jun 2021 16:50:04 +0200
 
+s9s-tools (1.9.20210607-release1) UNRELEASED; urgency=medium
+
+  * New build (expired OBS keys, meh...)
+
+ -- David Kedves <kedazo@severalnines.com>  Mon, 07 Jun 2021 07:45:08 +0200
+
+s9s-tools (1.9.20210601-release1) UNRELEASED; urgency=medium
+
+  * New build
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 01 Jun 2021 11:02:01 +0200
+
 s9s-tools (1.9.20210517-release1) UNRELEASED; urgency=medium
 
   * New release

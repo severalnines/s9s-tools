@@ -44,6 +44,10 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %changelog
 * Tue Jun 29 2021 David Kedves <kedazo@severalnines.com> 1.9.20210629
 - New release
+* Mon Jun 07 2021 David Kedves <kedazo@severalnines.com> 1.9.20210607
+- New build (expired OBS keys, meh...)
+* Tue Jun 01 2021 David Kedves <kedazo@severalnines.com> 1.9.20210601
+- New build
 * Mon May 17 2021 David Kedves <kedazo@severalnines.com> 1.9.20210517
 - New release
 * Wed Apr 07 2021 David Kedves <kedazo@severalnines.com> 1.9.20210407
