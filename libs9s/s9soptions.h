@@ -480,6 +480,8 @@ class S9sOptions
         bool isStageRequested() const;
         bool isSynchronous() const;
         bool hasSynchronous() const;
+        bool isSemiSync() const;
+        bool hasSemiSync() const;
         bool isToggleSyncRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
