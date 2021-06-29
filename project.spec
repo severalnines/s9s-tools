@@ -42,6 +42,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Tue Jun 29 2021 David Kedves <kedazo@severalnines.com> 1.9.20210629
+- New release
 * Mon Jun 07 2021 David Kedves <kedazo@severalnines.com> 1.9.20210607
 - New build (expired OBS keys, meh...)
 * Tue Jun 01 2021 David Kedves <kedazo@severalnines.com> 1.9.20210601

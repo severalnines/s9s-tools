@@ -86,6 +86,7 @@ enum S9sOptionType
     OptionSync,
     OptionStage,
     OptionSynchronous,
+    OptionSemiSync,
     OptionToggleSync,
     OptionDelete,
     OptionClone,
@@ -4219,6 +4220,9 @@ S9sOptions::isStageRequested() const
 bool
 S9sOptions::isSynchronous() const
 {
+    if (hasSynchronous() && getString("synchronous").empty())
+        return true;
+
     return getBool("synchronous");
 }
 
@@ -4229,6 +4233,27 @@ bool
 S9sOptions::hasSynchronous() const
 {
     return m_options.contains("synchronous");
+}
+
+/**
+ * \returns the value of the --semi-sync=BOOL command line option
+ */
+bool
+S9sOptions::isSemiSync() const
+{
+    if (hasSemiSync() && getString("semi-sync").empty())
+        return true;
+
+    return getBool("semi-sync");
+}
+
+/**
+ * \returns if CLI has the --semi-sync command line option
+ */
+bool
+S9sOptions::hasSemiSync() const
+{
+    return m_options.contains("semi-sync");
 }
 
 /**
@@ -11553,6 +11578,7 @@ S9sOptions::readOptionsCluster(
         { "usr1",             no_argument,       0, OptionUsr1            },
         { "enable-recovery",  no_argument,       0, OptionEnableRecovery  },
         { "disable-recovery", no_argument,       0, OptionDisableRecovery },
+        { "semi-sync",        required_argument, 0, OptionSemiSync        },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -11825,7 +11851,15 @@ S9sOptions::readOptionsCluster(
                 // --disable-recovery
                 m_options["disable_recovery"] = true;
                 break;
-            
+
+            case OptionSemiSync:
+            {
+                // --semi-sync[=BOOL]
+                S9sString arg(optarg);
+                m_options["semi-sync"] = arg.toBoolean();
+                break;
+            }
+
             case OptionStart:
                 // --start
                 m_options["start"] = true;

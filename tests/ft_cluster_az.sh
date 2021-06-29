@@ -184,7 +184,7 @@ EOF
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="5.7" \
         --vendor=percona \
         --cloud=az \
         --nodes="$container_name1;$container_name2" \

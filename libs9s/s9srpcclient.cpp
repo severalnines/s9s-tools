@@ -3219,7 +3219,10 @@ S9sRpcClient::createGaleraCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
-    
+
+    if (options->hasSemiSync())
+        jobData["mysql_semi_sync"] = options->isSemiSync();
+
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
 
@@ -3289,7 +3292,10 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
-    
+
+    if (options->hasSemiSync())
+        jobData["mysql_semi_sync"] = options->isSemiSync();
+ 
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
     
@@ -3532,7 +3538,10 @@ S9sRpcClient::createMySqlReplication(
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
     jobData["mysql_password"]   = options->dbAdminPassword();
-   
+
+    if (options->hasSemiSync())
+        jobData["mysql_semi_sync"] = options->isSemiSync();
+
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
@@ -3677,7 +3686,10 @@ S9sRpcClient::createGroupReplication(
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
     jobData["mysql_password"]   = options->dbAdminPassword();
-    
+
+    if (options->hasSemiSync())
+        jobData["mysql_semi_sync"] = options->isSemiSync();
+
     if (options->noInstall())
     {
         jobData["install_software"] = false;
