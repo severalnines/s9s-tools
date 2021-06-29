@@ -2060,7 +2060,7 @@ S9sRpcClient::generateReport()
     // Building the request.
     reportMap["class_name"]  = "CmonReport";
     reportMap["report_type"] = reportType;
-    reportMap["recipients"]  = "laszlo@severalnines.com";
+    // reportMap["recipients"]  = "laszlo@severalnines.com";
     reportMap["text_format"] = "AnsiTerminal";
 
     request["operation"]     = "generateReport";
