@@ -275,7 +275,7 @@ S9sNode::toString(
                     break;
 
                 case 'b':
-                    // The list of slaves in one string.
+                    // The master, this node is following.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(masterHost()));
                     retval += tmp;
