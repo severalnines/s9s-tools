@@ -878,6 +878,8 @@ S9sNode::roleFlag() const
         return 'U';
     else if (theRole == "controller")
         return 'C';
+    else if (theRole == "bvs")
+        return 'V';
     else if (theRole == "arbiter")
         return 'A';
     else if (theRole == "shardsvr")
@@ -1099,13 +1101,14 @@ S9sNode::nodeTypeFlag() const
         return 'a';
     else if (theNodeType == "grouprepl")
         return 'r';
-    
-    if (className() == "CmonMySqlHost")
+    else if (theNodeType == "cmonagent")
+        return 'A';
+
+    else if (className() == "CmonMySqlHost")
         return 's';
-    
-    if (className() == "CmonRedisSentinelHost")
+    else if (className() == "CmonRedisSentinelHost")
         return 'S';
-    if (className() == "CmonRedisHost")
+    else if (className() == "CmonRedisHost")
         return 'R';
     
     return '?';

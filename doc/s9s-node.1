@@ -527,8 +527,12 @@ This is the type of the node. It can be
 \fBB\fP for PgBackRest,
 \fBt\fP for PBMAgent,
 \fBa\fP for Garbd,
-\fBr\fP for group replication host and
-\fBs\fP for generic MySQL nodes.
+\fBr\fP for group replication host,
+\fBA\fP for cmon agent,
+\fBs\fP for generic MySQL nodes,
+\fBS\fP for Redis sentinel,
+\fBR\fP for Redis,
+and \fB?\fP for unknown nodes.
 .TP
 .B hoststatus
 The status of the node. It can be \fBo\fP for on-line, \fBl\fP for off-line,
@@ -536,9 +540,14 @@ The status of the node. It can be \fBo\fP for on-line, \fBl\fP for off-line,
 nodest that are shut down and \fB?\fP for nodes in unknown state.
 .TP
 .B role
-This field shows the role of the node in the cluster. This can be \fBM\fP for
-master, \fBS\fP for Slave, \fBU\fP for multi (master and slave), \fBC\fP for 
-controller, \fBA\fP for arbiter and \fB-\fP for everything else.
+This field shows the role of the node in the cluster. This can be
+\fBM\fP for master,
+\fBS\fP for Slave,
+\fBU\fP for multi (master and slave),
+\fBC\fP for controller,
+\fBV\fP for backup verification node,
+\fBA\fP for arbiter
+and \fB-\fP for everything else.
 .TP 
 .B maintenance
 This field shows if the node is in maintenance mode. The character is \fbM\fP
