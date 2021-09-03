@@ -882,6 +882,8 @@ S9sNode::roleFlag() const
         return 'V';
     else if (theRole == "arbiter")
         return 'A';
+    else if (theRole == "backuprepo")
+        return 'R';
     else if (theRole == "shardsvr")
     {
         S9sString mRole = memberRole();
@@ -1103,6 +1105,8 @@ S9sNode::nodeTypeFlag() const
         return 'r';
     else if (theNodeType == "cmonagent")
         return 'A';
+    else if (theNodeType == "prometheus")
+        return 'P';
 
     else if (className() == "CmonMySqlHost")
         return 's';
