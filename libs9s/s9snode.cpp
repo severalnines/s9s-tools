@@ -110,7 +110,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonKeepalivedHost";
         else if (m_url.protocol().toLower() == "redis")
             m_properties["class_name"] = "CmonRedisHost";
-        else if (m_url.protocol().toLower() == "redis-sentinel")
+        else if (m_url.protocol().toLower() == "redis-sentinel" ||
+            m_url.protocol().toLower() == "sentinel")
             m_properties["class_name"] = "CmonRedisSentinelHost";
         else
             m_properties["protocol"] = m_url.protocol();

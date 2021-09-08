@@ -3118,6 +3118,9 @@ S9sRpcClient::registerCluster()
 
         success = registerNdbCluster(
                 mySqlHosts, mgmdHosts, ndbdHosts, osUserName);
+    } else if (options->clusterType() == "redis")
+    {
+        success = registerRedisCluster(hosts, osUserName, options->providerVersion());
     } else {
         PRINT_ERROR("Register cluster is currently implemented only for "
                 "some cluster types.");
@@ -10531,6 +10534,65 @@ S9sRpcClient::syncClusters()
     // The request describing we want to register a job instance.
     request["operation"]  = "createJobInstance";
     request["job"]        = job;
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::registerRedisCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &redisVersion)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Nodes are not specified while registering existing cluster.");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    //
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "redis";
+    jobData["type"]             = "redis";
+    jobData["nodes"]            = nodesField(hosts);
+
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
+
+    if (!redisVersion.empty())
+        jobData["version"]      = redisVersion;
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    //
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    //
+    // The job instance describing how the job will be executed.
+    //
+    job["title"]                = "Register Redis Cluster";
+    job["job_spec"]             = jobSpec;
+
+    //
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
 
     return executeRequest(uri, request);
 }

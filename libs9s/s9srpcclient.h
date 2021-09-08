@@ -526,7 +526,12 @@ class S9sRpcClient
         bool createRedisSentinel(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &psqlVersion);
+                const S9sString      &redisVersion);
+
+        bool registerRedisCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &redisVersion);
 
         bool createMongoCluster(
                 const S9sVariantList &hosts,
