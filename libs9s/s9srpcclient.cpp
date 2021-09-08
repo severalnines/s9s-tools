@@ -2951,6 +2951,7 @@ S9sRpcClient::createCluster()
     osUserName     = options->osUser();
     vendor         = options->vendor();
 
+
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
         PRINT_ERROR(
@@ -4199,6 +4200,9 @@ S9sRpcClient::createMsSqlSingle(
         jobData["enable_uninstall"] = true;
     } 
 
+    if (!options->license().empty())
+        jobData["license"] = options->license();    
+    
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 

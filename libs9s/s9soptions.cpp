@@ -387,6 +387,7 @@ enum S9sOptionType
 
     OptionVirtualIp,
     OptionEthInterface,
+    OptionLicense,
 };
 
 /**
@@ -6168,6 +6169,8 @@ S9sOptions::printHelpCluster()
 "  --ssl-ca=STRING            The SSL CA file path on controller.\n"
 "  --ssl-cert=STRING          The SSL certificate file path on controller.\n"
 "  --ssl-key=STRING           The SSL key file path on controller.\n"
+"Microsoft SQL Server related options\n"
+"  --license=STRING           The license (Evaluation, Developer, etc).\n"
 "\n");
 }
 
@@ -11649,6 +11652,9 @@ S9sOptions::readOptionsCluster(
         // Options for remove cluster/node.
         { "uninstall",           no_argument,    0, OptionUninstall        },
 
+        // Options for mssql
+        { "license",     required_argument, 0, OptionLicense     },
+
         { 0, 0, 0, 0 }
     };
 
@@ -12334,6 +12340,11 @@ S9sOptions::readOptionsCluster(
             case OptionEthInterface:
                 // --eth-interface=INTERFACE
                 m_options["eth_interface"] = optarg;
+                break;
+
+            case OptionLicense: 
+                // --license=STRING
+                m_options["license"] = optarg;
                 break;
 
             case '?':
@@ -15245,3 +15256,13 @@ S9sOptions::sslKeyFile() const
     return retval;
 }
 
+/**
+ * \returns the license string that is provided by the --license
+ *   command line option
+ *
+ */
+S9sString
+S9sOptions::license() const
+{
+    return getString("license");    
+}

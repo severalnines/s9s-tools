@@ -637,7 +637,8 @@ class S9sOptions
                 const S9sVariant   &value);
         
         S9sVariant getState(const S9sString    &key);
-
+        S9sString license() const;    
+     
     private:
         void checkController();
         void printHelpGeneric();
