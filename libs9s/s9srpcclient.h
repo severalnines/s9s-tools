@@ -528,7 +528,7 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &psqlVersion);
 
-        bool createMsSql(
+        bool createMsSqlSingle(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
                 const S9sString      &psqlVersion);

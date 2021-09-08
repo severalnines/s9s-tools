@@ -2965,7 +2965,7 @@ S9sRpcClient::createCluster()
     // for redis we do not care about the version for now..
     if (dbVersion.empty()  &&
         (options->clusterType() != "redis" &&
-         options->clusterType() != "mssql"))
+         !options->clusterType().startsWith("mssql")))
     {
         PRINT_ERROR(
             "The SQL server version is unknown while creating a cluster.\n"
@@ -2979,7 +2979,7 @@ S9sRpcClient::createCluster()
      * Running the request on the controller.
      */
     if (options->clusterType() == "mysql_single" ||
-            options->clusterType() == "mysql-single")
+        options->clusterType() == "mysql-single")
     {
         success = createMySqlSingleCluster(
                 hosts, osUserName, vendor, dbVersion);
@@ -3009,9 +3009,9 @@ S9sRpcClient::createCluster()
     {
         success = createRedisSentinel(
             hosts, osUserName, dbVersion);
-    } else if (options->clusterType() == "mssql")
+    } else if (options->clusterType() == "mssql_single")
     {
-        success = createMsSql(
+        success = createMsSqlSingle(
             hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
@@ -4160,7 +4160,7 @@ S9sRpcClient::createRedisSentinel(
  */
 
 bool
-S9sRpcClient::createMsSql(
+S9sRpcClient::createMsSqlSingle(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
         const S9sString      &version)
@@ -4183,7 +4183,7 @@ S9sRpcClient::createMsSql(
     // 
     // The job_data describing the cluster.
     //
-    jobData["cluster_type"]     = "mssql";
+    jobData["cluster_type"]     = "mssql_single";
     jobData["type"]             = "mssql";
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = version;
