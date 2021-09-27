@@ -2951,6 +2951,7 @@ S9sRpcClient::createCluster()
     osUserName     = options->osUser();
     vendor         = options->vendor();
 
+
     if (vendor.empty() && options->clusterType() != "postgresql")
     {
         PRINT_ERROR(
@@ -2964,22 +2965,22 @@ S9sRpcClient::createCluster()
 
     // for redis we do not care about the version for now..
     if (dbVersion.empty()  &&
-        options->clusterType() != "redis")
+        (options->clusterType() != "redis" &&
+         !options->clusterType().startsWith("mssql")))
     {
         PRINT_ERROR(
             "The SQL server version is unknown while creating a cluster.\n"
             "Use the --provider-version command line option set it."
             );
-
+        
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
-
     /*
      * Running the request on the controller.
      */
     if (options->clusterType() == "mysql_single" ||
-            options->clusterType() == "mysql-single")
+        options->clusterType() == "mysql-single")
     {
         success = createMySqlSingleCluster(
                 hosts, osUserName, vendor, dbVersion);
@@ -3008,6 +3009,10 @@ S9sRpcClient::createCluster()
     } else if (options->clusterType() == "redis")
     {
         success = createRedisSentinel(
+            hosts, osUserName, dbVersion);
+    } else if (options->clusterType() == "mssql_single")
+    {
+        success = createMsSqlSingle(
             hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
@@ -4162,6 +4167,84 @@ S9sRpcClient::createRedisSentinel(
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * This method will create a job that creates a single server MSSQL server
+ * cluster.
+ */
+
+bool
+S9sRpcClient::createMsSqlSingle(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &version)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Redis Sentinel cluster.");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "mssql_single";
+    jobData["type"]             = "mssql";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["version"]          = version;
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
+
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    } 
+
+    if (!options->license().empty())
+        jobData["license"] = options->license();    
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["title"]                = "Creating MSSQL server";
+    job["job_spec"]             = jobSpec;
+
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
  */
@@ -4315,6 +4398,8 @@ S9sRpcClient::createNode()
         } else if (protocol == "redis")
         {
         } else if (protocol == "redis_sentinel")
+        {
+        } else if (protocol == "mssql")
         {            
         } else if (protocol.empty())
         {
