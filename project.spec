@@ -42,6 +42,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Mon Sep 27 2021 David Kedves <kedazo@severalnines.com> 1.9.20210927
+- New build for internal testing
 * Wed Sep 08 2021 David Kedves <kedazo@severalnines.com> 1.9.20210908
 - Added register redis cluster support
 * Tue Jun 29 2021 David Kedves <kedazo@severalnines.com> 1.9.20210629
