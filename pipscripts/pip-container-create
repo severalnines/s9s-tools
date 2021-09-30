@@ -11,7 +11,7 @@ PARENT_NAME=""
 VENDOR_NAME=""
 RELEASE_NAME=""
 
-OWNER=tester
+OWNER=pipas
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 OPTION_NO_SSH_TEST=""
 LIST_IMAGES_OPTION=""
