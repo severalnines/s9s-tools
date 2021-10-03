@@ -1230,6 +1230,15 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown replication operation.");
         }
+    } else if (options->isDbSchemaOperation())
+    {
+        if(options->isDbGrowthRequested()) {
+            success = client.getDbGrowth();
+            S9sRpcReply reply = client.reply();
+            reply.printDbGrowthList();
+        } else {
+            PRINT_ERROR("Unknown dbschema operation.");
+        }
     } else {
         PRINT_ERROR("Unknown operation.");
     }

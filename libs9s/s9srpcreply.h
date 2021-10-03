@@ -102,6 +102,8 @@ class S9sRpcReply : public S9sVariantMap
         void printReplicationList();
         void printReplicationListCustom();
 
+        void printDbGrowthList();
+
         void printReportList();
         void printReportTemplateList();
         void printReport();

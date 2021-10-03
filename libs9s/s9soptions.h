@@ -440,6 +440,7 @@ class S9sOptions
         bool isAddTagRequested() const;
         bool isRemoveTagRequested() const;
 
+        bool isDbGrowthRequested() const;
         bool isDbSchemaDateRequested() const;
         bool isDbSchemaNameRequested() const;
         S9sString dBSchemaDate() const;
@@ -740,6 +741,7 @@ class S9sOptions
         bool checkOptionsReplication();
 
         bool readOptionsDbSchema(int argc, char *argv[]);
+        bool checkOptionsDbSchema();
 
         bool setMode(const S9sString &modeName);
 

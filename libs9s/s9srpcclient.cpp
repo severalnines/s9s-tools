@@ -9466,6 +9466,31 @@ S9sRpcClient::getNextMaintenance()
 }
 
 /**
+ * Requests the database growth information
+ * @return The result of the executed request
+ */
+bool
+S9sRpcClient::getDbGrowth()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sString      uri = "/v2/stat/";
+    S9sVariantMap  request;
+
+    // Building the request.
+    request["operation"]  = "getdbgrowth";
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    } else if (options->hasClusterNameOption())
+    {
+        request["cluster_name"] = options->clusterName();
+    }
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns A prepared request that after further settings added can be sent to
  *   the controller.
  */
@@ -10681,4 +10706,3 @@ S9sRpcClient::registerRedisCluster(
 
     return executeRequest(uri, request);
 }
-

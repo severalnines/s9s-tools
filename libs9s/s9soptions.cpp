@@ -454,6 +454,7 @@ S9sOptions::S9sOptions() :
     m_modes["alarms"]       = Alarm;
     m_modes["reports"]      = Report;
     m_modes["replications"] = Replication;
+    m_modes["dbschema"]     = DbSchema;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -3909,6 +3910,17 @@ S9sOptions::isRemoveTagRequested() const
     return getBool("remove_tag");
 }
 
+
+/**
+ * \returns true if the "dbgrowth" function is requested by providing the --dbgrowth
+ *   command line option.
+ */
+bool
+S9sOptions::isDbGrowthRequested() const
+{
+    return getBool("dbgrowth");
+}
+
 /**
  * \returns true if the "date" function is requested by providing the --date
  *   command line option.
@@ -5669,6 +5681,9 @@ S9sOptions::readOptions(
         case DbSchema:
             retval = readOptionsDbSchema(*argc, argv);
 
+            if (retval)
+                retval = checkOptionsDbSchema();
+
             break;
     }
 
@@ -5867,6 +5882,7 @@ S9sOptions::printHelpGeneric()
 "       node - to handle nodes.\n"
 "    process - to view processes running on nodes.\n"
 "replication - to monitor and control data replication.\n"
+"   dbschema - to view database schemas.\n"
 "     report - to manage reports.\n"
 "     script - to manage and execute scripts.\n"
 "     server - to manage hardware resources.\n"
@@ -9203,8 +9219,9 @@ S9sOptions::readOptionsDbSchema(
                     {"version",          no_argument,       0, 'V'},
 
                     // Main Options
-                    {"dbgrowth",         required_argument, 0, OptionDbSchemaDbGrowth},
-                    { "cluster-id",      required_argument, 0, 'i'                   },
+                    {"dbgrowth",         no_argument, 0, OptionDbSchemaDbGrowth},
+                    {"cluster-id",       required_argument, 0, 'i'},
+                    {"cluster-name",     required_argument, 0, 'n'},
 
                     // Date related options.
                     {"date",             no_argument, 0, OptionDbSchemaDate},
@@ -9332,30 +9349,22 @@ S9sOptions::readOptionsDbSchema(
                 m_options["cluster_name"] = optarg;
                 break;
 
-                /*
-                 * Main options.
-                 */
-            case 'L':
-                // --list
-                m_options["list"] = true;
+            /*
+             * Options related to dbgrowth.
+             */
+            case OptionDbSchemaDbGrowth:
+                // --dbgrowth
+                m_options["dbgrowth"] = true;
                 break;
 
-            case OptionDelete:
-                // --delete
-                m_options["delete"] = true;
+            case OptionDbSchemaDate:
+                // --date=DATE
+                m_options["date"] = optarg;
                 break;
 
-            case OptionStat:
-                // --stat
-                m_options["stat"] = true;
-                break;
-
-                /*
-                 * Options related to alarms.
-                 */
-            case OptionAlarmId:
-                // --alarm-id=ID
-                m_options["alarm_id"] = atoi(optarg);
+            case OptionDbSchemaName:
+                // --name=NAME
+                m_options["name"] = optarg;
                 break;
 
             case '?':
@@ -9382,6 +9391,45 @@ S9sOptions::readOptionsDbSchema(
     for (int idx = optind + 1; idx < argc; ++idx)
     {
         m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsDbSchema()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isDbGrowthRequested())
+        countOptions++;
+
+    if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
+     * The --cluster-id option is required.
+     */
+    if(!hasClusterIdOption() && !hasClusterNameOption())
+    {
+        m_errorMessage =
+                "The --cluster-id or --cluster-name option should be used when getting data for the dbchema operation.";
+
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;
