@@ -1,6 +1,9 @@
 s9s-tools (1.9.20210927-release1) UNRELEASED; urgency=medium
 
   * New build for internal testing
+  * MSSQL support added
+  * Added redis cluster import support
+  * Added prometheus node type
 
  -- David Kedves <kedazo@severalnines.com>  Mon, 27 Sep 2021 15:52:48 +0200
 
