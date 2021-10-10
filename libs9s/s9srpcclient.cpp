@@ -9478,6 +9478,7 @@ S9sRpcClient::getDbGrowth()
 
     // Building the request.
     request["operation"]  = "getdbgrowth";
+    request["include_tables"]  = "true";
 
     if (options->hasClusterIdOption())
     {

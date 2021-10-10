@@ -991,8 +991,186 @@ S9sRpcReply::printDbGrowthList()
     if (options->isJsonRequested())
     {
         printJsonFormat();
-    } else if (!isOk())
+    } else if (!isOk()) {
         PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printDbGrowthListLong();
+    }
+}
+
+void
+S9sRpcReply::printDbGrowthListLong()
+{
+    S9sOptions *options = S9sOptions::instance();
+    const S9sVariantList &dataList = operator[]("data").toVariantList();
+    bool  syntaxHighlight = options->useSyntaxHighlight();
+    S9sFormat dateFormat;
+    S9sFormat dbNameFormat;
+    S9sFormat tableNameFormat;
+    S9sFormat tablesRowsFormat;
+    S9sFormat dataSizeFormat;
+    S9sFormat indexSizeFormat;
+    S9sFormat totalSizeFormat;
+
+    uint       nLines = 0;
+    const char     *colorBegin = "";
+    const char     *colorEnd   = "";
+    S9sVariantList dataListFlatten;
+    auto setDataMap = [](S9sVariantMap& map,
+                         const S9sString& date,
+                         const S9sString& dbName,
+                         const S9sString& tableName,
+                         ulonglong tablesRows = 0,
+                         ulonglong dataSize = 0,
+                         ulonglong indexSize = 0)
+    {
+        map["date"] = date;
+        map["db_name"] = dbName;
+        map["table_name"] = tableName;
+        map["tables_rows"] = tablesRows;
+        map["data_size"] = dataSize;
+        map["index_size"] = indexSize;
+        map["total_size"] = dataSize + indexSize;
+    };
+
+    auto compareDataByTotalSizeAndDate = [](
+            const S9sVariant &a,
+            const S9sVariant &b)
+    {
+        S9sVariantMap aMap = a.toVariantMap();
+        S9sVariantMap bMap = b.toVariantMap();
+
+        bool result = false;
+        if(aMap["total_size"].toULongLong() > bMap["total_size"].toULongLong())
+        {
+            result = true;
+        }
+        else if(aMap["total_size"].toULongLong() == bMap["total_size"].toULongLong())
+        {
+            result = aMap["date"].toString() > bMap["date"].toString();
+        }
+        return result;
+    };
+
+    //Preparing the data for the report: flattening and sorting the list of data source.
+    const S9sString dbNameEmpty = "";
+    const S9sString tableNameEmpty = "";
+
+    for (uint idxData = 0; idxData < dataList.size(); ++idxData)
+    {
+        S9sVariantMap  dbGrowthMap      = dataList[idxData].toVariantMap();
+        S9sString dateCreated = dbGrowthMap["created"].toString();
+
+        S9sVariantList dbsList = dbGrowthMap["dbs"].toVariantList();
+        if(dbsList.size() == 0)
+        {
+            S9sVariantMap  dataMap;
+
+            setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
+            dataListFlatten << dataMap;
+            nLines++;
+        }
+        for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
+        {
+            S9sVariantMap dbsMap = dbsList[idxDbs].toVariantMap();
+
+            S9sString dbName = dbsMap["db_name"].toString();
+            dbNameFormat.widen(dbName);
+
+            S9sVariantList tablesList = dbsMap["tables"].toVariantList();
+            if(tablesList.size() == 0)
+            {
+                S9sVariantMap  dataMap;
+                setDataMap(dataMap, dateCreated, dbName, tableNameEmpty,
+                           dbsMap["row_count"].toULongLong(),
+                           dbsMap["data_size"].toULongLong(),
+                           dbsMap["index_size"].toULongLong());
+                dataListFlatten << dataMap;
+                nLines++;
+            }
+            for(uint idxTables = 0; idxTables < tablesList.size(); ++idxTables) {
+                S9sVariantMap tableMap = tablesList[idxTables].toVariantMap();
+                S9sString tableName = tableMap["table_name"].toString();
+                tableNameFormat.widen(tableName);
+
+                S9sVariantMap  dataMap;
+                setDataMap(dataMap, dateCreated, dbName,
+                           tableName,
+                           tableMap["row_count"].toULongLong(),
+                           tableMap["data_size"].toULongLong(),
+                           tableMap["index_size"].toULongLong());
+                dataListFlatten << dataMap;
+                nLines++;
+            }
+
+        }
+        dateFormat.widen(dateCreated);
+    }
+
+    /*
+     * Printing the header.
+     */
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        dateFormat.printHeader("DATE");
+        dbNameFormat.printHeader("DB_NAME");
+        tableNameFormat.printHeader("TABLE_NAME");
+        tablesRowsFormat.printHeader("TABLES_ROWS");
+        dataSizeFormat.printHeader("DATA_SIZE");
+        indexSizeFormat.printHeader("INDEX_SIZE");
+        totalSizeFormat.printHeader("TOTAL_SIZE");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+
+    //Sorting the data by total size in descending order.
+    // If the size is the same for two results, the sorting is made
+    // by date in descending order within the size group.
+    sort(dataListFlatten.begin(), dataListFlatten.end(),
+         compareDataByTotalSizeAndDate);
+
+    //Printing the data
+    for (uint idxData = 0; idxData < dataListFlatten.size(); ++idxData)
+    {
+        S9sVariantMap  dataMap = dataListFlatten[idxData].toVariantMap();
+
+        const char    *groupColorBegin = "";
+        const char    *groupColorEnd   = "";
+
+        //if (!options->isStringMatchExtraArguments(groupName))
+        //    continue;
+
+        if (syntaxHighlight)
+        {
+            colorBegin      = XTERM_COLOR_ORANGE;
+            colorEnd        = TERM_NORMAL;
+            groupColorBegin = XTERM_COLOR_CYAN;
+            groupColorEnd   = TERM_NORMAL;
+        }
+
+        printf("%s", groupColorBegin);
+        dateFormat.printf(dataMap["date"].toString());
+        printf("%s", groupColorEnd);
+
+        printf("%s", colorBegin);
+        dbNameFormat.printf(dataMap["db_name"].toString());
+        printf("%s", colorEnd);
+
+        printf("%s", colorBegin);
+        tableNameFormat.printf(dataMap["table_name"].toString());
+        tablesRowsFormat.printf(dataMap["tables_rows"].toULongLong());
+        printf("%s", colorEnd);
+
+        printf("%s", groupColorBegin);
+        dataSizeFormat.printf(dataMap["data_size"].toULongLong());
+        indexSizeFormat.printf(dataMap["index_size"].toULongLong());
+        totalSizeFormat.printf(dataMap["total_size"].toULongLong());
+        printf("%s", groupColorEnd);
+
+        ::printf("\n");
+    }
 }
 
 void
