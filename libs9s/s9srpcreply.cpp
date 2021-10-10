@@ -1062,25 +1062,38 @@ S9sRpcReply::printDbGrowthListLong()
         S9sString dateCreated = dbGrowthMap["created"].toString();
 
         S9sVariantList dbsList = dbGrowthMap["dbs"].toVariantList();
-        if(dbsList.size() == 0)
-        {
-            S9sVariantMap  dataMap;
 
-            setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
-            dataListFlatten << dataMap;
-            nLines++;
-        }
+        //The flag is needed in order to check if db is found because of filtering.
+        //If db is skipped because of filtering, the dataMap will be filled with empty values.
+        bool dbInfoExists = false;
+        //This flag indicates whether the filtering has been applied.
+        bool dbFilterApplied = false;
         for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
         {
             S9sVariantMap dbsMap = dbsList[idxDbs].toVariantMap();
 
-            S9sString dbName = dbsMap["db_name"].toString();
+            const S9sString &dbName = dbsMap["db_name"].toString();
+            const S9sString &dbNameOption = options->dBSchemaName();
+
+            if (options->hasDbSchemaName())
+            {
+                bool dbNameFound = false;
+                if(!dbName.empty())
+                {
+                    dbNameFound = dbName.toUpper()
+                                              .startsWith(dbNameOption
+                                              .toUpper().c_str());
+                }
+                dbFilterApplied = true;
+                if(!dbNameFound) continue;
+            }
+            dbInfoExists = true;
             dbNameFormat.widen(dbName);
 
-            S9sVariantList tablesList = dbsMap["tables"].toVariantList();
-            if(tablesList.size() == 0)
+            const S9sVariantList &tablesList = dbsMap["tables"].toVariantList();
+            if(tablesList.empty())
             {
-                S9sVariantMap  dataMap;
+                S9sVariantMap dataMap;
                 setDataMap(dataMap, dateCreated, dbName, tableNameEmpty,
                            dbsMap["row_count"].toULongLong(),
                            dbsMap["data_size"].toULongLong(),
@@ -1090,7 +1103,7 @@ S9sRpcReply::printDbGrowthListLong()
             }
             for(uint idxTables = 0; idxTables < tablesList.size(); ++idxTables) {
                 S9sVariantMap tableMap = tablesList[idxTables].toVariantMap();
-                S9sString tableName = tableMap["table_name"].toString();
+                const S9sString &tableName = tableMap["table_name"].toString();
                 tableNameFormat.widen(tableName);
 
                 S9sVariantMap  dataMap;
@@ -1102,7 +1115,16 @@ S9sRpcReply::printDbGrowthListLong()
                 dataListFlatten << dataMap;
                 nLines++;
             }
+        }
 
+        if(dbFilterApplied && !dbInfoExists) continue;
+
+        if(dbsList.empty())
+        {
+            S9sVariantMap  dataMap;
+            setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
+            dataListFlatten << dataMap;
+            nLines++;
         }
         dateFormat.widen(dateCreated);
     }
@@ -1134,10 +1156,10 @@ S9sRpcReply::printDbGrowthListLong()
     //Printing the data
     for (uint idxData = 0; idxData < dataListFlatten.size(); ++idxData)
     {
-        S9sVariantMap  dataMap = dataListFlatten[idxData].toVariantMap();
+        S9sVariantMap dataMap = dataListFlatten[idxData].toVariantMap();
 
-        const char    *groupColorBegin = "";
-        const char    *groupColorEnd   = "";
+        const char *groupColorBegin = "";
+        const char *groupColorEnd   = "";
 
         //if (!options->isStringMatchExtraArguments(groupName))
         //    continue;

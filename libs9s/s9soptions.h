@@ -441,8 +441,8 @@ class S9sOptions
         bool isRemoveTagRequested() const;
 
         bool isDbGrowthRequested() const;
-        bool isDbSchemaDateRequested() const;
-        bool isDbSchemaNameRequested() const;
+        bool hasDbSchemaDate() const;
+        bool hasDbSchemaName() const;
         S9sString dBSchemaDate() const;
         S9sString dBSchemaName() const;
 

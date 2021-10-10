@@ -3922,23 +3922,23 @@ S9sOptions::isDbGrowthRequested() const
 }
 
 /**
- * \returns true if the "date" function is requested by providing the --date
+ * \returns true if the "date" function is presented by providing the --date
  *   command line option.
  */
 bool
-S9sOptions::isDbSchemaDateRequested() const
+S9sOptions::hasDbSchemaDate() const
 {
-    return getBool("date");
+    return m_options.contains("date");
 }
 
 /**
- * \returns true if the "name" function is requested by providing the --name
+ * \returns true if the "name" function is presented by providing the --name
  *   command line option.
  */
 bool
-S9sOptions::isDbSchemaNameRequested() const
+S9sOptions::hasDbSchemaName() const
 {
-    return getBool("name");
+    return m_options.contains("name");
 }
 
 /**
@@ -9224,10 +9224,10 @@ S9sOptions::readOptionsDbSchema(
                     {"cluster-name",     required_argument, 0, 'n'},
 
                     // Date related options.
-                    {"date",             no_argument, 0, OptionDbSchemaDate},
+                    {"date",             required_argument, 0, OptionDbSchemaDate},
 
                     // Database attributes related options.
-                    {"name",             no_argument, 0, OptionDbSchemaName},
+                    {"name",             required_argument, 0, OptionDbSchemaName},
 
                     {0, 0,                                  0, 0}
             };
