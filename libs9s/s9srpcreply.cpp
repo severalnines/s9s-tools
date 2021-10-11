@@ -1062,34 +1062,23 @@ S9sRpcReply::printDbGrowthListLong()
         S9sString dateCreated = dbGrowthMap["created"].toString();
 
         S9sVariantList dbsList = dbGrowthMap["dbs"].toVariantList();
-
-        //The flag is needed in order to check if db is found because of filtering.
-        //If db is skipped because of filtering, the dataMap will be filled with empty values.
-        bool dbInfoExists = false;
-        //This flag indicates whether the filtering has been applied.
-        bool dbFilterApplied = false;
+        const S9sString &dbNameOption = options->dBSchemaName();
         for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
         {
             S9sVariantMap dbsMap = dbsList[idxDbs].toVariantMap();
-
             const S9sString &dbName = dbsMap["db_name"].toString();
-            const S9sString &dbNameOption = options->dBSchemaName();
 
-            if (options->hasDbSchemaName())
-            {
-                bool dbNameFound = false;
-                if(!dbName.empty())
-                {
-                    dbNameFound = dbName.toUpper()
-                                              .startsWith(dbNameOption
-                                              .toUpper().c_str());
-                }
-                dbFilterApplied = true;
-                if(!dbNameFound) continue;
-            }
-            dbInfoExists = true;
             dbNameFormat.widen(dbName);
 
+            if (options->hasDbSchemaName()
+                && !dbName.empty()
+                && !dbName.toUpper()
+                          .startsWith(dbNameOption
+                          .toUpper().c_str()))
+            {
+                continue;
+            }
+            
             const S9sVariantList &tablesList = dbsMap["tables"].toVariantList();
             if(tablesList.empty())
             {
@@ -1117,9 +1106,7 @@ S9sRpcReply::printDbGrowthListLong()
             }
         }
 
-        if(dbFilterApplied && !dbInfoExists) continue;
-
-        if(dbsList.empty())
+        if(dbsList.empty() && dbNameOption.empty())
         {
             S9sVariantMap  dataMap;
             setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
