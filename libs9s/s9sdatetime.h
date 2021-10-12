@@ -123,9 +123,21 @@ class S9sDateTime
 
         static S9sString secondsToUiString(int seconds);
 
+        bool setDate(
+            int year,  int yearDay,
+            int month, int monthDay);
+
         bool parse(const S9sString &input, int *length = NULL);
 
         bool parseLogFileFormat(
+                const S9sString &input,
+                int *length = NULL);
+
+        bool parseDateFormat(
+                const S9sString &input,
+                int *length = NULL);
+
+        bool parseDbGrowthDataFormat(
                 const S9sString &input,
                 int *length = NULL);
 

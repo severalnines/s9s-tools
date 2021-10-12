@@ -9221,7 +9221,6 @@ S9sOptions::readOptionsDbSchema(
                     // Main Options
                     {"dbgrowth",         no_argument, 0, OptionDbSchemaDbGrowth},
                     {"cluster-id",       required_argument, 0, 'i'},
-                    {"cluster-name",     required_argument, 0, 'n'},
 
                     // Date related options.
                     {"date",             required_argument, 0, OptionDbSchemaDate},
@@ -9423,10 +9422,10 @@ S9sOptions::checkOptionsDbSchema()
     /*
      * The --cluster-id option is required.
      */
-    if(!hasClusterIdOption() && !hasClusterNameOption())
+    if(!hasClusterIdOption())
     {
         m_errorMessage =
-                "The --cluster-id or --cluster-name option should be used when getting data for the dbchema operation.";
+                "The --cluster-id option should be used when getting data for the dbschema operation.";
 
         m_exitStatus = BadOptions;
         return false;

@@ -9483,9 +9483,6 @@ S9sRpcClient::getDbGrowth()
     if (options->hasClusterIdOption())
     {
         request["cluster_id"] = options->clusterId();
-    } else if (options->hasClusterNameOption())
-    {
-        request["cluster_name"] = options->clusterName();
     }
 
     return executeRequest(uri, request);

@@ -1004,6 +1004,7 @@ S9sRpcReply::printDbGrowthListLong()
     S9sOptions *options = S9sOptions::instance();
     const S9sVariantList &dataList = operator[]("data").toVariantList();
     bool  syntaxHighlight = options->useSyntaxHighlight();
+    const S9sString &dbNameOption = options->dBSchemaName();
     S9sFormat dateFormat;
     S9sFormat dbNameFormat;
     S9sFormat tableNameFormat;
@@ -1011,11 +1012,10 @@ S9sRpcReply::printDbGrowthListLong()
     S9sFormat dataSizeFormat;
     S9sFormat indexSizeFormat;
     S9sFormat totalSizeFormat;
-
     uint       nLines = 0;
-    const char     *colorBegin = "";
-    const char     *colorEnd   = "";
+
     S9sVariantList dataListFlatten;
+
     auto setDataMap = [](S9sVariantMap& map,
                          const S9sString& date,
                          const S9sString& dbName,
@@ -1053,32 +1053,65 @@ S9sRpcReply::printDbGrowthListLong()
     };
 
     //Preparing the data for the report: flattening and sorting the list of data source.
-    const S9sString dbNameEmpty = "";
-    const S9sString tableNameEmpty = "";
+    const S9sString dbNameEmpty;
+    const S9sString tableNameEmpty;
+    const uint secondsAgoFor31Days = 31 * 24 * 3600;
+    const S9sDateTime &currentDateTime = S9sDateTime::currentDateTime();
+
+    S9sDateTime dateTime31DaysAgo = S9sDateTime((currentDateTime - secondsAgoFor31Days)/1000);
+
+    //The flag for filtering pre-conditions with DB name.
+    bool dbNameFilterPreConditions = options->hasDbSchemaName() && !dbNameOption.empty();
+    S9sDateTime dateOption;
+    dateOption.parseDateFormat(options->dBSchemaDate());
 
     for (uint idxData = 0; idxData < dataList.size(); ++idxData)
     {
         S9sVariantMap  dbGrowthMap      = dataList[idxData].toVariantMap();
-        S9sString dateCreated = dbGrowthMap["created"].toString();
 
-        S9sVariantList dbsList = dbGrowthMap["dbs"].toVariantList();
-        const S9sString &dbNameOption = options->dBSchemaName();
+        const S9sString &dateCreated = dbGrowthMap["created"].toString();
+        const S9sVariantList &dbsList = dbGrowthMap["dbs"].toVariantList();
+
+        S9sDateTime dataDate;
+        dataDate.parseDbGrowthDataFormat(
+                dateCreated + " " + dbGrowthMap["year"].toString());
+        bool dateFilterIsValid = false;
+
+        if(options->hasDbSchemaDate() && !options->dBSchemaDate().empty())
+        {
+            S9sDateTime dataDateWithoutTime;
+            dataDateWithoutTime.setDate(dataDate.year(),
+                                        dataDate.yearday(),
+                                        dataDate.month(),
+                                        dataDate.day());
+            dateFilterIsValid = dataDateWithoutTime == dateOption;
+        }
+        else
+        {
+            dateFilterIsValid = dataDate >= dateTime31DaysAgo;
+        }
+
+        if(!dateFilterIsValid)
+           continue;
+
+        //The flag for detecting the data being filtered with DB name.
+        bool dbNameFilterDataFound = false;
         for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
         {
             S9sVariantMap dbsMap = dbsList[idxDbs].toVariantMap();
             const S9sString &dbName = dbsMap["db_name"].toString();
 
-            dbNameFormat.widen(dbName);
-
-            if (options->hasDbSchemaName()
-                && !dbName.empty()
-                && !dbName.toUpper()
-                          .startsWith(dbNameOption
-                          .toUpper().c_str()))
+            if ( dbNameFilterPreConditions &&
+                 !dbName.toUpper()
+                 .startsWith(dbNameOption
+                 .toUpper().c_str()))
             {
                 continue;
             }
-            
+            dbNameFilterDataFound = true;
+
+            dbNameFormat.widen(dbName);
+
             const S9sVariantList &tablesList = dbsMap["tables"].toVariantList();
             if(tablesList.empty())
             {
@@ -1093,6 +1126,7 @@ S9sRpcReply::printDbGrowthListLong()
             for(uint idxTables = 0; idxTables < tablesList.size(); ++idxTables) {
                 S9sVariantMap tableMap = tablesList[idxTables].toVariantMap();
                 const S9sString &tableName = tableMap["table_name"].toString();
+
                 tableNameFormat.widen(tableName);
 
                 S9sVariantMap  dataMap;
@@ -1106,7 +1140,14 @@ S9sRpcReply::printDbGrowthListLong()
             }
         }
 
-        if(dbsList.empty() && dbNameOption.empty())
+        //In case if the DB name filter was set and no data found, the record
+        //that contains the whole dbs array should be skipped from the report.
+        if(dbNameFilterPreConditions && !dbNameFilterDataFound)
+           continue;
+
+        //If a dbs array is empty and no filtering applied, the record with
+        //a date and empty db information should be added to the report.
+        if(dbsList.empty())
         {
             S9sVariantMap  dataMap;
             setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
@@ -1135,29 +1176,29 @@ S9sRpcReply::printDbGrowthListLong()
     }
 
     //Sorting the data by total size in descending order.
-    // If the size is the same for two results, the sorting is made
-    // by date in descending order within the size group.
+    //If the size is the same for two results, the sorting is made
+    //by date in descending order within the size group.
     sort(dataListFlatten.begin(), dataListFlatten.end(),
          compareDataByTotalSizeAndDate);
 
-    //Printing the data
+    //Setting up the colors highlighting
+    const char *colorBegin      = "";
+    const char *colorEnd        = "";
+    const char *groupColorBegin = "";
+    const char *groupColorEnd   = "";
+
+    if (syntaxHighlight)
+    {
+        colorBegin      = XTERM_COLOR_ORANGE;
+        colorEnd        = TERM_NORMAL;
+        groupColorBegin = XTERM_COLOR_CYAN;
+        groupColorEnd   = TERM_NORMAL;
+    }
+
+    // Printing the data
     for (uint idxData = 0; idxData < dataListFlatten.size(); ++idxData)
     {
         S9sVariantMap dataMap = dataListFlatten[idxData].toVariantMap();
-
-        const char *groupColorBegin = "";
-        const char *groupColorEnd   = "";
-
-        //if (!options->isStringMatchExtraArguments(groupName))
-        //    continue;
-
-        if (syntaxHighlight)
-        {
-            colorBegin      = XTERM_COLOR_ORANGE;
-            colorEnd        = TERM_NORMAL;
-            groupColorBegin = XTERM_COLOR_CYAN;
-            groupColorEnd   = TERM_NORMAL;
-        }
 
         printf("%s", groupColorBegin);
         dateFormat.printf(dataMap["date"].toString());
