@@ -998,21 +998,24 @@ S9sRpcReply::printDbGrowthList()
     }
 }
 
+/**
+ * Prints the DbGrowth list in its long and detailed format.
+ */
 void
 S9sRpcReply::printDbGrowthListLong()
 {
-    S9sOptions *options = S9sOptions::instance();
-    const S9sVariantList &dataList = operator[]("data").toVariantList();
-    bool  syntaxHighlight = options->useSyntaxHighlight();
-    const S9sString &dbNameOption = options->dBSchemaName();
-    S9sFormat dateFormat;
-    S9sFormat dbNameFormat;
-    S9sFormat tableNameFormat;
-    S9sFormat tablesRowsFormat;
-    S9sFormat dataSizeFormat;
-    S9sFormat indexSizeFormat;
-    S9sFormat totalSizeFormat;
-    uint       nLines = 0;
+    S9sOptions           *options        = S9sOptions::instance();
+    const S9sVariantList &dataList       = operator[]("data").toVariantList();
+    bool                 syntaxHighlight = options->useSyntaxHighlight();
+    const S9sString      &dbNameOption   = options->dBSchemaName();
+    S9sFormat            dateFormat;
+    S9sFormat            dbNameFormat;
+    S9sFormat            tableNameFormat;
+    S9sFormat            tablesRowsFormat;
+    S9sFormat            dataSizeFormat;
+    S9sFormat            indexSizeFormat;
+    S9sFormat            totalSizeFormat;
+    uint                 nLines = 0;
 
     S9sVariantList dataListFlatten;
 
@@ -1052,25 +1055,28 @@ S9sRpcReply::printDbGrowthListLong()
         return result;
     };
 
-    //Preparing the data for the report: flattening and sorting the list of data source.
-    const S9sString dbNameEmpty;
-    const S9sString tableNameEmpty;
-    const uint secondsAgoFor31Days = 31 * 24 * 3600;
-    const S9sDateTime &currentDateTime = S9sDateTime::currentDateTime();
+    /*
+     * Preparing the data for the report: flattening and sorting the list of data source.
+     */
+    const S9sString   dbNameEmpty;
+    const S9sString   tableNameEmpty;
+    const uint        secondsAgoFor31Days = 31 * 24 * 3600;
+    const S9sDateTime &currentDateTime    = S9sDateTime::currentDateTime();
+    S9sDateTime       dateTime31DaysAgo   = S9sDateTime((currentDateTime - secondsAgoFor31Days)/1000);
 
-    S9sDateTime dateTime31DaysAgo = S9sDateTime((currentDateTime - secondsAgoFor31Days)/1000);
-
-    //The flag for filtering pre-conditions with DB name.
+    /*
+     * The flag for filtering pre-conditions with DB name.
+     */
     bool dbNameFilterPreConditions = options->hasDbSchemaName() && !dbNameOption.empty();
     S9sDateTime dateOption;
     dateOption.parseDateFormat(options->dBSchemaDate());
 
     for (uint idxData = 0; idxData < dataList.size(); ++idxData)
     {
-        S9sVariantMap  dbGrowthMap      = dataList[idxData].toVariantMap();
+        S9sVariantMap  dbGrowthMap        = dataList[idxData].toVariantMap();
 
-        const S9sString &dateCreated = dbGrowthMap["created"].toString();
-        const S9sVariantList &dbsList = dbGrowthMap["dbs"].toVariantList();
+        const S9sString      &dateCreated = dbGrowthMap["created"].toString();
+        const S9sVariantList &dbsList     = dbGrowthMap["dbs"].toVariantList();
 
         S9sDateTime dataDate;
         dataDate.parseDbGrowthDataFormat(
@@ -1094,11 +1100,13 @@ S9sRpcReply::printDbGrowthListLong()
         if(!dateFilterIsValid)
            continue;
 
-        //The flag for detecting the data being filtered with DB name.
+        /*
+         * The flag for detecting the data being filtered with DB name.
+         */
         bool dbNameFilterDataFound = false;
         for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
         {
-            S9sVariantMap dbsMap = dbsList[idxDbs].toVariantMap();
+            S9sVariantMap   dbsMap  = dbsList[idxDbs].toVariantMap();
             const S9sString &dbName = dbsMap["db_name"].toString();
 
             if ( dbNameFilterPreConditions &&
@@ -1124,7 +1132,7 @@ S9sRpcReply::printDbGrowthListLong()
                 nLines++;
             }
             for(uint idxTables = 0; idxTables < tablesList.size(); ++idxTables) {
-                S9sVariantMap tableMap = tablesList[idxTables].toVariantMap();
+                S9sVariantMap   tableMap   = tablesList[idxTables].toVariantMap();
                 const S9sString &tableName = tableMap["table_name"].toString();
 
                 tableNameFormat.widen(tableName);
@@ -1140,13 +1148,17 @@ S9sRpcReply::printDbGrowthListLong()
             }
         }
 
-        //In case if the DB name filter was set and no data found, the record
-        //that contains the whole dbs array should be skipped from the report.
+        /*
+         * In case if the DB name filter was set and no data found, the record
+         * that contains the whole dbs array should be skipped from the report.
+         */
         if(dbNameFilterPreConditions && !dbNameFilterDataFound)
            continue;
 
-        //If a dbs array is empty and no filtering applied, the record with
-        //a date and empty db information should be added to the report.
+        /*
+         * If a dbs array is empty and no filtering applied, the record with
+         * a date and empty db information should be added to the report.
+         */
         if(dbsList.empty())
         {
             S9sVariantMap  dataMap;
@@ -1175,13 +1187,17 @@ S9sRpcReply::printDbGrowthListLong()
         printf("\n");
     }
 
-    //Sorting the data by total size in descending order.
-    //If the size is the same for two results, the sorting is made
-    //by date in descending order within the size group.
+    /*
+     * Sorting the data by total size in descending order.
+     * If the size is the same for two results, the sorting is made
+     * by date in descending order within the size group.
+     */
     sort(dataListFlatten.begin(), dataListFlatten.end(),
          compareDataByTotalSizeAndDate);
 
-    //Setting up the colors highlighting
+    /*
+     * Setting up the colors highlighting
+     */
     const char *colorBegin      = "";
     const char *colorEnd        = "";
     const char *groupColorBegin = "";
@@ -1195,7 +1211,9 @@ S9sRpcReply::printDbGrowthListLong()
         groupColorEnd   = TERM_NORMAL;
     }
 
-    // Printing the data
+    /*
+     * Printing the data
+     */
     for (uint idxData = 0; idxData < dataListFlatten.size(); ++idxData)
     {
         S9sVariantMap dataMap = dataListFlatten[idxData].toVariantMap();
