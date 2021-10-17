@@ -1007,7 +1007,11 @@ S9sRpcReply::printDbGrowthListLong()
     S9sOptions           *options        = S9sOptions::instance();
     const S9sVariantList &dataList       = operator[]("data").toVariantList();
     bool                 syntaxHighlight = options->useSyntaxHighlight();
+    bool                 hasDbName       = options->hasDbSchemaName();
+    bool                 hasDate         = options->hasDbSchemaDate();
     const S9sString      &dbNameOption   = options->dBSchemaName();
+    bool groupByDate                     = !hasDate && !hasDbName;
+    bool groupByDbName                   = hasDate && !hasDbName;
     S9sFormat            dateFormat;
     S9sFormat            dbNameFormat;
     S9sFormat            tableNameFormat;
@@ -1015,26 +1019,6 @@ S9sRpcReply::printDbGrowthListLong()
     S9sFormat            dataSizeFormat;
     S9sFormat            indexSizeFormat;
     S9sFormat            totalSizeFormat;
-    uint                 nLines = 0;
-
-    S9sVariantList dataListFlatten;
-
-    auto setDataMap = [](S9sVariantMap& map,
-                         const S9sString& date,
-                         const S9sString& dbName,
-                         const S9sString& tableName,
-                         ulonglong tablesRows = 0,
-                         ulonglong dataSize = 0,
-                         ulonglong indexSize = 0)
-    {
-        map["date"] = date;
-        map["db_name"] = dbName;
-        map["table_name"] = tableName;
-        map["tables_rows"] = tablesRows;
-        map["data_size"] = dataSize;
-        map["index_size"] = indexSize;
-        map["total_size"] = dataSize + indexSize;
-    };
 
     auto compareDataByTotalSizeAndDate = [](
             const S9sVariant &a,
@@ -1058,117 +1042,13 @@ S9sRpcReply::printDbGrowthListLong()
     /*
      * Preparing the data for the report: flattening and sorting the list of data source.
      */
-    const S9sString   dbNameEmpty;
-    const S9sString   tableNameEmpty;
-    const uint        secondsAgoFor31Days = 31 * 24 * 3600;
-    const S9sDateTime &currentDateTime    = S9sDateTime::currentDateTime();
-    S9sDateTime       dateTime31DaysAgo   = S9sDateTime((currentDateTime - secondsAgoFor31Days)/1000);
-
-    /*
-     * The flag for filtering pre-conditions with DB name.
-     */
-    bool dbNameFilterPreConditions = options->hasDbSchemaName() && !dbNameOption.empty();
-    S9sDateTime dateOption;
-    dateOption.parseDateFormat(options->dBSchemaDate());
-
-    for (uint idxData = 0; idxData < dataList.size(); ++idxData)
-    {
-        S9sVariantMap  dbGrowthMap        = dataList[idxData].toVariantMap();
-
-        const S9sString      &dateCreated = dbGrowthMap["created"].toString();
-        const S9sVariantList &dbsList     = dbGrowthMap["dbs"].toVariantList();
-
-        S9sDateTime dataDate;
-        dataDate.parseDbGrowthDataFormat(
-                dateCreated + " " + dbGrowthMap["year"].toString());
-        bool dateFilterIsValid = false;
-
-        if(options->hasDbSchemaDate() && !options->dBSchemaDate().empty())
-        {
-            S9sDateTime dataDateWithoutTime;
-            dataDateWithoutTime.setDate(dataDate.year(),
-                                        dataDate.yearday(),
-                                        dataDate.month(),
-                                        dataDate.day());
-            dateFilterIsValid = dataDateWithoutTime == dateOption;
-        }
-        else
-        {
-            dateFilterIsValid = dataDate >= dateTime31DaysAgo;
-        }
-
-        if(!dateFilterIsValid)
-           continue;
-
-        /*
-         * The flag for detecting the data being filtered with DB name.
-         */
-        bool dbNameFilterDataFound = false;
-        for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
-        {
-            S9sVariantMap   dbsMap  = dbsList[idxDbs].toVariantMap();
-            const S9sString &dbName = dbsMap["db_name"].toString();
-
-            if ( dbNameFilterPreConditions &&
-                 !dbName.toUpper()
-                 .startsWith(dbNameOption
-                 .toUpper().c_str()))
-            {
-                continue;
-            }
-            dbNameFilterDataFound = true;
-
-            dbNameFormat.widen(dbName);
-
-            const S9sVariantList &tablesList = dbsMap["tables"].toVariantList();
-            if(tablesList.empty())
-            {
-                S9sVariantMap dataMap;
-                setDataMap(dataMap, dateCreated, dbName, tableNameEmpty,
-                           dbsMap["row_count"].toULongLong(),
-                           dbsMap["data_size"].toULongLong(),
-                           dbsMap["index_size"].toULongLong());
-                dataListFlatten << dataMap;
-                nLines++;
-            }
-            for(uint idxTables = 0; idxTables < tablesList.size(); ++idxTables) {
-                S9sVariantMap   tableMap   = tablesList[idxTables].toVariantMap();
-                const S9sString &tableName = tableMap["table_name"].toString();
-
-                tableNameFormat.widen(tableName);
-
-                S9sVariantMap  dataMap;
-                setDataMap(dataMap, dateCreated, dbName,
-                           tableName,
-                           tableMap["row_count"].toULongLong(),
-                           tableMap["data_size"].toULongLong(),
-                           tableMap["index_size"].toULongLong());
-                dataListFlatten << dataMap;
-                nLines++;
-            }
-        }
-
-        /*
-         * In case if the DB name filter was set and no data found, the record
-         * that contains the whole dbs array should be skipped from the report.
-         */
-        if(dbNameFilterPreConditions && !dbNameFilterDataFound)
-           continue;
-
-        /*
-         * If a dbs array is empty and no filtering applied, the record with
-         * a date and empty db information should be added to the report.
-         */
-        if(dbsList.empty())
-        {
-            S9sVariantMap  dataMap;
-            setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
-            dataListFlatten << dataMap;
-            nLines++;
-        }
-        dateFormat.widen(dateCreated);
-    }
-
+    S9sVariantList dataListFlatten;
+    uint nLines = prepareDataForDbGrowthReport(dataList,
+                                               dataListFlatten,
+                                               options,
+                                               dbNameFormat,
+                                               tableNameFormat,
+                                               dateFormat);
     /*
      * Printing the header.
      */
@@ -1176,9 +1056,15 @@ S9sRpcReply::printDbGrowthListLong()
     {
         printf("%s", headerColorBegin());
         dateFormat.printHeader("DATE");
-        dbNameFormat.printHeader("DB_NAME");
-        tableNameFormat.printHeader("TABLE_NAME");
-        tablesRowsFormat.printHeader("TABLES_ROWS");
+        if(!groupByDate)
+        {
+            dbNameFormat.printHeader("DB_NAME");
+            if (!groupByDbName)
+            {
+                tableNameFormat.printHeader("TABLE_NAME");
+            }
+            tablesRowsFormat.printHeader("TABLES_ROWS");
+        }
         dataSizeFormat.printHeader("DATA_SIZE");
         indexSizeFormat.printHeader("INDEX_SIZE");
         totalSizeFormat.printHeader("TOTAL_SIZE");
@@ -1222,13 +1108,19 @@ S9sRpcReply::printDbGrowthListLong()
         dateFormat.printf(dataMap["date"].toString());
         printf("%s", groupColorEnd);
 
-        printf("%s", colorBegin);
-        dbNameFormat.printf(dataMap["db_name"].toString());
-        printf("%s", colorEnd);
+        if(!groupByDate)
+        {
+            printf("%s", colorBegin);
+            dbNameFormat.printf(dataMap["db_name"].toString());
+            printf("%s", colorEnd);
 
-        printf("%s", colorBegin);
-        tableNameFormat.printf(dataMap["table_name"].toString());
-        tablesRowsFormat.printf(dataMap["tables_rows"].toULongLong());
+            printf("%s", colorBegin);
+            if (!groupByDbName)
+            {
+                tableNameFormat.printf(dataMap["table_name"].toString());
+            }
+            tablesRowsFormat.printf(dataMap["tables_rows"].toULongLong());
+        }
         printf("%s", colorEnd);
 
         printf("%s", groupColorBegin);
@@ -1239,6 +1131,268 @@ S9sRpcReply::printDbGrowthListLong()
 
         ::printf("\n");
     }
+}
+
+/**
+ * Method prepares data for the DbGrowthReport: sorts by name and date and provides grouping.
+ * @param dataList
+ * @param dataListFlatten
+ * @param options
+ * @param dbNameFormat
+ * @param tableNameFormat
+ * @param dateFormat
+ * @return
+ */
+uint S9sRpcReply::prepareDataForDbGrowthReport(const S9sVariantList &dataList,
+                                               S9sVariantList &dataListFlatten,
+                                               S9sOptions             *options,
+                                               S9sFormat         &dbNameFormat,
+                                               S9sFormat      &tableNameFormat,
+                                               S9sFormat           &dateFormat)
+{
+    auto setDataMap = [](S9sVariantMap& map,
+                         const S9sString& date,
+                         const S9sString& dbName,
+                         const S9sString& tableName,
+                         ulonglong tablesRows = 0,
+                         ulonglong dataSize = 0,
+                         ulonglong indexSize = 0)
+    {
+        map["date"] = date;
+        map["db_name"] = dbName;
+        map["table_name"] = tableName;
+        map["tables_rows"] = tablesRows;
+        map["data_size"] = dataSize;
+        map["index_size"] = indexSize;
+        map["total_size"] = dataSize + indexSize;
+    };
+
+
+    const S9sString      &dbNameOption = options->dBSchemaName();
+    bool                     hasDbName = options->hasDbSchemaName();
+    bool                       hasDate = options->hasDbSchemaDate();
+    bool groupByDate                   = !hasDate && !hasDbName;
+    bool groupByDbName                 =  hasDate && !hasDbName;
+    //bool groupByDbNameAndTableName     = hasDate && hasDbName;
+
+    const uint     secondsAgoFor31Days = 31 * 24 * 3600;
+    const S9sDateTime &currentDateTime = S9sDateTime::currentDateTime();
+    S9sDateTime      dateTime31DaysAgo = S9sDateTime((currentDateTime - secondsAgoFor31Days)/1000);
+
+    uint                        nLines = 0;
+
+    const S9sString        dbNameEmpty;
+    const S9sString     tableNameEmpty;
+
+    /*
+     * The flag for filtering pre-conditions with DB name.
+     */
+    bool dbNameFilterPreConditions = options->hasDbSchemaName() && !dbNameOption.empty();
+    S9sDateTime dateOption;
+    dateOption.parseDateFormat(options->dBSchemaDate());
+
+    S9sVariantMap  dataGroupMap;
+
+    for (uint idxData = 0; idxData < dataList.size(); ++idxData)
+    {
+        S9sVariantMap  dbGrowthMap        = dataList[idxData].toVariantMap();
+
+        const S9sString      &dateCreated = dbGrowthMap["created"].toString();
+        const S9sVariantList &dbsList     = dbGrowthMap["dbs"].toVariantList();
+
+        S9sDateTime dataDate;
+        dataDate.parseDbGrowthDataFormat(
+                dateCreated + " " + dbGrowthMap["year"].toString());
+        S9sDateTime dataDateWithoutTime;
+        dataDateWithoutTime.setDate(dataDate.year(),
+                                    dataDate.yearday(),
+                                    dataDate.month(),
+                                    dataDate.day());
+
+        bool dateFilterIsValid = false;
+
+        if(options->hasDbSchemaDate() && !options->dBSchemaDate().empty())
+        {
+            dateFilterIsValid = dataDateWithoutTime == dateOption;
+        }
+        else
+        {
+            dateFilterIsValid = dataDate >= dateTime31DaysAgo;
+        }
+
+        if(!dateFilterIsValid)
+            continue;
+
+        //ulonglong tablesRows = 0;
+
+
+        /*
+         * The flag for detecting the data being filtered with DB name.
+         */
+        bool dbNameFilterDataFound = false;
+        for(uint idxDbs = 0; idxDbs < dbsList.size(); ++idxDbs)
+        {
+            S9sVariantMap   dbsMap  = dbsList[idxDbs].toVariantMap();
+            const S9sString &dbName = dbsMap["db_name"].toString();
+
+            if ( dbNameFilterPreConditions &&
+                 !dbName.toUpper()
+                         .startsWith(dbNameOption
+                                             .toUpper().c_str()))
+            {
+                continue;
+            }
+            dbNameFilterDataFound = true;
+
+            if(groupByDate)
+            {
+                ulonglong dataSize = 0;
+                ulonglong indexSize = 0;
+                S9sVariantMap  dataMap;
+                if(dataGroupMap.contains(dataDateWithoutTime.toString()))
+                {
+                    dataMap = dataGroupMap[dataDateWithoutTime.toString()].toVariantMap();
+                    dataSize = dataMap["dataSize"].toULongLong();
+                    indexSize = dataMap["indexSize"].toULongLong();
+                }
+                else
+                {
+                    dataMap["dateCreated"] = dateCreated;
+                    dataMap["dataSize"] = 0;
+                    dataMap["indexSize"] = 0;
+                }
+                dataSize += dbsMap["data_size"].toULongLong();
+                indexSize += dbsMap["index_size"].toULongLong();
+                dataMap["dataSize"]  = dataSize;
+                dataMap["indexSize"] = indexSize;
+                dataGroupMap[dataDateWithoutTime.toString()] = dataMap;
+                continue;
+            }
+
+            dbNameFormat.widen(dbName);
+            if(groupByDbName)
+            {
+                ulonglong dataSize = 0;
+                ulonglong indexSize = 0;
+                ulonglong rowCount = 0;
+                S9sVariantMap  dbMap;
+                S9sVariantMap  dataMap;
+                if(dataGroupMap.contains(dataDateWithoutTime.toString()))
+                {
+                    dbMap = dataGroupMap[dataDateWithoutTime.toString()].toVariantMap();
+                    if(dbMap.contains(dbName))
+                    {
+                        dataMap = dbMap[dbName].toVariantMap();
+                    }
+                    else
+                    {
+                        dataMap["dateCreated"] = dateCreated;
+                        dataMap["dataSize"] = 0;
+                        dataMap["indexSize"] = 0;
+                        dataMap["rowCount"] = 0;
+                        dbMap[dbName] = dataMap;
+                    }
+                    dataSize = dataMap["dataSize"].toULongLong();
+                    indexSize = dataMap["indexSize"].toULongLong();
+                    rowCount = dataMap["rowCount"].toULongLong();
+                }
+                else
+                {
+                    dataMap["dateCreated"] = dateCreated;
+                    dataMap["dataSize"] = 0;
+                    dataMap["indexSize"] = 0;
+                    dataMap["rowCount"] = 0;
+                    dbMap[dbName] = dataMap;
+                }
+                dataSize += dbsMap["data_size"].toULongLong();
+                indexSize += dbsMap["index_size"].toULongLong();
+                rowCount += dbsMap["row_count"].toULongLong();
+                dataMap["dataSize"]  = dataSize;
+                dataMap["indexSize"] = indexSize;
+                dataMap["rowCount"]  = rowCount;
+                dbMap[dbName] = dataMap;
+                dataGroupMap[dataDateWithoutTime.toString()] = dbMap;
+                continue;
+            }
+
+            const S9sVariantList &tablesList = dbsMap["tables"].toVariantList();
+            if(tablesList.empty())
+            {
+                S9sVariantMap dataMap;
+                setDataMap(dataMap, dateCreated, dbName, tableNameEmpty,
+                           dbsMap["row_count"].toULongLong(),
+                           dbsMap["data_size"].toULongLong(),
+                           dbsMap["index_size"].toULongLong());
+                dataListFlatten << dataMap;
+                nLines++;
+            }
+            for(uint idxTables = 0; idxTables < tablesList.size(); ++idxTables) {
+                S9sVariantMap   tableMap   = tablesList[idxTables].toVariantMap();
+                const S9sString &tableName = tableMap["table_name"].toString();
+
+                tableNameFormat.widen(tableName);
+
+                S9sVariantMap  dataMap;
+                setDataMap(dataMap, dateCreated, dbName,
+                           tableName,
+                           tableMap["row_count"].toULongLong(),
+                           tableMap["data_size"].toULongLong(),
+                           tableMap["index_size"].toULongLong());
+                dataListFlatten << dataMap;
+                nLines++;
+            }
+        }
+
+        /*
+         * In case if the DB name filter was set and no data found, the record
+         * that contains the whole dbs array should be skipped from the report.
+         */
+        if(dbNameFilterPreConditions && !dbNameFilterDataFound)
+            continue;
+
+        /*
+         * If a dbs array is empty and no filtering applied, the record with
+         * a date and empty db information should be added to the report.
+         */
+        if(dbsList.empty())
+        {
+            S9sVariantMap  dataMap;
+            setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty);
+            dataListFlatten << dataMap;
+            nLines++;
+        }
+        dateFormat.widen(dateCreated);
+    }
+    if(groupByDate)
+    {
+        for(S9sString key : dataGroupMap.keys())
+        {
+            S9sVariantMap  dataMap = dataGroupMap[key].toVariantMap();
+            S9sString dateCreated = dataMap["dateCreated"].toString();
+            ulonglong dataSize = dataMap["dataSize"].toULongLong();
+            ulonglong indexSize = dataMap["indexSize"].toULongLong();
+            setDataMap(dataMap, dateCreated, dbNameEmpty, tableNameEmpty, 0, dataSize, indexSize);
+            dataListFlatten << dataMap;
+            nLines++;
+        }
+    }
+    if(groupByDbName)
+    {
+        for(S9sString dbKey : dataGroupMap.keys()) {
+            S9sVariantMap dbMap = dataGroupMap[dbKey].toVariantMap();
+            for (S9sString dbName: dbMap.keys()) {
+                S9sVariantMap dataMap = dbMap[dbName].toVariantMap();
+                S9sString dateCreated = dataMap["dateCreated"].toString();
+                ulonglong dataSize = dataMap["dataSize"].toULongLong();
+                ulonglong indexSize = dataMap["indexSize"].toULongLong();
+                ulonglong rowCount = dataMap["rowCount"].toULongLong();
+                setDataMap(dataMap, dateCreated, dbName, tableNameEmpty, rowCount, dataSize, indexSize);
+                dataListFlatten << dataMap;
+                nLines++;
+            }
+        }
+    }
+    return nLines;
 }
 
 void

@@ -31,6 +31,7 @@ class S9sCmonGraph;
 class S9sUser;
 class S9sServer;
 class S9sTreeNode;
+class S9sOptions;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -104,6 +105,12 @@ class S9sRpcReply : public S9sVariantMap
 
         void printDbGrowthList();
         void printDbGrowthListLong();
+        uint prepareDataForDbGrowthReport(const S9sVariantList &dataList,
+                                          S9sVariantList &dataListFlatten,
+                                          S9sOptions             *options,
+                                          S9sFormat         &dbNameFormat,
+                                          S9sFormat      &tableNameFormat,
+                                          S9sFormat           &dateFormat);
 
         void printReportList();
         void printReportTemplateList();
