@@ -110,6 +110,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetJobInstances,     retval);
     PERFORM_TEST(testKillJobInstance,     retval);
     PERFORM_TEST(testCloneJobInstance,    retval);
+    PERFORM_TEST(testGetDbGrowth,         retval);
 
     PERFORM_TEST(testCreateContainer,     retval);
     PERFORM_TEST(testDeleteContainer,     retval);
@@ -602,6 +603,27 @@ UtS9sRpcClient::testCloneJobInstance()
     S9S_COMPARE(payload.size(), 5);
     S9S_COMPARE(payload["operation"].toString(), "cloneJobInstance");
     S9S_COMPARE(payload["job_id"].toInt(), 142);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetDbGrowth()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options["cluster_id"] = 42;
+    S9S_VERIFY(client.getDbGrowth());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload.size(), 4);
+    S9S_COMPARE(payload["operation"].toString(), "getdbgrowth");
+    S9S_COMPARE(payload["cluster_id"].toInt(), 42);
 
     return true;
 }

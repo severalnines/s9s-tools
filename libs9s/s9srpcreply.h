@@ -23,6 +23,7 @@
 #include "S9sFormat"
 #include "S9sObject"
 #include "S9sFormatter"
+#include "s9sdbgrowthreport.h"
 
 class S9sNode;
 class S9sCluster;
@@ -31,6 +32,7 @@ class S9sCmonGraph;
 class S9sUser;
 class S9sServer;
 class S9sTreeNode;
+class S9sDbGrowthReport;
 
 class S9sRpcReply : public S9sVariantMap
 {
@@ -101,6 +103,9 @@ class S9sRpcReply : public S9sVariantMap
         
         void printReplicationList();
         void printReplicationListCustom();
+
+        void printDbGrowthList();
+        void printDbGrowthListLong();
 
         void printReportList();
         void printReportTemplateList();
@@ -395,11 +400,12 @@ class S9sRpcReply : public S9sVariantMap
         void walkObjectTree(S9sTreeNode node);
 
     private:
-        S9sFormat     m_ownerFormat;
-        S9sFormat     m_groupFormat;
-        S9sFormat     m_sizeFormat;
-        int           m_numberOfObjects;
-        int           m_numberOfFolders;
-        S9sFormatter  m_formatter;
+        S9sFormat         m_ownerFormat;
+        S9sFormat         m_groupFormat;
+        S9sFormat         m_sizeFormat;
+        int               m_numberOfObjects;
+        int               m_numberOfFolders;
+        S9sFormatter      m_formatter;
+        S9sDbGrowthReport m_dbgrowthReport;
 };
 

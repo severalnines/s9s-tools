@@ -431,6 +431,8 @@ class S9sRpcClient
         bool createFailJob();
         bool createSuccessJob();
 
+        bool getDbGrowth();
+
     protected:
         virtual S9sVariantMap composeRequest();
         virtual S9sVariantMap composeJob() const;
