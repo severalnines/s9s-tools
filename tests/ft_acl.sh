@@ -182,6 +182,14 @@ function checkTree01()
 #        success "  o Expected line '$expected' found, OK."
 #    fi
     
+    # wait few secs until recently created user 'pipas' is visible on tree
+    for i in $(seq 1 4); do
+        lines=$(s9s tree --cmon-user=supervisor --list --long)
+        if find_line "$lines" "pipas"; then
+            break
+        fi
+        sleep 5
+    done
     # The user owns itself.
     lines=$(s9s tree --cmon-user=supervisor --list --long)
     mys9s tree --cmon-user=supervisor --list --long
