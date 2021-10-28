@@ -11,7 +11,6 @@ DEBUG_OPTION="--debug"
 CONTAINER_SERVER=""
 CONTAINER_IP=""
 CLUSTER_NAME=""
-MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 LAST_CONTAINER_NAME=""
 OPTION_VENDOR="mariadb"
 PROVIDER_VERSION="10.3"
@@ -31,6 +30,9 @@ cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
 source ./include_lxc.sh
+
+
+MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 #
 # Prints usage information and exits.

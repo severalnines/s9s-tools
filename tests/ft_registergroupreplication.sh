@@ -9,13 +9,14 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+
+MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 #
 # Prints usage information and exits.

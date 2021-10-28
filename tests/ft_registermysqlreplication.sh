@@ -10,7 +10,6 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
@@ -20,6 +19,8 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+
+MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 #
 # Prints usage information and exits.

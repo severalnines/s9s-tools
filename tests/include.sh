@@ -2266,12 +2266,16 @@ function find_cluster_id()
 }
 
 #
-# $1: the name of the cluster
+# returns a random generated password with 16 chars
 #
 function generate_strong_password()
 {
-    ret=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9@.,/={}%+!-' | fold -w 32 | head -n 1)
-    return ret
+    local retval
+    # special chars limited to avoid bash special chars
+    #retval=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9.,/+=%' | fold -w 16 | head -n 1)
+    retval=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+    echo "$retval"
+    return 0
 }
 
 #
