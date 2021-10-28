@@ -11,7 +11,7 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-MYSQL_ROOT_PASSWORD=""
+MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -138,6 +138,7 @@ function testCreateCluster()
         --nodes="$NODES" \
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
+        --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
         --provider-version=5.6 \
         $LOG_OPTION
 
@@ -154,7 +155,6 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
     end_verbatim
 }
 

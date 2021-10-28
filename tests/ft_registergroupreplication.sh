@@ -9,7 +9,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-MYSQL_ROOT_PASSWORD=""
+MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -123,6 +123,7 @@ function testCreateCluster()
         --nodes="$NODES" \
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
+        --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
         --provider-version=8.0 \
         $LOG_OPTION
 
@@ -136,7 +137,6 @@ function testCreateCluster()
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    MYSQL_ROOT_PASSWORD="$(get_mysql_root_password $CLUSTER_NAME)"
 
     s9s cluster --list --long
     s9s node --list --long
