@@ -201,11 +201,11 @@ S9sDbGrowthReport::prepareData(const S9sVariantList &dataList)
     S9sVariantMap dataGroupMap;
     filterDataWithGrouping(dataList, dataGroupMap);
 
-    if(m_groupByDate)
+    if (m_groupByDate)
     {
-        for(S9sString key : dataGroupMap.keys())
+        for (auto it = dataGroupMap.begin(); it != dataGroupMap.end(); ++it)
         {
-            S9sVariantMap  dataMap = dataGroupMap[key].toVariantMap();
+            S9sVariantMap  dataMap = it->second.toVariantMap();
             S9sString dateCreated = dataMap["date_created"].toString();
             ulonglong dataSize = dataMap["data_size"].toULongLong();
             ulonglong indexSize = dataMap["index_size"].toULongLong();
@@ -215,18 +215,21 @@ S9sDbGrowthReport::prepareData(const S9sVariantList &dataList)
             m_nLines++;
         }
     }
-    if(m_groupByDbName)
+
+    if (m_groupByDbName)
     {
-        for(S9sString dbKey : dataGroupMap.keys()) {
-            S9sVariantMap dbMap = dataGroupMap[dbKey].toVariantMap();
-            for (S9sString dbName: dbMap.keys()) {
-                S9sVariantMap dataMap = dbMap[dbName].toVariantMap();
+        for (auto it = dataGroupMap.begin(); it != dataGroupMap.end(); ++it)
+        {
+            S9sVariantMap dbMap = it->second.toVariantMap();
+            for (auto dbIt = dbMap.begin(); dbIt != dbMap.end(); ++dbIt)
+            {
+                S9sVariantMap dataMap = dbIt->second.toVariantMap();
                 S9sString dateCreated = dataMap["date_created"].toString();
                 ulonglong dataSize = dataMap["data_size"].toULongLong();
                 ulonglong indexSize = dataMap["index_size"].toULongLong();
                 ulonglong rowCount = dataMap["row_count"].toULongLong();
 
-                setDataMap(dataMap, dateCreated, dbName, "", rowCount, dataSize, indexSize);
+                setDataMap(dataMap, dateCreated, dbIt->first, "", rowCount, dataSize, indexSize);
                 m_dataReportList << dataMap;
                 m_nLines++;
             }
