@@ -497,6 +497,7 @@ EOF
     fi
     
     # The JobEnded log message.
+    sleep 5
     message_id=$(get_log_message_id \
         --job-class   "JobEnded" \
         --job-command "stop")
@@ -525,6 +526,7 @@ EOF
     fi
     
     # The JobEnded log message.
+    sleep 5
     message_id=$(get_log_message_id \
         --job-class   "JobEnded" \
         --job-command "start")
