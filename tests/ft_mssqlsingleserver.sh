@@ -475,7 +475,7 @@ fi
 begin_verbatim
 
 cat <<EOF
-./tests/ft_graph01/ft_graph01.sh --top-begin="$INSTALL_START_TIME" --top-end="$INSTALL_END_TIME" --report-title="MSSQL Test (ft_mssql)" --highlight-title="Cluster Install" --output-dir=report2
+./tests/ft_graph01/ft_graph01.sh --top-begin="$INSTALL_START_TIME" --top-end="$INSTALL_END_TIME" --report-title="MSSQL single server test (ft_mssqlsingleserver.sh)" --highlight-title="Cluster Install and db backup" --output-dir=report2
 EOF
 
 end_verbatim
