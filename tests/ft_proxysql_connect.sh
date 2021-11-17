@@ -377,21 +377,6 @@ function testAddProxySql()
         success "  o First admin_credentials value is $value, ok."
     fi
 
-    # reading second admin user credentials (must be ccx)
-    value=$($S9S node \
-            --batch \
-            --list-config \
-            --opt-name=$name \
-            --nodes="$PROXY_SERVER" | grep 'admin_credentials' | awk -F ' ' '{print $3}' | awk -F ';' '{print $2}' | awk -F ':' '{print $1}' )
-
-    check_exit_code_no_job $?
-
-    expected_value="ccx_svc_user"
-    if [ "$value" != "$expected_value" ]; then
-        failure "Second admin_credentials value should be $expected_value not $value"
-    else
-        success "  o Second admin_credentials value is $value, ok."
-    fi
 
     end_verbatim
 }
