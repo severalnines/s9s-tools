@@ -66,7 +66,7 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,keep-nodes,install,reset-config:" \
+        -l "help,verbose,log,server:,print-commands,keep-nodes,install,reset-config, --" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
