@@ -1138,6 +1138,246 @@ S9sDateTime::elapsedTime(
     return retval;
 }
 
+/**
+ * \param year The year
+ * \param yearDay The yearDay
+ * \param month The month
+ * \param monthDay The monthDay
+ * \returns true if the time_t value is successfully created based on a time structure.
+ *
+ * This method builds the S9sDateTime object based on year, yearDay, month and monthDay.
+ *
+ */
+bool
+S9sDateTime::setDate(
+        int year,
+        int yearDay,
+        int month,
+        int monthDay)
+{
+    bool retval = false;
+    //
+    // Setting up and checking.
+    //
+    struct tm builtTime;
+    time_t    theTime;
+
+    builtTime.tm_year  = year - 1900;
+    builtTime.tm_yday  = yearDay - 1;
+    builtTime.tm_mon   = month - 1;
+    builtTime.tm_mday  = monthDay;
+    builtTime.tm_hour  = 0;
+    builtTime.tm_min   = 0;
+    builtTime.tm_sec   = 0;
+    builtTime.tm_isdst = -1;
+
+    theTime = mktime(&builtTime);
+    if (theTime >= 0)
+    {
+        m_timeSpec.tv_sec  = theTime;
+        m_timeSpec.tv_nsec = 0;
+        retval = true;
+    }
+
+    return retval;
+}
+
+/**
+ * \param input the input line to be parsed
+ * \length the place where the method returns how many characters are parsed or NULL
+ * \returns true if the string is parsed using the YYYY-MM-DD format.
+ *
+ * This method assumes the string contains a date (e.g. "2014-03-17")
+ * and will parse the values if so.
+ *
+ * These parsing methods need to be fast, so we are using only low level stuff
+ * here.
+ */
+bool
+S9sDateTime::parseDateFormat(
+        const S9sString &input,
+        int             *length)
+{
+    bool retval = false;
+    int  year;
+    int  month;
+    int  monthDay;
+
+    if (input.length() < 10)
+        return retval;
+
+    // parsing the year
+    if (!isdigit(input[0]) ||
+        !isdigit(input[1]) ||
+        !isdigit(input[2]) ||
+        !isdigit(input[3]))
+        return retval;
+
+    if (input[4] != '-' && input[4] != '/')
+        return retval;
+
+    year = 1000 * (input[0] - '0') +
+           100 * (input[1] - '0') +
+           10 * (input[2] - '0') +
+           (input[3] - '0');
+
+    // the month
+    if (!isdigit(input[5]) || !isdigit(input[6]))
+        return false;
+
+    if (input[7] != '-' && input[7] != '/')
+        return false;
+
+    month = 10 * (input[5] - '0') + (input[6] - '0');
+
+    // The day
+    if (!isdigit(input[8]) ||
+        !isdigit(input[9]))
+        return false;
+
+    monthDay = 10 * (input[8] - '0') + (input[9] - '0');
+
+    //
+    // Transforming and checking.
+    //
+    struct tm builtTime;
+    time_t    theTime;
+
+    builtTime.tm_year  = year - 1900;
+    builtTime.tm_mon   = month - 1;
+    builtTime.tm_mday  = monthDay;
+    builtTime.tm_hour  = 0;
+    builtTime.tm_min   = 0;
+    builtTime.tm_sec   = 0;
+    builtTime.tm_isdst = -1;
+
+    theTime = mktime(&builtTime);
+    if (theTime >= 0)
+    {
+        m_timeSpec.tv_sec  = theTime;
+        m_timeSpec.tv_nsec = 0;
+        retval = true;
+    }
+
+    if (retval && length != NULL)
+        *length = 10;
+
+    return retval;
+}
+
+/**
+ * \param input the input line to be parsed
+ * \length the place where the method returns how many characters are parsed or NULL
+ * \returns true if the string is parsed using the parseDbGrowthDataFormat.
+ *
+ * This method assumes the string starts with a date time and finishes with a year in a
+ * DbGrowthDataFormat (e.g. "May 14 14:59:21 2021") and will parse the values if so.
+ * The parsing will be done in a case-insensitive manner.
+ */
+bool
+S9sDateTime::parseDbGrowthDataFormat(
+        const S9sString &input,
+        int             *length)
+{
+    S9sString s = input.toLower();
+    bool       retval = false;
+
+    int        month    = -1;
+    int        monthDay = -1;
+    int        hour     = -1;
+    int        minute   = -1;
+    int        second   = -1;
+    int        year     = -1;
+
+    if (s.length() < 20)
+        return retval;
+
+    // Parsing the month name.
+    for (int idx = 0; shortMonthNames[idx] != NULL; ++idx)
+    {
+        S9sString monthName = shortMonthNames[idx];
+
+        if (s.startsWith(STR(monthName.toLower())))
+        {
+            month = idx;
+            break;
+        }
+    }
+
+    if (month < 0)
+        return retval;
+
+    if (s[3] != ' ')
+        return retval;
+
+    // The day of the month: one or two digit decimal number.
+    if (
+            (!isdigit(s[4]) && s[4] != ' ') ||
+            !isdigit(s[5]) || s[6] != ' ')
+        return retval;
+
+    monthDay = (s[5] - '0');
+    if (s[4] != ' ')
+        monthDay += 10 * (s[4] - '0');
+
+    // The hour
+    if (!isdigit(s[7]) || !isdigit(s[8]) || s[9] != ':')
+        return retval;
+
+    hour = 10 * (s[7] - '0') + (s[8] - '0');
+
+    // The minute
+    if (!isdigit(s[10]) || !isdigit(s[11]) || s[12] != ':')
+        return retval;
+
+    minute = 10 * (s[10] - '0') + (s[11] - '0');
+
+    // The second
+    if (!isdigit(s[13]) || !isdigit(s[14]) || input[15] != ' ')
+        return retval;
+
+    second = 10 * (s[13] - '0') + (s[14] - '0');
+
+    // parsing the year
+    if (!isdigit(input[16]) ||
+        !isdigit(input[17]) ||
+        !isdigit(input[18]) ||
+        !isdigit(input[19]))
+        return retval;
+
+    year = 1000 * (input[16] - '0') +
+           100 * (input[17] - '0') +
+           10 * (input[18] - '0') +
+           (input[19] - '0');
+
+    //
+    // Transforming and checking
+    //
+    S9sDateTime now = S9sDateTime::currentDateTime();
+    struct tm builtTime;
+    time_t    theTime;
+
+    builtTime.tm_year  = year - 1900;
+    builtTime.tm_mon   = month;
+    builtTime.tm_mday  = monthDay;
+    builtTime.tm_hour  = hour;
+    builtTime.tm_min   = minute;
+    builtTime.tm_sec   = second;
+    builtTime.tm_isdst = -1;
+
+    theTime = mktime(&builtTime);
+    if (theTime >= 0)
+    {
+        m_timeSpec.tv_sec  = theTime;
+        m_timeSpec.tv_nsec = 0;
+        retval = true;
+    }
+
+    if (retval && length != NULL)
+        *length = 15;
+
+    return retval;
+}
 
 /**
  * \param input the input line to be parsed

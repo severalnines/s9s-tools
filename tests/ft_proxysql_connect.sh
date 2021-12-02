@@ -14,6 +14,9 @@ CONTAINER_SERVER=""
 PROVIDER_VERSION="5.6"
 OPTION_VENDOR="percona"
 
+ADMIN_USERNAME=my-proxysql-admin
+ADMIN_PASSWORD=my-proxysql-admin-pass
+
 N_DATABASE_NODE=1
 PROXY_SERVER=""
 
@@ -348,9 +351,33 @@ function testAddProxySql()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodes" \
+        --admin-password=$ADMIN_PASSWORD \
+        --admin-user=$ADMIN_USERNAME \
         --log --debug
     
     check_exit_code $?
+
+    #
+    # Reading the configuration and checking admin_credentials parameter
+    #
+
+    # reading fisrt admin user credentials
+    value=$($S9S node \
+            --batch \
+            --list-config \
+            --opt-name=$name \
+            --nodes="$PROXY_SERVER" | grep 'admin_credentials' | awk -F ' ' '{print $3}' | awk -F ';' '{print $1}' )
+
+    check_exit_code_no_job $?
+
+    expected_value="\"${ADMIN_USERNAME}:${ADMIN_PASSWORD}"
+    if [ "$value" != "$expected_value" ]; then
+        failure "First admin_credentials value should be $expected_value not $value"
+    else
+        success "  o First admin_credentials value is $value, ok."
+    fi
+
+
     end_verbatim
 }
 

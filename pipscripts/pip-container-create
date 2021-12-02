@@ -24,7 +24,7 @@ APT_UPDATED=""
 #
 # https://discuss.linuxcontainers.org/t/3-0-unable-to-fetch-gpg-key-from-keyserver/2015/12
 #
-KEYSERVER="pool.sks-keyservers.net"
+KEYSERVER="pgp.mit.edu"
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
@@ -518,7 +518,7 @@ function create_container()
                     -- \
                     --dist "$vendor_name" \
                     --release "$release_name" \
-                    --arch amd64 \
+                    --arch amd64 --no-validate\
                     >>$temp_file 2>>$temp_file
         else
             DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
@@ -526,7 +526,7 @@ function create_container()
                     -- \
                     --dist "$vendor_name" \
                     --release "$release_name" \
-                    --arch amd64 \
+                    --arch amd64 --no-validate\
                     >>$temp_file 2>>$temp_file
         fi
     fi

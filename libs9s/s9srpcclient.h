@@ -431,6 +431,8 @@ class S9sRpcClient
         bool createFailJob();
         bool createSuccessJob();
 
+        bool getDbGrowth();
+
     protected:
         virtual S9sVariantMap composeRequest();
         virtual S9sVariantMap composeJob() const;
@@ -526,7 +528,12 @@ class S9sRpcClient
         bool createRedisSentinel(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &psqlVersion);
+                const S9sString      &redisVersion);
+
+        bool registerRedisCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &redisVersion);
 
         bool createMsSqlSingle(
                 const S9sVariantList &hosts,

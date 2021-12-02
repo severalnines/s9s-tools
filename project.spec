@@ -42,6 +42,18 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Wed Nov 03 2021 David Kedves <kedazo@severalnines.com> 1.9.20211103
+- Pushing out a new build
+* Mon Sep 27 2021 David Kedves <kedazo@severalnines.com> 1.9.20210927
+- New build for internal testing
+* Wed Sep 08 2021 David Kedves <kedazo@severalnines.com> 1.9.20210908
+- Added register redis cluster support
+* Tue Jun 29 2021 David Kedves <kedazo@severalnines.com> 1.9.20210629
+- New release
+* Mon Jun 07 2021 David Kedves <kedazo@severalnines.com> 1.9.20210607
+- New build (expired OBS keys, meh...)
+* Tue Jun 01 2021 David Kedves <kedazo@severalnines.com> 1.9.20210601
+- New build
 * Mon May 17 2021 David Kedves <kedazo@severalnines.com> 1.9.20210517
 - New release
 * Wed Apr 07 2021 David Kedves <kedazo@severalnines.com> 1.9.20210407

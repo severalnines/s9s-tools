@@ -938,6 +938,75 @@ S9sRpcReply::printReplicationListCustom()
     }
 }
 
+/**
+ * Method prints the DbGrowth results.
+ * Here is an example showing a reply that we print here.
+ * \code{.js}
+ *{
+ *  "controller_id": "803f49ce-99d3-4ec1-a0be-c26efd3280a3",
+ *  "reply_received": "2021-10-03T18:31:53.943Z",
+ *  "request_created": "2021-10-03T18:31:53.939Z",
+ *  "request_id": 3,
+ *  "request_processed": "2021-10-03T18:31:53.943Z",
+ *  "request_status": "Ok",
+ *  "request_user_id": 3,
+ *  "total": 2,
+ *  "data": [
+ *    {
+ *      "class_name": "CmonDbStats",
+ *      "created": "Oct 02 17:33:56",
+ *      "database_count": 0,
+ *      "datadir": "/var/lib/mysql/",
+ *      "free_datadir_size": 925951459328,
+ *      "hostname": "10.139.60.103",
+ *      "port": 3306,
+ *      "total_datadir_size": 926711414784,
+ *      "year": 2021,
+ *      "yearday": 275,
+ *      "dbs": [  ]
+ *    },
+ *    {
+ *      "class_name": "CmonDbStats",
+ *      "created": "Oct 03 17:52:00",
+ *      "database_count": 0,
+ *      "datadir": "/var/lib/mysql/",
+ *      "free_datadir_size": 888465260544,
+ *      "hostname": "10.139.60.103",
+ *      "port": 3306,
+ *      "total_datadir_size": 889265455104,
+ *      "year": 2021,
+ *      "yearday": 276,
+ *      "dbs": [  ]
+ *    }
+ *  ],
+ *  "debug_messages": [ "RPC V2 authenticated user is 'admin'."  ]
+ *}
+ * \endcode
+ */
+void
+S9sRpcReply::printDbGrowthList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk()) {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printDbGrowthListLong();
+    }
+}
+
+/**
+ * Prints the DbGrowth list in its long and detailed format.
+ */
+void
+S9sRpcReply::printDbGrowthListLong()
+{
+    m_dbgrowthReport.printReport(operator[]("data"));
+}
+
 void
 S9sRpcReply::printReportList()
 {

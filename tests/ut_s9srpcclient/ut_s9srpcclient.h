@@ -52,6 +52,8 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testKillJobInstance();
         bool testCloneJobInstance();
 
+        bool testGetDbGrowth();
+
         bool testCreateContainer();
         bool testDeleteContainer();
         bool testStartContainer();

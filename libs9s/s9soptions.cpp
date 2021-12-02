@@ -86,6 +86,7 @@ enum S9sOptionType
     OptionSync,
     OptionStage,
     OptionSynchronous,
+    OptionSemiSync,
     OptionToggleSync,
     OptionDelete,
     OptionClone,
@@ -388,6 +389,10 @@ enum S9sOptionType
     OptionVirtualIp,
     OptionEthInterface,
     OptionLicense,
+
+    OptionDbSchemaDbGrowth,
+    OptionDbSchemaDate,
+    OptionDbSchemaName,
 };
 
 /**
@@ -449,6 +454,7 @@ S9sOptions::S9sOptions() :
     m_modes["alarms"]       = Alarm;
     m_modes["reports"]      = Report;
     m_modes["replications"] = Replication;
+    m_modes["dbschema"]     = DbSchema;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -3642,6 +3648,15 @@ S9sOptions::isReplicationOperation() const
 }
 
 /**
+ * \returns true if the main operation is "dbschema".
+ */
+bool
+S9sOptions::isDbSchemaOperation() const
+{
+    return m_operationMode == DbSchema;
+}
+
+/**
  * \returns True if the --help command line option was provided.
  */
 bool
@@ -3893,6 +3908,55 @@ bool
 S9sOptions::isRemoveTagRequested() const
 {
     return getBool("remove_tag");
+}
+
+
+/**
+ * \returns true if the "dbgrowth" function is requested by providing the --dbgrowth
+ *   command line option.
+ */
+bool
+S9sOptions::isDbGrowthRequested() const
+{
+    return getBool("dbgrowth");
+}
+
+/**
+ * \returns true if the "date" function is presented by providing the --date
+ *   command line option.
+ */
+bool
+S9sOptions::hasDbSchemaDate() const
+{
+    return m_options.contains("date");
+}
+
+/**
+ * \returns true if the "name" function is presented by providing the --name
+ *   command line option.
+ */
+bool
+S9sOptions::hasDbSchemaName() const
+{
+    return m_options.contains("name");
+}
+
+/**
+ * \returns The option argument for the --date option.
+ */
+S9sString
+S9sOptions::dBSchemaDate() const
+{
+    return getString("date");
+}
+
+/**
+ * \returns The option argument for the --name option.
+ */
+S9sString
+S9sOptions::dBSchemaName() const
+{
+    return getString("name");
 }
 
 /**
@@ -4220,6 +4284,9 @@ S9sOptions::isStageRequested() const
 bool
 S9sOptions::isSynchronous() const
 {
+    if (hasSynchronous() && getString("synchronous").empty())
+        return true;
+
     return getBool("synchronous");
 }
 
@@ -4230,6 +4297,27 @@ bool
 S9sOptions::hasSynchronous() const
 {
     return m_options.contains("synchronous");
+}
+
+/**
+ * \returns the value of the --semi-sync=BOOL command line option
+ */
+bool
+S9sOptions::isSemiSync() const
+{
+    if (hasSemiSync() && getString("semi-sync").empty())
+        return true;
+
+    return getBool("semi-sync");
+}
+
+/**
+ * \returns if CLI has the --semi-sync command line option
+ */
+bool
+S9sOptions::hasSemiSync() const
+{
+    return m_options.contains("semi-sync");
 }
 
 /**
@@ -5589,6 +5677,14 @@ S9sOptions::readOptions(
                 retval = checkOptionsReplication();
 
             break;
+
+        case DbSchema:
+            retval = readOptionsDbSchema(*argc, argv);
+
+            if (retval)
+                retval = checkOptionsDbSchema();
+
+            break;
     }
 
     return retval;
@@ -5760,6 +5856,10 @@ S9sOptions::printHelp()
         case Replication:
             printHelpReplication();
             break;
+
+        case DbSchema:
+            printHelpDbSchema();
+            break;
     }
 }
 
@@ -5782,6 +5882,7 @@ S9sOptions::printHelpGeneric()
 "       node - to handle nodes.\n"
 "    process - to view processes running on nodes.\n"
 "replication - to monitor and control data replication.\n"
+"   dbschema - to view database schemas.\n"
 "     report - to manage reports.\n"
 "     script - to manage and execute scripts.\n"
 "     server - to manage hardware resources.\n"
@@ -6502,6 +6603,21 @@ S9sOptions::printHelpReplication()
 "  --replication-slave=NODE   The same as --slave.\n"
 "  --slave=NODE               The replication slave.\n"
 "  --synchronous=BOOL         Option for stage/rebuild for PostgreSQL.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpDbSchema()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"dbschema\" command:\n"
+"  --dbgrowth                 Tells to retrieve the database growth.\n"
+"  --cluster-id=ID            The ID of the cluster.\n"
+"  --date=DATE                The date of getting the database information.\n"
+"  --name=STRING              The name of a database.\n"
 "\n"
     );
 }
@@ -9071,6 +9187,253 @@ S9sOptions::readOptionsReplication(
     return true;
 }
 
+/**
+ * Reads the command line options in "dbschema" mode.
+ */
+bool
+S9sOptions::readOptionsDbSchema(
+        int argc,
+        char *argv[])
+{
+    int c;
+    struct option long_options[] =
+            {
+                    // Generic Options
+                    {"batch",            no_argument,       0, OptionBatch},
+                    {"cmon-user",        required_argument, 0, 'u'},
+                    {"color",            optional_argument, 0, OptionColor},
+                    {"config-file",      required_argument, 0, 4},
+                    {"controller-port",  required_argument, 0, 'P'},
+                    {"controller",       required_argument, 0, 'c'},
+                    {"debug",            no_argument,       0, OptionDebug},
+                    {"help",             no_argument,       0, OptionHelp},
+                    {"human-readable",   no_argument,       0, 'h'},
+                    {"long",             no_argument,       0, 'l'},
+                    {"no-header",        no_argument,       0, OptionNoHeader},
+                    {"password",         required_argument, 0, 'p'},
+                    {"print-json",       no_argument,       0, OptionPrintJson},
+                    {"print-request",    no_argument,       0, OptionPrintRequest},
+                    {"private-key-file", required_argument, 0, OptionPrivateKeyFile},
+                    {"rpc-tls",          no_argument,       0, OptionRpcTls},
+                    {"verbose",          no_argument,       0, 'v'},
+                    {"version",          no_argument,       0, 'V'},
+
+                    // Main Options
+                    {"dbgrowth",         no_argument, 0, OptionDbSchemaDbGrowth},
+                    {"cluster-id",       required_argument, 0, 'i'},
+
+                    // Date related options.
+                    {"date",             required_argument, 0, OptionDbSchemaDate},
+
+                    // Database attributes related options.
+                    {"name",             required_argument, 0, OptionDbSchemaName},
+
+                    {0, 0,                                  0, 0}
+            };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V",
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+
+            case OptionPrivateKeyFile:
+                // --private-key-file=FILE
+                m_options["private_key_file"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 4:
+                // --config-file=FILE
+                m_options["config-file"] = optarg;
+                break;
+
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+            case 'i':
+                // -i, --cluster-id=ID
+                m_options["cluster_id"] = atoi(optarg);
+                break;
+
+            case 'n':
+                // -n, --cluster-name=NAME
+                m_options["cluster_name"] = optarg;
+                break;
+
+            /*
+             * Options related to dbgrowth.
+             */
+            case OptionDbSchemaDbGrowth:
+                // --dbgrowth
+                m_options["dbgrowth"] = true;
+                break;
+
+            case OptionDbSchemaDate:
+                // --date=DATE
+                m_options["date"] = optarg;
+                break;
+
+            case OptionDbSchemaName:
+                // --name=NAME
+                m_options["name"] = optarg;
+                break;
+
+            case '?':
+            default:
+            S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c))
+                    {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else
+                    {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    //
+    // The first extra argument is 'node', so we leave that out. We are
+    // interested in the others.
+    //
+    for (int idx = optind + 1; idx < argc; ++idx)
+    {
+        m_extraArguments << argv[idx];
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsDbSchema()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isDbGrowthRequested())
+        countOptions++;
+
+    if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
+     * The --cluster-id option is required.
+     */
+    if(!hasClusterIdOption())
+    {
+        m_errorMessage =
+                "The --cluster-id option should be used when getting data for the dbschema operation.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    return true;
+}
+
 bool
 S9sOptions::checkOptionsBackup()
 {
@@ -11556,6 +11919,7 @@ S9sOptions::readOptionsCluster(
         { "usr1",             no_argument,       0, OptionUsr1            },
         { "enable-recovery",  no_argument,       0, OptionEnableRecovery  },
         { "disable-recovery", no_argument,       0, OptionDisableRecovery },
+        { "semi-sync",        required_argument, 0, OptionSemiSync        },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -11831,7 +12195,15 @@ S9sOptions::readOptionsCluster(
                 // --disable-recovery
                 m_options["disable_recovery"] = true;
                 break;
-            
+
+            case OptionSemiSync:
+            {
+                // --semi-sync[=BOOL]
+                S9sString arg(optarg);
+                m_options["semi-sync"] = arg.toBoolean();
+                break;
+            }
+
             case OptionStart:
                 // --start
                 m_options["start"] = true;

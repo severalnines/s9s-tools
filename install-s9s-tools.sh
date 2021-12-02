@@ -205,6 +205,8 @@ create_local_s9s_user() {
 if [[ "$dist" == "debian" ]]; then
     command -v wget &>/dev/null
     [[ $? -ne 0 ]] && log_msg "=> Installing wget ..." && apt-get install -y wget
+    command -v gpg &>/dev/null
+    [[ $? -ne 0 ]] && log_msg "=> Installing gnupg ..." && ( apt-get install -y gnupg || apt-get install -y gnupg2 || apt-get install -y gpg )
     command -v lsb_release &>/dev/null
     [[ $? -ne 0 ]] && log_msg "=> Installing lsb_release ..." && apt-get install -y lsb_release
     add_s9s_commandline_apt

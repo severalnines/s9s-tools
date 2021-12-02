@@ -180,6 +180,7 @@ libs9s_public_h_headers =     \
 	s9srpcclient_p.h          \
 	S9sRpcReply               \
 	s9srpcreply.h             \
+	s9sdbgrowthreport.h       \
 	S9sRsaKey                 \
 	s9srsakey.h               \
 	s9srsakey_p.h             \
@@ -284,6 +285,7 @@ libs9s_a_SOURCES =            \
 	s9sregexp_p.cpp           \
 	s9sregexp.cpp             \
 	s9srpcreply.cpp           \
+	s9sdbgrowthreport.cpp     \
 	s9srpcclient_p.cpp        \
 	s9srpcclient.cpp          \
 	s9sbusinesslogic.cpp      \

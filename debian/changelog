@@ -1,3 +1,42 @@
+s9s-tools (1.9.20211103-release1) UNRELEASED; urgency=medium
+
+  * Pushing out a new build
+
+ -- David Kedves <kedz@kedz.eu>  Wed, 03 Nov 2021 06:27:38 +0100
+
+s9s-tools (1.9.20210927-release1) UNRELEASED; urgency=medium
+
+  * New build for internal testing
+  * MSSQL support added
+  * Added redis cluster import support
+  * Added prometheus node type
+
+ -- David Kedves <kedazo@severalnines.com>  Mon, 27 Sep 2021 15:52:48 +0200
+
+s9s-tools (1.9.20210908-release1) UNRELEASED; urgency=medium
+
+  * Added register redis cluster support
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 08 Sep 2021 11:39:28 +0200
+
+s9s-tools (1.9.20210629-release2) UNRELEASED; urgency=medium
+
+  * New release
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 29 Jun 2021 16:50:04 +0200
+
+s9s-tools (1.9.20210607-release1) UNRELEASED; urgency=medium
+
+  * New build (expired OBS keys, meh...)
+
+ -- David Kedves <kedazo@severalnines.com>  Mon, 07 Jun 2021 07:45:08 +0200
+
+s9s-tools (1.9.20210601-release1) UNRELEASED; urgency=medium
+
+  * New build
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 01 Jun 2021 11:02:01 +0200
+
 s9s-tools (1.9.20210517-release1) UNRELEASED; urgency=medium
 
   * New release

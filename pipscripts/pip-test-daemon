@@ -118,21 +118,6 @@ function start_test()
 
     let counter=0
     #test_server=$(pip-server-control --list --idle)
-    while [ -z "$test_server" ]; do
-        sleep 3
-        test_server=$(pip-server-control --list --idle)
-        if [ -n "$test_server" ]; then
-            echo ""
-            echo "  Idle server: $test_server"
-            pip-server-control --list --long --idle 
-        else
-            echo -ne "  Waiting for idle server $counter\r"
-        fi
-
-        [ -z "$test_server" ] && sleep 1
-        let counter+=1
-    done
-    
     if [ -z "$user" ]; then
         user="$USER"
     fi

@@ -74,6 +74,7 @@ class S9sOptions
             Alarm,
             Report,
             Replication,
+            DbSchema,
         };
 
         enum ExitCodes
@@ -399,6 +400,7 @@ class S9sOptions
         bool isMetaTypeOperation() const;
         bool isReportOperation() const;
         bool isReplicationOperation() const;
+        bool isDbSchemaOperation() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -437,6 +439,12 @@ class S9sOptions
         bool isRemoveAclRequested() const;
         bool isAddTagRequested() const;
         bool isRemoveTagRequested() const;
+
+        bool isDbGrowthRequested() const;
+        bool hasDbSchemaDate() const;
+        bool hasDbSchemaName() const;
+        S9sString dBSchemaDate() const;
+        S9sString dBSchemaName() const;
 
         bool isChOwnRequested() const;
         bool isMkdirRequested() const;
@@ -480,6 +488,8 @@ class S9sOptions
         bool isStageRequested() const;
         bool isSynchronous() const;
         bool hasSynchronous() const;
+        bool isSemiSync() const;
+        bool hasSemiSync() const;
         bool isToggleSyncRequested() const;
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
@@ -654,6 +664,7 @@ class S9sOptions
         void printHelpAlarm();
         void printHelpReport();
         void printHelpReplication();
+        void printHelpDbSchema();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
@@ -728,6 +739,9 @@ class S9sOptions
         
         bool readOptionsReplication(int argc, char *argv[]);
         bool checkOptionsReplication();
+
+        bool readOptionsDbSchema(int argc, char *argv[]);
+        bool checkOptionsDbSchema();
 
         bool setMode(const S9sString &modeName);
 

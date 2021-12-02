@@ -110,7 +110,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonKeepalivedHost";
         else if (m_url.protocol().toLower() == "redis")
             m_properties["class_name"] = "CmonRedisHost";
-        else if (m_url.protocol().toLower() == "redis-sentinel")
+        else if (m_url.protocol().toLower() == "redis-sentinel" ||
+            m_url.protocol().toLower() == "sentinel")
             m_properties["class_name"] = "CmonRedisSentinelHost";
         else if (m_url.protocol().toLower() == "mssql")
             m_properties["class_name"] = "CmonMsSqlHost";
@@ -277,7 +278,7 @@ S9sNode::toString(
                     break;
 
                 case 'b':
-                    // The list of slaves in one string.
+                    // The master, this node is following.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(masterHost()));
                     retval += tmp;
@@ -880,8 +881,12 @@ S9sNode::roleFlag() const
         return 'U';
     else if (theRole == "controller")
         return 'C';
+    else if (theRole == "bvs")
+        return 'V';
     else if (theRole == "arbiter")
         return 'A';
+    else if (theRole == "backuprepo")
+        return 'R';
     else if (theRole == "shardsvr")
     {
         S9sString mRole = memberRole();
@@ -1101,13 +1106,16 @@ S9sNode::nodeTypeFlag() const
         return 'a';
     else if (theNodeType == "grouprepl")
         return 'r';
-    
-    if (className() == "CmonMySqlHost")
+    else if (theNodeType == "cmonagent")
+        return 'A';
+    else if (theNodeType == "prometheus")
+        return 'P';
+
+    else if (className() == "CmonMySqlHost")
         return 's';
-    
-    if (className() == "CmonRedisSentinelHost")
+    else if (className() == "CmonRedisSentinelHost")
         return 'S';
-    if (className() == "CmonRedisHost")
+    else if (className() == "CmonRedisHost")
         return 'R';
     
     return '?';
