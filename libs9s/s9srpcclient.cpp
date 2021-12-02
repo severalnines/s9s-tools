@@ -3014,6 +3014,10 @@ S9sRpcClient::createCluster()
     {
         success = createMsSqlSingle(
             hosts, osUserName, dbVersion);
+    } else if (options->clusterType() == "mssql_ao_async")
+    {
+        success = createMsSqlSingle(
+            hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "ndb" || 
             options->clusterType() == "ndbcluster")
     {
@@ -4184,7 +4188,7 @@ S9sRpcClient::createMsSqlSingle(
     // 
     // The job_data describing the cluster.
     //
-    jobData["cluster_type"]     = "mssql_single";
+    jobData["cluster_type"]     = options->clusterType();
     jobData["type"]             = "mssql";
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = version;
