@@ -229,9 +229,9 @@ function testInstall()
     local line
     local image
     local counter=0
-    local images="ubuntu_xenial \
+    local images="ubuntu_focal \
       debian_buster debian_stretch \
-      centos_7 oracle_7 ubuntu_trusty"
+      centos_7 oracle_7 ubuntu_xenial"
 
     # 
     # these has issues with /etc/sudoers: fedora_26 fedora_27

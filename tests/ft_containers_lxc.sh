@@ -701,6 +701,31 @@ function createDebianStretch()
     end_verbatim
 }
 
+function createDebianBullseye()
+{
+    local container_name="ft_containers_lxc_14_$$"
+ 
+    #
+    # Creating a container Debian 11 Bullseye.
+    #
+    print_title "Creating Debian Bullseye Container"
+    begin_verbatim
+
+    mys9s container \
+        --create \
+        --image=debian_bullseye \
+        --servers=$CONTAINER_SERVER \
+        $LOG_OPTION \
+        $DEBUG_OPTION \
+        "$container_name"
+    
+    check_exit_code $?
+    remember_cmon_container "$container_name"
+    check_container "$container_name"
+
+    end_verbatim
+}
+
 #
 # This test will call --stop and then --start on a previously created container.
 #
@@ -966,6 +991,7 @@ else
 
     runFunctionalTest createCentos7
     runFunctionalTest createDebianStretch
+    runFunctionalTest createDebianBullseye
 
     runFunctionalTest restartContainer
     runFunctionalTest createServer
