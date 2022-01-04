@@ -11,7 +11,7 @@ OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
-PROVIDER_VERSION="5.6"
+PROVIDER_VERSION="5.7"
 OPTION_VENDOR="percona"
 
 ADMIN_USERNAME=my-proxysql-admin
@@ -370,8 +370,8 @@ function testAddProxySql()
 
     check_exit_code_no_job $?
 
-    expected_value="\"${ADMIN_USERNAME}:${ADMIN_PASSWORD}"
-    if [ "$value" != "$expected_value" ]; then
+    expected_value="\"${ADMIN_USERNAME}:${ADMIN_PASSWORD}\""
+    if [ "$value" != "$expected_value" ]; then 
         failure "First admin_credentials value should be $expected_value not $value"
     else
         success "  o First admin_credentials value is $value, ok."
