@@ -371,10 +371,10 @@ function testAddProxySql()
     check_exit_code_no_job $?
 
     expected_value="\"${ADMIN_USERNAME}:${ADMIN_PASSWORD}\""
-    if [ "$value" ~= *"$expected_value"* ]; then 
-        success "  o First admin_credentials value is $value, ok."
-    else
+    if [ "$value" != "$expected_value" ]; then 
         failure "First admin_credentials value should be $expected_value not $value"
+    else
+        success "  o First admin_credentials value is $value, ok."
     fi
 
 
