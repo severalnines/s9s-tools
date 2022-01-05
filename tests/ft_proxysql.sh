@@ -19,6 +19,9 @@ CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
 CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
+PROXYSQL_ADMIN_PASSWORD="admin_pwd"
+PROXYSQL_MONITOR_PASSWORD="monitor_pwd"
+
 cd $MYDIR
 source ./include.sh
 source ./include_lxc.sh
@@ -178,6 +181,10 @@ function testAddProxySql()
         --add-node \
         --cluster-name="$CLUSTER_NAME" \
         --nodes="proxySql://$CONTAINER_NAME9" \
+        --admin-user="proxysql-admin" \
+        --admin-password="$PROXYSQL_ADMIN_PASSWORD" \
+        --monitor-user="proxysql-monitor" \
+        --monitor-password="$PROXYSQL_MONITOR_PASSWORD" \
         --template="ubuntu" \
         --containers="$CONTAINER_NAME9" \
         $LOG_OPTION \
@@ -258,6 +265,11 @@ EOF
         --register \
         --cluster-id=1 \
         --nodes="proxysql://$PROXYSQL_IP" \
+        --admin-user="proxysql-admin" \
+        --admin-password="$PROXYSQL_ADMIN_PASSWORD" \
+        --monitor-user="proxysql-monitor" \
+        --monitor-password="$PROXYSQL_MONITOR_PASSWORD" \
+        --debug \
         --log 
 
     check_exit_code $?

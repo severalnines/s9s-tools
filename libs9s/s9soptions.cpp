@@ -6347,6 +6347,13 @@ S9sOptions::printHelpNode()
 "  --opt-value=VALUE          The value of the configuration option.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --properties=ASSIGNMENTS   Names and values of the properties to change.\n"
+"\n"
+"Load balancer related options\n"
+"  --admin-password=USERNAME  Admin password for ProxySql.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql.\n"
+"  --dont-import-accounts     Do not import users into loadbalancer.\n"
+"  --monitor-password=STRING  Monitor password for proxysql.\n"
+"  --monitor-user=STRING      Monitor user for ProxySql.\n"
 "\n");
 }
 
@@ -6698,6 +6705,13 @@ S9sOptions::readOptionsNode(
         { "output-dir",       required_argument, 0, OptionOutputDir       },
         { "node-format",      required_argument, 0, OptionNodeFormat      }, 
 
+        // Options for ProxySql.
+        { "admin-user",       required_argument, 0, OptionAdminUser       },
+        { "admin-password",   required_argument, 0, OptionAdminPassword   },
+        { "monitor-user",     required_argument, 0, OptionMonitorUser     },
+        { "monitor-password", required_argument, 0, OptionMonitorPassword },
+        { "dont-import-accounts", no_argument,   0, OptionDontImportAccounts },
+
         // Graphs...
         { "graph",            required_argument, 0, OptionGraph           }, 
         { "begin",            required_argument, 0, OptionBegin           },
@@ -7010,6 +7024,34 @@ S9sOptions::readOptionsNode(
             case OptionEthInterface:
                 // --eth-interface=INTERFACE
                 m_options["eth_interface"] = optarg;
+                break;
+
+            /*
+             * Options for ProxySql.
+             */
+            case OptionAdminUser:
+                // --admin-user=USERNAME
+                m_options["admin_user"] = optarg;
+                break;
+
+            case OptionAdminPassword:
+                // --admin-password=USERNAME
+                m_options["admin_password"] = optarg;
+                break;
+
+            case OptionMonitorUser:
+                // --monitor-user=STRING
+                m_options["monitor_user"] = optarg;
+                break;
+
+            case OptionMonitorPassword:
+                // --monitor-password=STRING
+                m_options["monitor_password"] = optarg;
+                break;
+
+            case OptionDontImportAccounts:
+                // --dont-import-accounts
+                m_options["dont_import_accounts"] = true;
                 break;
 
             case '?':
@@ -12547,7 +12589,7 @@ S9sOptions::readOptionsCluster(
                 // --admin-user=USERNAME
                 m_options["admin_user"] = optarg;
                 break;
-            
+
             case OptionAdminPassword:
                 // --admin-password=USERNAME
                 m_options["admin_password"] = optarg;
@@ -12557,7 +12599,7 @@ S9sOptions::readOptionsCluster(
                 // --monitor-user=STRING
                 m_options["monitor_user"] = optarg;
                 break;
-            
+
             case OptionMonitorPassword:
                 // --monitor-password=STRING
                 m_options["monitor_password"] = optarg;
