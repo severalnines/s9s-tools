@@ -307,7 +307,7 @@ function testStopProxySql()
     # Checking that the ProxySql goes into offline state.
     #
     print_title "Waiting ProxySql to go Off-line"
-    wait_for_node_state "$PROXYSQL_IP" "CmonHostOffLine"
+    wait_for_node_state "$PROXYSQL_IP" "CmonHostFailed"
 
     if [ $? -ne 0 ]; then
         failure "ProxySql $PROXYSQL_IP is not in CmonHostOffLine state"
