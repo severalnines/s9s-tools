@@ -39,9 +39,6 @@ SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel
 
 declare -A REMOTE_SERVER_STATE
 
-# This should come from config.
-TEST_REPORT_URL="www:/var/lib/test-ui/test-results"
-
 source $MYDIR/utilityfunctions.sh
 
 pip-host-control --testing --log "--------------------------------------"
@@ -118,6 +115,7 @@ while true; do
         --verbose)
             shift
             VERBOSE="true"
+            VERBOSE_OPTION="--verbose"
             ;;
 
         -v|--version)
@@ -141,6 +139,10 @@ while true; do
             shift
             SERVER="$1"
             SERVER=$(echo $SERVER | tr ',' ' ' | tr ';' ' ')
+            if [ "x$SERVER" = "x" ]; then
+                printError "No server was specified."
+                exit 6
+            fi
             shift
             ;;
 
@@ -286,7 +288,7 @@ printVerbose "              hostname: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
-printVerbose "       TEST_REPORT_URL: $TEST_REPORT_URL"
+printVerbose "       TEST_REPORT_URL: $PROJECT_TEST_REPORT_URL"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 
 #
@@ -311,8 +313,8 @@ function upload_slog_file()
         touch "/tmp/$remotefile"
     fi
         
-    #printVerbose "scp \"/tmp/$remotefile\" \"$TEST_REPORT_URL\""
-    scp "/tmp/$remotefile" "$TEST_REPORT_URL"
+    printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_TEST_REPORT_URL\""
+    scp "/tmp/$remotefile" "$PROJECT_TEST_REPORT_URL"
     rm -f "/tmp/$remotefile"
 }
 
@@ -853,7 +855,8 @@ function upload_report_file_ascii()
     </html>
 EOF
 
-    scp "$tmp_file" "$TEST_REPORT_URL"
+    printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
     rm -f "$tmp_file"
 }
 
@@ -914,7 +917,8 @@ function upload_result_file()
     while true; do
         if [ -f "$log_file" ]; then
             #pip-host-control --log "Uploading '$log_file'."
-            scp "$log_file" "$TEST_REPORT_URL"
+            printVerbose scp "$log_file" "$PROJECT_TEST_REPORT_URL"
+            scp "$log_file" "$PROJECT_TEST_REPORT_URL"
         fi
 
         upload_report_file_ascii \
@@ -929,13 +933,17 @@ function upload_result_file()
 
         #pip-host-control --log "Uploading '$tmp_file'."
 
-        scp "$tmp_file" "$TEST_REPORT_URL"
+        printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
 
         if [ -z "$unit_test_option" -a \
             -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
+            printVerbose scp \
+                "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
+                "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
             scp \
                 "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-                "$TEST_REPORT_URL/$daemon_log_file"
+                "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -1334,8 +1342,8 @@ function run_test()
     # Uploading the output of the test program as log file.
     #
     if [ -f "$logfile" ]; then
-        #printVerbose "scp \"$logfile\" \"$TEST_REPORT_URL\""
-        scp "$logfile" "$TEST_REPORT_URL"
+        printVerbose "scp \"$logfile\" \"$PROJECT_TEST_REPORT_URL\""
+        scp "$logfile" "$PROJECT_TEST_REPORT_URL"
         rm -f "$logfile"
     fi
             
@@ -1431,7 +1439,8 @@ function main()
         --test-state "PREPARING" \
         >$tmp_file
 
-    scp "$tmp_file" "$TEST_REPORT_URL"
+    printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
 
     compile_source
     if [ $? -ne 0 ]; then
@@ -1444,7 +1453,8 @@ function main()
             --test-state "FAILURE" \
             >$tmp_file
 
-        scp "$tmp_file" "$TEST_REPORT_URL"
+        printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
 
         pip-host-control \
             --idle \
@@ -1554,6 +1564,12 @@ function find_idle_server()
             continue
         fi
 
+        printVerbose \
+            ssh -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                -o LogLevel=quiet \
+                "$server" -- pip-cmon-test --pid
+
         other_pid=$( \
             ssh -o UserKnownHostsFile=/dev/null \
                 -o StrictHostKeyChecking=no \
@@ -1631,6 +1647,7 @@ function run_tests_remote()
                             $no_git_pull_option \
                             $no_compile_option \
                             $S9S_OPTION \
+                            $VERBOSE_OPTION \
                             --os=$os \
                             --vendor=$vendor \
                             --sqlversion=$version \

@@ -16,11 +16,6 @@ HOST_CONTAINERS_FILE="$HOME/.pip-host-control.containers"
 HOST_STATUS="IDLE"
 CSV_OUTPUT=""
 
-# This should come from config.
-TEST_REPORT_URL="www:/var/lib/test-ui/servers"
-#TEST_REPORT_URL="www:/var/www/html/ft_install/"
-#TEST_REPORT_URL="jenkins@52.58.107.236:/var/www/tests"
-
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
 else
@@ -403,12 +398,12 @@ send_host_info
     echo "" >"$HOST_CONTAINERS_FILE"
 #fi
 
-upload_file "$HOST_INFO_FILE" "$TEST_REPORT_URL/$(hostname).hostinfo"
-upload_file "$HOST_LOG_FILE"  "$TEST_REPORT_URL/$(hostname).hostlog"
-upload_file "$HOST_CONTAINERS_FILE"  "$TEST_REPORT_URL/$(hostname).containers"
+upload_file "$HOST_INFO_FILE" "$PROJECT_SERVER_STAT_URL/$(hostname).hostinfo"
+upload_file "$HOST_LOG_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).hostlog"
+upload_file "$HOST_CONTAINERS_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).containers"
 
 if [ "$CSV_OUTPUT" ]; then
-    upload_file "$CSV_OUTPUT" "$TEST_REPORT_URL/test_matrix.csv" ""
+    upload_file "$CSV_OUTPUT" "$PROJECT_SERVER_STAT_URL/test_matrix.csv" ""
 fi
 
 if [ "$SHUTDOWN" == "true" ]; then

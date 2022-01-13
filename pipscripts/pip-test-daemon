@@ -18,7 +18,6 @@ SUM_STARTED_TESTS=0
 
 cd $MYDIR
 source "./utilityfunctions.sh"
-[ -f "./project.conf" ] && source "./project.conf"
 [ -f "./htmlfunctions.sh" ] && source "./htmlfunctions.sh"
 
 #
@@ -117,7 +116,7 @@ function start_test()
     printVerbose "Getting idle test servers"
 
     let counter=0
-    #test_server=$(pip-server-control --list --idle)
+    test_server=$(pip-server-control --list --idle)
     if [ -z "$user" ]; then
         user="$USER"
     fi
@@ -130,6 +129,8 @@ function start_test()
     echo "         state: $state"
     echo "          user: $user"
     echo "       project: $project"
+    echo "        server: $test_server"
+    echo "    git branch: $gitbranch"
 
     if [ "$project" == "s9s-tools" ]; then
         option_s9s="--s9s"
@@ -141,10 +142,24 @@ function start_test()
 
     let SUM_STARTED_TESTS+=1
 
-    pip-cmon-test $VERBOSE_OPTION $option_s9s --server="$test_server" --test="$testname" --user="$user" --git-branch="$gitbranch"
+    printVerbose "pip-cmon-test "\
+        "$VERBOSE_OPTION "\
+        "$option_s9s "\
+        "--server=$test_server "\
+        "--test=$testname "\
+        "--user=$user "\
+        "--git-branch=$gitbranch"
+
+    pip-cmon-test \
+        $VERBOSE_OPTION \
+        $option_s9s \
+        --server="$test_server" \
+        --test="$testname" \
+        --user="$user" \
+        --git-branch="$gitbranch"
 
     retcode=$?
-    echo "pip-cmon-test retcode: $retcode"
+    printVerbose "pip-cmon-test retcode: $retcode"
 
     # Here is a peculiar thing, the script needs some time to make this host
     # busy...
@@ -212,8 +227,12 @@ function process_scheduled_tests()
 
         start_test "$config_file"
 
-        rm -f "$config_file"
-        /var/www/html/ft_install/delete_old_results.sh
+        ret_code=$?
+        if [ $ret_code -ne 6 ]; then
+            rm -f "$config_file"
+            ${PROJECT_SCRIPT_ROOT}/delete_old_results.sh
+        fi
+
         print_report
     done
         

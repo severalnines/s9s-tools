@@ -359,9 +359,10 @@ function wake_server()
         return 1
     fi
 
-    config_file="$HOME/.pip/${hostName}.host"
+    config_file="/etc/s9s-cmon-test/${hostName}.host"
     if [ ! -f "$config_file" ]; then
-        config_file="/home/pipas/.pip/${hostName}.host"
+        echo "There is no .host file in /etc/s9s-cmon-test/ directory."
+        exit -1
     fi
 
     if [ -f "$config_file" ]; then
@@ -598,13 +599,21 @@ EOF
     fi
 }
 
+if [ -z "$PROJECT_DATA_ROOT" ]; then
+cat <<EOF
+Environment variable PROJECT_DATA_ROOT is empty. It is likely
+because project.conf file is not available or wrong. Please
+fix it. An example content can be found in project.conf.example.
+EOF
+    exit -1
+fi
+
 SERVER_STAT_ROOT="$HOME/.pip-servers"
-SERVER_STAT_URL="www:/var/lib/test-ui/servers"
 function download_current_data()
 {
     local root_dir=$SERVER_STAT_ROOT
 
-    printVerbose "Downloading current data from $SERVER_STAT_URL..."
+    printVerbose "Downloading current data from $PROJECT_SERVER_STAT_URL..."
     if [ ! -d "$root_dir" ]; then
         printVerbose "Creating directory '$root_dir'."
         mkdir -p "$root_dir"
@@ -621,8 +630,8 @@ function download_current_data()
         return 1
     fi
 
-    printVerbose "Downloading '$SERVER_STAT_URL/*.hostinfo'..."
-    scp -p $SERVER_STAT_URL/*.hostinfo . >/dev/null 2>/dev/null
+    printVerbose "Downloading '$PROJECT_SERVER_STAT_URL/*.hostinfo'..."
+    scp -p $PROJECT_SERVER_STAT_URL/*.hostinfo . >/dev/null 2>/dev/null
 
     popd >/dev/null 2>/dev/null
 }
@@ -651,7 +660,7 @@ function print_host_list_long()
     printVerbose "Printing detailed list..."
     print_header
 
-    for config_file in $HOME/.pip/*.host; do
+    for config_file in /etc/s9s-cmon-test/*.host; do
         if [ ! -f "$config_file" ]; then
             continue
         fi
@@ -694,7 +703,7 @@ function print_host_list_long()
         if [ -z "$category" ]; then
             category="-"
         fi
-    
+
         [ -z "$HOST_STATUS" ] && HOST_STATUS="OFF-LINE"
         [ -n "$CONF_HOST_PROTECTED" -a "$HOST_STATUS" != "OFF-LINE" ] && HOST_STATUS="PROTECTED"
 
@@ -714,6 +723,11 @@ function print_host_list_long()
                 STATUS_TEXT="-"
             fi
         fi
+
+        if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            ping -c 1 $HOSTNAME > /dev/null 2> /dev/null && \
+                HOST_STATUS="IDLE"
+        fi
        
         if [ "$OPTION_STATE_FILTER" ]; then 
             if [ "$OPTION_STATE_FILTER" == "ON-LINE" ]; then
@@ -731,7 +745,7 @@ function print_host_list_long()
         let SUM_CONTAINERS+=NUMBER_OF_CONTAINERS
 
         [ -z "$AVERAGE_LOAD" ] && AVERAGE_LOAD="-"
-        
+
         case "$HOST_STATUS" in
             OFF-LINE)
                 let SUM_OFF_LINE_SERVERS+=1
@@ -800,6 +814,8 @@ function print_host_list_long()
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
+        elif [ "$HOST_STATUS" == "ON-LINE" ]; then
+            printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "HALTED" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
         elif [ "$HOST_STATUS" == "PROTECTED" ]; then
@@ -832,7 +848,7 @@ function print_host_list_brief()
     local name
 
     printVerbose "Printing brief list."
-    for config_file in $HOME/.pip/*.host; do
+    for config_file in /etc/s9s-cmon-test/*.host; do
         if [ ! -f "$config_file" ]; then
             continue
         fi
@@ -899,6 +915,11 @@ function print_host_list_brief()
                 HOST_STATUS="OFF-LINE"
                 STATUS_TEXT="-"
             fi
+        fi
+
+        if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            ping -c 1 $HOSTNAME > /dev/null 2> /dev/null && \
+                HOST_STATUS="IDLE"
         fi
 
         if [ "$OPTION_STATE_FILTER" ]; then 

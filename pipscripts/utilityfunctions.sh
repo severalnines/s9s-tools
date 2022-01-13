@@ -1,5 +1,7 @@
 #! /bin/bash
 
+source "/etc/s9s-cmon-test/project.conf"
+
 UTILITY_FUNCTIONS_VERSION="1.0.0"
 
 TERM_ERASE_EOL="\033[K"
@@ -52,8 +54,24 @@ DATE_COLOR="\033[1m\033[38;5;215m"
 DIST_COLOR="\033[1m\033[38;5;93m"
 VERSION_COLOR="\033[1m\033[38;5;190m"
 
-if [ "${S9S_TEST_REPORT_URL}" != "" ]; then
-       export TEST_REPORT_URL=${S9S_TEST_REPORT_URL}
+if [ "${PROJECT_TEST_REPORT_URL}" == "" ]; then
+    cat <<EOF
+Environment variable PROJECT_TEST_REPORT_URL is empty.
+It is likely because project.conf file is not available
+or wrong. Please fix it. An example content can be found
+in project.conf.example.
+EOF
+    exit -1
+fi
+
+if [ "${PROJECT_SERVER_STAT_URL}" == "" ]; then
+    cat <<EOF
+Environment variable PROJECT_SERVER_STAT_URL is empty.
+It is likely because project.conf file is not available
+or wrong. Please fix it. An example content can be found
+in project.conf.example.
+EOF
+    exit -1
 fi
 
 #
