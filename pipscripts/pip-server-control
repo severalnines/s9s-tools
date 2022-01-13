@@ -7,9 +7,16 @@ VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
 
+if [ -f "/etc/s9s-cmon-test/project.conf" ]; then
+    source /etc/s9s-cmon-test/project.conf
+else
+    echo "File '/etc/s9s-cmon-test/project.conf' was not found." >&2
+    exit 5
+fi
+
 OPTION_DEVICE=""
 OPTION_PRINT_FILES=""
-OPTION_USER="pipas"
+OPTION_USER=$PROJECT_OWNER
 LONG_OPTION=""
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
@@ -608,7 +615,7 @@ EOF
     exit -1
 fi
 
-SERVER_STAT_ROOT="$HOME/.pip-servers"
+SERVER_STAT_ROOT="$PROJECT_DATA_ROOT/servers"
 function download_current_data()
 {
     local root_dir=$SERVER_STAT_ROOT
