@@ -1,3 +1,13 @@
+s9s-tools (1.9.20220114-release1) UNRELEASED; urgency=medium
+
+  * Release ClusterControl 1.9.2
+  * install-s9s-tools.sh: make sure gnupg2|gpg is installed on deb systems
+  * fixed DB name in DB growth report
+  * ability to pass admin and monitor credentials for load-balancer jobs
+  * ability to deploy Asynchronous MySQL single cluster (mssql_ao_async)
+
+ -- David Kedves <kedazo@severalnines.com>  Fri, 14 Jan 2022 12:58:35 +0100
+
 s9s-tools (1.9.20211103-release1) UNRELEASED; urgency=medium
 
   * Pushing out a new build
