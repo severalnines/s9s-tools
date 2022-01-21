@@ -3364,20 +3364,20 @@ function check_container_server()
     #
     # Checking the templates.
     #
-    #mys9s server --list-templates --long $cloud_option
+    mys9s server --list-templates --long $cloud_option
 
     n_names_found=0
     IFS=$'\n'
     for line in $(s9s server --list-templates --batch --long $cloud_option)
     do
-        #echo "Checking line $line"
+        echo "Checking line $line"
         line=$(echo "$line" | sed -e 's/Southeast Asia/Southeast_Asia/g')
         the_cloud=$(echo "$line" | awk '{print $1}')
         the_region=$(echo "$line" | awk '{print $2}')
         the_server=$(echo "$line" | awk '{print $5}')
         the_template=$(echo "$line" | awk '{print $6}')
 
-        #echo "cloud: '$the_cloud' region: '$the_region' server: '$the_server'"
+        echo "cloud: '$the_cloud' region: '$the_region' server: '$the_server'"
         if [ "$the_server" != "$container_server" ]; then
             continue
         fi
