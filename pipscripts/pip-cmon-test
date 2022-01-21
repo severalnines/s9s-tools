@@ -1163,6 +1163,9 @@ function run_test()
             # 
             message "Running '$test_name'..."
             upload_slog_file
+            printVerbose "timeout --kill-after=92m 90m ./$test_name \
+                --print-commands --reset-config --server=$(hostname) \
+                \>\>$logfile 2\>\>$logfile"
 
             timeout --kill-after=92m 90m ./$test_name \
                 --print-commands \
@@ -1652,8 +1655,10 @@ function run_tests_remote()
                             --vendor=$vendor \
                             --sqlversion=$version \
                             --test="$test_name" \
-                            --git-branch="$OPTION_GIT_BRANCH" \
-                            >/dev/null 2>/dev/null &
+                            --git-branch="$OPTION_GIT_BRANCH"
+                            # Uncomment below if many test server are in use
+                            # and there are too many messages on the konsole
+                            #>/dev/null 2>/dev/null &
 
                     if [ -n "$WAIT_OPTION" ]; then
                         printVerbose "Waiting until the test ends."
