@@ -2332,10 +2332,16 @@ EOF
     fi
 
     mys9s user --stat "$USER"
-    if [ $? -eq 0 ]; then
+    ret=$?
+    if [ $ret -neq 0 ]; then
+        sleep 5
+        mys9s user --stat "$USER"
+        ret=$?
+    fi
+    if [ $ret -eq 0 ]; then
         success "  o Could stat the user $USER, OK."
     else
-        failure "Exit code is not 0 when stat-ing the new user $USER."
+        failure "Exit code is $ret (not 0) when stat-ing the new user $USER."
         end_verbatim
         return 0
     fi
