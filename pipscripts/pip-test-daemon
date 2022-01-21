@@ -210,7 +210,7 @@ function process_scheduled_tests()
     local config_files=$(schedule_files)
 
     if [ -z "$config_files" ]; then
-        printVerbose "No tests scheduled."
+        #printVerbose "No tests scheduled."
         sleep 5
         return 0
     fi
