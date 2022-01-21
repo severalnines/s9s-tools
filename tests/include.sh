@@ -2333,7 +2333,7 @@ EOF
 
     mys9s user --stat "$USER"
     ret=$?
-    if [ $ret -neq 0 ]; then
+    if [ $ret -ne 0 ]; then
         sleep 5
         mys9s user --stat "$USER"
         ret=$?
