@@ -1,4 +1,6 @@
 
+source /etc/s9s-cmon-test/project.conf
+
 S9S=$(which s9s)
 FAILED="no"
 TEST_SUITE_NAME=""
