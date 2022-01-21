@@ -378,8 +378,8 @@ function print_title()
 {
     local number
 
-    #let t1_counter+=1
-    #let t2_counter=0
+    let t1_counter+=1
+    let t2_counter=0
 
     number="${t1_counter}"
     if [ -t 1 ]; then

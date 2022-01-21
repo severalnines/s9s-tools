@@ -365,6 +365,8 @@ startTests
 reset_config
 grant_user
 
+print_subtitle "OPTION_INSTALL: $OPTION_INSTALL , 1: $1"
+
 if [ "$OPTION_INSTALL" ]; then
     if [ -n "$1" ]; then
         for testName in $*; do
