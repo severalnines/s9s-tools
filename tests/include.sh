@@ -3297,6 +3297,7 @@ function check_container_server()
 
             number_of_processor_threads)
                 if [ "$expected_class_name" != "CmonCloudServer" ]; then
+                    # Not all test env has Hyperthread support
                     #[ "$value" -lt 1 ] && \
                     #    failure "Value is less than 1."
                     true
