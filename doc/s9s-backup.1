@@ -418,6 +418,16 @@ The strings in the node list are urls that can have the following protocols:
 .BI \-\^\-backup\-directory= DIR
 Sets where the created archive files are going to be placed.
 
+.TP
+.BI \-\^\-temp\-dir\-path= DIR
+By default, s9s backup creates temporary backup files to /var/tmp/cmon-% path. Specify
+this option with your desired path if you want to target to another location.
+
+.TP
+.BI \-\^\-keep\-temp\-dir
+Specify this option if you want to retain your archive files from the temporary
+directory.
+
 .\"
 .\" The backup format string.
 .\"
