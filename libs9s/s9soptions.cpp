@@ -6016,7 +6016,7 @@ S9sOptions::printHelpBackup()
 "\n"
 "  --backup-datadir           Backup the SQL data directory before restoring.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
-"  --temp-dir-path=DIR        The directory where the temporary backup is placed (default goes to /var/tmp/cmon-%).\n"
+"  --temp-dir-path=DIR        The directory where the temporary backup is placed (default goes to /var/tmp/cmon-%%).\n"
 "  --keep-temp-dir            If this option is specified, the temporary backup directory is retained and not deleted after the backup.\n"
 "  --backup-format=STRING     The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"

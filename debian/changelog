@@ -1,3 +1,9 @@
+s9s-tools (1.9.20220126-release1) UNRELEASED; urgency=medium
+
+  * some documentation updates
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 26 Jan 2022 15:42:43 +0100
+
 s9s-tools (1.9.20220114-release1) UNRELEASED; urgency=medium
 
   * Release ClusterControl 1.9.2

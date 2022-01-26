@@ -42,6 +42,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Wed Jan 26 2022 David Kedves <kedazo@severalnines.com> 1.9.20220126
+- A new build with some doc updates 
 * Fri Jan 14 2022 David Kedves <kedazo@severalnines.com> 1.9.20220114
 - New release along with ClusterControl 1.9.2 
 * Wed Nov 03 2021 David Kedves <kedazo@severalnines.com> 1.9.20211103
