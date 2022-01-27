@@ -3010,6 +3010,11 @@ S9sRpcClient::createCluster()
     {
         success = createRedisSentinel(
             hosts, osUserName, dbVersion);
+    } else if (options->clusterType() == "elastic")
+    {
+        success = createElasticsearch(
+            hosts, osUserName, dbVersion);
+ 
     } else if (options->clusterType() == "mssql_single")
     {
         success = createMsSqlSingle(
@@ -4157,6 +4162,80 @@ S9sRpcClient::createRedisSentinel(
     // The job instance describing how the job will be executed.
     //
     job["title"]                = "Creating Redis Sentinel Cluster";
+    job["job_spec"]             = jobSpec;
+
+    // 
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * This method will create a job that creates a single server PostgreSQL
+ * cluster.
+ */
+bool
+S9sRpcClient::createElasticsearch(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &version)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating Elasticsearch cluster.");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    // 
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "elastic";
+    jobData["type"]             = "elastic";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["version"]          = version;
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
+
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = true;
+    } 
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // 
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    // 
+    // The job instance describing how the job will be executed.
+    //
+    job["title"]                = "Creating Elasticsearch Cluster";
     job["job_spec"]             = jobSpec;
 
     // 
