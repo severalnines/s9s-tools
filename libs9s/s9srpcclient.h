@@ -555,6 +555,10 @@ class S9sRpcClient
         bool registerPostgreSql(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName);
+
+        bool registerMongoDbCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
         
         // Low level methods that create/install a new node and add it to a
         // cluster.
