@@ -42,6 +42,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Tue Feb 15 2022 David Kedves <kedazo@severalnines.com> 1.9.20220215
+- A new build for internal testing
 * Thu Feb 03 2022 David Kedves <kedazo@severalnines.com> 1.9.20220203
 - A new build for internal testing
 * Wed Jan 26 2022 David Kedves <kedazo@severalnines.com> 1.9.20220126
