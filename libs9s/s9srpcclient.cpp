@@ -3431,6 +3431,7 @@ S9sRpcClient::registerHost()
     S9sString       uri = "/v2/jobs/";
     S9sString       protocol;
     S9sString       command, title;
+    bool            registerAction = false;
 
     /*
      * Doing some preliminary checks.
@@ -3466,40 +3467,60 @@ S9sRpcClient::registerHost()
     {
         command = "maxscale";
         title   = "Register MaxScale Node";
+        registerAction = true;
     } else if (protocol == "pgbouncer")
     {
         command = "pgbouncer";
         title   = "Register PgBouncer Node";
+        registerAction = true;
     } else if (protocol == "pgbackrest")
     {
         command = "pgbackrest";
         title   = "Register PgBackRest Node";
+        registerAction = true;
     } else if (protocol == "pbmagent")
     {
         command = "pbmagent";
         title   = "Register PBMAgent Node";
+        registerAction = true;
     } else if (protocol == "proxysql")
     {
         command = "proxysql";
         title   = "Register ProxySql Node";
+        registerAction = true;
     } else if (protocol == "haproxy")
     {
         command = "haproxy";
         title   = "Register HaProxy Node";
+        registerAction = true;
     } else if (protocol == "keepalived")
     {
         command = "keepalived";
         title   = "Register Keepalived Node";
+        registerAction = true;
     
         jobData["eth_interface"] = options->getString("eth_interface");
         jobData["virtual_ip"]    = options->getString("virtual_ip");
+    } else if (protocol == "mongodb")
+    {
+        command = "registernode";
+        title   = "Register MongoDb Node";
     } else {
         command = protocol;
         title   = "Register Node";
+        registerAction = true;
     }
 
-    jobData["action"] = "register";
-    jobData["nodes"] = nodesField(hosts);
+    if (registerAction)
+    {
+        jobData["action"] = "register";
+        jobData["nodes"] = nodesField(hosts);
+    } else
+    {
+        auto nodes = nodesField(hosts);
+        if (nodes.size())
+            jobData["node"] = nodes[0];
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]    = command;
