@@ -5,7 +5,7 @@ MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.5"
 VERBOSE=""
 LOGFILE=""
-SERVER=""
+SERVER="127.0.0.1"
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
@@ -135,6 +135,9 @@ function list_containers_long()
     local oldIfs="$IFS"
     local lines
 
+    if [ "$VERBOSE" == "true" ]; then
+        echo "$SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME"
+    fi
     lines=$($SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME)
     IFS=$'\n'
     for line in $lines; do

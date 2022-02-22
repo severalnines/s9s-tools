@@ -1137,6 +1137,7 @@ function run_test()
                 pip-host-control --log "Running ft_full..."
                 message "Running 'ft_full'..."
 
+                echo "Current directory: $(pwd)"
                 echo "Starting controller: './ft_full/ft_full'" >ft_full.log
 
                 ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &

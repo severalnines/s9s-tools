@@ -513,6 +513,12 @@ function create_container()
         #
         printVerbose "Creating cointainer with $vendor_name $release_name."
         if [ -n "$KEYSERVER" ]; then
+            echo "lxc-create \
+                -t download --name=$new_name \
+                    -- \
+                    --dist $vendor_name \
+                    --release $release_name \
+                    --arch amd64 --no-validate"
             lxc-create \
                 -t download --name="$new_name" \
                     -- \
@@ -521,6 +527,12 @@ function create_container()
                     --arch amd64 --no-validate\
                     >>$temp_file 2>>$temp_file
         else
+            echo "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
+                -t download --name=$new_name \
+                    -- \
+                    --dist $vendor_name \
+                    --release $release_name \
+                    --arch amd64 --no-validate"
             DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
                 -t download --name="$new_name" \
                     -- \
@@ -777,6 +789,10 @@ if [ -z "$SERVER" ]; then
         # Actually creating the containers here.
         #
         for container in $(container_names $*); do
+            if [ "$VERBOSE" == "true" ]; then
+                echo create_container \
+                    "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
+            fi
             create_container \
                 "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
         done
