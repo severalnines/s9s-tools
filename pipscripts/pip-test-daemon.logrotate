@@ -1,0 +1,24 @@
+#
+# sudo cp pip-test-daemon.logrotate /etc/logrotate.d/pip-test-daemon
+#
+/var/log/pip-test-daemon.log
+{
+        rotate 7
+        daily
+        size 100K
+        missingok
+        notifempty
+        delaycompress
+        compress
+}
+
+/var/log/pip-test-daemon-output.log
+{
+        rotate 7
+        daily
+        size 100K
+        missingok
+        notifempty
+        delaycompress
+        compress
+}

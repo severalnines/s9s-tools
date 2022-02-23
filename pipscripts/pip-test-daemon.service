@@ -1,0 +1,25 @@
+# TODO: install/copy this file to /usr/lib/systemd/system/
+# start/stop:
+#  sudo systemctl start cmon
+#  sudo systemctl stop cmon
+# start on boot
+#  sudo systemctl enable cmon.service
+
+[Unit]
+Description=pip-test-daemon service
+
+[Service]
+Environment=LC_ALL=C
+Environment=RPC_PORT=9556
+Environment=DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
+
+ExecStart=bash -c 'pip-test-daemon --continuous --verbose --log-file=/var/log/pip-test-daemon.log'
+Type=simple
+StandardOutput=append:/var/log/pip-test-daemon-output.log
+StandardError=append:/var/log/pip-test-daemon-output.log
+
+User=tester
+Group=tester
+
+[Install]
+WantedBy=default.target
