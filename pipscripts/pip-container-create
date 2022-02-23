@@ -25,6 +25,7 @@ APT_UPDATED=""
 # https://discuss.linuxcontainers.org/t/3-0-unable-to-fetch-gpg-key-from-keyserver/2015/12
 #
 KEYSERVER="pgp.mit.edu"
+KEYSERVER="hkp://keyserver.ubuntu.com"
 
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
