@@ -513,35 +513,19 @@ function create_container()
         # /etc/lxc/default.conf
         #
         printVerbose "Creating cointainer with $vendor_name $release_name."
-        if [ -n "$KEYSERVER" ]; then
-            echo "lxc-create \
-                -t download --name=$new_name \
-                    -- \
-                    --dist $vendor_name \
-                    --release $release_name \
-                    --arch amd64 --no-validate"
-            lxc-create \
-                -t download --name="$new_name" \
-                    -- \
-                    --dist "$vendor_name" \
-                    --release "$release_name" \
-                    --arch amd64 --no-validate\
-                    >>$temp_file 2>>$temp_file
-        else
-            echo "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
-                -t download --name=$new_name \
-                    -- \
-                    --dist $vendor_name \
-                    --release $release_name \
-                    --arch amd64 --no-validate"
-            DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
-                -t download --name="$new_name" \
-                    -- \
-                    --dist "$vendor_name" \
-                    --release "$release_name" \
-                    --arch amd64 --no-validate\
-                    >>$temp_file 2>>$temp_file
-        fi
+        echo "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
+            -t download --name=$new_name \
+                -- \
+                --dist $vendor_name \
+                --release $release_name \
+                --arch amd64 --no-validate"
+        DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
+            -t download --name="$new_name" \
+                -- \
+                --dist "$vendor_name" \
+                --release "$release_name" \
+                --arch amd64 --no-validate\
+                >>$temp_file 2>>$temp_file
     fi
    
     container_root="/var/lib/lxc/$new_name"
@@ -706,7 +690,8 @@ function list_images_long()
     local old_version
 
     IFS=$'\n'
-    for line in $(/usr/share/lxc/templates/lxc-download --list | \
+    for line in $(DOWNLOAD_KEYSERVER=$KEYSERVER \
+        /usr/share/lxc/templates/lxc-download --list | \
         grep -v "Setting up"  | \
         grep -v "Downloading" | \
         grep -v "^DIST" | \
