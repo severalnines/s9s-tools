@@ -1129,28 +1129,37 @@ function run_test()
             #
             pushd "$(find_clustercontrol_source_directory)/tests" \
                 >/dev/null 2>/dev/null
-            
-            # Cleaning up before.
-            rm -rvf /tmp/cmon*
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
                 message "Running 'ft_full'..."
 
                 echo "Current directory: $(pwd)"
-                echo "Starting controller: './ft_full/ft_full'" >ft_full.log
+                echo "Sudo environment: $(sudo env)"
 
-                ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
-                backend_pid=$!
-                message "Backend PID is ${backend_pid}."
+                backend_pid=$(pidof ft_full)
+                if [ "" == "$backend_pid" ]; then 
+                    echo "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
+                    # Cleaning up before.
+                    sudo rm -rvf /tmp/cmon*
 
-                for delay in $(seq 1 100); do
-                    if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
-                        break
-                    fi
+                    sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
+                    backend_pid=$!
+                    message "Backend PID is ${backend_pid}."
 
-                    sleep 3
-                done
+                    for delay in $(seq 1 100); do
+                        if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
+                            break
+                        fi
+
+                        sleep 3
+                    done
+                else
+                    message "ft_full is already running"
+                    message "Backend PID is ${backend_pid}."
+                    message "PID won't be stored, so ft_full won't be stopped."
+                    backend_pid=""
+                fi
             else
                 pip-host-control --error "The ft_full/ft_full was not found."
                 upload_slog_file
@@ -1211,12 +1220,18 @@ function run_test()
             #
             # Cleaning up after.
             #
-            message "Stopping the ft_full backend."
-            kill $backend_pid
-            sleep 3
-            kill -9 $backend_pid
-            rm -rvf /tmp/cmon*
-            
+            if [ "$backend_pid" != "" ]; then
+                message "Stopping the ft_full backend."
+                sudo kill $backend_pid
+                sleep 3
+                sudo kill -9 $backend_pid
+                sleep 3
+                sudo pkill ft_full
+                sleep 3
+                sudo pkill -9 ft_full
+                sudo rm -rvf /tmp/cmon*
+            fi
+
             if [ $return_code -eq 0 ]; then
                 upload_result_file \
                     --functional-test \
