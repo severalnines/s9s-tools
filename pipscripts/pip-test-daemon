@@ -116,9 +116,15 @@ function start_test()
     printVerbose "Getting idle test servers"
 
     let counter=0
+    printVerbose "pip-server-control --list --idle"
     test_server=$(pip-server-control --list --idle)
     if [ -z "$user" ]; then
         user="$USER"
+    fi
+
+    if [ "$test_server" == "" ]; then
+        printVerbose "No idle test server available"
+        return 6
     fi
 
     LAST_USER_NAME="$user"
