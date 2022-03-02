@@ -190,7 +190,7 @@ function mys9s_singleline()
     local retcode
 
     if [ -f "/tmp/LAST_COMMAND_OUTPUT" ]; then
-        rm -f "/tmp/LAST_COMMAND_OUTPUT"
+        sudo rm -f "/tmp/LAST_COMMAND_OUTPUT"
     fi 
 
     if [ "$PRINT_COMMANDS" ]; then
@@ -228,7 +228,7 @@ function mys9s_multiline()
     local retcode
     
     if [ -f "/tmp/LAST_COMMAND_OUTPUT" ]; then
-        rm -f "/tmp/LAST_COMMAND_OUTPUT"
+        sudo rm -f "/tmp/LAST_COMMAND_OUTPUT"
     fi 
 
     if [ "$PRINT_COMMANDS" ]; then
@@ -552,6 +552,22 @@ EOF
 
     if [ -f "$HOME/.pip/host01.host" ]; then
         pip-server-control --list --long --print-report $(hostname) core4 storage02
+    fi
+
+    if [ -d "$HOME/.s9s" ]; then
+        if [ -d "$HOME/.s9s.bak" ]; then
+            rm -f $HOME/.s9s/*
+        else
+            mv -f $HOME/.s9s $HOME/.s9s.bak
+        fi
+    fi
+
+    if [ -d "/root/.s9s" ]; then
+        if [ -d "/root/.s9s.bak" ]; then
+            sudo rm -f /root/.s9s
+        else
+            sudo mv -f /root/.s9s /root/.s9s.bak
+        fi
     fi
 
     end_verbatim
