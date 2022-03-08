@@ -9,6 +9,8 @@ LOGDIR="$HOME/.pip.log"
 #LOGFILE="$LOGDIR/${MYNAME}.log"
 LOGFILE="/dev/null"
 
+source $MYDIR/utilityfunctions.sh
+
 MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
 
 function get_load()

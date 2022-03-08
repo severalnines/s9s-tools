@@ -672,8 +672,11 @@ function print_host_list_long()
             continue
         fi
 
+        #echo "device_name=\$(basename $config_file .host)"
         device_name=$(basename "$config_file" .host)
+        #echo "info_file=$SERVER_STAT_ROOT/${device_name}.hostinfo"
         info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
+        printVerbose "info_file: $info_file"
 
         if ! is_server_requested "$device_name"; then
             continue
@@ -729,6 +732,10 @@ function print_host_list_long()
                 HOST_STATUS="OFF-LINE"
                 STATUS_TEXT="-"
             fi
+        fi
+
+        if [ -z "$HOSTNAME" ]; then
+                HOST_STATUS="MISSING"
         fi
 
         if [ "$HOST_STATUS" == "OFF-LINE" ]; then
