@@ -1,9 +1,11 @@
 # TODO: install/copy this file to /usr/lib/systemd/system/
+# systemctl to use the new service file
+#  systemctl daemon-reload
 # start/stop:
-#  sudo systemctl start cmon
-#  sudo systemctl stop cmon
+#  sudo systemctl start pip-test-daemon
+#  sudo systemctl stop pip-test-daemon
 # start on boot
-#  sudo systemctl enable cmon.service
+#  sudo systemctl enable pip-test-daemon.service
 
 [Unit]
 Description=pip-test-daemon service
