@@ -693,6 +693,10 @@ function checkOtherInstances()
     if [[ -e "${lock}" ]]; then
         local pid=$(cat ${lock})
         
+        printVerbose "Pid read from lock file: $pid"
+        if [ "$pid" = "" ]; then
+            pid=0
+        fi
         if [ "$pid" -eq $$ ]; then
             # The lock file is there but it is our PID. This is not super safe
             # since the PIDs are re-used, but should work.
