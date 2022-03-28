@@ -639,6 +639,7 @@ function download_current_data()
 
     printVerbose "Downloading '$PROJECT_SERVER_STAT_URL/*.hostinfo'..."
     scp -p $PROJECT_SERVER_STAT_URL/*.hostinfo . >/dev/null 2>/dev/null
+    chown $PROJECT_OWNER:$PROJECT_OWNER *.hostinfo
 
     popd >/dev/null 2>/dev/null
 }
