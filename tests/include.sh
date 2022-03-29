@@ -2131,6 +2131,7 @@ function emit_s9s_configuration_file()
 #
 [global]
 controller    = https://$hostname:$cmon_port
+os_user       = $PROJECT_OWNER
 
 [network]
 client_connection_timeout = 30
