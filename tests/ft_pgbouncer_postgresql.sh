@@ -97,6 +97,7 @@ while true; do
 
         --print-commands)
             shift
+            DEBUG_OPTION="--debug --print-request"
             DONT_PRINT_TEST_MESSAGES="true"
             PRINT_COMMANDS="true"
             ;;
