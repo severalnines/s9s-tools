@@ -7,6 +7,8 @@ VERBOSE=""
 LOG_OPTION="--wait"
 CONTAINER_SERVER=""
 
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
+
 cd $MYDIR
 source ./include.sh
 
@@ -124,7 +126,7 @@ mys9s cluster \
     --nodes="$nodes" \
     --vendor=percona \
     --cluster-name="$cluster_name" \
-    --provider-version=5.6 \
+    --provider-version=$PROVIDER_VERSION \
     $LOG_OPTION
 
 

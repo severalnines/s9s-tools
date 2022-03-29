@@ -11,6 +11,17 @@ PRINT_PIP_COMMANDS=""
 OPTION_KEEP_NODES=""
 TEST_EMAIL="laszlo@severalnines.com"
 
+#
+#   Default software versions have to be redefined from time to time.
+#   Lets collect theses on a single one place, so we wont need to
+#   modify each test file one by one next time.
+#
+
+PERCONA_GALERA_DEFAULT_PROVIDER_VERSION="5.7"
+
+
+
+
 # 
 # If this variable is exported all the requests will be printed for debugging
 # purposes.

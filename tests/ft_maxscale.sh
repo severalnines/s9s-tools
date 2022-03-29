@@ -15,6 +15,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 MAXSCALE_IP=""
 OPTION_INSTALL=""
 OPTION_COLOCATE=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CONTAINER_NAME1="${MYBASENAME}_11_$$"
 CONTAINER_NAME2="${MYBASENAME}_12_$$"
@@ -136,7 +137,7 @@ function createCluster()
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="$PROVIDER_VERSION" \
         --vendor=percona \
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \

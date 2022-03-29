@@ -7,6 +7,7 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 OPTION_INSTALL=""
 CLUSTER_NAME="galera_001"
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 export S9S_USER_CONFIG="$HOME/.s9s/$MYBASENAME.conf"
 
@@ -570,7 +571,7 @@ EOF
         --nodes="$CONTAINER_IP" \
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         --cmon-user=grumio \
         --password=p \
         --wait
@@ -587,7 +588,7 @@ EOF
         --nodes="$CONTAINER_IP" \
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         --wait
 
     check_exit_code $?

@@ -7,6 +7,7 @@ VERBOSE=""
 
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -149,7 +150,7 @@ function testCreateCluster()
         --nodes="$nodes" \
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         $DEBUG_OPTION \
         $LOG_OPTION
 

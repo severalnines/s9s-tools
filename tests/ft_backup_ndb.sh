@@ -11,7 +11,7 @@ OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 DATABASE_USER="$USER"
-PROVIDER_VERSION="5.7"
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -145,7 +145,7 @@ function testCreateCluster()
         --nodes="$nodes" \
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version=$PROVIDER_VERSION \
         $LOG_OPTION
 
     check_exit_code $?

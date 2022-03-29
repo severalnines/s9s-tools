@@ -15,6 +15,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 OPTION_INSTALL=""
 HAPROXY_IP=""
 HAPROXY_IPS=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CONTAINER_NAME1="${MYBASENAME}_node_1_$$"
 CONTAINER_NAME2="${MYBASENAME}_node_2_$$"
@@ -150,7 +151,7 @@ EOF
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="$PROVIDER_VERSION" \
         --vendor=percona \
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1" \

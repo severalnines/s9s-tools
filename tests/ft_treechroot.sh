@@ -9,6 +9,7 @@ CONTAINER_SERVER=""
 
 CLUSTER_NAME="galera_002"
 CLUSTER_ID=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 cd $MYDIR
 source include.sh
@@ -262,7 +263,7 @@ function testCreateCluster()
         --nodes="$CONTAINER_IP" \
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     check_exit_code $?

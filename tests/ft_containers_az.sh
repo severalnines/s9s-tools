@@ -13,6 +13,7 @@ CMON_CLOUD_CONTAINER_SERVER=""
 CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
 COMMAND_LINE_OPTIONS="$0 $*"
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 cd $MYDIR
 source include.sh
@@ -423,7 +424,7 @@ function createCluster()
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="$PROVIDER_VERSION" \
         --vendor=percona \
         --nodes="$node001" \
         --cloud=az \

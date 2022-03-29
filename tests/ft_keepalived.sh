@@ -7,6 +7,7 @@ VERSION="0.0.1"
 
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -150,7 +151,7 @@ function createCluster()
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version=$PROVIDER_VERSION \
         --vendor=percona \
         --cloud=lxc \
         --nodes="$CONTAINER_NAME1;$CONTAINER_NAME2" \

@@ -13,7 +13,7 @@ PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
 # The IP of the node we added first and last. Empty if we did not.
-PROVIDER_VERSION="5.6"
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""

@@ -9,6 +9,7 @@ LOG_OPTION="--wait"
 
 CONTAINER_SERVER="$MYHOSTNAME"
 CONTAINER_IP=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
@@ -137,7 +138,7 @@ function createCluster()
         --create \
         --cluster-name="$CLUSTER_NAME" \
         --cluster-type=galera \
-        --provider-version="5.6" \
+        --provider-version="$PROVIDER_VERSION" \
         --vendor=percona \
         --nodes="$node001" \
         --containers="$node001" \

@@ -9,6 +9,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 # The IP of the node we added last. Empty if we did not.
 LAST_ADDED_NODE=""
@@ -130,7 +131,7 @@ function testCreateCluster()
         --nodes="$nodes" \
         --vendor=percona \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=5.6 \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     check_exit_code $?
