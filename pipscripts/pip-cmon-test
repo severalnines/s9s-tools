@@ -1273,11 +1273,17 @@ function run_test()
                 return 1
             fi
 
+            version_option=
+            if [ "$version" != "" ]; then
+                if [ "$version" != "0.0" ]; then
+                    version_option="--provider-version=$version"
+                fi
+            fi
             message "Running $test_name."
             ./$test_name/$test_name \
                 --template=headless \
                 --vendor="$(vendor_to_test)" \
-                --mysql-version=$version \
+                $version_option \
                 --os="$os" >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
