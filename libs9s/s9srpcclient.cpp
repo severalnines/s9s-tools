@@ -9687,6 +9687,7 @@ S9sRpcClient::composeBackupJob()
     S9sVariantList  hosts        = options->nodes();
     S9sString       backupMethod = options->backupMethod();
     S9sString       backupDir    = options->backupDir();
+    S9sString       snapshotRepo = options->snapshotRepositoryName();
     S9sString       databases    = options->databases();
     S9sNode         backupHost;
     S9sString       title;
@@ -9721,6 +9722,9 @@ S9sRpcClient::composeBackupJob()
 
     if (!backupDir.empty())
         jobData["backupdir"]     = backupDir;
+
+    if (!snapshotRepo.empty())
+        jobData["snapshot_repository"] = snapshotRepo;
 
     if (!options->subDirectory().empty())
         jobData["backupsubdir"]  = options->subDirectory();

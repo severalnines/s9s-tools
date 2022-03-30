@@ -119,6 +119,7 @@ enum S9sOptionType
     OptionPitrStopTime,
     OptionKeepTempDir,
     OptionTempDirPath,
+    OptionSnapshotRepo,
     OptionSubDirectory,
     OptionBackupEncryption,
     OptionBackupUser,
@@ -3038,6 +3039,27 @@ S9sOptions::backupDir() const
         retval = m_userConfig.variableValue("backup_directory");
         if (retval.empty())
             retval = m_systemConfig.variableValue("backup_directory");
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The argument for the --snapshot-repository option or the
+ *   snapshot_repository config value.
+ */
+S9sString
+S9sOptions::snapshotRepositoryName() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("snapshot_repository"))
+    {
+        retval = m_options.at("snapshot_repository").toString();
+    } else {
+        retval = m_userConfig.variableValue("snapshot_repository");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("snapshot_repository");
     }
 
     return retval;
@@ -6034,6 +6056,7 @@ S9sOptions::printHelpBackup()
 "  --pitr-compatible          Create backup compatible with PITR.\n"
 "  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
+"  --snapshot-repository=NAME The name of the snapshot repository to be used (only elasticsearch cluster).\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -7169,6 +7192,7 @@ S9sOptions::readOptionsBackup(
         { "temp-dir-path",    required_argument, 0, OptionTempDirPath     },
         { "keep-temp-dir",    no_argument,       0, OptionKeepTempDir     },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
+        { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
@@ -7526,6 +7550,11 @@ S9sOptions::readOptionsBackup(
             case OptionTempDirPath:
                 // --temp-dir-path
                 m_options["temp_dir_path"] = optarg;
+                break;
+
+            case OptionSnapshotRepo:
+                // --snapshot-repository=NAME
+                m_options["snapshot_repository"] = optarg;
                 break;
 
             case OptionSubDirectory:
