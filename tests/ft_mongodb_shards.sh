@@ -16,7 +16,7 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 OPTION_INSTALL=""
 
 OPTION_VENDOR="10gen"
-PROVIDER_VERSION="4.2"
+PROVIDER_VERSION="5.0"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
