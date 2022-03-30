@@ -590,16 +590,16 @@ function waitForProcessesToEnd()
         nProc=$(numberOfChildProcesses)
        
         if [ "$nProc" -eq 0 ]; then
-            #echo "No childs, no need to wait."
+            printVerbose "No childs, no need to wait."
             break;
         fi
 
         if [ "$nProc" -lt "$max" ]; then
-            #echo "Have only $nProc, ok."
+            printVerbose "Have only $nProc, ok."
             break;
         fi
 
-        #printVerbose "Have $nProc, processes, need to wait."
+        printVerbose "Have $nProc, processes, need to wait."
         jobs > /dev/null
         sleep 5
     done
