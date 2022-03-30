@@ -355,7 +355,8 @@ function version_to_test()
         return 0
     fi
 
-    echo "$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION"
+    # Lets have 0.0 as default. Later logic don't let this default to be empty 
+    echo "0.0"
 }
 
 #
@@ -1640,6 +1641,11 @@ function run_tests_remote()
     local no_compile_option
     declare -A already_compiled
 
+    printVerbose "os_to_test: $(os_to_test)"
+    printVerbose "version_to_test: $(version_to_test)"
+    printVerbose "vendor_to_test: $(vendor_to_test)"
+    printVerbose "OPTION_TEST_NAME: $(echo "$OPTION_TEST_NAME" | tr ',' ' ')"
+
     for os in $(os_to_test); do 
         for version in $(version_to_test); do
             for vendor in $(vendor_to_test); do
@@ -1691,6 +1697,7 @@ function run_tests_remote()
 }
 
 if [ "$OPTION_UNIT_TESTS" ]; then
+    printVerbose "OPTION_UNIT_TESTS is true"
     if [ "$S9S_OPTION" ]; then
         OPTION_TEST_NAME+="ut_library ut_s9sbackup ut_s9sconfigfile "
         OPTION_TEST_NAME+="ut_s9sgraph ut_s9soptions ut_s9srpcclient "
@@ -1713,6 +1720,7 @@ if [ "$OPTION_UNIT_TESTS" ]; then
 fi
 
 if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
+    printVerbose "OPTION_FUNCTIONAL_TESTS is true"
     if [ "$S9S_OPTION" ]; then
         directory=$(find_s9s_source_directory)
         printVerbose "  directory: $directory" 
@@ -1732,6 +1740,7 @@ fi
 
 
 if [ "$OPTION_PID" ]; then
+    printVerbose "OPTION_PID is true"
     #
     # Printing the PID of the running test script and exiting.
     #
@@ -1749,6 +1758,7 @@ if [ "$OPTION_PID" ]; then
 
     exit 1
 elif [ "$SERVER" ]; then
+    printVerbose "OPTION_SERVER is true"
     #
     # Running the tests on multiple remote servers.
     #
