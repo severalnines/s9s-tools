@@ -99,7 +99,7 @@ ARGS=$(\
         -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
 pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
-no-git-pull,no-compile,shut-down-after,wait,git-branch:" \
+no-git-pull,no-compile,keep-nodes,shut-down-after,wait,git-branch:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
