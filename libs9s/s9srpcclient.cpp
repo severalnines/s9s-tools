@@ -9683,12 +9683,14 @@ S9sRpcClient::composeRequest()
 S9sVariantMap
 S9sRpcClient::composeBackupJob()
 {
-    S9sOptions     *options      = S9sOptions::instance();
-    S9sVariantList  hosts        = options->nodes();
-    S9sString       backupMethod = options->backupMethod();
-    S9sString       backupDir    = options->backupDir();
-    S9sString       snapshotRepo = options->snapshotRepositoryName();
-    S9sString       databases    = options->databases();
+    S9sOptions     *options          = S9sOptions::instance();
+    S9sVariantList  hosts            = options->nodes();
+    S9sString       backupMethod     = options->backupMethod();
+    S9sString       backupDir        = options->backupDir();
+    S9sString       snapshotRepo     = options->snapshotRepositoryName();
+    S9sString       snapshotLocation = options->snapshotLocation();
+    S9sString       storageHost      = options->storageHost();
+    S9sString       databases        = options->databases();
     S9sNode         backupHost;
     S9sString       title;
 
@@ -9725,6 +9727,12 @@ S9sRpcClient::composeBackupJob()
 
     if (!snapshotRepo.empty())
         jobData["snapshot_repository"] = snapshotRepo;
+
+    if (!snapshotLocation.empty())
+        jobData["snapshot_location"] = snapshotLocation;
+
+    if (!storageHost.empty())
+        jobData["storage_host"] = storageHost;
 
     if (!options->subDirectory().empty())
         jobData["backupsubdir"]  = options->subDirectory();
@@ -9833,6 +9841,9 @@ S9sRpcClient::composeJobData(
     S9sString      imageOsUser  = options->imageOsUser();
     S9sString      subnetId     = options->subnetId();
     S9sString      vpcId        = options->vpcId();
+    S9sString      snapshotRepo     = options->snapshotRepositoryName();
+    S9sString      snapshotLocation = options->snapshotLocation();
+    S9sString      storageHost      = options->storageHost();
     S9sVariantList volumes      = options->volumes();
     S9sVariantList servers      = options->servers();
 
@@ -9978,6 +9989,15 @@ S9sRpcClient::composeJobData(
     
     if (!options->dataDir().empty())
         jobData["datadir"] = options->dataDir();
+
+    if (!options->snapshotRepositoryName().empty())
+        jobData["snapshot_repository"] = options->snapshotRepositoryName();
+
+    if (!options->snapshotLocation().empty())
+        jobData["snapshot_location"] = options->snapshotLocation();
+
+    if (!options->storageHost().empty())
+        jobData["storage_host"] = options->storageHost();
 
     /*
      * If the command line options has a proxysql node we add a number of

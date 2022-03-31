@@ -120,6 +120,8 @@ enum S9sOptionType
     OptionKeepTempDir,
     OptionTempDirPath,
     OptionSnapshotRepo,
+    OptionSnapshotLocation,
+    OptionStorageHost,
     OptionSubDirectory,
     OptionBackupEncryption,
     OptionBackupUser,
@@ -3064,6 +3066,49 @@ S9sOptions::snapshotRepositoryName() const
 
     return retval;
 }
+
+/**
+ * \returns The argument for the --snapshot-location option or the
+ *   snapshot_location config value.
+ */
+S9sString
+S9sOptions::snapshotLocation() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("snapshot_location"))
+    {
+        retval = m_options.at("snapshot_location").toString();
+    } else {
+        retval = m_userConfig.variableValue("snapshot_location");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("snapshot_location");
+    }
+
+    return retval;
+}
+
+/**
+ * \returns The argument for the --storage-host option or the
+ *   storage_host config value.
+ */
+S9sString
+S9sOptions::storageHost() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("storage_host"))
+    {
+        retval = m_options.at("storage_host").toString();
+    } else {
+        retval = m_userConfig.variableValue("storage_host");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("storage_host");
+    }
+
+    return retval;
+}
+
 
 /**
  * \returns The argument for the --pitr-stop-time option.
@@ -6297,6 +6342,10 @@ S9sOptions::printHelpCluster()
 "  --ssl-key=STRING           The SSL key file path on controller.\n"
 "Microsoft SQL Server related options\n"
 "  --license=STRING           The license (Evaluation, Developer, etc).\n"
+"Elasticsearch related options\n"
+"  --snapshot-repository=NAME The name of the default snapshot repository to create.\n"
+"  --snapshot-location=PATH   The path of the default snapshot repository to create.\n"
+"  --storage-host=NAME        The host storaging the default snapshot repository to create.\n"
 "\n");
 }
 
@@ -7193,6 +7242,8 @@ S9sOptions::readOptionsBackup(
         { "keep-temp-dir",    no_argument,       0, OptionKeepTempDir     },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
+        { "snapshot-location",required_argument, 0, OptionSnapshotLocation},
+        { "storage-host",     required_argument, 0, OptionStorageHost     },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
@@ -7555,6 +7606,16 @@ S9sOptions::readOptionsBackup(
             case OptionSnapshotRepo:
                 // --snapshot-repository=NAME
                 m_options["snapshot_repository"] = optarg;
+                break;
+
+            case OptionSnapshotLocation:
+                // --snapshot-location=PATH
+                m_options["snapshot_location"] = optarg;
+                break;
+
+            case OptionStorageHost:
+                // --storage-host=NAME
+                m_options["storage_host"] = optarg;
                 break;
 
             case OptionSubDirectory:
@@ -12092,6 +12153,11 @@ S9sOptions::readOptionsCluster(
         // Options for mssql
         { "license",     required_argument, 0, OptionLicense     },
 
+        // Opttions for elasticsearch
+        { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
+        { "snapshot-location",required_argument, 0, OptionSnapshotLocation},
+        { "storage-host",     required_argument, 0, OptionStorageHost     },
+
         { 0, 0, 0, 0 }
     };
 
@@ -12790,6 +12856,21 @@ S9sOptions::readOptionsCluster(
             case OptionLicense: 
                 // --license=STRING
                 m_options["license"] = optarg;
+                break;
+
+            case OptionSnapshotRepo:
+                // --snapshot-repository=NAME
+                m_options["snapshot_repository"] = optarg;
+                break;
+
+            case OptionSnapshotLocation:
+                // --snapshot-location=PATH
+                m_options["snapshot_location"] = optarg;
+                break;
+
+            case OptionStorageHost:
+                // --storage-host=NAME
+                m_options["storage_host"] = optarg;
                 break;
 
             case '?':
