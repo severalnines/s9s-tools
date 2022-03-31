@@ -18,6 +18,7 @@ START_EPOCH_TIME="$(date +%s)"
 NO_GIT_PULL=""
 OPTION_NO_COMPILE=""
 OPTION_OS=""
+OPTION_KEEP_NODES=""
 DO_CLEAN=""
 
 SHUT_DOWN_AFTER=""
@@ -66,6 +67,7 @@ Usage:
   
   --no-git-pull           Do not execute 'git pull' before the test.
   --no-compile            Do not compile the source, use as it is.
+  --keep-nodes            Pass --keep-nodes to tests not to destroy containers.
   --shut-down-after       Shut down the test server after the test.
   --git-branch=BRANCH     The git branch to test.
 
@@ -127,6 +129,11 @@ while true; do
             shift
             LOGFILE=$(readlink -m "$1")
             shift
+            ;;
+
+        --keep-nodes)
+            shift
+            OPTION_KEEP_NODES="--keep-nodes"
             ;;
 
         --user)
@@ -1182,6 +1189,7 @@ function run_test()
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
+                $OPTION_KEEP_NODES \
                 >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
@@ -1679,6 +1687,7 @@ function run_tests_remote()
                             $no_compile_option \
                             $S9S_OPTION \
                             $VERBOSE_OPTION \
+                            $OPTION_KEEP_NODES \
                             --os=$os \
                             --vendor=$vendor \
                             --sqlversion=$version \
