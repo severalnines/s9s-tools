@@ -7,7 +7,6 @@ VERSION="0.0.1"
 
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
-REQUEST_OPTION=""
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -37,10 +36,6 @@ source ./include_lxc.sh
 
 # This requires tests not using 'nodeIp=$(create_node)' expression
 export PRINT_PIP_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
-
-if [ "${S9S_TEST_REQUEST_OPTION}" != "" ]; then
-    export REQUEST_OPTION="--print-request"
-fi
 
 if [ "${S9S_TEST_LOG_OPTION}" != "" ]; then
     export LOG_OPTION="--log"
@@ -198,7 +193,7 @@ EOF
         --vendor="$OPTION_VENDOR" \
         --cloud=lxc \
         --nodes="$nodes" \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -243,7 +238,7 @@ function testRollingRestart()
     mys9s cluster \
         --rolling-restart \
         --cluster-id=$CLUSTER_ID \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -281,7 +276,7 @@ EOF
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="MongoDb://$nodeIp" \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -305,6 +300,7 @@ EOF
         --remove-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$nodeIp:27017" \
+        --print-request \
         --log
 
     check_exit_code $?
@@ -336,7 +332,7 @@ EOF
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="MongoDb://$LAST_ADDED_NODE" \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -380,7 +376,7 @@ EOF
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$LAST_ADDED_NODE \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -418,7 +414,7 @@ EOF
         --start \
         --cluster-id=$CLUSTER_ID \
         --nodes=$LAST_ADDED_NODE \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -469,7 +465,7 @@ function testCreateBackup()
         --backup-method=$BACKUP_METHOD \
         --nodes=$FIRST_ADDED_NODE \
         --backup-directory=/tmp \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
     
@@ -526,7 +522,7 @@ function testRestoreBackup()
         --restore \
         --cluster-id=$CLUSTER_ID \
         --backup-id=$backupId \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -570,7 +566,7 @@ function testRemoveBackup()
         --delete \
         --backup-id=$backupId \
         --batch \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
     
@@ -604,7 +600,7 @@ EOF
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="NFSClient://*?client_dir=/pbm-backup&server_dir=/pbm-backup&&server_hostname=$nodeIp" \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -622,7 +618,7 @@ EOF
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="PBMAgent://*?backup_dir=/pbm-backup" \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
@@ -656,7 +652,7 @@ EOF
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $REQUEST_OPTION \
+        --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
 
