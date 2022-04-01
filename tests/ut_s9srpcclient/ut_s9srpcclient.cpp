@@ -1814,6 +1814,8 @@ UtS9sRpcClient::testBackup()
     options->m_options["cluster_id"]          = 42;    
     options->m_options["backup_method"]       = "mybackupmethod1";
     options->m_options["backup_directory"]    = "/backupdir1";
+    options->m_options["snapshot_repository"] = "snapshotRepo1";
+    options->m_options["snapshot_location"]   = "/home/vagrant/backups/es-snapshot-repositories";
     options->m_options["subdirectory"]        = "subdir1";
     options->m_options["backup_user"]         = "backupuser1";
     options->m_options["backup_password"]     = "backuppassword1";
@@ -1874,6 +1876,54 @@ UtS9sRpcClient::testBackup()
     S9S_COMPARE(
             jobData.valueByPath("backupdir"),
             "/backupdir1");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("snapshot_repository"),
+            "snapshotRepo1");
+
+    S9S_COMPARE(
+            jobData.valueByPath("snapshot_location"),
+            "/home/vagrant/backups/es-snapshot-repositories");
+
+    S9S_COMPARE(
+            jobData.valueByPath("cc_storage"),
+            false);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("description"),
+            "Backup created by s9s-tools.");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("encrypt_backup"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("hostname"),
+            "node1");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("include_databases"),
+            "databases1");
+    
+    S9S_COMPARE(
+            jobData.valueByPath("pitr_compatible"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("port"),
+            43);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("terminate_db_server"),
+            true);
+
+    S9S_COMPARE(
+            jobData.valueByPath("use_pigz"),
+            true);
+    
+    S9S_COMPARE(
+            jobData.valueByPath("verify_backup/disable_firewall"),
+            true);
     
     S9S_COMPARE(
             jobData.valueByPath("backupsubdir"),
