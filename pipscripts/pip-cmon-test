@@ -320,7 +320,7 @@ function upload_slog_file()
         touch "/tmp/$remotefile"
     fi
         
-    printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_TEST_REPORT_URL\""
+    #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_TEST_REPORT_URL\""
     scp "/tmp/$remotefile" "$PROJECT_TEST_REPORT_URL"
     rm -f "/tmp/$remotefile"
 }
@@ -863,7 +863,7 @@ function upload_report_file_ascii()
     </html>
 EOF
 
-    printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
     scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
     rm -f "$tmp_file"
 }
@@ -925,7 +925,7 @@ function upload_result_file()
     while true; do
         if [ -f "$log_file" ]; then
             #pip-host-control --log "Uploading '$log_file'."
-            printVerbose scp "$log_file" "$PROJECT_TEST_REPORT_URL"
+            #printVerbose scp "$log_file" "$PROJECT_TEST_REPORT_URL"
             scp "$log_file" "$PROJECT_TEST_REPORT_URL"
         fi
 
@@ -941,14 +941,14 @@ function upload_result_file()
 
         #pip-host-control --log "Uploading '$tmp_file'."
 
-        printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
         scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
 
         if [ -z "$unit_test_option" -a \
             -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
-            printVerbose scp \
-                "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-                "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
+            #printVerbose scp \
+            #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
+            #    "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
             scp \
                 "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
                 "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
@@ -1376,7 +1376,7 @@ function run_test()
     # Uploading the output of the test program as log file.
     #
     if [ -f "$logfile" ]; then
-        printVerbose "scp \"$logfile\" \"$PROJECT_TEST_REPORT_URL\""
+        #printVerbose "scp \"$logfile\" \"$PROJECT_TEST_REPORT_URL\""
         scp "$logfile" "$PROJECT_TEST_REPORT_URL"
         rm -f "$logfile"
     fi
@@ -1473,7 +1473,7 @@ function main()
         --test-state "PREPARING" \
         >$tmp_file
 
-    printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
     scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
 
     compile_source
@@ -1487,7 +1487,7 @@ function main()
             --test-state "FAILURE" \
             >$tmp_file
 
-        printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
         scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
 
         pip-host-control \
