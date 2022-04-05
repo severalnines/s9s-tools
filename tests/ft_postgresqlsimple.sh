@@ -14,7 +14,6 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-PROVIDER_VERSION="9.6"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -24,6 +23,8 @@ export S9S_DEBUG_PRINT_REQUEST="true"
 
 cd $MYDIR
 source include.sh
+
+PROVIDER_VERSION=$POSTGRESQL_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

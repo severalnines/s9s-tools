@@ -14,7 +14,6 @@ CLUSTER_ID=""
 CLUSTER_ID_FROM_BACKUP=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
-PROVIDER_VERSION="10"
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -26,6 +25,8 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+
+PROVIDER_VERSION=$POSTGRESQL_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

@@ -21,6 +21,8 @@ N_CONTAINERS=0
 cd $MYDIR
 source include.sh
 
+PROVIDER_VERSION=$POSTGRESQL_DEFAULT_PROVIDER_VERSION
+
 #
 # Prints usage information and exits.
 #
@@ -200,7 +202,7 @@ function testCreateCluster()
         --cluster-name="$CLUSTER_NAME" \
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
-        --provider-version="9.5" \
+        --provider-version="$PROVIDER_VERSION" \
         $LOG_OPTION
 
     check_exit_code $?
