@@ -11,7 +11,6 @@ OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 
 # The IP of the node we added last. Empty if we did not.
@@ -19,6 +18,8 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 

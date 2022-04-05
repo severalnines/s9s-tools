@@ -7,7 +7,6 @@ VERBOSE=""
 
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -21,6 +20,8 @@ LAST_ADDED_NODE=""
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

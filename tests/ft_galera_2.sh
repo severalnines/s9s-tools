@@ -18,7 +18,6 @@ CONTAINER_SERVER=""
 
 OPTION_INSTALL=""
 OPTION_NUMBER_OF_NODES="3"
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 
 # The IP of the node we added first and last. Empty if we did not.
@@ -28,6 +27,8 @@ LAST_ADDED_NODE=""
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

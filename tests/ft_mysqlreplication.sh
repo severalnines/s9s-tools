@@ -12,7 +12,6 @@ OPTION_NUMBER_OF_NODES="3"
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 
 nodes=""
@@ -20,6 +19,8 @@ nodes=""
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

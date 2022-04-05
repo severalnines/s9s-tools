@@ -12,7 +12,6 @@ OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 
 # The IP of the node we added first and last. Empty if we did not.
@@ -22,6 +21,8 @@ JOB_ID="0"
 
 cd $MYDIR
 source ./include.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

@@ -9,7 +9,6 @@ LOG_OPTION="--wait"
 
 CONTAINER_SERVER="$MYHOSTNAME"
 CONTAINER_IP=""
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 LAST_CONTAINER_NAME=""
@@ -18,6 +17,8 @@ cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
 source ./include_lxc.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

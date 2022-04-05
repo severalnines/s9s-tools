@@ -12,7 +12,6 @@ CLUSTER_ID_FROM_BACKUP=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 
 VERIFY_BACKUP_NODE=""
@@ -23,6 +22,8 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

@@ -23,7 +23,6 @@ CONTAINER_NAME9="${MYBASENAME}_19_$$"
 
 OPTION_RO_PORT=""
 OPTION_RW_PORT=""
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 OPTION_VENDOR="percona"
 
 #export S9S_DEBUG_PRINT_REQUEST="true"
@@ -31,6 +30,8 @@ OPTION_VENDOR="percona"
 cd $MYDIR
 source ./include.sh
 source ./include_lxc.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.
