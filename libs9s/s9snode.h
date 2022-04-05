@@ -64,6 +64,7 @@ class S9sNode : public S9sObject
         S9sString ipAddress() const;
         S9sString alias(const S9sString defaultValue = "") const;
         S9sString role() const;
+        S9sString elasticRole() const;
         S9sString memberRole() const;
         bool isContainerServer() const;
         bool isLoadBalaner() const;

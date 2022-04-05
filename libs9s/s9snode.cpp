@@ -790,6 +790,19 @@ S9sNode::role() const
 }
 
 /**
+ * \returns The "roles" property for an elastic node (e.g. "data", "master", ...).
+ */
+S9sString
+S9sNode::elasticRole() const
+{
+    if (m_properties.contains("roles"))
+        return m_properties.at("roles").toString();
+
+    return S9sString();
+}
+
+
+/**
  * \returns The "member_role" property (e.g. "Primary", "Secondary", "Arbiter", etc).
  */
 S9sString
