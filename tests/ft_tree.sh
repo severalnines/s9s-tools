@@ -7,13 +7,14 @@ VERSION="0.0.3"
 LOG_OPTION="--wait"
 OPTION_INSTALL=""
 CLUSTER_NAME="galera_001"
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 export S9S_USER_CONFIG="$HOME/.s9s/$MYBASENAME.conf"
 
 cd $MYDIR
 source include.sh
 source shared_test_cases.sh
+
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

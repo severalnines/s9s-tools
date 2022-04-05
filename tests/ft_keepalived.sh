@@ -7,7 +7,6 @@ VERSION="0.0.1"
 
 LOG_OPTION="--wait"
 DEBUG_OPTION=""
-PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 CONTAINER_SERVER=""
 CONTAINER_IP=""
@@ -32,6 +31,7 @@ cd $MYDIR
 source ./include.sh
 source ./include_lxc.sh
 
+PROVIDER_VERSION=$PERCONA_GALERA_DEFAULT_PROVIDER_VERSION
 
 #
 # Prints usage information and exits.

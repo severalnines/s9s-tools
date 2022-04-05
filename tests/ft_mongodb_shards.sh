@@ -17,7 +17,6 @@ CLUSTER_NAME="${MYBASENAME}_$$"
 OPTION_INSTALL=""
 
 OPTION_VENDOR="10gen"
-PROVIDER_VERSION="5.0"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -35,6 +34,9 @@ CONTAINER_NAME6="${MYBASENAME}_6_$$"
 cd $MYDIR
 source ./include.sh
 source ./include_lxc.sh
+
+PROVIDER_VERSION=$MONGODB_DEFAULT_PROVIDER_VERSION
+
 
 # This requires tests not using 'nodeIp=$(create_node)' expression
 export PRINT_PIP_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
