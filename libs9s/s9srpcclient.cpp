@@ -4498,6 +4498,7 @@ S9sRpcClient::createNode()
     bool           hasProxySql   = false;
     bool           hasMaxScale   = false;
     bool           hasMongo      = false;
+    bool           hasElastic    = false;
     bool           success;
 
     hosts = options->nodes();
@@ -4563,7 +4564,10 @@ S9sRpcClient::createNode()
         } else if (protocol == "redis_sentinel")
         {
         } else if (protocol == "mssql")
+        {
+        } else if (protocol == "elastic")
         {            
+            hasElastic = true;
         } else if (protocol.empty())
         {
         } else {
@@ -4644,6 +4648,9 @@ S9sRpcClient::createNode()
     } else if (hasMongo)
     {
         success = addMongoNode(hosts);
+    } else if (hasElastic)
+    {
+        success = addElasticNode(hosts);
     } else {
         int nSlaves  = 0;
         int nMasters = 0;
@@ -5568,6 +5575,90 @@ S9sRpcClient::addMongoNode(
 
     return retval;
 }
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Creates a job that will add a new elastic node to the cluster.
+ */
+bool
+S9sRpcClient::addElasticNode(
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Incorrect node list. No hosts detected.");
+        return false;
+    }
+
+    // The job_data describing the cluster.
+    #ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+    #else
+    S9sVariantList nodes;
+    S9sString protocol;
+    for(uint i=0; i < hosts.size(); i++)
+    {
+        S9sNode host = hosts[i].toNode();
+        protocol = host.protocol().toLower();
+        if (hosts[i].isNode())
+        {
+            S9sVariantMap nodei;
+            nodei["class_name"] = "CmonElasticHost";
+            nodei["hostname"] = hosts[i].toNode().hostName();
+            nodei["protocol"] = "elastic";
+            S9sString roles = hosts[i].toNode().elasticRole();
+            if(roles != "data")
+            {
+                PRINT_ERROR("Only nodes with data role can be added");
+                return false;
+            }
+            nodei["roles"] = roles;
+            nodes.push_back(nodei);
+        }
+        if (protocol != "elastic")
+        {
+            PRINT_ERROR("When adding elastic node protocol sould be \'elastic\' not: %s",
+                STR(protocol));
+            return false;
+        }
+    }
+    jobData["nodes"] = nodes;
+    #endif
+
+    jobData["install_software"] = !options->noInstall();
+    jobData["disable_firewall"] = true;
+    jobData["disable_selinux"]  = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "addnode";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add Node to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * \param clusterId The ID of the cluster.
