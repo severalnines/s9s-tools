@@ -233,10 +233,14 @@ function removeCluster()
     print_title "Dropping Cluster"
     CLUSTER_ID=$(find_cluster_id $CLUSTER_NAME)
 
+    begin_verbatim
+
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
         $LOG_OPTION
+
+    end_verbatim
     
     #check_exit_code $?
 
@@ -244,6 +248,8 @@ function removeCluster()
     # Deleting containers.
     #
     print_title "Deleting Containers"
+
+    begin_verbatim
     
     mys9s container --delete $LOG_OPTION "$container_name1"
     check_exit_code $?
@@ -253,6 +259,8 @@ function removeCluster()
     
     mys9s container --delete $LOG_OPTION "$container_name3"
     check_exit_code $?
+
+    end_verbatim
 }
 
 #
