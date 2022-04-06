@@ -131,6 +131,8 @@ function createUser()
     #
     print_title "Creating a User"
 
+    begin_verbatim
+
     mys9s user \
         --create \
         --cmon-user=system \
@@ -146,6 +148,8 @@ function createUser()
         "sisko"
     
     check_exit_code_no_job $?
+
+    end_verbatim
 
     #ls -lha "$config_dir"
 
@@ -180,6 +184,8 @@ function createCluster()
     #
     print_title "Creating a Cluster on LXC"
 
+    begin_verbatim
+
     mys9s cluster \
         --create \
         --template="ubuntu" \
@@ -197,15 +203,22 @@ function createCluster()
     check_exit_code $?
     check_container_ids --replication-nodes
 
+    end_verbatim
+
     #
     #
     #
     print_title "Waiting and Printing Lists"
     sleep 10
+
+    begin_verbatim
+
     mys9s cluster   --list --long
     mys9s node      --list --long
     mys9s container --list --long
     mys9s node      --stat
+
+    end_verbatim
 }
 
 function removeCluster()
