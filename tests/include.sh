@@ -2438,7 +2438,7 @@ EOF
   user experience.
 EOF
 
-    create_s9s_config --port=$cmon_port --controller=localhost
+    create_s9s_config --port $cmon_port --controller localhost
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
 }
