@@ -101,6 +101,7 @@ done
 function testConfig()
 {
     print_title "Checking configuration"
+
     if [ -z "$S9S_SYSTEM_CONFIG" ]; then
         failure "The S9S_SYSTEM_CONFIG variable is not set."
     else
@@ -111,7 +112,9 @@ function testConfig()
         failure "The file '$S9S_SYSTEM_CONFIG' is not found."
     fi
 
-    echo "Using config file '$S9S_SYSTEM_CONFIG'."
+    echo "Using system config file '$S9S_SYSTEM_CONFIG'."
+
+    cat $S9S_SYSTEM_CONFIG | print_ini_file
 }
 
 #
@@ -144,6 +147,9 @@ function testUser()
 #
 # Running the requested tests.
 #
+#startTests
+#reset_config
+#grant_user
 startTests
 #reset_config --do-not-create
 create_s9s_config
