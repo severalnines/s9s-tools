@@ -790,13 +790,27 @@ S9sNode::role() const
 }
 
 /**
+ * sent to controller
  * \returns The "roles" property for an elastic node (e.g. "data", "master", ...).
+ */
+S9sString
+S9sNode::roles() const
+{
+    if (m_properties.contains("elastic_roles"))
+        return m_properties.at("elastic_roles").toString();
+
+    return S9sString();
+}
+
+/**
+ * returned from controller
+ * \returns The "elastic_roles" property for an elastic node (e.g. "data", "master", ...).
  */
 S9sString
 S9sNode::elasticRole() const
 {
-    if (m_properties.contains("roles"))
-        return m_properties.at("roles").toString();
+    if (m_properties.contains("elastic_roles"))
+        return m_properties.at("elastic_roles").toString();
 
     return S9sString();
 }
@@ -886,27 +900,43 @@ S9sNode::roleFlag() const
 {
     S9sString theRole = role();
 
-    if (theRole == "master")
-        return 'M';
-    else if (theRole == "slave")
-        return 'S';
-    else if (theRole == "multi")
-        return 'U';
-    else if (theRole == "controller")
-        return 'C';
-    else if (theRole == "bvs")
-        return 'V';
-    else if (theRole == "arbiter")
-        return 'A';
-    else if (theRole == "backuprepo")
-        return 'R';
-    else if (theRole == "shardsvr")
+    S9sString roles= this->elasticRole();
+
+    if(roles.empty())
     {
-        S9sString mRole = memberRole();
-        if (mRole == "Primary")
+        if (theRole == "master")
             return 'M';
-        else if (mRole == "Secondary")
+        else if (theRole == "slave")
             return 'S';
+        else if (theRole == "multi")
+            return 'U';
+        else if (theRole == "controller")
+            return 'C';
+        else if (theRole == "bvs")
+            return 'V';
+        else if (theRole == "arbiter")
+            return 'A';
+        else if (theRole == "backuprepo")
+            return 'R';
+        else if (theRole == "shardsvr")
+        {
+            S9sString mRole = memberRole();
+            if (mRole == "Primary")
+                return 'M';
+            else if (mRole == "Secondary")
+                return 'S';
+        }
+    }
+    else // on elasticsearch nodes the may have multiple roles
+    {
+        if (roles == "master")
+            return 'M';
+        else if (roles == "data")
+            return 'D';
+        else if (roles == "master-data")
+            return 'U';  // multi
+        else 
+            return '-';  // others
     }
 
     return '-';
@@ -1130,6 +1160,8 @@ S9sNode::nodeTypeFlag() const
         return 'S';
     else if (className() == "CmonRedisHost")
         return 'R';
+    else if (className() == "CmonElasticHost")
+        return 'E';
     
     return '?';
 }

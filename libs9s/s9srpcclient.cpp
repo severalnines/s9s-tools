@@ -5619,7 +5619,7 @@ S9sRpcClient::addElasticNode(
             nodei["class_name"] = "CmonElasticHost";
             nodei["hostname"] = hosts[i].toNode().hostName();
             nodei["protocol"] = "elastic";
-            S9sString roles = hosts[i].toNode().elasticRole();
+            S9sString roles = hosts[i].toNode().roles();
             if(roles != "data")
             {
                 PRINT_ERROR("Only nodes with data role can be added");
