@@ -392,11 +392,11 @@ fi
 
 send_host_info
 
-#if [ "$(which lxc-ls)" ]; then
-#    sudo lxc-ls -f >"$HOST_CONTAINERS_FILE"
-#else
+if [ "$(which lxc-ls)" ]; then
+    sudo lxc-ls -f >"$HOST_CONTAINERS_FILE"
+else
     echo "" >"$HOST_CONTAINERS_FILE"
-#fi
+fi
 
 upload_file "$HOST_INFO_FILE" "$PROJECT_SERVER_STAT_URL/$(hostname).hostinfo"
 upload_file "$HOST_LOG_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).hostlog"
