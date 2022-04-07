@@ -2429,18 +2429,18 @@ EOF
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
 
-    print_subtitle "Adjusting $HOME/.s9s/s9s.conf"
-
-    cat <<EOF | paragraph
-  At least the ssh_user necessary to set so this user would be used instead
-  of default root to ssh in to the test host containers.
-  Also some custom log option and adjustments are good to have for nicer
-  user experience.
-EOF
-
-    create_s9s_config --port $cmon_port --controller localhost
-
-    cat $HOME/.s9s/s9s.conf | print_ini_file
+#    print_subtitle "Adjusting $HOME/.s9s/s9s.conf"
+#
+#    cat <<EOF | paragraph
+#  At least the ssh_user necessary to set so this user would be used instead
+#  of default root to ssh in to the test host containers.
+#  Also some custom log option and adjustments are good to have for nicer
+#  user experience.
+#EOF
+#
+#    create_s9s_config --port $cmon_port --controller localhost
+#
+#    cat $HOME/.s9s/s9s.conf | print_ini_file
 }
 
 function get_user_group()

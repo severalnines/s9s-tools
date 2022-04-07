@@ -206,6 +206,7 @@ function testRegister()
 # Running the requested tests.
 #
 startTests
+reset_config
 grant_user
 
 if [ "$1" ]; then

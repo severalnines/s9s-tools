@@ -903,7 +903,6 @@ function testStart()
 # Running the requested tests.
 #
 startTests
-
 reset_config
 grant_user
 

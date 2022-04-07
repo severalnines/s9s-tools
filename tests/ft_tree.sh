@@ -1985,7 +1985,8 @@ function deleteContainers()
 # Running the requested tests.
 #
 startTests
-create_s9s_config
+reset_config
+grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     if [ "$*" ]; then
