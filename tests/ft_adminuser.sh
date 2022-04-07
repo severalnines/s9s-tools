@@ -114,7 +114,11 @@ function testConfig()
 
     echo "Using system config file '$S9S_SYSTEM_CONFIG'."
 
-    cat $S9S_SYSTEM_CONFIG | print_ini_file
+    begin_verbatim
+
+    sudo cat $S9S_SYSTEM_CONFIG | print_ini_file
+
+    end_verbatim    
 }
 
 #
