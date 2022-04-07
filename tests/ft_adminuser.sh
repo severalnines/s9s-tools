@@ -114,11 +114,7 @@ function testConfig()
 
     echo "Using system config file '$S9S_SYSTEM_CONFIG'."
 
-    begin_verbatim
-
     sudo cat $S9S_SYSTEM_CONFIG | print_ini_file
-
-    end_verbatim    
 }
 
 #
@@ -155,7 +151,7 @@ function testUser()
 #reset_config
 #grant_user
 startTests
-#reset_config --do-not-create
+reset_config --do-not-create
 create_s9s_config
 
 if [ "$1" ]; then
