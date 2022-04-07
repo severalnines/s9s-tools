@@ -18,6 +18,7 @@ TEST_EMAIL="laszlo@severalnines.com"
 #
 
 PERCONA_GALERA_DEFAULT_PROVIDER_VERSION="5.7"
+ORACLE_MYSQL_DEFAULT_PROVIDER_VERSION="8.0"
 MONGODB_DEFAULT_PROVIDER_VERSION="5.0"
 POSTGRESQL_DEFAULT_PROVIDER_VERSION="10"
 
@@ -2033,9 +2034,9 @@ function create_node()
     container_name=$1
 
     if [ -n "$template_name" ]; then
-        echo -n "Creating container from template $template_name" >&2
+        echo "Creating container from template $template_name" >&2
     else
-        echo -n "Creating container... $os_vendor$os_release" >&2
+        echo "Creating container... $os_vendor$os_release" >&2
     fi
 
     if [ "$PRINT_PIP_COMMANDS" ]; then
@@ -2153,16 +2154,16 @@ client_connection_timeout = 30
 brief_job_log_format = "%36B:%-5L: %-7S %M\n"
 brief_log_format     = "%C %36B:%-5L: %-8S %M\n"
 
+log_file             = "$HOME/s9s.log"
+
+EOF
+
 #brief_job_log_format = "%-8S %M\n"
 #brief_log_format     = "%-8S %M\n"
 
 #brief_job_log_format = "%C %-8S %M\n"
 #brief_log_format     = "%C %-8S %M\n"
 
-
-log_file             = "$HOME/s9s.log"
-
-EOF
 }
 
 #
@@ -2425,6 +2426,19 @@ EOF
   next time it can be used without passing the account name in the command line.
 
 EOF
+
+    cat $HOME/.s9s/s9s.conf | print_ini_file
+
+    print_subtitle "Adjusting $HOME/.s9s/s9s.conf"
+
+    cat <<EOF | paragraph
+  At least the ssh_user necessary to set so this user would be used instead
+  of default root to ssh in to the test host containers.
+  Also some custom log option and adjustments are good to have for nicer
+  user experience.
+EOF
+
+    create_s9s_config --port=$cmon_port --controller=localhost
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
 }

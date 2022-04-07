@@ -5,6 +5,8 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 LOG_OPTION="--wait --print-request"
+LOG_OPTION="--log --print-request"
+DEBUG_OPTION="--debug"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
@@ -15,6 +17,8 @@ LAST_ADDED_NODE=""
 
 cd $MYDIR
 source include.sh
+
+PROVIDER_VERSION=$ORACLE_MYSQL_DEFAULT_PROVIDER_VERSION
 
 MYSQL_ROOT_PASSWORD=$(generate_strong_password)
 
@@ -125,8 +129,9 @@ function testCreateCluster()
         --vendor=oracle \
         --cluster-name="$CLUSTER_NAME" \
         --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
-        --provider-version=8.0 \
-        $LOG_OPTION
+        --provider-version=$PROVIDER_VERSION \
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -162,7 +167,8 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code_no_job $?
     end_verbatim
@@ -185,7 +191,8 @@ function testRegister()
         --vendor=percona \
         --db-admin-passwd="$MYSQL_ROOT_PASSWORD" \
         --cluster-name=my_cluster_$$ \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     
