@@ -147,9 +147,6 @@ function testUser()
 #
 # Running the requested tests.
 #
-#startTests
-#reset_config
-#grant_user
 startTests
 reset_config --do-not-create
 create_s9s_config
