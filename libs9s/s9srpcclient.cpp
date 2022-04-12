@@ -2969,7 +2969,7 @@ S9sRpcClient::createCluster()
          !options->clusterType().startsWith("mssql")))
     {
         PRINT_ERROR(
-            "The SQL server version is unknown while creating a cluster.\n"
+            "The database server version is unknown while creating a cluster.\n"
             "Use the --provider-version command line option set it."
             );
         
