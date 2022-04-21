@@ -513,7 +513,7 @@ function create_container()
         # /etc/lxc/default.conf
         #
         printVerbose "Creating cointainer with $vendor_name $release_name."
-        echo "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
+        printVerbose "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
             -t download --name=$new_name \
                 -- \
                 --dist $vendor_name \
