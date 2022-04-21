@@ -148,7 +148,7 @@ EOF
     #
     # Creating containers.
     #
-    nodeName=$(create_node --autodestroy --os-vendor=centos --os-release=8 $node1)
+    nodeName=$(create_node --autodestroy --os-vendor=centos --os-release="8-Stream" $node1)
     nodes+="$nodeName:1433;"
     FIRST_ADDED_NODE=$nodeName
 
