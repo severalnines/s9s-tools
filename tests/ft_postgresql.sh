@@ -79,8 +79,8 @@ EOF
 
 ARGS=$(\
     getopt -o h \
-        -l "help,verbose,log,server:,print-commands,keep-nodes,install,reset-config,\
-provider-version:" \
+        -l "help,verbose,log,server:,print-commands,keep-nodes,install,\
+reset-config,provider-version:,os-vendor:,os-release:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -139,6 +139,16 @@ while true; do
             shift
             ;;
 
+        --os-vendor)
+            OPTION_OS_VENDOR="$2"
+            shift 2
+            ;;
+
+        --os-release)
+            OPTION_OS_RELEASE="$2"
+            shift 2
+            ;;
+
         --)
             shift
             break
@@ -168,7 +178,10 @@ EOF
     #
     # Creating containers.
     #
-    nodeName=$(create_node --autodestroy $node1)
+    nodeName=$(create_node \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        --autodestroy $node1)
     nodes+="$nodeName:8089;"
     FIRST_ADDED_NODE=$nodeName
 
@@ -378,7 +391,10 @@ test as a single node postgresql cluster.
 
 EOF
 
-    LAST_ADDED_NODE=$(create_node --autodestroy "$node")
+    LAST_ADDED_NODE=$(create_node \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        --autodestroy "$node")
 
     begin_verbatim
 
@@ -419,7 +435,10 @@ function testAddRemoveNode()
   Both the adding and the removing should of course succeed.
 EOF
 
-    nodeIp=$(create_node --autodestroy "$node")
+    nodeIp=$(create_node \
+        --os-vendor   "$OPTION_OS_VENDOR"  \
+        --os-release  "$OPTION_OS_RELEASE" \
+        --autodestroy "$node")
 
     begin_verbatim
 
