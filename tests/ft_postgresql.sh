@@ -526,6 +526,13 @@ EOF
         success "  o Found JobEnded message at ID $message_id, ok."
     else
         failure "JobEnded message was not found."
+        #log_format+='%I %c ${/log_specifics/job_instance/job_spec/command} \n'
+        mys9s log \
+            --list \
+            --batch \
+            --cluster-id=$CLUSTER_ID \
+            --cmon-user=system \
+            --password=secret
     fi
 
     #
@@ -555,6 +562,13 @@ EOF
         success "  o Found JobEnded message at ID $message_id, ok."
     else
         failure "JobEnded message was not found."
+
+        mys9s log \
+            --list \
+            --batch \
+            --cluster-id=$CLUSTER_ID \
+            --cmon-user=system \
+            --password=secret
     fi
 
     end_verbatim
@@ -1525,9 +1539,9 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
-    runFunctionalTest testRemoveNodeFail
-    runFunctionalTest testAddNode
-    runFunctionalTest testAddRemoveNode
+    #runFunctionalTest testRemoveNodeFail
+    #runFunctionalTest testAddNode
+    #runFunctionalTest testAddRemoveNode
     runFunctionalTest testStopStartNode
 
     # Only Galera and replication clusters are supported.
