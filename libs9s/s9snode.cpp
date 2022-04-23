@@ -796,8 +796,8 @@ S9sNode::role() const
 S9sString
 S9sNode::roles() const
 {
-    if (m_properties.contains("elastic_roles"))
-        return m_properties.at("elastic_roles").toString();
+    if (m_properties.contains("roles"))
+        return m_properties.at("roles").toString();
 
     return S9sString();
 }
