@@ -6,8 +6,8 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="0.0.4"
 
-LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+LOG_OPTION=""
+DEBUG_OPTION=""
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
