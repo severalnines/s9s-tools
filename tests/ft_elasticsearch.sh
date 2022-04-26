@@ -211,7 +211,7 @@ EOF
     # Checking the controller, the node and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -219,7 +219,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "ElasticSearch_SINGLE" \

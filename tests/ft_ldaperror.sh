@@ -209,10 +209,10 @@ function testCmonDbUser()
     print_title "Testing User with CmonDb Origin"
 
     begin_verbatim
-    mys9s user --stat pipas
+    mys9s user --stat ${PROJECT_OWNER}
 
     check_user \
-        --user-name    "pipas"  \
+        --user-name    "${PROJECT_OWNER}"  \
         --cdt-path     "/" \
         --group        "testgroup" \
         --dn           "-" \
@@ -269,7 +269,7 @@ EOF
 
 function testLdapUser2()
 {
-    local username="pipas1"
+    local username="${PROJECT_OWNER}1"
 
     print_title "LDAP Authentication with '$username'"
     cat <<EOF | paragraph
@@ -291,7 +291,7 @@ EOF
         --long \
         --cmon-user="$username" \
         --password=p \
-        pipas1
+        ${PROJECT_OWNER}1
 
     check_exit_code_no_job $?
     
@@ -299,7 +299,7 @@ EOF
         --user-name    "$username"  \
         --cdt-path     "/" \
         --group        "ldapgroup" \
-        --dn           "cn=pipas1,dc=homelab,dc=local" \
+        --dn           "cn=${PROJECT_OWNER}1,dc=homelab,dc=local" \
         --origin       "LDAP"
 
     end_verbatim
@@ -349,7 +349,7 @@ EOF
 #
 function testLdapUserFail2()
 {
-    local username="pipas1"
+    local username="${PROJECT_OWNER}1"
 
     print_title "Checking LDAP Authentication with user '$username'"
 

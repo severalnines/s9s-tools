@@ -200,7 +200,7 @@ EOF
     # Checking the controller, the node and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -211,7 +211,7 @@ EOF
     #    --ip-address "$FIRST_ADDED_NODE" \
     #    --port       "8089" \
     #    --config     "/etc/mssql/$PROVIDER_VERSION/main/mssql.conf" \
-    #    --owner      "pipas" \
+    #    --owner      "${PROJECT_OWNER}" \
     #    --group      "testgroup" \
     #    --cdt-path   "/$CLUSTER_NAME" \
     #    --status     "CmonHostOnline" \
@@ -219,7 +219,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "MSSQL_SINGLE" \
@@ -276,7 +276,7 @@ EOF
         --message-id    "$message_id" \
         "#{$prefix/class_name}"                         "CmonJobInstance"  \
         "#{$prefix/group_name}"                         "testgroup"  \
-        "#{$prefix/user_name}"                          "pipas"  \
+        "#{$prefix/user_name}"                          "${PROJECT_OWNER}"  \
         "#{$prefix/status}"                             "RUNNING"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
@@ -304,7 +304,7 @@ EOF
         --message-id    "$message_id" \
         "#{$prefix/class_name}"                         "CmonJobInstance"  \
         "#{$prefix/group_name}"                         "testgroup"  \
-        "#{$prefix/user_name}"                          "pipas"  \
+        "#{$prefix/user_name}"                          "${PROJECT_OWNER}"  \
         "#{$prefix/status}"                             "FINISHED"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
@@ -351,7 +351,7 @@ function testCreateDatabase()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
+        --account="${PROJECT_OWNER}:password" \
         --privileges="testCreateDatabase.*:INSERT,UPDATE" \
         --batch
     
@@ -360,9 +360,9 @@ function testCreateDatabase()
     #
     # Checking if the account could be created.
     #
-    userName=$(s9s account --list --cluster-id=$CLUSTER_ID pipas)
-    if [ "$userName" != "pipas" ]; then
-        failure "Failed to create user 'pipas'."
+    userName=$(s9s account --list --cluster-id=$CLUSTER_ID ${PROJECT_OWNER})
+    if [ "$userName" != "${PROJECT_OWNER}" ]; then
+        failure "Failed to create user '${PROJECT_OWNER}'."
     else
         success "  o User $userName was created, ok."
     fi
@@ -373,7 +373,7 @@ function testCreateDatabase()
     mys9s account \
         --grant \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
+        --account="${PROJECT_OWNER}" \
         --privileges="testCreateDatabase.*:DELETE,DROP" 
    
     check_exit_code_no_job $?

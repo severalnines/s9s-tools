@@ -247,7 +247,7 @@ function createCluster()
         --nodes="$container_name1;$container_name2" \
         --containers="$container_name1;$container_name2" \
         --generate-key \
-        --os-user=pipas \
+        --os-user=$PROJECT_OWNER \
         $LOG_OPTION 
 
     # FIXME: check_exit_code do not support user password.

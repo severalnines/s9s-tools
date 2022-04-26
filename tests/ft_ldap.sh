@@ -156,16 +156,16 @@ function testCmonDbUser()
     print_title "Testing User with CmonDb Origin"
 
     begin_verbatim
-    mys9s user --stat pipas
+    mys9s user --stat ${PROJECT_OWNER}
 
     check_user \
-        --user-name    "pipas"  \
+        --user-name    "${PROJECT_OWNER}"  \
         --cdt-path     "/" \
         --group        "testgroup" \
         --dn           "-" \
         --origin       "CmonDb"    
 
-    mys9s user --stat pipas --print-json
+    mys9s user --stat ${PROJECT_OWNER} --print-json
     end_verbatim
 }
 
@@ -241,14 +241,14 @@ EOF
         --dn           "cn=username,dc=homelab,dc=local" \
         --origin       "LDAP"
 
-    mys9s user --stat pipas --print-json
+    mys9s user --stat ${PROJECT_OWNER} --print-json
     
     end_verbatim
 }
 
 function testLdapUser2()
 {
-    local username="pipas1"
+    local username="${PROJECT_OWNER}1"
 
     print_title "LDAP Authentication with '$username'"
     cat <<EOF | paragraph
@@ -270,7 +270,7 @@ EOF
         --long \
         --cmon-user="$username" \
         --password=p \
-        pipas1
+        ${PROJECT_OWNER}1
 
     check_exit_code_no_job $?
     
@@ -278,7 +278,7 @@ EOF
         --user-name    "$username"  \
         --cdt-path     "/" \
         --group        "ldapgroup" \
-        --dn           "cn=pipas1,dc=homelab,dc=local" \
+        --dn           "cn=${PROJECT_OWNER}1,dc=homelab,dc=local" \
         --origin       "LDAP"
 
     end_verbatim
@@ -316,7 +316,7 @@ EOF
     check_user \
         --user-name    "lpere"  \
         --full-name    "Laszlo Pere" \
-        --email        "pipas@domain.hu" \
+        --email        "${PROJECT_OWNER}@domain.hu" \
         --cdt-path     "/" \
         --group        "ldapgroup" \
         --dn           "cn=lpere,cn=ldapgroup,dc=homelab,dc=local" \

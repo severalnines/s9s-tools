@@ -159,8 +159,8 @@ EOF
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
-        --new-password="pipas" \
-        "pipas"
+        --new-password="$PROJECT_OWNER" \
+        "$PROJECT_OWNER"
 
     check_exit_code_no_job $?
 
@@ -233,7 +233,7 @@ EOF
 
     check_cluster \
         --cluster         "$CLUSTER_NAME" \
-        --owner           "pipas" \
+        --owner           "$PROJECT_OWNER" \
         --group           "admins" \
         --cdt-path        "/"
 
@@ -407,7 +407,7 @@ function testChOwn()
     s9s tree \
         --chown \
         --recursive \
-        --owner=pipas:admins \
+        --owner=$PROJECT_OWNER:admins \
         "/$CLUSTER_NAME"
 
     check_exit_code_no_job $?

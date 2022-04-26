@@ -274,7 +274,7 @@ function testCreateCluster()
     mys9s cluster --stat
 
     check_controller \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -285,7 +285,7 @@ function testCreateCluster()
             --ip-address       "$node" \
             --port             "3306" \
             --config-basename  "my.cnf" \
-            --owner            "pipas" \
+            --owner            "$PROJECT_OWNER" \
             --group            "testgroup" \
             --cdt-path         "/$CLUSTER_NAME" \
             --status           "CmonHostOnline" \
@@ -294,7 +294,7 @@ function testCreateCluster()
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "GALERA" \
@@ -645,7 +645,7 @@ function testCreateDatabase()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
+        --account="$PROJECT_OWNER:password" \
         --privileges="testCreateDatabase.*:INSERT,UPDATE" \
         --batch
     
@@ -654,9 +654,9 @@ function testCreateDatabase()
     #
     # Checking if the account could be created.
     #
-    userName=$(s9s account --list --cluster-id=1 pipas)
-    if [ "$userName" != "pipas" ]; then
-        failure "Failed to create user 'pipas'."
+    userName=$(s9s account --list --cluster-id=1 $PROJECT_OWNER)
+    if [ "$userName" != "$PROJECT_OWNER" ]; then
+        failure "Failed to create user '$PROJECT_OWNER'."
     else
         success "  o User $userName was created, ok."
     fi
@@ -667,7 +667,7 @@ function testCreateDatabase()
     mys9s account \
         --grant \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
+        --account="$PROJECT_OWNER" \
         --privileges="testCreateDatabase.*:DELETE,DROP" 
    
     check_exit_code_no_job $?
@@ -682,8 +682,8 @@ function testCreateDatabase()
 #
 function testUploadData()
 {
-    local db_name="pipas1"
-    local user_name="pipas1"
+    local db_name="${PROJECT_OWNER}1"
+    local user_name="${PROJECT_OWNER}1"
     local password="p"
     local reply
     local count=0
@@ -732,7 +732,7 @@ function testUploadData()
     #
     # Here we upload some tables. This part needs test data...
     #
-    for file in /home/pipas/Desktop/stuff/databases/*.sql.gz; do
+    for file in /home/$PROJECT_OWNER/Desktop/stuff/databases/*.sql.gz; do
         if [ ! -f "$file" ]; then
             continue
         fi

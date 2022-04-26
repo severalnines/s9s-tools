@@ -204,7 +204,7 @@ function testCreateDatabase()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password@%" \
+        --account="${PROJECT_OWNER}:password@%" \
         --privileges="*.*:ALL" \
         --batch
     
@@ -218,7 +218,7 @@ function testConnect()
     local sql_host="$FIRST_ADDED_NODE"
     local sql_port="3306"
     local db_name="test_database"
-    local sql_user="pipas"
+    local sql_user="${PROJECT_OWNER}"
     local sql_password="password"
     local reply
 
@@ -265,7 +265,7 @@ function testUploadData()
     local sql_host="$FIRST_ADDED_NODE"
     local sql_port="3306"
     local db_name="test_database"
-    local sql_user="pipas"
+    local sql_user="${PROJECT_OWNER}"
     local sql_password="password"
 
     local reply

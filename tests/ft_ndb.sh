@@ -174,7 +174,7 @@ function testCreateCluster()
     # Checking the controller, the nodes and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -187,7 +187,7 @@ function testCreateCluster()
 #            --ip-address "$node" \
 #            --port       "3306" \
 #            --config     "/etc/mysql/my.cnf" \
-#            --owner      "pipas" \
+#            --owner      "${PROJECT_OWNER}" \
 #            --group      "testgroup" \
 #            --cdt-path   "/$CLUSTER_NAME" \
 #            --status     "CmonHostOnline" \
@@ -196,7 +196,7 @@ function testCreateCluster()
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "MYSQLCLUSTER" \

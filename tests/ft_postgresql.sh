@@ -6,8 +6,8 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="0.0.4"
 
-LOG_OPTION="--wait"
-DEBUG_OPTION=""
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -233,7 +233,7 @@ EOF
     # Checking the controller, the node and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -243,7 +243,7 @@ EOF
         --ip-address "$FIRST_ADDED_NODE" \
         --port       "8089" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -251,7 +251,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "POSTGRESQL_SINGLE" \
@@ -310,7 +310,7 @@ EOF
         --message-id    "$message_id" \
         "#{$prefix/class_name}"                         "CmonJobInstance"  \
         "#{$prefix/group_name}"                         "testgroup"  \
-        "#{$prefix/user_name}"                          "pipas"  \
+        "#{$prefix/user_name}"                          "$PROJECT_OWNER"  \
         "#{$prefix/status}"                             "RUNNING"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
@@ -338,7 +338,7 @@ EOF
         --message-id    "$message_id" \
         "#{$prefix/class_name}"                         "CmonJobInstance"  \
         "#{$prefix/group_name}"                         "testgroup"  \
-        "#{$prefix/user_name}"                          "pipas"  \
+        "#{$prefix/user_name}"                          "$PROJECT_OWNER"  \
         "#{$prefix/status}"                             "FINISHED"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
@@ -415,7 +415,7 @@ EOF
         --ip-address "$LAST_ADDED_NODE" \
         --port       "5432" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -459,7 +459,7 @@ EOF
         --ip-address "$nodeIp" \
         --port       "5432" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -527,12 +527,16 @@ EOF
     else
         failure "JobEnded message was not found."
         #log_format+='%I %c ${/log_specifics/job_instance/job_spec/command} \n'
-        mys9s log \
-            --list \
-            --batch \
-            --cluster-id=$CLUSTER_ID \
-            --cmon-user=system \
-            --password=secret
+        #mys9s log \
+        #    --list \
+        #    --batch \
+        #    --cluster-id=$CLUSTER_ID \
+        #    --cmon-user=system \
+        #    --password=secret
+        #s9s log \
+        #    --list \
+        #    --batch \
+        #    --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
     fi
 
     #
@@ -563,12 +567,16 @@ EOF
     else
         failure "JobEnded message was not found."
 
-        mys9s log \
-            --list \
-            --batch \
-            --cluster-id=$CLUSTER_ID \
-            --cmon-user=system \
-            --password=secret
+        #mys9s log \
+        #    --list \
+        #    --batch \
+        #    --cluster-id=$CLUSTER_ID \
+        #    --cmon-user=system \
+        #    --password=secret
+        #s9s log \
+        #    --list \
+        #    --batch \
+        #    --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
     fi
 
     end_verbatim
@@ -831,7 +839,7 @@ function testCreateDatabase()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
+        --account="$PROJECT_OWNER:password" \
         --privileges="testcreatedatabase.*:INSERT,UPDATE"
     
     check_exit_code_no_job $?
@@ -839,7 +847,7 @@ function testCreateDatabase()
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
-        --account-name       "pipas" \
+        --account-name       "$PROJECT_OWNER" \
         --account-password   "password" 
     
     #
@@ -849,7 +857,7 @@ function testCreateDatabase()
     mys9s account \
         --grant \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
+        --account="$PROJECT_OWNER" \
         --privileges="testcreatedatabase.*:DELETE" \
         --batch 
     
@@ -1539,9 +1547,9 @@ elif [ "$1" ]; then
     done
 else
     runFunctionalTest testCreateCluster
-    #runFunctionalTest testRemoveNodeFail
-    #runFunctionalTest testAddNode
-    #runFunctionalTest testAddRemoveNode
+    runFunctionalTest testRemoveNodeFail
+    runFunctionalTest testAddNode
+    runFunctionalTest testAddRemoveNode
     runFunctionalTest testStopStartNode
 
     # Only Galera and replication clusters are supported.

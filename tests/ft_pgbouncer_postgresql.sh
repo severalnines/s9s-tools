@@ -191,15 +191,15 @@ function accountTest()
     mys9s account \
         --create \
         --cluster-name="$CLUSTER_NAME" \
-        --account="pipas:pipas" \
+        --account="${PROJECT_OWNER}:${PROJECT_OWNER}" \
         --privileges="testdatabase.*:ALL"
 
     node_name=$(postgresql_node_name --cluster-id 1)
     check_postgresql_account \
         --hostname          "$node_name" \
         --port              "5432" \
-        --account-name      "pipas" \
-        --account-password  "pipas" \
+        --account-name      "${PROJECT_OWNER}" \
+        --account-password  "${PROJECT_OWNER}" \
         --database-name     "testdatabase" \
         --create-table      \
         --insert-into \
@@ -255,8 +255,8 @@ function testPgBouncerConnect()
         check_postgresql_account \
             --hostname          "$PGBOUNCER_IP" \
             --port              "6432" \
-            --account-name      "pipas" \
-            --account-password  "pipas" \
+            --account-name      "${PROJECT_OWNER}" \
+            --account-password  "${PROJECT_OWNER}" \
             --database-name     "testdatabase" \
             --create-table      \
             --insert-into \

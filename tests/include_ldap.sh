@@ -285,7 +285,7 @@ EOF
     mys9s user \
         --list \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="userid=${PROJECT_OWNER}2,dc=homelab,dc=local" \
         --password=p
 
     check_exit_code_no_job $?
@@ -293,17 +293,17 @@ EOF
     mys9s user \
         --stat \
         --long \
-        --cmon-user="userid=pipas2,dc=homelab,dc=local" \
+        --cmon-user="userid=${PROJECT_OWNER}2,dc=homelab,dc=local" \
         --password=p \
-        pipas2
+        ${PROJECT_OWNER}2
 
     check_exit_code_no_job $?
     
     check_user \
-        --user-name    "pipas2"  \
+        --user-name    "${PROJECT_OWNER}2"  \
         --cdt-path     "/" \
         --group        "ldapgroup" \
-        --dn           "uid=pipas2,dc=homelab,dc=local" \
+        --dn           "uid=${PROJECT_OWNER}2,dc=homelab,dc=local" \
         --origin       "LDAP"
 
     end_verbatim

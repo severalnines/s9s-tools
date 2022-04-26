@@ -306,7 +306,7 @@ EOF
         --port       "27017" \
         --config     "/etc/mongod.conf" \
         --no-maint
-        #--owner      "pipas" \
+        #--owner      "${PROJECT_OWNER}" \
         #--group      "testgroup" \
         #--cdt-path   "/$CLUSTER_NAME" \
         #--status     "CmonHostOnline" \
@@ -361,7 +361,7 @@ EOF
         --port       "27017" \
         --config     "/etc/mongod.conf" \
         --no-maint
-        #--owner      "pipas" \
+        #--owner      "${PROJECT_OWNER}" \
         #--group      "testgroup" \
         #--cdt-path   "/$CLUSTER_NAME" \
         #--status     "CmonHostOnline" \

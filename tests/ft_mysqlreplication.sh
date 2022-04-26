@@ -219,7 +219,7 @@ function testCreateCluster()
     # Checking the controller, the nodes and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -230,7 +230,7 @@ function testCreateCluster()
             --ip-address "$node" \
             --port       "3306" \
             --config     "/etc/mysql/my.cnf" \
-            --owner      "pipas" \
+            --owner      "${PROJECT_OWNER}" \
             --group      "testgroup" \
             --cdt-path   "/$CLUSTER_NAME" \
             --status     "CmonHostOnline" \
@@ -239,7 +239,7 @@ function testCreateCluster()
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "REPLICATION" \
@@ -366,8 +366,8 @@ EOF
 #
 function testUploadData()
 {
-    local db_name="pipas1"
-    local user_name="pipas1"
+    local db_name="${PROJECT_OWNER}1"
+    local user_name="${PROJECT_OWNER}1"
     local password="p"
     local reply
     local count=0
@@ -423,7 +423,7 @@ function testUploadData()
     # Here we upload some tables. This part needs test data...
     #
     for file in \
-        /home/pipas/Desktop/stuff/databases/*.sql.gz \
+        /home/${PROJECT_OWNER}/Desktop/stuff/databases/*.sql.gz \
         /home/domain_names_ngtlds_dropped_whois/*/*/*.sql.gz;
     do
         if [ ! -f "$file" ]; then

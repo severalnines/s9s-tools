@@ -159,10 +159,10 @@ function testCmonDbUser()
     print_title "Testing User with CmonDb Origin"
 
     begin_verbatim
-    mys9s user --stat pipas
+    mys9s user --stat ${PROJECT_OWNER}
 
     check_user \
-        --user-name    "pipas"  \
+        --user-name    "${PROJECT_OWNER}"  \
         --cdt-path     "/" \
         --group        "testgroup" \
         --dn           "-" \
@@ -214,7 +214,7 @@ EOF
 #
 function testLdapUserFail2()
 {
-    local username="pipas1"
+    local username="${PROJECT_OWNER}1"
 
     print_title "Checking LDAP Authentication with user '$username'"
 

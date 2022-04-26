@@ -131,8 +131,8 @@ function testCreateUser()
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
-        --new-password="pipas" \
-        "pipas"
+        --new-password="$PROJECT_OWNER" \
+        "$PROJECT_OWNER"
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then

@@ -117,7 +117,7 @@ without the --all command line option.
 EOF
 
     begin_verbatim
-    mys9s tree --mkdir /home/pipas/.config
+    mys9s tree --mkdir /home/$PROJECT_OWNER/.config
 
     check_exit_code_no_job $?
     check_entry \
@@ -130,24 +130,24 @@ EOF
         --user         "$USER"      \
         --group        "testgroup"  \
         --acl          "drwxrwxrwx" \
-        "/home/pipas"
+        "/home/$PROJECT_OWNER"
 
     lines=$(s9s tree --list)
 
     lines=$(s9s tree --list --recursive --full-path --all)
-    expected="/home/pipas$"
+    expected="/home/$PROJECT_OWNER$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
         exit 1
     fi
     
-    expected="./home/pipas/.config$"
+    expected="./home/$PROJECT_OWNER/.config$"
     if echo "$lines" | grep --quiet "$expected"; then
         failure "Hidden entries should not be seen ('$expected')"
         exit 1
     fi
 
-    mys9s tree --rmdir "/home/pipas/.config"
+    mys9s tree --rmdir "/home/$PROJECT_OWNER/.config"
     check_exit_code_no_job $?
     end_verbatim
 }
@@ -190,9 +190,9 @@ EOF
 
 function testTouch()
 {
-    local path="/home/pipas/test.text"
+    local path="/home/$PROJECT_OWNER/test.text"
     local new_name="testfile.txt";
-    local new_path="/home/pipas/testfile.txt"
+    local new_path="/home/$PROJECT_OWNER/testfile.txt"
     local invalid_path1="/.runtime/ak.txt"
     local invalid_path2="/no_such_folder/ak.txt"
     local retcode 
@@ -356,8 +356,8 @@ EOF
     mys9s tree --move /kirk Kirk
 
     check_exit_code_no_job $?    
-    mv /home/pipas/.s9s/kirk.key /home/pipas/.s9s/Kirk.key
-    mv /home/pipas/.s9s/kirk.pub /home/pipas/.s9s/Kirk.pub
+    mv /home/$PROJECT_OWNER/.s9s/kirk.key /home/$PROJECT_OWNER/.s9s/Kirk.key
+    mv /home/$PROJECT_OWNER/.s9s/kirk.pub /home/$PROJECT_OWNER/.s9s/Kirk.pub
 
     check_user \
         --user-name     "Kirk" \

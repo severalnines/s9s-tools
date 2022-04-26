@@ -174,15 +174,15 @@ EOF
     mys9s account \
         --create \
         --cluster-name="$CLUSTER_NAME" \
-        --account="pipas:pipas" \
+        --account="${PROJECT_OWNER}:${PROJECT_OWNER}" \
         --privileges="*.*:ALL"
 
     node_name=$(galera_node_name --cluster-id 1)
     check_mysql_account \
         --hostname          "$node_name" \
         --port              "3306" \
-        --account-name      "pipas" \
-        --account-password  "pipas" \
+        --account-name      "${PROJECT_OWNER}" \
+        --account-password  "${PROJECT_OWNER}" \
         --database-name     "testdatabase" \
         --create-table      \
         --insert-into \
@@ -260,8 +260,8 @@ function testHaProxyConnect()
         check_mysql_account \
             --hostname          "$HAPROXY_IP" \
             --port              "3307" \
-            --account-name      "pipas" \
-            --account-password  "pipas" \
+            --account-name      "${PROJECT_OWNER}" \
+            --account-password  "${PROJECT_OWNER}" \
             --database-name     "testdatabase" \
             --create-table      \
             --insert-into \

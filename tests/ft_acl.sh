@@ -104,8 +104,8 @@ function testCreateUsers()
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
-        --new-password="pipas" \
-        "pipas"
+        --new-password="$PROJECT_OWNER" \
+        "$PROJECT_OWNER"
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -175,17 +175,17 @@ function checkTree01()
 #    lines=$(s9s tree --cmon-user=supervisor --list --long groups/users)
 #    mys9s tree --cmon-user=supervisor --list --long groups/users
 #
-#    expected="^urwxr--r--     - pipas  admins pipas -> /pipas$"
+#    expected="^urwxr--r--     - $PROJECT_OWNER  admins $PROJECT_OWNER -> /$PROJECT_OWNER$"
 #    if ! find_line "$lines" "$expected"; then
 #        failure "Expected line not found: '$expected'"
 #    else
 #        success "  o Expected line '$expected' found, OK."
 #    fi
     
-    # wait few secs until recently created user 'pipas' is visible on tree
+    # wait few secs until recently created user '$PROJECT_OWNER' is visible on tree
     for i in $(seq 1 4); do
         lines=$(s9s tree --cmon-user=supervisor --list --long)
-        if find_line "$lines" "pipas"; then
+        if find_line "$lines" "$PROJECT_OWNER"; then
             break
         fi
         sleep 5
@@ -194,7 +194,7 @@ function checkTree01()
     lines=$(s9s tree --cmon-user=supervisor --list --long)
     mys9s tree --cmon-user=supervisor --list --long
 
-    expected="^urwxr--r--     - pipas  admins pipas$"
+    expected="^urwxr--r--     - $PROJECT_OWNER  admins $PROJECT_OWNER$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
     else
@@ -216,11 +216,11 @@ function checkTree02()
         success "  o User 'supervisor' ha access to '/', OK."
     fi
 
-    mys9s tree --access --privileges="rwx" --cmon-user="pipas" /
+    mys9s tree --access --privileges="rwx" --cmon-user="$PROJECT_OWNER" /
     if [ $? -ne 0 ]; then
-        failure "User 'pipas' ha no access to '/'"
+        failure "User '$PROJECT_OWNER' ha no access to '/'"
     else
-        success "  o User 'pipas' ha access to '/', OK."
+        success "  o User '$PROJECT_OWNER' ha access to '/', OK."
     fi
 
     end_verbatim
@@ -252,7 +252,7 @@ function testMkdir()
     mys9s tree --cmon-user=supervisor --list --long
     lines=$(s9s tree --cmon-user=supervisor --list --long)
     
-    expected="^drwxrwxrwx     - pipas  users  home$"
+    expected="^drwxrwxrwx     - $PROJECT_OWNER  users  home$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
     else

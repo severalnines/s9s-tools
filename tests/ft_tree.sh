@@ -135,8 +135,8 @@ function testCreateUser()
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
-        --new-password="pipas" \
-        "pipas"
+        --new-password="$PROJECT_OWNER" \
+        "$PROJECT_OWNER"
 
     check_exit_code_no_job $?
 
@@ -175,18 +175,18 @@ function testCreateUser()
                 [ "$owner" != "nobody" ] && failure "Owner is '$owner'."
                 ;;
 
-            pipas)
-                let columns_found+=1
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
-                ;;
-
             system)
                 let columns_found+=1
                 [ "$owner" != "system" ] && failure "Owner is '$owner'."
                 ;;
 
             *)
-                failure "Unexpected name '$name'."
+                if [ "$PROJECT_OWNER" == "$name" ]; then
+                    let columns_found+=1
+                    [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+                else
+                    failure "Unexpected name '$name'."
+                fi
                 ;;
         esac
     done
@@ -428,7 +428,7 @@ EOF
 
         case $name in 
             $CONTAINER_SERVER)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 object_found="yes"
@@ -510,7 +510,7 @@ EOF
 
         case $name in 
             $container_name)
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is '$owner', ok"
@@ -606,7 +606,7 @@ EOF
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
 
-        if [ "$owner" != "pipas" ]; then
+        if [ "$owner" != "$PROJECT_OWNER" ]; then
             failure "Owner of '$name' is '$owner'."
         else
             success "  o owner of '$name' is '$owner', ok"
@@ -1063,7 +1063,7 @@ EOF
         case "$name" in 
             domain_names_diff)
                 success "  o database $name found, ok"
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is $owner, ok"
@@ -1086,7 +1086,7 @@ EOF
 
             domain_names_ngtlds_diff)
                 success "  o database $name found, ok"
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is $owner, ok"
@@ -1109,7 +1109,7 @@ EOF
 
             whois_records_delta)
                 success "  o database $name found, ok"
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is $owner, ok"
@@ -1313,7 +1313,7 @@ EOF
     mys9s account \
         --create \
         --cluster-name="galera_001" \
-        --account="pipas:pipas" \
+        --account="$PROJECT_OWNER:$PROJECT_OWNER" \
         --privileges="*.*:ALL"
 
     check_exit_code_no_job $?
@@ -1527,7 +1527,7 @@ function _my_check()
         case "$name" in 
             /$CLUSTER_NAME)
                 echo ""
-                if [ "$owner" != "pipas" ]; then 
+                if [ "$owner" != "$PROJECT_OWNER" ]; then 
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1550,7 +1550,7 @@ function _my_check()
 
             /$CLUSTER_NAME/databases/domain_names_diff)
                 echo ""
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1573,7 +1573,7 @@ function _my_check()
 
             /$CONTAINER_SERVER)
                 echo ""
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1596,7 +1596,7 @@ function _my_check()
 
             /$CONTAINER_SERVER/containers)
                 echo ""
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "$PROJECT_OWNER" ]; then
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1634,7 +1634,7 @@ function testMoveObjects()
     local owner
     local group
 
-    TEST_PATH="/home/pipas"
+    TEST_PATH="/home/$PROJECT_OWNER"
 
     #
     #
@@ -1654,7 +1654,7 @@ EOF
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
     mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
-    mys9s tree --move "/pipas" "$TEST_PATH"
+    mys9s tree --move "/$PROJECT_OWNER" "$TEST_PATH"
 
     mysleep 60
 
@@ -1684,29 +1684,29 @@ EOF
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
         case "$name" in
-            /home/pipas/pipas)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+            /home/$PROJECT_OWNER/$PROJECT_OWNER)
+                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
                 [ "$group" != "admins" ] && failure "Group is '$group'."
                 [ "$mode"  != "urwxr--r--" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /home/pipas/$CLUSTER_NAME)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+            /home/$PROJECT_OWNER/$CLUSTER_NAME)
+                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /home/pipas/$CONTAINER_SERVER)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+            /home/$PROJECT_OWNER/$CONTAINER_SERVER)
+                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /home/pipas/$CLUSTER_NAME/databases/domain_names_diff)
-                [ "$owner" != "pipas" ] && failure "Owner is '$owner'."
+            /home/$PROJECT_OWNER/$CLUSTER_NAME/databases/domain_names_diff)
+                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
@@ -1769,9 +1769,9 @@ function testAclChroot()
 
     THE_NAME=$(s9s tree --get-acl --print-json $clusterPath | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json $clusterPath | jq .object_path)
-    if [ "$THE_PATH" != '"/home/pipas"' ]; then
+    if [ "$THE_PATH" != '"/home/$PROJECT_OWNER"' ]; then
         s9s tree --get-acl --print-json $clusterPath | jq .
-        failure "The path should be '/home/pipas' in getAcl reply, not '$THE_PATH'."
+        failure "The path should be '/home/$PROJECT_OWNER' in getAcl reply, not '$THE_PATH'."
     else
         success "  o path is '$THE_PATH', ok"
     fi
@@ -1785,9 +1785,9 @@ function testAclChroot()
 
     THE_NAME=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_path)
-    if [ "$THE_PATH" != '"/home/pipas/galera_001"' ]; then
+    if [ "$THE_PATH" != '"/home/$PROJECT_OWNER/galera_001"' ]; then
         s9s tree --get-acl --print-json $clusterPath/databases | jq .
-        failure "The path should be '/home/pipas/galera_001' in getAcl reply."
+        failure "The path should be '/home/$PROJECT_OWNER/galera_001' in getAcl reply."
     else
         success "  o path is '$THE_PATH', ok"
     fi
@@ -1807,7 +1807,7 @@ function testAclChroot()
 #
 function testCreateFolder()
 {
-    local folder_name="/home/pipas/tmp"
+    local folder_name="/home/$PROJECT_OWNER/tmp"
 
     print_title "Creating directory"
 
@@ -1825,12 +1825,12 @@ function testCreateFolder()
 #
 function testAddAcl()
 {
-    local folder_name="/home/pipas/tmp"
+    local folder_name="/home/$PROJECT_OWNER/tmp"
 
     print_title "Adding an ACL Entry"
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:pipas:rwx" $folder_name
+    mys9s tree --add-acl --acl="user:$PROJECT_OWNER:rwx" $folder_name
     check_exit_code_no_job $?
 
     mys9s tree --get-acl $folder_name
@@ -1839,7 +1839,7 @@ function testAddAcl()
 
 function testChangeOwner()
 {
-    local folder_name="/home/pipas/tmp"
+    local folder_name="/home/$PROJECT_OWNER/tmp"
 
     #
     # Changing the owner
@@ -1879,10 +1879,10 @@ function testTree()
     print_title "Printing and Checking Tree"
     
     begin_verbatim
-    mys9s tree --list /home/pipas
-    mys9s tree --list --long /home/pipas
+    mys9s tree --list /home/$PROJECT_OWNER
+    mys9s tree --list --long /home/$PROJECT_OWNER
 
-    for name in $(s9s tree --list /home/pipas); do
+    for name in $(s9s tree --list /home/$PROJECT_OWNER); do
         case "$name" in
             $CLUSTER_NAME)
                 let n_object_found+=1
@@ -1896,9 +1896,10 @@ function testTree()
                 let n_object_found+=1
                 ;;
 
-            pipas)
-                let n_object_found+=1
-                ;;
+            *)
+                if [ "$PROJECT_OWNER" == "$name" ]; then
+                    let n_object_found+=1
+                fi
 
         esac
     done

@@ -120,8 +120,8 @@ function testCreateUser()
         --first-name="Laszlo" \
         --last-name="Pere"   \
         --generate-key \
-        --new-password="pipas" \
-        "pipas"
+        --new-password="${PROJECT_OWNER}" \
+        "${PROJECT_OWNER}"
 
     check_exit_code $?
     
@@ -145,9 +145,9 @@ function testMoveUser()
     print_title "The user moves itself in CDT"
     begin_verbatim
 
-    TEST_PATH="/home/pipas"
+    TEST_PATH="/home/${PROJECT_OWNER}"
     mys9s tree --mkdir "$TEST_PATH"
-    mys9s tree --move /pipas "$TEST_PATH"
+    mys9s tree --move /${PROJECT_OWNER} "$TEST_PATH"
 
     check_exit_code $?
 
@@ -167,7 +167,7 @@ function testRegisterServer()
     begin_verbatim
     mys9s server \
         --register \
-        --cmon-user=pipas \
+        --cmon-user=${PROJECT_OWNER} \
         --servers="lxc://$CONTAINER_SERVER"
 
     check_exit_code $?
@@ -180,7 +180,7 @@ function testRegisterServer()
     OWNER=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
     GROUP=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
 
-    if [ "$OWNER" != 'pipas' ]; then
+    if [ "$OWNER" != '${PROJECT_OWNER}' ]; then
         s9s tree --list /$CONTAINER_SERVER 
         failure "The owner is '$OWNER' should be '$USER'."
     else
@@ -292,7 +292,7 @@ function testCreateCluster()
             $CLUSTER_NAME)
                 success "  o Cluster $CLUSTER_NAME found, OK."
 
-                if [ "$owner" != "pipas" ]; then
+                if [ "$owner" != "${PROJECT_OWNER}" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o The owner is $owner, OK."

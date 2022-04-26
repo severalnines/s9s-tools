@@ -186,7 +186,7 @@ EOF
     # Checking the controller, the node and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -196,7 +196,7 @@ EOF
         --ip-address "$FIRST_ADDED_NODE" \
         --port       "8089" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -204,7 +204,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "POSTGRESQL_SINGLE" \
@@ -247,7 +247,7 @@ EOF
         --ip-address "$LAST_ADDED_NODE" \
         --port       "5432" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "${PROJECT_OWNER}" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \

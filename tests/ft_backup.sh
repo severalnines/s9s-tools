@@ -346,10 +346,10 @@ function testCreateBackup01()
     # Checking the path.
     value=$(\
         s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/backup-001-0001/pipas/' | \
+        grep '^/tmp/backup-001-0001/$PROJECT_OWNER/' | \
         wc -l)
     if [ "$value" != 1 ]; then
-        failure "A file should be in '/tmp/backup-001-0001/pipas/'"
+        failure "A file should be in '/tmp/backup-001-0001/$PROJECT_OWNER/'"
         mys9s backup --list-files --full-path --backup-id=1
         mys9s backup --list-files --full-path 
     fi

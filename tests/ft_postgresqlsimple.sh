@@ -193,7 +193,7 @@ EOF
     # Checking the controller, the node and the cluster.
     #
     check_controller \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -203,7 +203,7 @@ EOF
         --ip-address "$FIRST_ADDED_NODE" \
         --port       "8089" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -211,7 +211,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "POSTGRESQL_SINGLE" \
@@ -311,7 +311,7 @@ EOF
         --ip-address "$LAST_ADDED_NODE" \
         --port       "5432" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -371,7 +371,7 @@ EOF
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas:password" \
+        --account="$PROJECT_OWNER:password" \
         --privileges="testcreatedatabase.*:INSERT,UPDATE"
     
     check_exit_code_no_job $?
@@ -379,7 +379,7 @@ EOF
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089"       \
-        --account-name       "pipas"      \
+        --account-name       "$PROJECT_OWNER"      \
         --account-password   "password"   \
         --create-table                    \
         --insert-into                     \
@@ -402,7 +402,7 @@ EOF
     mys9s account \
         --grant \
         --cluster-id=$CLUSTER_ID \
-        --account="pipas" \
+        --account="$PROJECT_OWNER" \
         --privileges="testcreatedatabase.*:DELETE" \
         --batch 
     

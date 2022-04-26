@@ -52,9 +52,9 @@ Usage:
 SUPPORTED TESTS:
   o testPing           Pinging the controller.
   o testCreateCluster  Creates a cluster.
-  o testCreateDatabase Creates some accounts and databases (pipas:password).
+  o testCreateDatabase Creates some accounts and databases ($PROJECT_OWNER:password).
   o testAddProxySql    Adds a ProxySQL node.
-  o testConnect02      Connects ProxySql with pipas.
+  o testConnect02      Connects ProxySql with $PROJECT_OWNER.
   o testUploadData     Uploads data through the ProxySQL server as proxydemo.
 
 EXAMPLE
@@ -180,7 +180,7 @@ function testCreateReplicationCluster()
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "REPLICATION" \
@@ -270,7 +270,7 @@ function testCreateCluster()
 #
 function testCreateDatabase()
 {
-    local userName="pipas"
+    local userName="$PROJECT_OWNER"
     local databaseName="test_database"
     local userPassword="password"
 
@@ -415,7 +415,7 @@ function testConnect02()
     local sql_host="$PROXY_SERVER"
     local sql_port="6033"
     local db_name="test_database"
-    local sql_user="pipas"
+    local sql_user="$PROJECT_OWNER"
     local sql_password="password"
     local reply
 

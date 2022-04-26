@@ -15,8 +15,8 @@ SQL_HOST=""
 SQL_PORT=""
 
 DB_ALREADY_CREATED=""
-db_name="pipas1_$$"
-user_name="pipas1_$$"
+db_name="${PROJECT_OWNER}1_$$"
+user_name="${PROJECT_OWNER}1_$$"
 password="p"
 
 cd $MYDIR
@@ -401,7 +401,7 @@ function collectData()
         # The following tests create this account and db in advance:
         #   o ft_proxysql_connect.sh
         #
-        #user_name="pipas"
+        #user_name="${PROJECT_OWNER}"
         #password="password"
         #db_name="test_database"
         #DB_ALREADY_CREATED="true"

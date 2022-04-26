@@ -310,7 +310,7 @@ EOF
     mys9s cluster --stat
 
     check_controller \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -321,7 +321,7 @@ EOF
             --ip-address "$node" \
             --port       "3306" \
             --config     "/etc/mysql/my.cnf" \
-            --owner      "pipas" \
+            --owner      "$PROJECT_OWNER" \
             --group      "testgroup" \
             --cdt-path   "/$CLUSTER_NAME" \
             --status     "CmonHostOnline" \
@@ -330,7 +330,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "pipas" \
+        --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "GALERA" \
