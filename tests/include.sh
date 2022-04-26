@@ -991,6 +991,24 @@ function print_log_message()
         --message-id=$message_id
 }
 
+function check_job_finished()
+{
+    local jobExpectedText=$1
+    local jobStatusLine
+    local jobStatus
+
+    jobStatusLine=$(s9s job --list | grep "$jobExpectedText" | tail -n 1)
+    jobStatus=$(echo "$jobStatusLine" | cut -d' ' -f 3)
+    jobId=$(echo "$jobStatusLine" | cut -d' ' -f 1)
+    jobName=$(echo "$jobStatusLine" | cut -d' ' -f 9-)
+
+    if [ "$jobStatus" = "FINISHED" ]; then
+        success "  o Job $jobId $jobName finished fine."
+    else
+        failure "  o Job $jobId $jobName did not finished properly. Status:\n$jobStatusLine"
+    fi
+}
+
 function get_log_message_id()
 {
     local job_command

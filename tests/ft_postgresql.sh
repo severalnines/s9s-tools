@@ -518,31 +518,7 @@ EOF
     
     # The JobEnded log message.
     sleep 5
-    message_id=$(get_log_message_id \
-        --job-class   "JobEnded" \
-        --job-command "stop")
-
-    if [ -n "$message_id" ]; then
-        success "  o Found JobEnded message at ID $message_id, ok."
-    else
-        failure "JobEnded message was not found."
-        #log_format+='%I %c ${/log_specifics/job_instance/job_spec/command} \n'
-        #mys9s log \
-        #    --list \
-        #    --batch \
-        #    --cluster-id=$CLUSTER_ID \
-        #    --cmon-user=system \
-        #    --password=secret
-
-        mys9s job --list | tail
-
-        echo
-
-        s9s log \
-            --list \
-            --batch \
-            --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
-    fi
+    check_job_finished "Starting Node"
 
     #
     # Then start the node again.
@@ -563,31 +539,7 @@ EOF
     
     # The JobEnded log message.
     sleep 5
-    message_id=$(get_log_message_id \
-        --job-class   "JobEnded" \
-        --job-command "start")
-
-    if [ -n "$message_id" ]; then
-        success "  o Found JobEnded message at ID $message_id, ok."
-    else
-        failure "JobEnded message was not found."
-
-        #mys9s log \
-        #    --list \
-        #    --batch \
-        #    --cluster-id=$CLUSTER_ID \
-        #    --cmon-user=system \
-        #    --password=secret
-
-        mys9s job --list | tail
-
-        echo
-
-        s9s log \
-            --list \
-            --batch \
-            --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
-    fi
+    check_job_finished "Stopping Node"
 
     end_verbatim
 }
