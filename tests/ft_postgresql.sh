@@ -533,10 +533,15 @@ EOF
         #    --cluster-id=$CLUSTER_ID \
         #    --cmon-user=system \
         #    --password=secret
-        #s9s log \
-        #    --list \
-        #    --batch \
-        #    --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
+
+        mysql job --list | tail
+
+        echo
+
+        s9s log \
+            --list \
+            --batch \
+            --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
     fi
 
     #
@@ -573,10 +578,15 @@ EOF
         #    --cluster-id=$CLUSTER_ID \
         #    --cmon-user=system \
         #    --password=secret
-        #s9s log \
-        #    --list \
-        #    --batch \
-        #    --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
+
+        mysql job --list | tail
+
+        echo
+
+        s9s log \
+            --list \
+            --batch \
+            --log-format='%I %c -${/log_specifics/job_instance/job_spec/command}- %i %S %B:%L \t%M\n'
     fi
 
     end_verbatim
