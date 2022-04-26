@@ -6,8 +6,8 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="0.0.4"
 
-LOG_OPTION=""
-DEBUG_OPTION=""
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -506,8 +506,12 @@ EOF
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    check_exit_code $?    
+
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
     
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "DEGRADED" ]; then
@@ -516,9 +520,9 @@ EOF
         success "  o The cluster state is $state, OK."
     fi
     
-    # The JobEnded log message.
+    # Instead of the JobEnded log message.
     sleep 5
-    check_job_finished "Starting Node"
+    check_job_finished "Stopping Node"
 
     #
     # Then start the node again.
@@ -529,17 +533,21 @@ EOF
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    check_exit_code $?    
+
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
 
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "STARTED" ]; then
         failure "The cluster should be in 'STARTED' state, it is '$state'."
     fi
     
-    # The JobEnded log message.
+    # Instead of the JobEnded log message.
     sleep 5
-    check_job_finished "Stopping Node"
+    check_job_finished "Starting Node"
 
     end_verbatim
 }

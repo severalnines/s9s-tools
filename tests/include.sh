@@ -997,15 +997,18 @@ function check_job_finished()
     local jobStatusLine
     local jobStatus
 
-    jobStatusLine=$(s9s job --list | grep "$jobExpectedText" | tail -n 1)
+    jobStatusLine=$(s9s job --batch --list | grep "$jobExpectedText" | tail -n 1)
+
+    printVerbose "$jobStatusLine"
+
     jobStatus=$(echo "$jobStatusLine" | cut -d' ' -f 3)
     jobId=$(echo "$jobStatusLine" | cut -d' ' -f 1)
     jobName=$(echo "$jobStatusLine" | cut -d' ' -f 9-)
 
     if [ "$jobStatus" = "FINISHED" ]; then
-        success "  o Job $jobId $jobName finished fine."
+        success "  o Job $jobId $jobName finished, ok."
     else
-        failure "  o Job $jobId $jobName did not finished properly. Status:\n$jobStatusLine"
+        failure "  o Job $jobId $jobName did not finished properly."
     fi
 }
 
