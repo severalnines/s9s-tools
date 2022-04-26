@@ -6,8 +6,8 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="0.0.4"
 
-LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+LOG_OPTION="--wait"
+DEBUG_OPTION=""
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -303,6 +303,7 @@ EOF
         #print_log_message "$message_id"
     else
         failure "JobStarted message was not found."
+        mys9s job --list | tail
     fi
 
     prefix="/log_specifics/job_instance"
@@ -331,6 +332,7 @@ EOF
         #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
+        mys9s job --list | tail
     fi
     
     prefix="/log_specifics/job_instance"
@@ -1105,6 +1107,8 @@ function testCreateBackup()
         success "  o Found JobEnded message at ID $message_id, ok."
     else
         failure "JobEnded message was not found."
+
+        mys9s job --list | tail
         
         log_format=""
         log_format+='%I '
@@ -1147,6 +1151,7 @@ function testCreateBackup()
         #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
+        mys9s job --list | tail
     fi
 
     end_verbatim
@@ -1190,6 +1195,7 @@ function testRestoreBackup()
         #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
+        mys9s job --list | tail
     fi
 
     end_verbatim
@@ -1331,6 +1337,8 @@ function testBackupOfDbList()
         success "  o Found JobEnded message at ID $message_id, ok."
     else
         failure "JobEnded message was not found."
+
+        mys9s job --list | tail
         
         log_format=""
         log_format+='%I '
@@ -1379,6 +1387,7 @@ function testBackupOfDbList()
         #print_log_message "$message_id"
     else
         failure "JobEnded message was not found."
+        mys9s job --list | tail
     fi
 
     end_verbatim
@@ -1446,20 +1455,14 @@ function testRollingRestart()
         --cluster-id=$CLUSTER_ID \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    check_exit_code $?    
-    
-    # The JobEnded log message.
-    message_id=$(get_log_message_id \
-        --job-class   "JobEnded" \
-        --job-command "rolling_restart")
 
-    if [ -n "$message_id" ]; then
-        success "  o Found JobEnded message at ID $message_id, ok."
-        #print_log_message "$message_id"
-    else
-        failure "JobEnded message was not found."
-    fi
+    RET=$?
+
+    mys9s job --list | tail
+    
+    check_exit_code $RET
+    
+    check_job_finished "Stopping Node"
 
     end_verbatim
 }
