@@ -534,7 +534,7 @@ EOF
         #    --cmon-user=system \
         #    --password=secret
 
-        mysql job --list | tail
+        mys9s job --list | tail
 
         echo
 
@@ -579,7 +579,7 @@ EOF
         #    --cmon-user=system \
         #    --password=secret
 
-        mysql job --list | tail
+        mys9s job --list | tail
 
         echo
 
