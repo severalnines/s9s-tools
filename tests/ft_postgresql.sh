@@ -902,7 +902,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@192.168.0.0/24" \
+        --account="$username:$password@$S9S_TEST_NETWORK" \
         --debug
 
     mys9s account --list --long
@@ -936,7 +936,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@192.168.0.0/24" \
+        --account="$username:$password@$S9S_TEST_NETWORK" \
         --privileges="$privileges" \
         --debug
     
@@ -973,7 +973,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@192.168.0.0/24" \
+        --account="$username:$password@$S9S_TEST_NETWORK" \
         --privileges="$privileges" \
         --debug
     
@@ -1011,7 +1011,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@192.168.0.0/24" \
+        --account="$username:$password@$S9S_TEST_NETWORK" \
         --privileges="$privileges" \
         --debug
     
@@ -1055,7 +1055,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@192.168.0.0/24" \
+        --account="$username:$password@$S9S_TEST_NETWORK" \
         --privileges="$privileges" \
         --debug
     
