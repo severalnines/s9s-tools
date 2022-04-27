@@ -1080,8 +1080,14 @@ function testCreateBackup()
         --backup-directory=/tmp \
         $LOG_OPTION \
         $DEBUG_OPTION
+
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
     
-    check_exit_code $?
+    check_job_finished "Create pg_basebackup Backup"
     
     # The JobEnded log message.
     message_id=$(get_log_message_id \
@@ -1091,12 +1097,13 @@ function testCreateBackup()
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
         
         log_format=""
         log_format+='%I '
         log_format+='%c '
         log_format+='${/log_specifics/job_instance/job_spec/command} '
+        log_format+='%i %S %B:%L \t%M '
         log_format+='\n'
         mys9s log \
             --list \
@@ -1119,8 +1126,12 @@ function testCreateBackup()
         --backup-method=pg_basebackup \
         $LOG_OPTION \
         $DEBUG_OPTION
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
     
-    check_exit_code $?    
+    check_job_finished "Create pg_basebackup Backup"
 
     mys9s backup --list --long
    
@@ -1133,7 +1144,7 @@ function testCreateBackup()
         success "  o Found JobEnded message at ID $message_id, ok."
         #print_log_message "$message_id"
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
     fi
 
     end_verbatim
@@ -1165,7 +1176,11 @@ function testRestoreBackup()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    mys9s job --list | tail
+
+    check_exit_code $RET
+    
+    check_job_finished "Restore Backup"
     
     # The JobEnded log message.
     message_id=$(get_log_message_id \
@@ -1176,7 +1191,7 @@ function testRestoreBackup()
         success "  o Found JobEnded message at ID $message_id, ok."
         #print_log_message "$message_id"
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
     fi
 
     end_verbatim

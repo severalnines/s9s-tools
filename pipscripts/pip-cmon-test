@@ -1150,6 +1150,7 @@ function run_test()
                     echo "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.
                     sudo rm -rvf /tmp/cmon*
+                    sudo rm -rvf /tmp/BACKUP-*
 
                     sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                     backend_pid=$!
@@ -1238,7 +1239,8 @@ function run_test()
                 sudo pkill ft_full
                 sleep 3
                 sudo pkill -9 ft_full
-                sudo rm -rvf /tmp/cmon*
+                #sudo rm -rvf /tmp/cmon*
+                #sudo rm -rvf /tmp/BACKUP-*
             fi
 
             if [ $return_code -eq 0 ]; then
