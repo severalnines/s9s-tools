@@ -1315,8 +1315,14 @@ function testBackupOfDbList()
 	--databases="testdatabase1,testdatabase2" \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    check_exit_code $?
+
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
+
+    check_job_finished "Stopping Node"
     
     # The JobEnded log message.
     message_id=$(get_log_message_id \
@@ -1326,12 +1332,13 @@ function testBackupOfDbList()
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
         
         log_format=""
         log_format+='%I '
         log_format+='%c '
-        log_format+='${/log_specifics/job_instance/job_spec/command} '
+        log_format+='-${/log_specifics/job_instance/job_spec/command}- '
+        log_format+='%i %S %B:%L \t%M '
         log_format+='\n'
         mys9s log \
             --list \
@@ -1363,18 +1370,23 @@ function testBackupOfDbList()
         $LOG_OPTION \
         $DEBUG_OPTION
 
-    check_exit_code $?
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
     
+    check_job_finished "Stopping Node"
+
     # The JobEnded log message.
     message_id=$(get_log_message_id \
         --job-class   "JobEnded" \
         --job-command "restore_backup")
-
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
         #print_log_message "$message_id"
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
     fi
 
     end_verbatim
