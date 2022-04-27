@@ -1322,7 +1322,7 @@ function testBackupOfDbList()
 
     check_exit_code $RET
 
-    check_job_finished "Stopping Node"
+    check_job_finished "Create pgdump Backup"
     
     # The JobEnded log message.
     message_id=$(get_log_message_id \
@@ -1376,7 +1376,7 @@ function testBackupOfDbList()
 
     check_exit_code $RET
     
-    check_job_finished "Stopping Node"
+    check_job_finished "Restore Backup"
 
     # The JobEnded log message.
     message_id=$(get_log_message_id \
