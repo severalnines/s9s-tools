@@ -1149,8 +1149,12 @@ function run_test()
                 if [ "" == "$backend_pid" ]; then 
                     echo "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.
+                    echo "sudo rm -rvf /tmp/cmon*"
                     sudo rm -rvf /tmp/cmon*
+                    ls -lh /tmp/cmon*
+                    echo "sudo rm -rvf /tmp/BACKUP-*"
                     sudo rm -rvf /tmp/BACKUP-*
+                    ls -lh /tmp/BACKUP-*
 
                     sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                     backend_pid=$!
