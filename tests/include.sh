@@ -48,7 +48,7 @@ fi
 if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
 	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
 fi
-if [ "${S9S_TEST_NETWORK}" != "" ]; then
+if [ "${S9S_TEST_NETWORK}" = "" ]; then
     export S9S_TEST_NETWORK="0.0.0.0/32"
 fi
 
