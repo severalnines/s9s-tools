@@ -1135,6 +1135,7 @@ function run_test()
             #
             # Running the ft_full
             #
+            export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
             pushd "$(find_clustercontrol_source_directory)/tests" \
                 >/dev/null 2>/dev/null
 
