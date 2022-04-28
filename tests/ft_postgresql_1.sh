@@ -1087,7 +1087,7 @@ function testCreateBackup()
 
     check_exit_code $RET
     
-    check_job_finished "Create pg_basebackup Backup"
+    check_job_finished "Create Backup"
     
     # The JobEnded log message.
     message_id=$(get_log_message_id \
@@ -1552,15 +1552,15 @@ else
     #runFunctionalTest testConfigFail
     #runFunctionalTest testConfigAccess
 
-    runFunctionalTest testCreateDatabase
-    runFunctionalTest testCreateAccount01
-    runFunctionalTest testCreateAccount02
-    runFunctionalTest testCreateAccount03
-    runFunctionalTest testCreateAccount04
-    runFunctionalTest testCreateAccount05
-    runFunctionalTest testCreateAccount06
+    #runFunctionalTest testCreateDatabase
+    #runFunctionalTest testCreateAccount01
+    #runFunctionalTest testCreateAccount02
+    #runFunctionalTest testCreateAccount03
+    #runFunctionalTest testCreateAccount04
+    #runFunctionalTest testCreateAccount05
+    #runFunctionalTest testCreateAccount06
 
-    runFunctionalTest testBackupOfDbList
+    #runFunctionalTest testBackupOfDbList
 
     runFunctionalTest testCreateBackup
     runFunctionalTest testRestoreBackup
