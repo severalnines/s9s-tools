@@ -291,8 +291,8 @@ EOF
     echo "pg_lsclusters"
     $SSH "$FIRST_ADDED_NODE" sudo pg_lsclusters
 
-    echo "$SSH $FIRST_ADDED_NODE sudo pg_ctlcluster 10 main stop"
-    $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 10 main stop
+    echo "$SSH $FIRST_ADDED_NODE sudo pg_ctlcluster $PROVIDER_VERSION main stop"
+    $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster $PROVIDER_VERSION main stop
 
     while true; do
         if [ "$timeLoop" -gt 300 ]; then
