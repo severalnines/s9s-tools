@@ -487,9 +487,15 @@ EOF
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    check_exit_code $?    
-    
+
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
+
+    check_job_finished "Stopping Node"
+
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "DEGRADED" ]; then
         failure "The cluster should be in 'DEGRADED' state, it is '$state'."
@@ -505,7 +511,7 @@ EOF
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
     fi
 
     #
@@ -517,8 +523,14 @@ EOF
         --nodes=$LAST_ADDED_NODE \
         $LOG_OPTION \
         $DEBUG_OPTION
-    
-    check_exit_code $?    
+
+    RET=$?
+
+    mys9s job --list | tail
+
+    check_exit_code $RET
+
+    check_job_finished "Starting Node"
 
     state=$(s9s cluster --list --cluster-id=$CLUSTER_ID --cluster-format="%S")
     if [ "$state" != "STARTED" ]; then
@@ -533,7 +545,7 @@ EOF
     if [ -n "$message_id" ]; then
         success "  o Found JobEnded message at ID $message_id, ok."
     else
-        failure "JobEnded message was not found."
+        warning "JobEnded message was not found."
     fi
 
     end_verbatim
