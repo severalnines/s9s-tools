@@ -288,7 +288,11 @@ EOF
 
     begin_verbatim
 
-    $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 9.5 main stop
+    echo "pg_lsclusters"
+    $SSH "$FIRST_ADDED_NODE" sudo pg_lsclusters
+
+    echo "$SSH $FIRST_ADDED_NODE sudo pg_ctlcluster 10 main stop"
+    $SSH "$FIRST_ADDED_NODE" sudo pg_ctlcluster 10 main stop
 
     while true; do
         if [ "$timeLoop" -gt 300 ]; then
