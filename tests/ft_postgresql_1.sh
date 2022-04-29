@@ -1016,9 +1016,11 @@ EOF
 
     mys9s account --list --long "$username" --debug
 
-    #print_title "Creating test table in test testcreatetable"
+    print_title "Creating test table in test testcreatetable"
 
-    ${SSH} '( PGPASSWORD="$password" \
+    MASTER_IP=$(s9s node --list --long | grep "^poM" | awk '{print $5}')
+
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
     psql \
             -t \
             --username="$username" \
@@ -1310,7 +1312,7 @@ function testBackupOfDbList()
 
     MASTER_IP=$(s9s node --list --long | grep "^poM" | awk '{print $5}')
 
-    ${SSH} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
     psql \
             -t \
             --username="tester" \
@@ -1318,7 +1320,7 @@ function testBackupOfDbList()
             --command="CREATE TABLE IF NOT EXISTS testtable1(a INT)" \
     )'
 
-    ${SSH} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
     psql \
             -t \
             --username="tester" \
@@ -1326,7 +1328,7 @@ function testBackupOfDbList()
             --command="CREATE TABLE IF NOT EXISTS testtable2(a INT)" \
     )'
 
-    ${SSH} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
     psql \
             -t \
             --username="tester" \
