@@ -1016,9 +1016,17 @@ EOF
 
     mys9s account --list --long "$username" --debug
 
-    print_title "Creating test table in test testcreatetable"
+    echo "Creating testcreatetable table in testcreatedatabase database"
 
     MASTER_IP=$(s9s node --list --long | grep "^poM" | awk '{print $5}')
+
+    echo ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
+    psql \
+            -t \
+            --username="$username" \
+            --dbname="testcreatedatabase" \
+            --command="CREATE TABLE IF NOT EXISTS testcreatetable(a INT)" \
+    )'
 
     ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
     psql \
