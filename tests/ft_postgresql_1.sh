@@ -1016,13 +1016,23 @@ EOF
 
     mys9s account --list --long "$username" --debug
 
+    #print_title "Creating test table in test testcreatetable"
+
+    ${SSH} '( PGPASSWORD="$password" \
+    psql \
+            -t \
+            --username="$username" \
+            --dbname="testcreatedatabase" \
+            --command="CREATE TABLE IF NOT EXISTS testcreatetable(a INT)" \
+    )'
+
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
         --account-name       "$username" \
         --account-password   "$password" \
-        --table-name         "testCreateAccount04" \
         --database-name      "testcreatedatabase" \
+        --table-name         "testcreatetable" \
         --create-table
 
     end_verbatim
@@ -1047,7 +1057,7 @@ EOF
 
     begin_verbatim
     privileges+="CREATEDB,REPLICATION,SUPER"
-    privileges+=";testcreatedatabase.testCreateAccount04:SELECT,INSERT"
+    privileges+=";testcreatedatabase.testcreatetable:SELECT,INSERT"
 
     mys9s cluster \
         --create-account \
