@@ -1919,11 +1919,19 @@ S9sBusinessLogic::executeAccountList(
     S9sRpcReply reply;
     bool        success;
 
+    // to determine the cluster type
+    S9sString   clusterType;
+    success = client.getClusters();
+    reply   = client.reply();
+    S9sVariantList clusterList = reply.clusters();
+    if (clusterList.size() > 0)
+        clusterType = clusterList[0]["cluster_type"].toString();
+
     success = client.getAccounts();
     if (success)
     {
         reply = client.reply();
-        reply.printAccountList();
+        reply.printAccountList(clusterType);
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

@@ -136,7 +136,7 @@ class S9sRpcReply : public S9sVariantMap
         S9sVariantMap getObject() const;
 
         void printGroupList();
-        void printAccountList();
+        void printAccountList(const S9sString &clusterType = S9sString());
         void printDatabaseList();
         void printCurrentMaintenance() const;
         void printNextMaintenance() const;
@@ -354,8 +354,8 @@ class S9sRpcReply : public S9sVariantMap
         void printSqlProcessesLong();
         void printTopQueriesLong();
         
-        void printAccountListBrief();
-        void printAccountListLong();
+        void printAccountListBrief(const S9sString &clusterType = S9sString());
+        void printAccountListLong(const S9sString &clusterType = S9sString());
         
         void printDatabaseListBrief();
         void printDatabaseListLong();

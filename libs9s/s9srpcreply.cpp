@@ -2443,7 +2443,7 @@ S9sRpcReply::printKeys()
  * JSON string format.
  */
 void 
-S9sRpcReply::printAccountList()
+S9sRpcReply::printAccountList(const S9sString &clusterType)
 {
     S9sOptions *options = S9sOptions::instance();
     
@@ -2462,9 +2462,9 @@ S9sRpcReply::printAccountList()
     }
 
     if (options->isLongRequested())
-        printAccountListLong();
+        printAccountListLong(clusterType);
     else
-        printAccountListBrief();
+        printAccountListBrief(clusterType);
 }
 
 void 
@@ -2498,8 +2498,10 @@ S9sRpcReply::printDatabaseList()
  * Prints the account list in short format.
  */
 void 
-S9sRpcReply::printAccountListBrief()
+S9sRpcReply::printAccountListBrief(const S9sString &clusterType)
 {
+    S9S_UNUSED(clusterType)
+
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  accountList = operator[]("accounts").toVariantList();
     bool            syntaxHighlight = options->useSyntaxHighlight();
@@ -2544,7 +2546,7 @@ S9sRpcReply::printAccountListBrief()
  * isues the "s9s account --list --long" combination.
  */
 void 
-S9sRpcReply::printAccountListLong()
+S9sRpcReply::printAccountListLong(const S9sString &clusterType)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  accountList = operator[]("accounts").toVariantList();
@@ -2558,7 +2560,8 @@ S9sRpcReply::printAccountListLong()
     const char     *colorEnd   = "";
     const char     *hostColorBegin = "";
     const char     *hostColorEnd   = "";
-    
+    bool            isPostgres = clusterType.toLower().startsWith("postgre");
+
     /*
      *  Going through first and collecting some informations.
      */
@@ -2577,7 +2580,7 @@ S9sRpcReply::printAccountListLong()
             continue;
 
         if (hostName.empty())
-            hostName = "%";
+            hostName = isPostgres ? "all" : "%";
 
         fullName.sprintf("'%s'@'%s'", STR(accountName), STR(hostName));
 
@@ -2645,7 +2648,7 @@ S9sRpcReply::printAccountListLong()
             continue;
 
         if (hostName.empty())
-            hostName = "%";
+            hostName = isPostgres ? "all" : "%";
 
         if (syntaxHighlight)
         {
