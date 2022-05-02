@@ -1026,13 +1026,13 @@ EOF
             --command="CREATE TABLE IF NOT EXISTS testcreatetable(a INT)" \
     )'
 
-    ${SSH} ${MASTER_IP} '( PGPASSWORD="password04" \
+    ${SSH} ${MASTER_IP} '( su - postgres -c ''PGPASSWORD="password04" \
     psql \
             -t \
             --username="user04" \
             --dbname="testcreatedatabase" \
             --command="CREATE TABLE IF NOT EXISTS testcreatetable(a INT)" \
-    )'
+    )'' '
 
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
