@@ -19,6 +19,9 @@ VERSION="1.9.`date +%Y%m%d%H`"
 # RPM needs the date/time in a very specific format
 RPMDATE=`date +"%a %b %_d %Y"`
 
+echo "VERSION:"
+echo "${VERSION}" | tee version.txt
+
 # debian changelog update
 debchange --newversion "${VERSION}-release1" "Release ${VERSION}."
 # rpm project version update
