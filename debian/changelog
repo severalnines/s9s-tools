@@ -1,8 +1,12 @@
-s9s-tools (1.9.20220412-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2022050221-release1) UNRELEASED; urgency=medium
 
+  [ David Kedves ]
   * new build
 
- -- David Kedves <kedazo@severalnines.com>  Tue, 12 Apr 2022 13:04:27 +0200
+  [ Severalnines ]
+  * Release 1.9.2022050221.
+
+ -- Severalnines <support@severalnines.com>  Mon, 02 May 2022 21:00:16 +0900
 
 s9s-tools (1.9.20220323-release1) UNRELEASED; urgency=medium
 
