@@ -990,8 +990,6 @@ EOF
 function testCreateAccount05()
 {
     local privileges
-    local username="user04"
-    local password="password04"
 
     print_title "Testing Account Management with Options and Database Privileges"
     cat <<EOF
@@ -1008,30 +1006,30 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@$S9S_TEST_NETWORK" \
+        --account="user04:password04@$S9S_TEST_NETWORK" \
         --privileges="$privileges" \
         --debug
     
     check_exit_code_no_job $?
 
-    mys9s account --list --long "$username" --debug
+    mys9s account --list --long "user04" --debug
 
     echo "Creating testcreatetable table in testcreatedatabase database"
 
     MASTER_IP=$(s9s node --list --long | grep "^poM" | awk '{print $5}')
 
-    echo ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
+    echo ${SSH} ${MASTER_IP} '( PGPASSWORD="password04" \
     psql \
             -t \
-            --username="$username" \
+            --username="user04" \
             --dbname="testcreatedatabase" \
             --command="CREATE TABLE IF NOT EXISTS testcreatetable(a INT)" \
     )'
 
-    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="password04" \
     psql \
             -t \
-            --username="$username" \
+            --username="user04" \
             --dbname="testcreatedatabase" \
             --command="CREATE TABLE IF NOT EXISTS testcreatetable(a INT)" \
     )'
@@ -1039,8 +1037,8 @@ EOF
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
-        --account-name       "$username" \
-        --account-password   "$password" \
+        --account-name       "user04" \
+        --account-password   "password04" \
         --database-name      "testcreatedatabase" \
         --table-name         "testcreatetable" \
         --create-table
@@ -1320,7 +1318,7 @@ function testBackupOfDbList()
 
     MASTER_IP=$(s9s node --list --long | grep "^poM" | awk '{print $5}')
 
-    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="password" \
     psql \
             -t \
             --username="tester" \
@@ -1328,7 +1326,7 @@ function testBackupOfDbList()
             --command="CREATE TABLE IF NOT EXISTS testtable1(a INT)" \
     )'
 
-    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="password" \
     psql \
             -t \
             --username="tester" \
@@ -1336,7 +1334,7 @@ function testBackupOfDbList()
             --command="CREATE TABLE IF NOT EXISTS testtable2(a INT)" \
     )'
 
-    ${SSH} ${MASTER_IP} '( PGPASSWORD="$password" \
+    ${SSH} ${MASTER_IP} '( PGPASSWORD="password" \
     psql \
             -t \
             --username="tester" \
