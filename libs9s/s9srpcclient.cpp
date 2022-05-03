@@ -4561,7 +4561,7 @@ S9sRpcClient::createNode()
         {
         } else if (protocol == "redis")
         {
-        } else if (protocol == "redis_sentinel")
+        } else if (protocol == "redis-sentinel")
         {
         } else if (protocol == "mssql")
         {
