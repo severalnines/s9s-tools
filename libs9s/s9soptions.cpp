@@ -184,6 +184,7 @@ enum S9sOptionType
     OptionObjects,
     OptionPrivileges,
     OptionDbName,
+    OptionDbOwner,
     OptionOptGroup,
     OptionOptName,
     OptionOptValue,
@@ -3023,6 +3024,13 @@ S9sString
 S9sOptions::dbName() const
 {
     return getString("db_name");
+}
+
+
+S9sString
+S9sOptions::dbOwner() const
+{
+    return getString("db_owner");
 }
 
 /**
@@ -6298,6 +6306,7 @@ S9sOptions::printHelpCluster()
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --db-name=NAME             The name of the database.\n"
+"  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
@@ -12086,6 +12095,7 @@ S9sOptions::readOptionsCluster(
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "db-name",          required_argument, 0, OptionDbName          },
+        { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "no-install",       no_argument,       0, OptionNoInstall       },
@@ -12607,6 +12617,11 @@ S9sOptions::readOptionsCluster(
             case OptionDbName:
                 // --db-name=NAME
                 m_options["db_name"] = optarg;
+                break;
+
+            case OptionDbOwner:
+                // --db-owner=NAME
+                m_options["db_owner"] = optarg;
                 break;
 
             case OptionObjects:
