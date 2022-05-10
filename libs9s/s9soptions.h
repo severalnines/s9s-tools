@@ -305,6 +305,7 @@ class S9sOptions
         bool withTimescaleDb() const;
 
         S9sString dbName() const;
+        S9sString dbOwner() const;
         S9sString privileges() const;
         
         S9sString optGroup() const;
