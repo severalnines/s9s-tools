@@ -1,3 +1,9 @@
+s9s-tools (1.9.2022051109-release1) UNRELEASED; urgency=medium
+
+  * Fixed the version reporting
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 11 May 2022 09:15:21 +0200
+
 s9s-tools (1.9.2022051102-release1) UNRELEASED; urgency=medium
 
   [ David Kedves ]

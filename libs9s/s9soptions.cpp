@@ -5787,17 +5787,17 @@ S9sOptions::executeInfoRequest()
                "|___/  /_/|___/      \\__\\___/ \\___/|_|___/\n");
         printf("\n");
 
-        printf("%s Version %s (Sweden)\n",
-            PACKAGE_NAME, PACKAGE_VERSION);
+        printf("%s version %s (Sweden)\n",
+            PACKAGE_NAME, BUILD_VERSION);
 
         /*
          * Older installer scripts (install-s9s-tools.sh) are grepping
          * for uppercase 'BUILD', so lets keep it like that for a while
          */
         printf("BUILD (%s-%s) %s\n",
-            PACKAGE_VERSION, GIT_VERSION, BUILD_DATE);
+            BUILD_VERSION, GIT_VERSION, BUILD_DATE);
 
-        printf("Copyright (C) 2016-2020 Severalnines AB\n");
+        printf("Copyright (C) 2016-2022 Severalnines AB\n");
         printf("\n");
         //printf("Written by ...\n");
         return true;
