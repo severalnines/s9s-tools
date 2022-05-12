@@ -65,7 +65,7 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     ##################################################################################
     # setUp
     # setup required nodes for tests (a counter distinguish the base container to use)
-    # @returns void
+    # \return void
     ##################################################################################
     def setUp(self):
         if DEBUG:
@@ -107,7 +107,7 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     ##################################################################################
     # setUp
     # setup required nodes for tests (a counter distinguish the base container to use)
-    # @returns void
+    # \return void
     ##################################################################################
     def tearDown(self):
         # save cluster id to be deleted
@@ -304,7 +304,7 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
 ##################################################################################
 # suite
 # defines the suite of test to be executed and its order
-# @returns void
+# \return void
 ##################################################################################
 def suite():
     tests_suite = unittest.TestSuite()

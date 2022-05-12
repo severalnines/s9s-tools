@@ -49,7 +49,7 @@ class LxdManager:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # get_containers
-    # @returns the list of containers and their state
+    # \return the list of containers and their state
     ###############################################################################
     def get_containers(self):
         return self.lxd_client.containers.all()
@@ -57,7 +57,7 @@ class LxdManager:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # container_exists
     # @container_name: name of the container
-    # @returns true if a container with specified name exists
+    # \return true if a container with specified name exists
     ###############################################################################
     def container_exists(self, container_name):
         try:
@@ -70,7 +70,7 @@ class LxdManager:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # delete_container
     # @container_name: name of the container
-    # @returns true if container was deleted
+    # \return true if container was deleted
     ###############################################################################
     def delete_container(self, container_name):
         container = self.lxd_client.containers.get(container_name)
@@ -87,7 +87,7 @@ class LxdManager:  # pylint: disable=too-few-public-methods
     # copy_container
     # @base_container: name of the container to copy
     # @new_container: name of the container to be created
-    # @returns true if container could be created
+    # \return true if container could be created
     ###############################################################################
     def copy_container(self, base_container, new_container):
         config = {'name': '{}'.format(new_container),
@@ -103,8 +103,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # get_container_ip_cmd
-    # @param container_name: name of the container
-    # @returns the ip of the container given its name
+    # \param container_name: name of the container
+    # \return the ip of the container given its name
     ###############################################################################
     def get_container_ip_cmd(self, container_name):
         command = '{} list | grep {} | cut -d \"|\" -f 4 | cut -d \" \" -f 2 '.format(self.lxc_bin,
@@ -120,8 +120,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # start_container
-    # @param container_name: name of the container to start
-    # @returns true if operation went well
+    # \param container_name: name of the container to start
+    # \return true if operation went well
     ###############################################################################
     def start_container(self, container_name):
         if container_name not in self.instances.keys():
@@ -140,8 +140,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # stop_container
-    # @param container_name: name of the container to stop
-    # @returns true if operation went well
+    # \param container_name: name of the container to stop
+    # \return true if operation went well
     ###############################################################################
     def stop_container(self, container_name):
         if container_name not in self.instances.keys():
@@ -162,8 +162,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # freeze_container
-    # @param container_name: name of the container to freeze
-    # @returns true if operation went well
+    # \param container_name: name of the container to freeze
+    # \return true if operation went well
     ###############################################################################
     def freeze_container(self, container_name):
         if container_name not in self.instances.keys():
@@ -187,8 +187,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # unfreeze_container
-    # @param container_name: name of the container to unfreeze
-    # @returns true if operation went well
+    # \param container_name: name of the container to unfreeze
+    # \return true if operation went well
     ###############################################################################
     def unfreeze_container(self, container_name):
         if container_name not in self.instances.keys():
@@ -214,8 +214,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # get_container_ip
     # returns external ip of the container
-    # @param container_name: name of the container
-    # @return container's IP
+    # \param container_name: name of the container
+    # \return container's IP
     ###############################################################################
     def get_container_ip(self, container_name):
         if container_name not in self.instances.keys():

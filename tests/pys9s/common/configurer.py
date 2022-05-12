@@ -29,9 +29,9 @@ logger_instance = None
 ###############################################################################
 # Name: get_logger
 # Description: returns an initialized logger
-# Arguments: log_filename - filename to write on project's log/ folder
+# \param log_filename: filename to write on project's log/ folder
 #  
-# Returns: logger object
+# \return logger object
 ###############################################################################
 def get_logger(logfile_name=None):
     global logger_instance

@@ -39,10 +39,10 @@ class SysComm:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # exec_bash_function
-    # @param function_name: function to be called
-    # @param args: arguments of the function (as in command line)
-    # @param bash_file: name of the file in which is located the function
-    # @return true if operation went well
+    # \param function_name: function to be called
+    # \param args: arguments of the function (as in command line)
+    # \param bash_file: name of the file in which is located the function
+    # \return true if operation went well
     ###############################################################################
     @staticmethod
     def exec_bash_function(function_name, args, bash_file):
@@ -52,8 +52,8 @@ class SysComm:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # exec_command
     # executes a system command
-    # @param command: command line to execute as in shell
-    # @return dict with "stdout"  and "stderr"
+    # \param command: command line to execute as in shell
+    # \return dict with "stdout"  and "stderr"
     ###############################################################################
     @staticmethod
     def exec_command(command):
@@ -70,9 +70,9 @@ class SysComm:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # get_env_var
     # returns the value of a variable (need to be exported first)
-    # @param name: function to be called
-    # @param default: value to be returned if variable is not defined
-    # @return the value of the variable
+    # \param name: function to be called
+    # \param default: value to be returned if variable is not defined
+    # \return the value of the variable
     ###############################################################################
     @staticmethod
     def get_env_var(name, default):
@@ -86,8 +86,8 @@ class SysComm:  # pylint: disable=too-few-public-methods
     # detect local architecture
     # returns the architecture as the result of the execution of command:
     #   "dpkg --print-architecture"
-    # @param name: function to be called
-    # @return the value of the variable
+    # \param name: function to be called
+    # \return the value of the variable
     ###############################################################################
     @staticmethod
     def local_arch():

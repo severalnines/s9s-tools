@@ -50,7 +50,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
     # Initialize configuration variables required for cli connection
     #   - cmon user credentials
     #   - ssh credentials for nodes
-    # @return true if operation went well
+    # \return true if operation went well
     ###############################################################################
     def load_configuration(self):
         use_ft_full = False
@@ -63,7 +63,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # base_command
-    # @return s9s cli command with some connections parameters
+    # \return s9s cli command with some connections parameters
     ###############################################################################
     def base_command(self, os_creds=False, color=True):
         command = '{}'.format(self.s9s_bin)
@@ -79,8 +79,8 @@ class S9sCli:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # get_cluster_id
-    # @param cluster_name
-    # @return the cluster id for a given cluster_name
+    # \param cluster_name
+    # \return the cluster id for a given cluster_name
     ###############################################################################
     def get_cluster_id(self, cluster_name):
         command = self.base_command()
@@ -105,9 +105,9 @@ class S9sCli:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # get_backup_id
-    # @param backup_title
-    # @param cluster_id
-    # @return the corresponding backup id if any
+    # \param backup_title
+    # \param cluster_id
+    # \return the corresponding backup id if any
     ###############################################################################
     def get_backup_id(self, backup_title, cluster_id=None):
         command = self.base_command()
@@ -141,8 +141,8 @@ class S9sCli:  # pylint: disable=too-few-public-methods
 
     ###############################################################################
     # drop_cluster
-    # @param cluster_id
-    # @return the cluster id for a given cluster_name
+    # \param cluster_id
+    # \return the cluster id for a given cluster_name
     ###############################################################################
     def drop_cluster(self, cluster_id):
         command = self.base_command(color=False)
@@ -165,9 +165,9 @@ class S9sCli:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # exec_s9s_command
     # executes a s9s job command and logs it
-    # @param command: command line to execute as in shell
-    # @param log_job: flag to indicate if job log must be logged on test execution
-    # @return dict with "stdout"  and "stderr"
+    # \param command: command line to execute as in shell
+    # \param log_job: flag to indicate if job log must be logged on test execution
+    # \return dict with "stdout"  and "stderr"
     ###############################################################################
     def exec_s9s_command(self, command, log_job=True):
         ret = SysComm.exec_command(command)
@@ -188,7 +188,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # get_last_job_id
     # returns the job id of the last executed job
-    # @return last job ID
+    # \return last job ID
     ###############################################################################
     def get_last_job_id(self):
         command = self.base_command()
