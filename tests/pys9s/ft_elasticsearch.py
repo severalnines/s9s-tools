@@ -15,10 +15,17 @@
 import tracemalloc
 import unittest
 import time
+import os
+if os.environ["USE_FT_FULL"] is not None:
+   import sys
+   sys.path.insert(1, '/home/pipas/s9s-tools/tests')
 from pys9s.common.lxd_manager import LxdManager
 from pys9s.common.s9s_cli import S9sCli
 from pys9s.common.sys_comm import SysComm
 from pys9s.common.configurer import get_logger
+
+global checks_count
+checks_count = 0
 
 DEBUG = True
 # DEBUG = False
@@ -129,6 +136,8 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     # NAME: deployment_check
     #####################################################################
     def deployment_check(self):
+        global checks_count
+        checks_count = checks_count + 1
         # deploy single node elasticsearch cluster
         admin = "admin"
         admin_passwd = "myPassword"
@@ -170,6 +179,8 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     # NAME: create_backup_check
     #####################################################################
     def create_backup_check(self):
+        global checks_count
+        checks_count = checks_count + 1
         command = self.s9s.base_command()
         command += " backup"
         command += " --create"
@@ -192,6 +203,8 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     # NAME: restore_backup_check
     #####################################################################
     def restore_backup_check(self):
+        global checks_count
+        checks_count = checks_count + 1
         command = self.s9s.base_command()
         command += " backup"
         command += " --restore"
@@ -214,6 +227,8 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     # NAME: delete_backup_check
     #####################################################################
     def delete_backup_check(self):
+        global checks_count
+        checks_count = checks_count + 1
         command = self.s9s.base_command()
         command += " backup"
         command += " --delete"
@@ -238,6 +253,8 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     # NAME: freeze_node_check
     #####################################################################
     def freeze_node_check(self):
+        global checks_count
+        checks_count = checks_count + 1
         # freeze node, wait and check FAILURE status
         status = "STARTED"
         self.client.stop_container(self.container_name)
@@ -252,6 +269,8 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     # NAME: recover_node_check
     #####################################################################
     def recover_node_check(self):
+        global checks_count
+        checks_count = checks_count + 1
         # recover node, wait and check STARTED states
         status = "FAILURE"
         self.client.start_container(self.container_name)
@@ -316,3 +335,17 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+
+    # add checks to global results
+    results = unittest.TestResult()
+    num_errors = len(results.errors)
+    num_fails = len(results.failures)
+    num_skipped = len(results.skipped)
+    num_success = checks_count - (num_skipped + num_errors + num_fails)
+    SysComm.incr_env_var("NUMBER_OF_PERFORMED_CHECKS", checks_count)
+    SysComm.incr_env_var("NUMBER_OF_SUCCESS_CHECKS", num_success)
+    SysComm.incr_env_var("NUMBER_OF_WARNING_CHECKS", num_skipped)
+    SysComm.incr_env_var("NUMBER_OF_FAILED_CHECKS", num_fails + num_errors)
+    ok = results.wasSuccessful()
+    SysComm.set_env_var("FAILED", "no")
+    exit(ok)

@@ -70,7 +70,7 @@ class SysComm:  # pylint: disable=too-few-public-methods
     ###############################################################################
     # get_env_var
     # returns the value of a variable (need to be exported first)
-    # \param name: function to be called
+    # \param name: name of the parameter
     # \param default: value to be returned if variable is not defined
     # \return the value of the variable
     ###############################################################################
@@ -80,6 +80,37 @@ class SysComm:  # pylint: disable=too-few-public-methods
             return os.environ[name]
         else:
             return default
+
+    ###############################################################################
+    # set_env_var
+    # sets the value of an environment variable
+    # \param name: name of the parameter
+    # \param value: value to set
+    # \return true if no error
+    ###############################################################################
+    @staticmethod
+    def set_env_var(name, value):
+        if name in os.environ:
+            os.environ[name] = value
+            os.system("echo export {}=${} >> .pys9s_results_env".format(name, name))
+            return True
+        return False
+
+    ###############################################################################
+    # incr_env_var
+    # increments the value of an environment variable if exists and its numeric
+    # \param name: name of the parameter
+    # \param value: value to increment
+    # \return true if no error
+    ###############################################################################
+    @staticmethod
+    def incr_env_var(name, value):
+        current = SysComm.get_env_var(name, "undef")
+        if current == "undef" or not current.isnumeric():
+            return False
+        n_val  = int(value)
+        n_curr = int(current)
+        return SysComm.set_env_var(name, str(n_curr+n_val))
 
     ###############################################################################
     # local_arch

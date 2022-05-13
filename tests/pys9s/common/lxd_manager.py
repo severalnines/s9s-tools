@@ -18,7 +18,8 @@ from pys9s.common.sys_comm import SysComm
 from pylxd.exceptions import NotFound, LXDAPIException
 from pys9s.common.configurer import get_logger
 
-secs_between_steps = 5
+secs_between_steps      = 5       # seconds to wait between tests steps
+err_chars_threshold     = 3       # number of chars on stderr to detect command failure
 
 
 class LxdManager:  # pylint: disable=too-few-public-methods

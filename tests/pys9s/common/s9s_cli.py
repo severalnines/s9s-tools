@@ -22,6 +22,7 @@ from pys9s.common.configurer import get_logger
 ######################################
 controller_port_ft_full = "9556"  # pointing to ft_full (9556)
 controller_port_cmon    = "9501"  # against real cmon   (9501)
+err_chars_threshold     = 3       # number of chars on stderr to detect command failure
 
 class S9sCli:  # pylint: disable=too-few-public-methods
     """ implementation class for assisting on s9s cli commands generation """
@@ -53,11 +54,14 @@ class S9sCli:  # pylint: disable=too-few-public-methods
     # \return true if operation went well
     ###############################################################################
     def load_configuration(self):
-        use_ft_full = False
+        use_ft_full = True if SysComm.get_env_var("USE_FT_FULL", "NO") == "YES" else False
         self.ssh_user = "root"
         self.ssh_user_cert = "/home/alvaro/.ssh/id_rsa"  # ssh private key
-        self.cmon_user = "pipas" if use_ft_full else "ccalvaro"
-        self.cmon_pass = "secret" if use_ft_full else "vinu"
+        self.cmon_user = "pipas" if use_ft_full else "pipas"
+        print("cmon user : " + self.cmon_user)
+        self.logger.info("cmon user: {}".format(self.cmon_user))
+        # assuming that pipas has ssh key added (include.sh -> grant_users )
+        self.cmon_pass = None if use_ft_full else "p"
         self.controller = "localhost"
         self.controller_port = controller_port_ft_full if use_ft_full else controller_port_cmon
 
@@ -71,7 +75,8 @@ class S9sCli:  # pylint: disable=too-few-public-methods
             command += ' --color=always'
         command += ' --controller=https://{}:{}'.format(self.controller, self.controller_port)
         command += ' --cmon-user={}'.format(self.cmon_user)
-        command += ' --password={}'.format(self.cmon_pass)
+        if self.cmon_pass is not None:
+            command += ' --password={}'.format(self.cmon_pass)
         if os_creds:
             command += ' --os-user={}'.format(self.ssh_user)
             command += ' --os-key-file={}'.format(self.ssh_user_cert)
@@ -91,7 +96,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
         command += ' --cluster-name={}'.format(cluster_name)
         self.logger.info("Executing: {}".format(command))
         result = SysComm.exec_command(command)
-        if len(result["stderr"]) > 3:
+        if len(result["stderr"]) > err_chars_threshold:
             self.logger.error(result["stderr"])
             return None, None
         else:
@@ -119,7 +124,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
         command += ' --batch'
         self.logger.info("Executing: {}".format(command))
         result = SysComm.exec_command(command)
-        if len(result["stderr"]) > 3:
+        if len(result["stderr"]) > err_chars_threshold:
             self.logger.error(result["stderr"])
             return None
         else:
@@ -155,7 +160,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
         command += ' --log'
         self.logger.debug("Executing: {}".format(command))
         result = SysComm.exec_command(command)
-        if len(result["stderr"]) > 3:
+        if len(result["stderr"]) > err_chars_threshold:
             self.logger.error(result["stderr"])
             return False
         else:
@@ -197,7 +202,7 @@ class S9sCli:  # pylint: disable=too-few-public-methods
         command += " --batch"
         command += ""
         result = SysComm.exec_command(command)
-        if len(result["stderr"]) > 3:
+        if len(result["stderr"]) > err_chars_threshold:
             self.logger.error(result["stderr"])
             return None, None
         else:
@@ -211,3 +216,27 @@ class S9sCli:  # pylint: disable=too-few-public-methods
             if not jid.isnumeric():
                 return None, None
             return jid, jstatus
+
+    ###############################################################################
+    # get_user
+    # \return user id if the user exists (otherwise None)
+    ###############################################################################
+    def get_user(self, user_name):
+        command = self.base_command()
+        command += " user"
+        command += " --list"
+        command += " --long"
+        command += " --batch"
+        command += ""
+        result = SysComm.exec_command(command)
+        if len(result["stderr"]) > err_chars_threshold:
+            self.logger.error(result["stderr"])
+            return None
+        else:
+            lines = result["stdout"].split('\n')
+            uid = None
+            for line in lines:
+                self.logger.debug("line: {}".format(line))
+                if line.__contains__(user_name):
+                    uid = line.split(' ')[1]
+            return uid
