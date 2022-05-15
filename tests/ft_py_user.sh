@@ -9,9 +9,9 @@ reset_config
 grant_user
 
 # call python test (environment variables exported on include are visible for python test)
-rm .pys9s_results_env
+rm .pys9s_results_env 2>/dev/null
 export USE_FT_FULL="YES"
-python pys9s/ft_user.py
+python333 pys9s/ft_user.py
 # python test should fulfilled in all required environment variables on .pys9s_results_env
 export $(grep -v '^#' .pys9s_results_env | xargs)
 

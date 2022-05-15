@@ -16,13 +16,15 @@ import tracemalloc
 import unittest
 import time
 import os
-if os.environ["USE_FT_FULL"] is not None:
-   import sys
-   sys.path.insert(1, '/home/pipas/s9s-tools/tests')
-from pys9s.common.lxd_manager import LxdManager
+
+if "USE_FT_FULL" in os.environ and os.environ["USE_FT_FULL"] is not None:
+    import sys
+
+    sys.path.insert(1, '/home/pipas/s9s-tools/tests')
 from pys9s.common.s9s_cli import S9sCli
+from pys9s.common.lxd_manager import LxdManager
 from pys9s.common.sys_comm import SysComm
-from pys9s.common.configurer import get_logger
+from pys9s.common.configurer import get_logger, get_lxd_client_cert, get_lxd_server_cert, get_lxd_server_conn
 
 global checks_count
 checks_count = 0
@@ -53,15 +55,9 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
         # init s9s client
         self.s9s = S9sCli()
         # init lxd client
-        port = '8443'
-        lxc_server = SysComm.get_env_var("SERVER", "127.0.0.1")
-        self.logger.info("using lxd server: {}".format(lxc_server))
-        client_cert = ('/home/alvaro/snap/lxd/common/config/client.crt',
-                       '/home/alvaro/snap/lxd/common/config/client.key')
-        server_cert = '/var/snap/lxd/common/lxd/server.crt'
-        self.client = LxdManager(_endpoint='https://{}:{}'.format(lxc_server, port),
-                                 _cert=client_cert,
-                                 _verify=server_cert)
+        self.client = LxdManager(_endpoint=get_lxd_server_conn(),
+                                 _cert=get_lxd_client_cert(),
+                                 _verify=get_lxd_server_cert())
         self.test_counter = 0
         self.container_name = None
         self.cluster_name = None
@@ -274,7 +270,7 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
         # recover node, wait and check STARTED states
         status = "FAILURE"
         self.client.start_container(self.container_name)
-        for i in range(1, 5*num_attempts):
+        for i in range(1, 5 * num_attempts):
             time.sleep(secs_between_steps)
             self.cluster_id, status = self.s9s.get_cluster_id(self.cluster_name)
             if status == 'STARTED':
