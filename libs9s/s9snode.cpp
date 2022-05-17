@@ -904,9 +904,9 @@ S9sNode::roleFlag() const
 
     if(roles.empty())
     {
-        if (theRole == "master")
+        if (theRole == "master" || theRole.toLower() == "primary")
             return 'M';
-        else if (theRole == "slave")
+        else if (theRole == "slave" || theRole.toLower() == "secondary")
             return 'S';
         else if (theRole == "multi")
             return 'U';
@@ -1162,7 +1162,9 @@ S9sNode::nodeTypeFlag() const
         return 'R';
     else if (className() == "CmonElasticHost")
         return 'E';
-    
+    else if (className() == "CmonMsSqlHost")
+        return '$';
+
     return '?';
 }
 
