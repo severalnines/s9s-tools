@@ -29,7 +29,9 @@ source ./include.sh
 source ./shared_test_cases.sh
 
 #ElasticSearch_DB_ADMIN_PASSWD=$(generate_strong_password)
-ElasticSearch_DB_ADMIN_PASSWD="S9ss9ss9s_"
+SNAPSHOT_LOCATION="/mnt/data"
+SNAPSHOT_REPO="cc_snapshots"
+ElasticSearch_DB_ADMIN_PASSWD="myPassword"
 
 #
 # Prints usage information and exits.
@@ -147,34 +149,25 @@ EOF
     # Creating containers.
     #
     nodeName=$(create_node --autodestroy --os-vendor=ubuntu --os-release=focal $node1)
-    nodes+="$nodeName"
-    #nodes+="elastic://$nodeName;"
-    FIRST_ADDED_NODE=$nodeName
+    nodes+="$node1"
+    nodes+="?roles=master-data"
+    FIRST_ADDED_NODE=$node1
 
     #
     # Creating a ElasticSearch cluster.
     #
-    #mys9s cluster \
-    #    --create \
-    #    --job-tags="createCluster" \
-    #    --cluster-type=elasticsearch_single \
-    #    --nodes="$nodes" \
-    #    --cluster-name="$CLUSTER_NAME" \
-    #    --db-admin="SQLServerAdmin" \
-    #    --db-admin-passwd="$ElasticSearch_DB_ADMIN_PASSWD" \
-    #    --vendor="elasticsearch" \
-    #    --print-request \
-    #    --with-tags="myMssqlCluster" \
-    #    $LOG_OPTION \
-    #    $DEBUG_OPTION
-
     mys9s cluster \
         --create \
+        --job-tags="createCluster" \
+        --snapshot-location=$SNAPSHOT_LOCATION \
+        --snapshot-repository=$SNAPSHOT_REPO \
         --cluster-type=elastic \
         --nodes="$nodes" \
-        --vendor=elasticsearch \
         --cluster-name="$CLUSTER_NAME" \
-        --provider-version=7.16 \
+        --db-admin="admin" \
+        --db-admin-passwd="$ElasticSearch_DB_ADMIN_PASSWD" \
+        --vendor="elasticsearch" \
+        --provider-version=8.x \
         --print-request \
         $LOG_OPTION \
         $DEBUG_OPTION
@@ -222,7 +215,7 @@ EOF
         --owner      "$PROJECT_OWNER" \
         --group      "testgroup" \
         --cdt-path   "/" \
-        --type       "ElasticSearch_SINGLE" \
+        --type       "elasticsearch" \
         --state      "STARTED" \
 
     end_verbatim
@@ -314,7 +307,7 @@ if [ "$OPTION_INSTALL" ]; then
     else
         runFunctionalTest testCreateCluster
         #runFunctionalTest testUploadData
-        runFunctionalTest testCreateBackup
+        #runFunctionalTest testCreateBackup
     fi
 elif [ "$1" ]; then
     for testName in $*; do
@@ -323,19 +316,12 @@ elif [ "$1" ]; then
 else
     runFunctionalTest testCreateCluster
     #runFunctionalTest testUploadData
-    runFunctionalTest testCreateBackup
+    #runFunctionalTest testCreateBackup
     #runFunctionalTest testVerifyBackup
     #runFunctionalTest testRestoreBackup
     #runFunctionalTest testRemoveBackup
 
 fi
 
-begin_verbatim
-
-cat <<EOF
-./tests/ft_graph01/ft_graph01.sh --top-begin="$INSTALL_START_TIME" --top-end="$INSTALL_END_TIME" --report-title="ElasticSearch single server test (ft_elasticsearchsingleserver.sh)" --highlight-title="Cluster Install and db backup" --output-dir=report2
-EOF
-
-end_verbatim
 
 endTests

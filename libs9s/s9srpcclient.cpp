@@ -8703,6 +8703,7 @@ S9sRpcClient::createDatabase()
 
     database["class_name"]    = "CmonDataBase";
     database["database_name"] = options->dbName();
+    database["database_owner"] = options->dbOwner();
 
     request["operation"]      = "createDatabase";
     request["database"]       = database;

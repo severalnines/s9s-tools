@@ -1,4 +1,10 @@
-s9s-tools (1.9.2022050221-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2022051109-release1) UNRELEASED; urgency=medium
+
+  * Fixed the version reporting
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 11 May 2022 09:15:21 +0200
+
+s9s-tools (1.9.2022051102-release1) UNRELEASED; urgency=medium
 
   [ David Kedves ]
   * new build
@@ -6,8 +12,9 @@ s9s-tools (1.9.2022050221-release1) UNRELEASED; urgency=medium
   [ Severalnines ]
   * Release 1.9.2022050221.
   * Release 1.9.2022050221.
+  * Release 1.9.2022051102.
 
- -- Severalnines <support@severalnines.com>  Mon, 02 May 2022 21:00:30 +0900
+ -- Severalnines <support@severalnines.com>  Wed, 11 May 2022 02:46:49 +0900
 
 s9s-tools (1.9.20220323-release1) UNRELEASED; urgency=medium
 
