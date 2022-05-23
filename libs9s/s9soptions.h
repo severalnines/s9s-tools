@@ -342,6 +342,7 @@ class S9sOptions
         S9sString subDirectory() const;
         S9sString backupDir() const;
         S9sString snapshotRepositoryName() const;
+        S9sString snapshotRepositoryType() const;
         S9sString snapshotLocation() const;
         S9sString storageHost() const;
         S9sString pitrStopTime() const;

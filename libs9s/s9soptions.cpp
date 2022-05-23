@@ -120,6 +120,7 @@ enum S9sOptionType
     OptionKeepTempDir,
     OptionTempDirPath,
     OptionSnapshotRepo,
+    OptionSnapshotRepoType,
     OptionSnapshotLocation,
     OptionStorageHost,
     OptionSubDirectory,
@@ -3074,6 +3075,28 @@ S9sOptions::snapshotRepositoryName() const
 
     return retval;
 }
+
+/**
+ * \returns The argument for the --snapshot-repotype option or the
+ *   snapshot_repository_type config value.
+ */
+S9sString
+S9sOptions::snapshotRepositoryType() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("snapshot_repository_type"))
+    {
+        retval = m_options.at("snapshot_repository_type").toString();
+    } else {
+        retval = m_userConfig.variableValue("snapshot_repository_type");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("snapshot_repository_type");
+    }
+
+    return retval;
+}
+
 
 /**
  * \returns The argument for the --snapshot-location option or the
@@ -6110,6 +6133,7 @@ S9sOptions::printHelpBackup()
 "  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
 "  --snapshot-repository=NAME The name of the snapshot repository to be used (only elasticsearch cluster).\n"
+"  --snapshot-repo-type=TYPE  The type of the snapshot repository to create (fs, fs-nfs, s3).\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -6353,6 +6377,7 @@ S9sOptions::printHelpCluster()
 "  --license=STRING           The license (Evaluation, Developer, etc).\n"
 "Elasticsearch related options\n"
 "  --snapshot-repository=NAME The name of the default snapshot repository to create.\n"
+"  --snapshot-repo-type=TYPE  The type of the snapshot repository to create (fs or fs-nfs).\n"
 "  --snapshot-location=PATH   The path of the default snapshot repository to create.\n"
 "  --storage-host=NAME        The host storaging the default snapshot repository to create.\n"
 "\n");
@@ -7251,6 +7276,7 @@ S9sOptions::readOptionsBackup(
         { "keep-temp-dir",    no_argument,       0, OptionKeepTempDir     },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
+        { "snapshot-repo-type",required_argument,0, OptionSnapshotRepoType},
         { "snapshot-location",required_argument, 0, OptionSnapshotLocation},
         { "storage-host",     required_argument, 0, OptionStorageHost     },
         { "test-server",      required_argument, 0, OptionTestServer      },
@@ -7615,6 +7641,11 @@ S9sOptions::readOptionsBackup(
             case OptionSnapshotRepo:
                 // --snapshot-repository=NAME
                 m_options["snapshot_repository"] = optarg;
+                break;
+
+            case OptionSnapshotRepoType:
+                // --snapshot-repo-type=TYPE
+                m_options["snapshot_repository_type"] = optarg;
                 break;
 
             case OptionSnapshotLocation:
@@ -12165,6 +12196,7 @@ S9sOptions::readOptionsCluster(
 
         // Opttions for elasticsearch
         { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
+        { "snapshot-repo-type",  required_argument, 0, OptionSnapshotRepoType },
         { "snapshot-location",required_argument, 0, OptionSnapshotLocation},
         { "storage-host",     required_argument, 0, OptionStorageHost     },
 
@@ -12876,6 +12908,11 @@ S9sOptions::readOptionsCluster(
             case OptionSnapshotRepo:
                 // --snapshot-repository=NAME
                 m_options["snapshot_repository"] = optarg;
+                break;
+
+            case OptionSnapshotRepoType:
+                // --snapshot-repo-type=TYPE
+                m_options["snapshot_repository_type"] = optarg;
                 break;
 
             case OptionSnapshotLocation:
