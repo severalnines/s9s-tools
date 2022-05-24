@@ -2369,6 +2369,103 @@ S9sRpcReply::printBackupSchedulesLong()
 }
 
 void 
+S9sRpcReply::printSnapshotRepositories()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else if (options->isLongRequested())
+    {
+        printSnapshotRepositoriesLong();
+    } else {
+        printSnapshotRepositoriesBrief();
+    }
+}
+
+
+
+/**
+ * Prints the snapshot repositories in brief format.
+ */
+void
+S9sRpcReply::printSnapshotRepositoriesBrief()
+{
+    S9sVariantList repos = operator[]("snapshot_repositories").toVariantList();
+
+    for (uint idx = 0u; idx < repos.size(); ++idx)
+    {
+        S9sVariantMap repoMap = repos[idx].toVariantMap();
+        int           snapshotName  = repoMap["name"].toInt();
+
+        ::printf("%d\n", snapshotName);
+    }
+}
+
+/**
+ * Prints the snapshot repository in long format.
+ */
+void
+S9sRpcReply::printSnapshotRepositoriesLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList repositories = operator[]("snapshot_repositories").toVariantList();
+    S9sFormat      nameFormat;
+    S9sFormat      clusterIdFormat;
+    S9sFormat      typeFormat;
+    int            nLines = 0;
+
+    for (uint idx = 0u; idx < repositories.size(); ++idx)
+    {
+        S9sVariantMap repoMap = repositories[idx].toVariantMap();
+        S9sVariantMap jobMap      = repoMap["job"].toVariantMap();
+        S9sVariantMap jobDataMap  = jobMap["job_data"].toVariantMap();
+        S9sString     repoName    = repoMap["name"].toString();
+        int           clusterId   = repoMap["cluster_id"].toInt();
+        S9sString     type        = repoMap["type"].toString();
+
+
+        nameFormat.widen(repoName);
+        clusterIdFormat.widen(clusterId);
+        typeFormat.widen(type);
+        ++nLines;
+    }
+    
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        nameFormat.printHeader("NAME");
+        clusterIdFormat.printHeader("CID");
+        typeFormat.printHeader("TYPE");
+        printf("%s", headerColorEnd());
+        printf("\n");        
+    }
+    
+    for (uint idx = 0u; idx < repositories.size(); ++idx)
+    {
+        S9sVariantMap repoMap = repositories[idx].toVariantMap();
+        S9sVariantMap jobMap      = repoMap["job"].toVariantMap();
+        S9sVariantMap jobDataMap  = jobMap["job_data"].toVariantMap();
+        S9sString     repoName    = repoMap["name"].toString();
+        int           clusterId   = repoMap["cluster_id"].toInt();
+        S9sString     type        = repoMap["type"].toString();
+        
+        nameFormat.printf(repoName);
+        clusterIdFormat.printf(clusterId);
+        typeFormat.printf(type);
+
+    }
+    
+    if (!options->isBatchRequested())
+        ::printf("Total: %d snapshot repository(ies)\n", nLines);
+}
+
+
+void 
 S9sRpcReply::printBackupList()
 {
     S9sOptions *options = S9sOptions::instance();

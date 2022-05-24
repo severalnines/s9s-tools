@@ -341,9 +341,15 @@ class S9sOptions
         
         S9sString subDirectory() const;
         S9sString backupDir() const;
+        bool      hasSnapshotRepositoryNameOption() const;
         S9sString snapshotRepositoryName() const;
+        bool      hasSnapshotRepositoryTypeOption() const;
         S9sString snapshotRepositoryType() const;
         S9sString snapshotLocation() const;
+        bool      hasS3bucketOption() const;
+        S9sString s3bucket() const;
+        bool      hasS3regionOption() const;
+        S9sString s3region() const;
         S9sString storageHost() const;
         S9sString pitrStopTime() const;
         S9sString backupMethod() const;
@@ -436,6 +442,9 @@ class S9sOptions
         bool isListMemoryRequested() const;
         bool isListSchedulesRequested() const;
         bool isCreateScheduleRequested() const;
+        bool isListSnapshotRepositoryRequested() const;
+        bool isCreateSnapshotRepositoryRequested() const;
+        bool isDeleteSnapshotRepositoryRequested() const;
         bool isGetAclRequested() const;
         bool isCatRequested() const;
         bool isAccessRequested() const;

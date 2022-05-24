@@ -122,6 +122,8 @@ enum S9sOptionType
     OptionSnapshotRepo,
     OptionSnapshotRepoType,
     OptionSnapshotLocation,
+    OptionS3Bucket,
+    OptionS3Region,
     OptionStorageHost,
     OptionSubDirectory,
     OptionBackupEncryption,
@@ -352,7 +354,9 @@ enum S9sOptionType
     OptionAlarmId,
     OptionLogFile,
     OptionCredentialId,
-    OptionCreateSnaphot,
+    OptionCreateSnaphotRepository,
+    OptionListSnaphotRepository,
+    OptionDeleteSnaphotRepository,
     
     OptionConfigTemplate,
     OptionHaProxyConfigTemplate,
@@ -3055,6 +3059,13 @@ S9sOptions::backupDir() const
     return retval;
 }
 
+bool
+S9sOptions::hasSnapshotRepositoryNameOption() const
+{
+    return m_options.contains("snapshot_repository");
+}
+
+
 /**
  * \returns The argument for the --snapshot-repository option or the
  *   snapshot_repository config value.
@@ -3076,6 +3087,13 @@ S9sOptions::snapshotRepositoryName() const
     return retval;
 }
 
+bool
+S9sOptions::hasSnapshotRepositoryTypeOption() const
+{
+    return m_options.contains("snapshot_repository_type");
+}
+
+
 /**
  * \returns The argument for the --snapshot-repotype option or the
  *   snapshot_repository_type config value.
@@ -3096,6 +3114,61 @@ S9sOptions::snapshotRepositoryType() const
 
     return retval;
 }
+
+bool
+S9sOptions::hasS3bucketOption() const
+{
+    return m_options.contains("s3_bucket");
+}
+
+/**
+ * \returns The argument for the --s3-bucket option or the
+ *   s3_bucket value.
+ */
+S9sString
+S9sOptions::s3bucket() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("s3_bucket"))
+    {
+        retval = m_options.at("s3_bucket").toString();
+    } else {
+        retval = m_userConfig.variableValue("s3_bucket");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("s3_bucket");
+    }
+
+    return retval;
+}
+
+bool
+S9sOptions::hasS3regionOption() const
+{
+    return m_options.contains("s3_region");
+}
+
+/**
+ * \returns The argument for the --s3-region option or the
+ *   s3_region value.
+ */
+S9sString
+S9sOptions::s3region() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("s3_region"))
+    {
+        retval = m_options.at("s3_region").toString();
+    } else {
+        retval = m_userConfig.variableValue("s3_region");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("s3_region");
+    }
+
+    return retval;
+}
+
 
 
 /**
@@ -3901,6 +3974,35 @@ S9sOptions::isCreateScheduleRequested() const
 {
     return getBool("create_schedule");
 }
+
+/**
+ * \returns True if the --list-snapshot-repositories command line option is provided.
+ */
+bool
+S9sOptions::isListSnapshotRepositoryRequested() const
+{
+    return getBool("list_snapshot_repositories");
+}
+
+/**
+ * \returns True if the --delete-snapshot-repository command line option is provided.
+ */
+bool
+S9sOptions::isDeleteSnapshotRepositoryRequested() const
+{
+    return getBool("delete_snapshot_repository");
+}
+
+
+/**
+ * \returns True if the --create-snapshot-repository command line option is provided.
+ */
+bool
+S9sOptions::isCreateSnapshotRepositoryRequested() const
+{
+    return getBool("create_snapshot_repository");
+}
+
 
 /**
  * \returns True if the --get-acl command line option is provided.
@@ -6093,20 +6195,23 @@ S9sOptions::printHelpBackup()
 
     printf(
 "Options for the \"backup\" command:\n"
-"  --create                   Create a new backup.\n"
-"  --create-schedule          Crate a backup schedule.\n"
-"  --delete                   Delete a previously created backup.\n"
-"  --delete-old               Delete old backups.\n"
-"  --list-databases           List the backups in database format.\n"
-"  --list-files               List the backups in backup file format.\n"
-"  --list                     List the backups.\n"
-"  --list-schedules           List the backup schedules.\n"
-"  --restore-cluster-info     Restores a saved cluster object.\n"
-"  --restore-controller       Restores the controller from a file.\n"
-"  --restore                  Restore an existing backup.\n"
-"  --save-cluster-info        Saves the information about one cluster.\n"
-"  --save-controller          Saves the entire controller into a file.\n"
-"  --verify                   Verify an existing backup on a test server.\n"
+"  --create                       Create a new backup.\n"
+"  --create-schedule              Crate a backup schedule.\n"
+"  --delete                       Delete a previously created backup.\n"
+"  --delete-old                   Delete old backups.\n"
+"  --list-databases               List the backups in database format.\n"
+"  --list-files                   List the backups in backup file format.\n"
+"  --list                         List the backups.\n"
+"  --list-schedules               List the backup schedules.\n"
+"  --restore-cluster-info         Restores a saved cluster object.\n"
+"  --restore-controller           Restores the controller from a file.\n"
+"  --restore                      Restore an existing backup.\n"
+"  --save-cluster-info            Saves the information about one cluster.\n"
+"  --save-controller              Saves the entire controller into a file.\n"
+"  --verify                       Verify an existing backup on a test server.\n"
+"  --create-snapshot-repository   Create a snapshot repository on elastisearch cluster.\n"
+"  --list-snapshot-repository     List the snapshot repositories on elastisearch cluster.\n"
+"  --delete-snapshot-repository   Deletes a snapshot repository on elastisearch cluster.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
@@ -6134,6 +6239,9 @@ S9sOptions::printHelpBackup()
 "  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
 "  --snapshot-repository=NAME The name of the snapshot repository to be used (only elasticsearch cluster).\n"
 "  --snapshot-repo-type=TYPE  The type of the snapshot repository to create (fs, fs-nfs, s3).\n"
+"  --credential-id=ID         The required cloud credential ID to use on snapshot repository.\n"
+"  --s3-bucket=NAME           The name of the s3 bucket to use on the snapshot repository\n"
+"  --s3-region=STRING         The name of the region storing s3 bucket. (example: eu-west-3)\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -7236,6 +7344,9 @@ S9sOptions::readOptionsBackup(
         { "save-cluster-info", no_argument,      0, OptionSaveCluster     },
         { "save-controller",  no_argument,       0, OptionSaveController  },
         { "verify",           no_argument,       0, OptionVerify          },
+        { "create-snapshot-repository", no_argument, 0, OptionCreateSnaphotRepository},
+        { "list-snapshot-repository",   no_argument, 0, OptionListSnaphotRepository},
+        { "delete-snapshot-repository", no_argument, 0, OptionDeleteSnaphotRepository},
         
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
@@ -7279,6 +7390,9 @@ S9sOptions::readOptionsBackup(
         { "snapshot-repo-type",required_argument,0, OptionSnapshotRepoType},
         { "snapshot-location",required_argument, 0, OptionSnapshotLocation},
         { "storage-host",     required_argument, 0, OptionStorageHost     },
+        { "credential-id",    required_argument, 0, OptionCredentialId    },
+        { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
+        { "s3-region",        required_argument, 0, OptionS3Region        },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
@@ -7656,6 +7770,37 @@ S9sOptions::readOptionsBackup(
             case OptionStorageHost:
                 // --storage-host=NAME
                 m_options["storage_host"] = optarg;
+                break;
+
+
+            case OptionCreateSnaphotRepository:
+                // --create-snapshot-repository
+                m_options["create_snapshot_repository"] = true;
+                break;
+
+            case OptionListSnaphotRepository:
+                // --list-snapshot-repository
+                m_options["list_snapshot_repositories"] = true;
+                break;
+
+            case OptionDeleteSnaphotRepository:
+                // --delete-snapshot-repository
+                m_options["delete_snapshot_repository"] = true;
+                break;
+
+            case OptionCredentialId:
+                // --credential-id=ID
+                m_options["credential_id"] = optarg;
+                break;
+
+            case OptionS3Bucket:
+                // --s3-bucket=NAME
+                m_options["s3_bucket"] = optarg;
+                break;
+
+            case OptionS3Region:
+                // --s3-region=STRING
+                m_options["s3_region"] = optarg;
                 break;
 
             case OptionSubDirectory:
@@ -9659,6 +9804,15 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
     
     if (isCreateScheduleRequested())
+        countOptions++;
+
+    if (isCreateSnapshotRepositoryRequested())
+        countOptions++;
+
+    if (isListSnapshotRepositoryRequested())
+        countOptions++;
+
+    if (isDeleteSnapshotRepositoryRequested())
         countOptions++;
 
     if (countOptions > 1)
@@ -14616,7 +14770,6 @@ S9sOptions::readOptionsController(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
-        { "create-snapshot",  no_argument,       0, OptionCreateSnaphot   },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
@@ -14756,9 +14909,19 @@ S9sOptions::readOptionsController(
             /*
              * Main options.
              */
-            case OptionCreateSnaphot:
-                // --create-snapshot
-                m_options["create_snapshot"] = true;
+            case OptionCreateSnaphotRepository:
+                // --create-snapshot-repository
+                m_options["create_snapshot_repository"] = true;
+                break;
+
+            case OptionListSnaphotRepository:
+                // --list-snapshot-repository
+                m_options["list_snapshot_repositories"] = true;
+                break;
+
+            case OptionDeleteSnaphotRepository:
+                // --delete-snapshot-repository
+                m_options["delete_snapshot_repository"] = true;
                 break;
 
             case OptionEnableCmonHa:

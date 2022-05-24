@@ -876,6 +876,19 @@ S9sBusinessLogic::execute()
         {
             printBackupSchedules(client);
             client.setExitStatus();
+        } else if (options->isCreateSnapshotRepositoryRequested())
+        {
+            success = client.createSnapshotRepository();
+            client.printMessages("Created.", success);
+            client.setExitStatus();
+        } else if (options->isListSnapshotRepositoryRequested())
+        {
+            printSnapshotRepositories(client);
+            client.setExitStatus();
+        } else if (options->isDeleteSnapshotRepositoryRequested())
+        {
+            deleteSnapshotRepository(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createBackup();
@@ -1867,6 +1880,41 @@ S9sBusinessLogic::printBackupSchedules(
     {
         reply = client.reply();
         reply.printBackupSchedules();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::printSnapshotRepositories(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getSnapshotRepositories(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printBackupSchedules();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void 
+S9sBusinessLogic::deleteSnapshotRepository(
+        S9sRpcClient &client)
+{
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.deleteSnapshotRepository();
+    if (success)
+    {
+        reply = client.reply();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

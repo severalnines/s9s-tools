@@ -291,6 +291,56 @@ s9s backup \\
     --wait 
 .fi
 
+.TP
+.B \-\^\-create-snapshot-repository
+Creates a job to create a snapshot repository on elasticsearch cluster. When this main option is used the 
+\fB\-\^\-cluster\-id\fP option has to be used to identify the cluster, the 
+\fB\-\^\-snapshot\-repository\-type\fP defines the allowed type (example: "s3") 
+\fB\-\^\-snapshot\-repository\fP to specify the repository name,  
+\fB\-\^\-credential\-id\fP to specify the cloud credentials to use, 
+\fB\-\^\-s3\-bucket\fP is also necessary to provide s3 bucket to use for this repository. 
+Additionally, it is possible to specify \fB\-\^\-s3\-region\fP.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --create-snapshot-repository \\
+    --cluster-id=1 \\
+    --snapshot-repo-type=s3 \\
+    --snapshot-repository=mySnapshotRepository \\
+    --credential-id=1 \\
+    --s3-bucket=elastic-s3-test \\
+    --s3-region=eu-west-3 \\
+    --wait 
+.fi
+
+.TP
+.B \-\^\-list-snapshot-repository
+Creates a job to list the snapshot repositories on an elasticsearch cluster. When this main option is used the 
+\fB\-\^\-cluster\-id\fP option has to be used to identify the cluster.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-snapshot-repository \\
+    --cluster-id=1 \\
+.fi
+
+.TP
+.B \-\^\-delete-snapshot-repository
+Creates a job to delete a snapshot repository on elasticsearch cluster. When this main option is used the 
+\fB\-\^\-cluster\-id\fP option has to be used to identify the cluster, the 
+\fB\-\^\-snapshot\-repository\fP to specify the repository name of the repository to be deleted.  
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --delete-snapshot-repository \\
+    --cluster-id=1 \\
+    --snapshot-repository=mySnapshotRepository \\
+    --wait 
+.fi
+
 .\"
 .\"
 .\"

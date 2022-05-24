@@ -196,14 +196,17 @@ class S9sRpcClient
          */
         bool createBackup();
         bool createBackupSchedule();
+        bool createSnapshotRepository();
         bool verifyBackup();
         bool restoreBackup();
         bool deleteOldBackups();
         
         bool getBackups(const int clusterId);
         bool getBackupSchedules(const int clusterId);
+        bool getSnapshotRepositories(const int clusterId);
 
         bool deleteBackupRecord();
+        bool deleteSnapshotRepository();
 
         /*
          * Account&database handling.

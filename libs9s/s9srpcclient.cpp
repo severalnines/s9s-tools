@@ -8169,6 +8169,92 @@ S9sRpcClient::createBackupSchedule()
 }
 
 bool
+S9sRpcClient::createSnapshotRepository()
+{
+    S9sOptions     *options      = S9sOptions::instance();    
+    S9sVariantMap   repo;
+    S9sVariantMap   request      = composeRequest();
+    S9sVariantMap   job          = composeBackupJob();
+    S9sString       uri          = "/v2/backup/";
+
+    // The cluster must be specified.
+    if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
+    {
+        PRINT_ERROR("The cluster ID or the cluster name must be specified.");
+        return false;
+    }
+
+    // The snapshot repository type must be specified
+    if (!options->hasSnapshotRepositoryTypeOption())
+    {
+        PRINT_ERROR("The snapshot repository type must be specified.");
+        return false;
+    }
+
+
+    // The cloud credentials must be specified.
+    if (!options->hasCredentialIdOption())
+    {
+        PRINT_ERROR("The cloud credentials ID of the cluster must be specified.");
+        return false;
+    }
+
+    // The s3 bucket must be specified.
+    if (!options->hasS3bucketOption())
+    {
+        PRINT_ERROR("The s3 bucket name to use must be specified.");
+        return false;
+    }
+
+    repo["class_name"] = "CmonBackupSnapshotRepository";
+    job["job_spec"]["description"] = "Snapshot repository created by s9s-tools on elasticsearch cluster";
+    repo["job"]        = job["job_spec"].toVariantMap();
+
+    request["operation"]   = "snapshotRepository";
+    request["repository"]  = repo;
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * A function to delete an account from the cluster. 
+ */
+bool
+S9sRpcClient::deleteSnapshotRepository()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sString      uri     = "/v2/backup/";
+    S9sVariantMap  request = composeRequest();
+    bool           retval;
+
+    if(!options->hasClusterIdOption())
+    {
+        PRINT_ERROR("The cluster id must be specified. Use: --cluster-id");
+        return false;
+    }
+    if(!options->hasSnapshotRepositoryNameOption())
+    {
+        PRINT_ERROR("The snapshot repository name must be specified. Use: --snapshot-repository");
+        return false;
+    }
+
+
+    S9sString repo = options->snapshotRepositoryName();
+    int cid        = options->clusterId();
+    request["operation"]  = "deleteSnapshotRepository";
+    request["snapshot_repository"]    = repo;
+    request["cluster_id"]    = cid;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+bool
 S9sRpcClient::verifyBackup()
 {
     S9sOptions     *options      = S9sOptions::instance();
@@ -8318,6 +8404,28 @@ S9sRpcClient::getBackupSchedules(
     bool           retval;
 
     request["operation"] = "getBackupSchedules";
+
+    if (clusterId > 0)
+        request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+/**
+ * Gets the list of snapshot repositories from the controller.
+ */
+bool
+S9sRpcClient::getSnapshotRepositories(
+        const int clusterId)
+{
+    S9sString      uri = "/v2/backup/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getSnapshotRepositories";
 
     if (clusterId > 0)
         request["cluster_id"] = clusterId;
@@ -9782,6 +9890,8 @@ S9sRpcClient::composeBackupJob()
     S9sString       snapshotRepoType = options->snapshotRepositoryType();
     S9sString       snapshotRepo     = options->snapshotRepositoryName();
     S9sString       snapshotLocation = options->snapshotLocation();
+    S9sString       s3bucket         = options->s3bucket();
+    S9sString       s3region         = options->s3region();
     S9sString       storageHost      = options->storageHost();
     S9sString       databases        = options->databases();
     S9sNode         backupHost;
@@ -9826,6 +9936,15 @@ S9sRpcClient::composeBackupJob()
 
     if (!snapshotLocation.empty())
         jobData["snapshot_location"] = snapshotLocation;
+
+    if (options->hasCredentialIdOption())
+        jobData["credential_id"] = options->credentialId();
+
+    if (!s3bucket.empty())
+        jobData["s3_bucket"] = s3bucket;
+
+    if (!s3region.empty())
+        jobData["s3_region"] = s3region;
 
     if (!storageHost.empty())
         jobData["storage_host"] = storageHost;
@@ -10066,7 +10185,7 @@ S9sRpcClient::composeJobData(
         jobData["xtrabackup_use_memory"] = options->memory().toInt();
 
     if (options->hasCredentialIdOption())
-        jobData["cloud_credentials_id"] = options->credentialId();
+        jobData["credential_id"] = options->credentialId();
 
     if (options->noInstall())
     {
