@@ -8206,7 +8206,15 @@ S9sRpcClient::createSnapshotRepository()
         return false;
     }
 
-    repo["class_name"] = "CmonBackupSnapshotRepository";
+    // The s3 region must be specified.
+    if (!options->hasS3regionOption())
+    {
+        PRINT_ERROR("The s3 region to use must be specified.");
+        return false;
+    }
+
+
+    repo["class_name"] = "CmonElasticsearchCluster";
     job["job_spec"]["description"] = "Snapshot repository created by s9s-tools on elasticsearch cluster";
     repo["job"]        = job["job_spec"].toVariantMap();
 

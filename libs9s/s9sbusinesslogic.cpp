@@ -879,7 +879,8 @@ S9sBusinessLogic::execute()
         } else if (options->isCreateSnapshotRepositoryRequested())
         {
             success = client.createSnapshotRepository();
-            client.printMessages("Created.", success);
+            
+            client.printMessages(success ? "Created." : "Failed",success);
             client.setExitStatus();
         } else if (options->isListSnapshotRepositoryRequested())
         {
@@ -887,7 +888,8 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
         } else if (options->isDeleteSnapshotRepositoryRequested())
         {
-            deleteSnapshotRepository(client);
+            success = deleteSnapshotRepository(client);
+            client.printMessages(success ? "Deleted." : "Failed",success);
             client.setExitStatus();
         } else if (options->isCreateRequested())
         {
@@ -1904,7 +1906,7 @@ S9sBusinessLogic::printSnapshotRepositories(
     }
 }
 
-void 
+bool 
 S9sBusinessLogic::deleteSnapshotRepository(
         S9sRpcClient &client)
 {
@@ -1918,6 +1920,7 @@ S9sBusinessLogic::deleteSnapshotRepository(
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
+    return success;
 }
 
 void 

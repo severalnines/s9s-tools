@@ -90,7 +90,6 @@ class S9sBusinessLogic
         void executePrintKeys(S9sRpcClient &client);
         void printBackupSchedules(S9sRpcClient &client);
         void printSnapshotRepositories(S9sRpcClient &client);
-        void deleteSnapshotRepository(S9sRpcClient &client);
         void executeBackupList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
@@ -105,5 +104,6 @@ class S9sBusinessLogic
         void executeMetaTypePropertyList(S9sRpcClient &client);
         
         void executeScriptTree(S9sRpcClient &client);
+        bool deleteSnapshotRepository(S9sRpcClient &client);
 };
 
