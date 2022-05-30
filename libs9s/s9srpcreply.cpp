@@ -2454,7 +2454,6 @@ S9sRpcReply::printSnapshotRepositoriesLong()
             PRINT_ERROR("Invalid snapshot repository type: %s", type);
             return;
         }
-        printf("\n");
         ++nLines;
     }
     
