@@ -2395,15 +2395,20 @@ S9sRpcReply::printSnapshotRepositories()
 void
 S9sRpcReply::printSnapshotRepositoriesBrief()
 {
-    S9sVariantList repos = operator[]("snapshot_repositories").toVariantList();
+    S9sVariantMap  repositories;
 
-    for (uint idx = 0u; idx < repos.size(); ++idx)
+    if (contains("snapshot_repositories"))
+        repositories = operator[]("snapshot_repositories").toVariantMap();
+
+    /*
+     * We go through the data and print the titles. 
+     */
+    for (S9sString key : repositories.keys())
     {
-        S9sVariantMap repoMap = repos[idx].toVariantMap();
-        int           snapshotName  = repoMap["name"].toInt();
-
-        ::printf("%d\n", snapshotName);
+        S9sVariantMap  theMap    = repositories.operator[](key.c_str()).toVariantMap();
+        printf("%s\n", STR(key));
     }
+
 }
 
 /**
@@ -2413,25 +2418,43 @@ void
 S9sRpcReply::printSnapshotRepositoriesLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantList repositories = operator[]("snapshot_repositories").toVariantList();
+    S9sVariantMap  repositories = operator[]("snapshot_repositories").toVariantMap();
     S9sFormat      nameFormat;
-    S9sFormat      clusterIdFormat;
     S9sFormat      typeFormat;
+    S9sFormat      settingsFormat;
     int            nLines = 0;
 
-    for (uint idx = 0u; idx < repositories.size(); ++idx)
+    for (S9sString key : repositories.keys())
     {
-        S9sVariantMap repoMap = repositories[idx].toVariantMap();
-        S9sVariantMap jobMap      = repoMap["job"].toVariantMap();
-        S9sVariantMap jobDataMap  = jobMap["job_data"].toVariantMap();
-        S9sString     repoName    = repoMap["name"].toString();
-        int           clusterId   = repoMap["cluster_id"].toInt();
+        S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
+        S9sString     repoName    = key;
         S9sString     type        = repoMap["type"].toString();
-
+        S9sString     uuid        = repoMap["uuid"].toString();
+        S9sString     location;
+        S9sString     bucket;
+        S9sString     region;
+        S9sVariantMap settings    = repoMap["settings"].toVariantMap();
+        
 
         nameFormat.widen(repoName);
-        clusterIdFormat.widen(clusterId);
         typeFormat.widen(type);
+        if(type == "fs")
+        {
+            settingsFormat.widen(settings["location"].toString());
+        }
+        else if(type == "s3")
+        {
+            S9sString field = settings["bucket"].toString() + 
+                              "/" + 
+                              settings["region"].toString();
+            settingsFormat.widen(field);
+        }
+        else
+        {
+            PRINT_ERROR("Invalid snapshot repository type: %s", type);
+            return;
+        }
+        printf("\n");
         ++nLines;
     }
     
@@ -2439,29 +2462,39 @@ S9sRpcReply::printSnapshotRepositoriesLong()
     {
         printf("%s", headerColorBegin());
         nameFormat.printHeader("NAME");
-        clusterIdFormat.printHeader("CID");
         typeFormat.printHeader("TYPE");
+        settingsFormat.printHeader("SETTINGS");
         printf("%s", headerColorEnd());
         printf("\n");        
     }
     
-    for (uint idx = 0u; idx < repositories.size(); ++idx)
+    for (S9sString key : repositories.keys())
     {
-        S9sVariantMap repoMap = repositories[idx].toVariantMap();
-        S9sVariantMap jobMap      = repoMap["job"].toVariantMap();
-        S9sVariantMap jobDataMap  = jobMap["job_data"].toVariantMap();
-        S9sString     repoName    = repoMap["name"].toString();
-        int           clusterId   = repoMap["cluster_id"].toInt();
+        S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
+        S9sString     repoName    = key;
         S9sString     type        = repoMap["type"].toString();
-        
+        S9sString     uuid        = repoMap["uuid"].toString();
+        S9sString     location;
+        S9sString     bucket;
+        S9sString     region;
+        S9sVariantMap settings    = repoMap["settings"].toVariantMap();
+        S9sString     settingsField;
+        if(type == "fs")
+            settingsField = settings["location"].toString();
+        else if(type == "s3")
+        {
+            settingsField = settings["bucket"].toString() +
+                            " (" +
+                            settings["region"].toString() + ")";
+        }
         nameFormat.printf(repoName);
-        clusterIdFormat.printf(clusterId);
         typeFormat.printf(type);
-
+        settingsFormat.printf(settingsField);
+        printf("\n");        
     }
     
     if (!options->isBatchRequested())
-        ::printf("Total: %d snapshot repository(ies)\n", nLines);
+        ::printf("\nTotal: %d snapshot repository(ies)\n", nLines);
 }
 
 

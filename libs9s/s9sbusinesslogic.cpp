@@ -1900,7 +1900,7 @@ S9sBusinessLogic::printSnapshotRepositories(
     if (success)
     {
         reply = client.reply();
-        reply.printBackupSchedules();
+        reply.printSnapshotRepositories();
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }
