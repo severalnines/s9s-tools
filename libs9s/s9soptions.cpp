@@ -113,6 +113,7 @@ enum S9sOptionType
     OptionRestore,
     OptionVerify,
     OptionDeleteOld,
+    OptionDeleteAll,
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
@@ -4843,6 +4844,17 @@ S9sOptions::isDeleteOldRequested() const
 }
 
 /**
+ * \returns true if the --delete-all command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isDeleteAllRequested() const
+{
+    return getBool("delete_all_backups");
+}
+
+
+/**
  * \returns true if the --rolling-restart command line option was provided when
  *   the program was started.
  */
@@ -7334,6 +7346,7 @@ S9sOptions::readOptionsBackup(
         { "create-schedule",  no_argument,       0, OptionCreateSchedule  },
         { "delete",           no_argument,       0, OptionDelete          },
         { "delete-old",       no_argument,       0, OptionDeleteOld       },
+        { "delete-all",       no_argument,       0, OptionDeleteAll       },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
@@ -7571,6 +7584,12 @@ S9sOptions::readOptionsBackup(
                 // --delete-old
                 m_options["delete_old"] = true;
                 break;
+
+            case OptionDeleteAll:
+                // --delete-all
+                m_options["delete_all_backups"] = true;
+                break;
+
 
             case OptionConfigFile:
                 // --config-file=FILE
@@ -9783,6 +9802,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
     
     if (isDeleteOldRequested())
+        countOptions++;
+
+    if (isDeleteAllRequested())
         countOptions++;
     
     if (isDeleteRequested())

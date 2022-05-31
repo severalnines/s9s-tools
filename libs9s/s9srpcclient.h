@@ -200,6 +200,7 @@ class S9sRpcClient
         bool verifyBackup();
         bool restoreBackup();
         bool deleteOldBackups();
+        bool deleteAllBackups();
         
         bool getBackups(const int clusterId);
         bool getBackupSchedules(const int clusterId);

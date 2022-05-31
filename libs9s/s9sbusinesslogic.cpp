@@ -903,6 +903,11 @@ S9sBusinessLogic::execute()
         {
             success = client.deleteOldBackups();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDeleteAllRequested())
+        {
+            success = client.deleteAllBackups();
+            maybeJobRegistered(client, clusterId, success);
+
         } else if (options->isRestoreRequested())
         {
             success = client.restoreBackup();

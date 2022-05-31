@@ -533,6 +533,7 @@ class S9sOptions
         bool isRestoreControllerRequested() const;
         bool isVerifyRequested() const;
         bool isDeleteOldRequested() const;
+        bool isDeleteAllRequested() const;
         bool isRollingRestartRequested() const;
         bool isDisableRecoveryRequested() const;
         bool isEnableRecoveryRequested() const;
