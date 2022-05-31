@@ -304,6 +304,7 @@ printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
 printVerbose "       TEST_REPORT_URL: $PROJECT_TEST_REPORT_URL"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
+printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
 #
 # The basename of the pip-cmon-test log file on the server.
