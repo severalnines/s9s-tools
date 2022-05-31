@@ -1718,7 +1718,8 @@ function run_tests_remote()
                             --vendor=$vendor \
                             --sqlversion=$version \
                             --test="$test_name" \
-                            --git-branch="$OPTION_GIT_BRANCH"
+                            --git-branch="$OPTION_GIT_BRANCH" \
+                            --git-commit="$OPTION_GIT_COMMIT"
                             # Uncomment below if many test server are in use
                             # and there are too many messages on the konsole
                             #>/dev/null 2>/dev/null &
