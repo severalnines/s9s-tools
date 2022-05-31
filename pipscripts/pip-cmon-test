@@ -1479,7 +1479,7 @@ function main()
 
     prepare_source \
         --package-name      "clustercontrol" \
-        --requested-branch  "$OPTION_GIT_BRANCH"
+        --requested-branch  "$OPTION_GIT_BRANCH" \
         --requested-commit  "$OPTION_GIT_COMMIT"
 
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
