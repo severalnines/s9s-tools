@@ -165,7 +165,7 @@ function start_test()
         --server="$test_server" \
         --test="$testname" \
         --user="$user" \
-        --git-branch="$gitbranch"
+        --git-branch="$gitbranch" \
         --git-commit="$gitcommit"
 
     retcode=$?
