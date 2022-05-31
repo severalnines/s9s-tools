@@ -30,6 +30,7 @@ OPTION_VERSION=""
 OPTION_PID=""
 OPTION_USER="$USER"
 OPTION_GIT_BRANCH=""
+OPTION_GIT_COMMIT=""
 
 S9S_OPTION=""
 
@@ -70,6 +71,7 @@ Usage:
   --keep-nodes            Pass --keep-nodes to tests not to destroy containers.
   --shut-down-after       Shut down the test server after the test.
   --git-branch=BRANCH     The git branch to test.
+  --git-commit=HASH       The git commit to test.
 
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
@@ -270,6 +272,11 @@ while true; do
 
         --git-branch)
             OPTION_GIT_BRANCH="$2"
+            shift 2
+            ;;
+
+        --git-commit)
+            OPTION_GIT_COMMIT="$2"
             shift 2
             ;;
 
@@ -481,6 +488,7 @@ function prepare_source()
     local package_name="unknown"
     local current_branch
     local requested_branch
+    local requested_commit
     local prompt="$USER@$HOSTNAME:$dirname\$"
 
     while [ -n "$1" ]; do
@@ -492,6 +500,11 @@ function prepare_source()
 
             --requested-branch)
                 requested_branch="$2"
+                shift 2
+                ;;
+
+            --requested-commit)
+                requested_commit="$2"
                 shift 2
                 ;;
 
@@ -554,6 +567,11 @@ function prepare_source()
 
         printVerbose "$prompt git pull"
         git pull >>$LOGFILE 2>>$LOGFILE
+
+        if [ ! -z "$requested_commit" ]; then
+            printVerbose "$prompt git checkout $requested_commit"
+            git checkout $requested_commit >>$LOGFILE 2>>$LOGFILE
+        fi
        
         #
         #
@@ -1462,6 +1480,7 @@ function main()
     prepare_source \
         --package-name      "clustercontrol" \
         --requested-branch  "$OPTION_GIT_BRANCH"
+        --requested-commit  "$OPTION_GIT_COMMIT"
 
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
