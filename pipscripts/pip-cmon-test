@@ -1512,8 +1512,8 @@ function main()
         
         printVerbose "3487 Failed to compile source."
 
-        printVerbose "Environment:"
-        env
+        echo "Environment: $(env)"
+        echo "Sudo environment: $(sudo env)"
 
         generate_test_result_info \
             --test-name  "$OPTION_TEST_NAME" \
