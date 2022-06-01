@@ -1819,6 +1819,7 @@ else
     printVerbose "checkOtherInstances : $?"
 
     main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+    pip-host-control --idle
 fi
 
 
