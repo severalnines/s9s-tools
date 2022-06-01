@@ -1485,6 +1485,8 @@ function main()
 
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$GIT_BRANCH" = "HEAD" ]; then
+        GIT_BRANCH="$OPTION_GIT_BRANCH"
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
