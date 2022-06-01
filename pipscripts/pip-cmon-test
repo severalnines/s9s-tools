@@ -1511,6 +1511,9 @@ function main()
         
         printVerbose "3487 Failed to compile source."
 
+        printVerbose "Environment:"
+        env
+
         generate_test_result_info \
             --test-name  "$OPTION_TEST_NAME" \
             --test-state "FAILURE" \
@@ -1523,9 +1526,6 @@ function main()
             --idle \
             --log    "Failed to compile, idle." \
             --status "Idle."
-
-        printVerbose "Environment:"
-        env
 
         upload_slog_file
         return 1
