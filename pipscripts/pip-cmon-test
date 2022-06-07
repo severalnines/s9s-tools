@@ -1210,6 +1210,9 @@ function run_test()
                 --print-commands --reset-config --server=$(hostname) \
                 \>\>$logfile 2\>\>$logfile"
 
+            printVerbose "PWD: $PWD"
+            printVerbose "ls -lh: $(ls -lh)"
+
             timeout --kill-after=92m 90m ./$test_name \
                 --print-commands \
                 --reset-config \
