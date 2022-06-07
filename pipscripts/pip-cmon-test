@@ -1149,7 +1149,7 @@ function run_test()
     pip-host-control --log "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
-            cd tests
+            cd ${PROJECT_TEST_SCRIPT_DIR}
 
             #
             # Running the ft_full
