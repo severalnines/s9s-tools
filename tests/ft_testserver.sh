@@ -10,8 +10,8 @@ CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
-N_DATABASE_NODE=1
 PROXY_SERVER=""
+CONTAINER_NAME1="${MYBASENAME}_1_$$"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -124,38 +124,13 @@ done
 function testCreateCluster()
 {
     local nodes
-    local nodeName
-    local n_nodes_added=0
-    local container_name
     #
     # Creating a galera cluster.
     #
     print_title "Creating a Cluster"
 
-    while true; do
-        echo "Creating node #$n_nodes_added"
-        container_name=$(printf "nx_%03d" $n_nodes_added)
-        nodeName=$(create_node  --autodestroy $container_name)
-        
-        if [ "$nodes" ]; then
-            nodes+=";"
-        fi
+    nodes=$(create_node  --autodestroy $CONTAINER_NAME1)
 
-        nodes+="$nodeName"
-
-        if [ -z "$FIRST_ADDED_NODE" ]; then
-            FIRST_ADDED_NODE="$nodeName"
-        fi
-
-        #
-        #
-        #
-        let n_nodes_added+=1
-        if [ "$n_nodes_added" -ge "$N_DATABASE_NODE" ]; then
-            break;
-        fi
-    done
-    
     #
     # Creating a Galera cluster.
     #

@@ -109,6 +109,7 @@ function start_test()
 
     printVerbose "Loading '$config_file'..."
     source "$config_file"
+    local gitcommit="$githash"
 
     # 
     # Getting the list of available servers.
@@ -137,6 +138,7 @@ function start_test()
     echo "       project: $project"
     echo "        server: $test_server"
     echo "    git branch: $gitbranch"
+    echo "    git commit: $gitcommit"
 
     if [ "$project" == "s9s-tools" ]; then
         option_s9s="--s9s"
@@ -154,7 +156,8 @@ function start_test()
         "--server=$test_server "\
         "--test=$testname "\
         "--user=$user "\
-        "--git-branch=$gitbranch"
+        "--git-branch=$gitbranch"\
+        "--git-commit=$gitcommit"
 
     pip-cmon-test \
         $VERBOSE_OPTION \
@@ -162,7 +165,8 @@ function start_test()
         --server="$test_server" \
         --test="$testname" \
         --user="$user" \
-        --git-branch="$gitbranch"
+        --git-branch="$gitbranch" \
+        --git-commit="$gitcommit"
 
     retcode=$?
     printVerbose "pip-cmon-test retcode: $retcode"

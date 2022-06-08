@@ -30,6 +30,7 @@ OPTION_VERSION=""
 OPTION_PID=""
 OPTION_USER="$USER"
 OPTION_GIT_BRANCH=""
+OPTION_GIT_COMMIT=""
 
 S9S_OPTION=""
 
@@ -70,6 +71,7 @@ Usage:
   --keep-nodes            Pass --keep-nodes to tests not to destroy containers.
   --shut-down-after       Shut down the test server after the test.
   --git-branch=BRANCH     The git branch to test.
+  --git-commit=HASH       The git commit to test.
 
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
@@ -99,7 +101,7 @@ ARGS=$(\
         -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
 pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
-no-git-pull,no-compile,keep-nodes,shut-down-after,wait,git-branch:" \
+no-git-pull,no-compile,keep-nodes,shut-down-after,wait,git-branch:,git-commit:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -273,6 +275,11 @@ while true; do
             shift 2
             ;;
 
+        --git-commit)
+            OPTION_GIT_COMMIT="$2"
+            shift 2
+            ;;
+
         --)
             shift
             break
@@ -297,6 +304,7 @@ printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
 printVerbose "       TEST_REPORT_URL: $PROJECT_TEST_REPORT_URL"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
+printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
 #
 # The basename of the pip-cmon-test log file on the server.
@@ -481,6 +489,7 @@ function prepare_source()
     local package_name="unknown"
     local current_branch
     local requested_branch
+    local requested_commit
     local prompt="$USER@$HOSTNAME:$dirname\$"
 
     while [ -n "$1" ]; do
@@ -492,6 +501,11 @@ function prepare_source()
 
             --requested-branch)
                 requested_branch="$2"
+                shift 2
+                ;;
+
+            --requested-commit)
+                requested_commit="$2"
                 shift 2
                 ;;
 
@@ -554,6 +568,11 @@ function prepare_source()
 
         printVerbose "$prompt git pull"
         git pull >>$LOGFILE 2>>$LOGFILE
+
+        if [ ! -z "$requested_commit" ]; then
+            printVerbose "$prompt git checkout $requested_commit"
+            git checkout $requested_commit >>$LOGFILE 2>>$LOGFILE
+        fi
        
         #
         #
@@ -1130,7 +1149,7 @@ function run_test()
     pip-host-control --log "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
-            cd tests
+            cd ${PROJECT_TEST_SCRIPT_DIR}
 
             #
             # Running the ft_full
@@ -1461,10 +1480,14 @@ function main()
 
     prepare_source \
         --package-name      "clustercontrol" \
-        --requested-branch  "$OPTION_GIT_BRANCH"
+        --requested-branch  "$OPTION_GIT_BRANCH" \
+        --requested-commit  "$OPTION_GIT_COMMIT"
 
     GIT_HASH=$(git log -n 1 --pretty=format:"%H")
     GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$GIT_BRANCH" = "HEAD" ]; then
+        GIT_BRANCH="$OPTION_GIT_BRANCH"
+    fi
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
@@ -1488,6 +1511,9 @@ function main()
         current_test_name="$OPTION_TEST_NAME"
         
         printVerbose "3487 Failed to compile source."
+
+        echo "Environment: $(env)"
+        echo "Sudo environment: $(sudo env)"
 
         generate_test_result_info \
             --test-name  "$OPTION_TEST_NAME" \
@@ -1699,7 +1725,8 @@ function run_tests_remote()
                             --vendor=$vendor \
                             --sqlversion=$version \
                             --test="$test_name" \
-                            --git-branch="$OPTION_GIT_BRANCH"
+                            --git-branch="$OPTION_GIT_BRANCH" \
+                            --git-commit="$OPTION_GIT_COMMIT"
                             # Uncomment below if many test server are in use
                             # and there are too many messages on the konsole
                             #>/dev/null 2>/dev/null &
@@ -1796,6 +1823,7 @@ else
     printVerbose "checkOtherInstances : $?"
 
     main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+    pip-host-control --idle
 fi
 
 

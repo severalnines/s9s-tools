@@ -63,6 +63,10 @@ export SECOND_ADDED_NODE=""
 export THIRD_ADDED_NODE=""
 export FOURTH_ADDED_NODE=""
 export FIFTH_ADDED_NODE=""
+export SIXTH_ADDED_NODE=""
+export SEVENTH_ADDED_NODE=""
+export EIGHTH_ADDED_NODE=""
+export NINETH_ADDED_NODE=""
 export LAST_ADDED_NODE=""
 
 export NUMBER_OF_SUCCESS_CHECKS=0
@@ -2118,8 +2122,18 @@ EOF
         THIRD_ADDED_NODE="$ip"
     elif [ -z "$FOURTH_ADDED_NODE" ]; then
         FOURTH_ADDED_NODE="$ip"
+    elif [ -z "$FIFTH_ADDED_NODE" ]; then
+        FIFTH_ADDED_NODE="$ip"
+    elif [ -z "$SIXTH_ADDED_NODE" ]; then
+        SIXTH_ADDED_NODE="$ip"
+    elif [ -z "$SEVENTH_ADDED_NODE" ]; then
+        SEVENTH_ADDED_NODE="$ip"
+    elif [ -z "$EIGHTH_ADDED_NODE" ]; then
+        EIGHTH_ADDED_NODE="$ip"
+    elif [ -z "$NINETH_ADDED_NODE" ]; then
+        NINETH_ADDED_NODE="$ip"
     fi
-   
+
     LAST_ADDED_NODE="$ip"
     echo $ip
 }
