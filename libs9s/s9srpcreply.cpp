@@ -51,6 +51,9 @@
 //#define WARNING
 #include "s9sdebug.h"
 
+const S9sString sharedFileSystemStr = "Shared file system";
+const S9sString awsStr = "AWS S3";
+
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
 S9sRpcReply::S9sRpcReply() :
@@ -2437,10 +2440,10 @@ S9sRpcReply::printSnapshotRepositoriesLong()
         
 
         nameFormat.widen(repoName);
-        typeFormat.widen(type);
         if(type == "fs")
         {
             settingsFormat.widen(settings["location"].toString());
+            typeFormat.widen(sharedFileSystemStr);
         }
         else if(type == "s3")
         {
@@ -2448,6 +2451,7 @@ S9sRpcReply::printSnapshotRepositoriesLong()
                               "/" + 
                               settings["region"].toString();
             settingsFormat.widen(field);
+            typeFormat.widen(awsStr);
         }
         else
         {
@@ -2472,6 +2476,7 @@ S9sRpcReply::printSnapshotRepositoriesLong()
         S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
         S9sString     repoName    = key;
         S9sString     type        = repoMap["type"].toString();
+        S9sString     typeString;
         S9sString     uuid        = repoMap["uuid"].toString();
         S9sString     location;
         S9sString     bucket;
@@ -2479,15 +2484,20 @@ S9sRpcReply::printSnapshotRepositoriesLong()
         S9sVariantMap settings    = repoMap["settings"].toVariantMap();
         S9sString     settingsField;
         if(type == "fs")
+        {
             settingsField = settings["location"].toString();
+            typeString = sharedFileSystemStr;
+        }
         else if(type == "s3")
         {
             settingsField = settings["bucket"].toString() +
                             " (" +
                             settings["region"].toString() + ")";
+
+            typeString = awsStr;
         }
         nameFormat.printf(repoName);
-        typeFormat.printf(type);
+        typeFormat.printf(typeString);
         settingsFormat.printf(settingsField);
         printf("\n");        
     }

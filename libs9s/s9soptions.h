@@ -209,6 +209,8 @@ class S9sOptions
         int remoteClusterId() const;
         bool hasRemoteClusterIdOption() const;
 
+        bool removeBackups() const;
+        bool hasRemoveBackupsOption() const;
         
         bool forceOption() const;
         bool hasForceOption() const;

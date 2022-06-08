@@ -147,6 +147,7 @@ enum S9sOptionType
     OptionEnd,
     OptionReason,
     OptionUninstall,
+    OptionRemoveBackups,
     OptionUuid,
     OptionDateFormat,
     OptionFullUuid,
@@ -2171,6 +2172,22 @@ S9sOptions::remoteClusterId() const
 {
     return getInt("remote_cluster_id");
 }
+
+/**
+ * \returns true if the --remove-backups command line option was provided.
+ */
+bool
+S9sOptions::hasRemoveBackupsOption() const
+{
+    return m_options.contains("remove_backups");
+}
+
+bool
+S9sOptions::removeBackups() const
+{
+    return getBool("remove_backups");
+}
+
 
 /**
  * \returns True if the --force option is defined.
@@ -12365,7 +12382,8 @@ S9sOptions::readOptionsCluster(
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
         // Options for remove cluster/node.
-        { "uninstall",           no_argument,    0, OptionUninstall        },
+        { "uninstall",           no_argument,    0,    OptionUninstall     },
+        { "remove-backups",      required_argument,0,  OptionRemoveBackups },
 
         // Options for mssql
         { "license",     required_argument, 0, OptionLicense     },
@@ -13051,6 +13069,12 @@ S9sOptions::readOptionsCluster(
                 // --uninstall
                 m_options["uninstall"] = true;
                 break;
+
+            case OptionRemoveBackups:
+                // --remove-backups
+                m_options["remove_backups"] = optarg;
+                break;
+
 
             case OptionSslCaFile:
                 // --ssl-ca
