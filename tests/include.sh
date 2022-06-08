@@ -1776,15 +1776,17 @@ function wait_for_cluster_state()
         success "  o Expecting cluster state $expectedState, ok."
     fi
 
+    stateCmd="s9s cluster \
+        --list \
+        --batch \
+        --cluster-format="%S" \
+        --cluster-name="$clusterName" \
+        $user_option \
+        $controller_option \
+        $password_option"
+
     while true; do
-        state=$(s9s cluster \
-            --list \
-            --batch \
-            --cluster-format="%S" \
-            --cluster-name="$clusterName" \
-            $user_option \
-            $controller_option \
-            $password_option)
+        state=$($stateCmd)
 
         #echo "***         state: '$state'" >&2
         #echo "*** expectedState: '$expectedState'" >&2
@@ -1798,6 +1800,7 @@ function wait_for_cluster_state()
             # do check the timeout only when we are not in the expected state.
             #
             if [ "$waited" -gt 120 ]; then
+                echo "$stateCmd"
                 failure "Failed to reach $expectedState state in ${waited}s."
                 return 1
             fi
