@@ -6,6 +6,9 @@ VERBOSE=""
 VERSION="0.0.1"
 LOG_OPTION="--wait"
 
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
+
 CONTAINER_SERVER=""
 CONTAINER_IP=""
 CMON_CLOUD_CONTAINER_SERVER=""
@@ -148,7 +151,8 @@ function createCluster()
         --containers="$container_name1;$container_name2" \
         --os-user=sisko \
         --os-key-file="$config_dir/sisko.key" \
-        $LOG_OPTION 
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     check_container_ids --postgresql-nodes
@@ -184,7 +188,8 @@ function removeCluster()
     mys9s cluster \
         --drop \
         --cluster-id="$CLUSTER_ID" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     #check_exit_code $?
 
@@ -193,10 +198,10 @@ function removeCluster()
     #
     print_title "Deleting Containers"
     
-    mys9s container --delete $LOG_OPTION "$container_name1"
+    mys9s container --delete $LOG_OPTION "$container_name1" $DEBUG_OPTION
     check_exit_code $?
     
-    mys9s container --delete $LOG_OPTION "$container_name2"
+    mys9s container --delete $LOG_OPTION "$container_name2" $DEBUG_OPTION
     check_exit_code $?
     end_verbatim
 }

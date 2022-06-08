@@ -13,6 +13,9 @@ OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
+
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
 LAST_ADDED_NODE=""
@@ -203,7 +206,8 @@ function testCreateCluster()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version="$PROVIDER_VERSION" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -237,7 +241,8 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
    
     check_exit_code $?
 
@@ -266,7 +271,8 @@ function testStopMaster()
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$FIRST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     if [ $? -eq 0 ]; then
         failure "The controller should have protected master agains restart."
@@ -331,7 +337,8 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
     end_verbatim

@@ -5,12 +5,14 @@ MYDIR=$(dirname "$0")
 VERSION="0.0.1"
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
-LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
 OPTION_RESET_CONFIG=""
 CONTAINER_SERVER=""
+
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 # The IP of the node we added first and last. Empty if we did not.
 FIRST_ADDED_NODE=""
@@ -136,7 +138,8 @@ function testCreateCluster()
         --db-admin="postmaster" \
         --db-admin-passwd="passwd12" \
         --provider-version="$PROVIDER_VERSION" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
 
     check_exit_code $?
 
@@ -170,7 +173,8 @@ function testAddNode()
         --add-node \
         --cluster-id=$CLUSTER_ID \
         --nodes="$FIRST_ADDED_NODE?master;$LAST_ADDED_NODE?slave" \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?   
     end_verbatim
@@ -194,7 +198,8 @@ function testStopSlave()
         --stop \
         --cluster-id=$CLUSTER_ID \
         --nodes=$LAST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?   
     
@@ -230,7 +235,8 @@ function testStartSlave()
         --start \
         --cluster-id=$CLUSTER_ID \
         --nodes=$LAST_ADDED_NODE \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 
@@ -305,7 +311,8 @@ function testDrop()
     mys9s cluster \
         --drop \
         --cluster-id=$CLUSTER_ID \
-        $LOG_OPTION
+        $LOG_OPTION \
+        $DEBUG_OPTION
     
     check_exit_code $?
 
