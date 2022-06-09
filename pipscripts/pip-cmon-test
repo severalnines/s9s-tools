@@ -790,6 +790,8 @@ function ft_test_ended()
     echo "  exit_code: $exit_code"
     echo "         wd: '$PWD'"
     for core_file in \
+        /tmp/ft_full.core \
+        /tmp/cmon.core \
         *core* \
         */*core* \
         $HOME/clustercontrol-enterprise/*core* \
@@ -812,8 +814,13 @@ function ft_test_ended()
     fi
 
                 
-    #echo "<h2>Backtrace</h2>" 
+    echo "<h2>Backtrace</h2>" 
     #echo "<hr>" 
+    if [ -e /tmp/cmon.core ]; then
+        sudo gdb $HOME/clustercontrol-enterprise/tests/ft_full /tmp/cmon.core -batch -q -ex 'thread apply all bt' -ex quit
+        sudo mv /tmp/cmon.core $(log_core_file_name)
+        sudo cp $HOME/clustercontrol-enterprise/tests/ft_full $(log_bin_file_name)
+    fi
 
     if [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         pip-host-control --log "Saving backtrace (no crash)"
@@ -855,6 +862,18 @@ function result_file_name()
 {
     local test_name=$1
     echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.result"
+}
+
+function log_bin_file_name()
+{
+    local test_name=$1
+    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.ft_full"
+}
+
+function log_core_file_name()
+{
+    local test_name=$1
+    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.core"
 }
 
 function log_file_name()
@@ -1156,7 +1175,9 @@ function run_test()
             #
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
             pushd "$(find_clustercontrol_source_directory)/tests" \
-                >/dev/null 2>/dev/null
+                >/dev/null 2>/diev/null
+            sudo sysctl -p /etc/sysctl.conf
+            sudo ulimit -c unlimited
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
