@@ -307,11 +307,21 @@ printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
 #
+# $1: test name
+#
+function result_file_name_base()
+{
+    local test_name=$1
+    echo "${test_name}-${GIT_BRANCH}-${GIT_HASH}"
+    #echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}"
+}
+
+#
 # The basename of the pip-cmon-test log file on the server.
 #
 function script_log_file_name()
 {
-    echo "${OPTION_USER}-$(hostname)-${current_test_name}-${GIT_HASH}.slog"
+    echo "$(result_file_name_base ${current_test_name}).slog"
 }
 
 #
@@ -850,34 +860,31 @@ function compile_source()
 function report_file_name()
 {
     local test_name=$1
-    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.html"
+    echo "$(result_file_name_base $test_name).html"
 }
 
-#
-# $1: test name
-#
 function result_file_name()
 {
     local test_name=$1
-    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.result"
+    echo "$(result_file_name_base $test_name).result"
 }
 
 function log_bin_file_name()
 {
     local test_name=$1
-    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.ft_full"
+    echo "$(result_file_name_base $test_name).ft_full"
 }
 
 function log_core_file_name()
 {
     local test_name=$1
-    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.core"
+    echo "$(result_file_name_base $test_name).core"
 }
 
 function log_file_name()
 {
     local test_name=$1
-    echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.log"
+    echo "$(result_file_name_base $test_name).log"
 }
 
 function ft_test_ended()
