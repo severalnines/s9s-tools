@@ -716,7 +716,11 @@ function compile_source_dir()
 
         rm -f autogen.log
 
-        ./autogen.sh $prefix_option >> "autogen.log" 2>>"autogen.log"
+        if [ cmon ]; then
+            ./autogen.sh --with-no-optimization $prefix_option >> "autogen.log" 2>>"autogen.log"
+        else
+            ./autogen.sh $prefix_option >> "autogen.log" 2>>"autogen.log"
+        fi
         retcode $?
         if [ $retcode -ne 0 ]; then
             printVerbose "Script autogen.sh failed."
@@ -737,7 +741,7 @@ function compile_source_dir()
 
     rm -f "make.log"
 
-    make -j20 >>"make.log" 2>>"make.log"
+    make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         printVerbose "Program 'make' failed."
