@@ -893,13 +893,13 @@ function ft_test_ended()
     local backend_pid="$2"
     local core_file
 
-    echo "<h2>Backtrace</h2>" 
+    #echo "<h2>Backtrace</h2>" 
 
-    echo "The test ended."
-    echo "  exit_code: $exit_code"
-    echo "         wd: '$PWD'"
+    echo "The test ended." | tee $LOGFILE
+    echo "  exit_code: $exit_code" | tee $LOGFILE
+    echo "         wd: '$PWD'" | tee $LOGFILE
 
-    echo "Looking for core file"
+    echo "Looking for core file" >> $LOGFILE
 
     #for core_file in \
     #    *core* \
@@ -914,7 +914,7 @@ function ft_test_ended()
         fi
 
         pip-host-control --log "Core file found: $core_file"
-        echo "Core file found: $core_file"
+        echo "Core file found: $core_file" >> $LOGFILE
     done
 
     if [ ! -f "$core_file" -a "$exit_code" -eq 0 ]; then
@@ -923,25 +923,19 @@ function ft_test_ended()
 
     if [ -z "$(which gdb)" ]; then
         pip-host-control --log "Installing gdb."
-        echo "Installing gdb."
+        echo "Installing gdb." >> $LOGFILE
         sudo apt-get -y --force-yes install gdb
     fi
 
     if [ -e "$core_file" ]; then
         pip-host-control --log "Saving backtrace (crash)"
-        echo "Saving backtrace (crash)"
+        echo "Saving backtrace (crash)" >> $LOGFILE
         sudo gdb \
             -batch \
             -ex "thread apply all back" \
             -ex "quit" \
             ft_full/ft_full "$core_file" \
             >>$LOGFILE 2>>$LOGFILE
-
-        sudo gdb \
-            -batch \
-            -ex "thread apply all back" \
-            -ex "quit" \
-            ft_full/ft_full "$core_file"
 
         mkdir -p "$HOME/tmp"
 
@@ -956,19 +950,14 @@ function ft_test_ended()
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         pip-host-control --log "Saving backtrace (no crash)"
-        echo "Saving backtrace (no crash)"
+        echo "Saving backtrace (no crash)" >> $LOGFILE
         sudo gdb \
             -p $backend_pid -batch \
             -ex "thread apply all back" \
             -ex "quit" \
             >>$LOGFILE 2>>$LOGFILE
-
-        sudo gdb \
-            -p $backend_pid -batch \
-            -ex "thread apply all back" \
-            -ex "quit"
     else
-        echo "No backtrace is necessary. No rash, no error on exit."
+        echo "No backtrace is necessary. No rash, no error on exit." >> $LOGFILE
     fi
 }
 
