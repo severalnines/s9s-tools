@@ -1143,8 +1143,15 @@ function run_test()
     if [ $? -ne 0 ]; then
         message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
+    message "Core pattern: $(sudo tee /proc/sys/kernel/core_pattern)"
+    sudo sysctl -p /etc/sysctl.conf
+    message "Core pattern: $(sudo tee /proc/sys/kernel/core_pattern)"
+    echo "User limits :"
+    sudo bash -c 'ulimit -a'
 
     for core_file in \
+        /tmp/ft_full.core \
+        /tmp/cmon.core \
         *core* \
         */*core* \
         $HOME/clustercontrol-enterprise/*core* \
@@ -1176,8 +1183,6 @@ function run_test()
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
             pushd "$(find_clustercontrol_source_directory)/tests" \
                 >/dev/null 2>/diev/null
-            sudo sysctl -p /etc/sysctl.conf
-            sudo ulimit -c unlimited
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
