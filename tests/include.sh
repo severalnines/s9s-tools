@@ -795,7 +795,7 @@ function check_exit_code()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
 
-        if [ "$exitCode" -e 5 ]; then
+        if [ "$exitCode" = "5" ]; then
             echo "$ ps aux | grep cmon"
             ps aux | grep cmon
             echo "$ ps aux | grep ft_full"
