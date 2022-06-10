@@ -617,11 +617,17 @@ function compile_source_dir()
     local source_root
     local mysql_dir=$(find_mysql)    
     local do_install
+    local prefix_option=""
 
     while [ -n "$1" ]; do
         case "$1" in 
             --source-root)
                 source_root="$2"
+                shift 2
+                ;;
+
+            --prefix)
+                prefix_option="--prefix=$2"
                 shift 2
                 ;;
 
@@ -683,7 +689,7 @@ function compile_source_dir()
 
         rm -f autogen.log
 
-        ./autogen.sh >>"autogen.log" 2>>"autogen.log"
+        ./autogen.sh $prefix_option >> "autogen.log" 2>>"autogen.log"
         retcode $?
         if [ $retcode -ne 0 ]; then
             printVerbose "Script autogen.sh failed."
@@ -751,6 +757,9 @@ function compile_source()
     compile_source_dir \
         --source-root "$directory"
 
+        #--prefix=$HOME/testcmon
+        #--prefix=$HOME/cmonrepo/$GIT_BRANCH-$GIT_HASH
+
     retcode=$?
     popd 
     
@@ -772,6 +781,8 @@ function compile_source()
         compile_source_dir \
             --source-root "$directory" \
             --install 
+
+            #--prefix=$HOME/tests9s
 
         retcode="$?"
         popd
