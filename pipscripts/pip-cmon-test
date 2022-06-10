@@ -696,6 +696,7 @@ function compile_source_dir()
                 if [ -d "$repodir" ]; then
                     echo "Using previously compiled ft_full from $repodir"
                     cp $repodir/ft_full $ccdir/tests/ft_full/
+                    return
                 fi
             ;;
             *)
