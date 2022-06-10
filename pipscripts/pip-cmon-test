@@ -1182,7 +1182,7 @@ function run_test()
             #
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
             pushd "$(find_clustercontrol_source_directory)/tests" \
-                >/dev/null 2>/diev/null
+                >/dev/null 2>/dev/null
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
