@@ -838,70 +838,6 @@ function compile_source()
     return "$retcode"
 }
 
-function ft_test_ended()
-{
-    local exit_code="$1"
-    local backend_pid="$2"
-    local core_file
-
-    echo "The test ended."
-    echo "  exit_code: $exit_code"
-    echo "         wd: '$PWD'"
-    for core_file in \
-        /tmp/ft_full.core \
-        /tmp/cmon.core \
-        *core* \
-        */*core* \
-        $HOME/clustercontrol-enterprise/*core* \
-        $HOME/clustercontrol-enterprise/tests/*core*; 
-    do
-        if [ ! -f "$core_file" ]; then
-            continue
-        fi
-
-        pip-host-control --log "Core file found: $core_file"
-    done
-
-    if [ ! -f "$core_file" -a "$exit_code" -eq 0 ]; then
-        return 0
-    fi
-
-    if [ -z "$(which gdb)" ]; then
-        pip-host-control --log "Installing gdb."
-        sudo apt-get -y --force-yes install gdb
-    fi
-
-                
-    echo "<h2>Backtrace</h2>" 
-    #echo "<hr>" 
-    if [ -e /tmp/cmon.core ]; then
-        sudo gdb $HOME/clustercontrol-enterprise/tests/ft_full /tmp/cmon.core -batch -q -ex 'thread apply all bt' -ex quit
-        sudo mv /tmp/cmon.core $(log_core_file_name)
-        sudo cp $HOME/clustercontrol-enterprise/tests/ft_full $(log_bin_file_name)
-    fi
-
-    if [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
-        pip-host-control --log "Saving backtrace (no crash)"
-        sudo gdb \
-            -p $backend_pid -batch \
-            -ex "thread apply all back" \
-            -ex "quit" \
-            >>$LOGFILE 2>>$LOGFILE
-    
-        #sudo gdb -p $backend_pid -batch \
-        #    -ex "thread apply all back" \
-        #    -ex "quit" 
-    elif [ -f "$core_file" ]; then
-        pip-host-control --log "Saving backtrace (crash)"
-        sudo gdb \
-            -batch \
-            -ex "thread apply all back" \
-            -ex "quit" \
-            ft_full/ft_full "$core_file" \
-            >>$LOGFILE 2>>$LOGFILE 
-    fi
-}
-
 #
 # $1: test name
 #
@@ -938,6 +874,76 @@ function log_file_name()
 {
     local test_name=$1
     echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}.log"
+}
+
+function ft_test_ended()
+{
+    local exit_code="$1"
+    local backend_pid="$2"
+    local core_file
+
+    echo "<h2>Backtrace</h2>" 
+
+    echo "The test ended."
+    echo "  exit_code: $exit_code"
+    echo "         wd: '$PWD'"
+
+    echo "Looking for core file"
+
+    #for core_file in \
+    #    *core* \
+    #    */*core* \
+    #    $HOME/clustercontrol-enterprise/*core* \
+    #    $HOME/clustercontrol-enterprise/tests/*core* \
+    for core_file in \
+        /tmp/*.core;
+    do
+        if [ ! -f "$core_file" ]; then
+            continue
+        fi
+
+        pip-host-control --log "Core file found: $core_file"
+        echo "Core file found: $core_file"
+    done
+
+    if [ ! -f "$core_file" -a "$exit_code" -eq 0 ]; then
+        return 0
+    fi
+
+    if [ -z "$(which gdb)" ]; then
+        pip-host-control --log "Installing gdb."
+        echo "Installing gdb."
+        sudo apt-get -y --force-yes install gdb
+    fi
+
+    if [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
+        pip-host-control --log "Saving backtrace (no crash)"
+        echo "Saving backtrace (no crash)"
+        sudo gdb \
+            -p $backend_pid -batch \
+            -ex "thread apply all back" \
+            -ex "quit" \
+            >>$LOGFILE 2>>$LOGFILE
+    
+        #sudo gdb -p $backend_pid -batch \
+        #    -ex "thread apply all back" \
+        #    -ex "quit" 
+    elif [ -e "$core_file" ]; then
+        pip-host-control --log "Saving backtrace (crash)"
+        echo "Saving backtrace (crash)"
+        sudo gdb \
+            -batch \
+            -ex "thread apply all back" \
+            -ex "quit" \
+            ft_full/ft_full "$core_file" \
+            >>$LOGFILE 2>>$LOGFILE
+        sudo mv $core_file \
+                "$PROJECT_DATA_ROOT/test-results/$(log_core_file_name)"
+        sudo cp $HOME/clustercontrol-enterprise/tests/ft_full/ft_full \
+                "$PROJECT_DATA_ROOT/test-results/$(log_bin_file_name)"
+    else
+        echo "No backtrace is necessary. No rash, no error on exit."
+    fi
 }
 
 #
@@ -1203,8 +1209,7 @@ function run_test()
     fi
 
     for core_file in \
-        /tmp/ft_full.core \
-        /tmp/cmon.core \
+        /tmp/*.core \
         *core* \
         */*core* \
         $HOME/clustercontrol-enterprise/*core* \
@@ -1222,13 +1227,16 @@ function run_test()
         message "Failed: ulimit -c unlimited"
     fi
 
-    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     sudo sysctl -p /etc/sysctl.conf
     message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
+    echo ""
     echo "User limits :"
+    echo ""
     sudo bash -c 'ulimit -a'
+    echo ""
+    echo "User limits with sudo:"
+    echo ""
     sudo bash -c 'ulimit -c unlimited'
-    echo "User limits :"
     sudo bash -c 'ulimit -a'
 
     #
