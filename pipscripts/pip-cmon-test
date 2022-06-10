@@ -1143,9 +1143,9 @@ function run_test()
     if [ $? -ne 0 ]; then
         message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
-    message "Core pattern: $(sudo tee /proc/sys/kernel/core_pattern)"
+    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     sudo sysctl -p /etc/sysctl.conf
-    message "Core pattern: $(sudo tee /proc/sys/kernel/core_pattern)"
+    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     echo "User limits :"
     sudo bash -c 'ulimit -a'
 
