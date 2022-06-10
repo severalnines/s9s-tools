@@ -618,6 +618,7 @@ function compile_source_dir()
     local mysql_dir=$(find_mysql)    
     local do_install
     local prefix_option=""
+    local cmon=false
 
     while [ -n "$1" ]; do
         case "$1" in 
@@ -629,6 +630,11 @@ function compile_source_dir()
             --prefix)
                 prefix_option="--prefix=$2"
                 shift 2
+                ;;
+
+            --cmon-compilation)
+                cmon=true
+                shift
                 ;;
 
             --install)
@@ -677,7 +683,26 @@ function compile_source_dir()
     if [ "$OPTION_NO_COMPILE" ]; then
         return 0
     fi
-    
+
+    #
+    # Hack to avoid compilation
+    #
+    if [ cmon ]; then
+        case "$OPTION_TEST_NAME" in 
+            ft_*.sh)
+                repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
+                ccdir="$(find_clustercontrol_source_directory)/tests"
+
+                if [ -d "$repodir" ]; then
+                    cp $repodir/ft_full $ccdir/
+                fi
+            ;;
+            *)
+                # Nothing to do here
+            ;;
+        esac
+    fi
+
     #
     # Running autogen in the source root. 
     #
@@ -737,6 +762,24 @@ function compile_source_dir()
         fi
     fi
 
+    #
+    # Hack to cache ft_full avoid compilation next time
+    #
+    if [ cmon ]; then
+        case "$OPTION_TEST_NAME" in 
+            ft_*.sh)
+                repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
+                ccdir="$(find_clustercontrol_source_directory)/tests"
+
+                mkdir -p "$repodir"
+                cp $ccdir/ft_full $repodir/
+            ;;
+            *)
+                # Nothing to do here
+            ;;
+        esac
+    fi
+
     return 0
 }
 
@@ -755,7 +798,8 @@ function compile_source()
 
     pushd "$directory"
     compile_source_dir \
-        --source-root "$directory"
+        --source-root "$directory" \
+        --cmon-compilation
 
         #--prefix=$HOME/testcmon
         #--prefix=$HOME/cmonrepo/$GIT_BRANCH-$GIT_HASH
