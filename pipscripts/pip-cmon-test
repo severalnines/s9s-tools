@@ -691,10 +691,10 @@ function compile_source_dir()
         case "$OPTION_TEST_NAME" in 
             ft_*.sh)
                 repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
-                ccdir="$(find_clustercontrol_source_directory)/tests"
+                ccdir="$(find_clustercontrol_source_directory)"
 
                 if [ -d "$repodir" ]; then
-                    cp $repodir/ft_full $ccdir/
+                    cp $repodir/ft_full $ccdir/tests/ft_full/
                 fi
             ;;
             *)
@@ -769,10 +769,10 @@ function compile_source_dir()
         case "$OPTION_TEST_NAME" in 
             ft_*.sh)
                 repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
-                ccdir="$(find_clustercontrol_source_directory)/tests"
+                ccdir="$(find_clustercontrol_source_directory)"
 
                 mkdir -p "$repodir"
-                cp $ccdir/ft_full $repodir/
+                cp $ccdir/tests/ft_full/ft_full $repodir/
             ;;
             *)
                 # Nothing to do here
