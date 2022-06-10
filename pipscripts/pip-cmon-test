@@ -895,9 +895,13 @@ function ft_test_ended()
 
     #echo "<h2>Backtrace</h2>" 
 
-    echo "The test ended." | tee $LOGFILE
-    echo "  exit_code: $exit_code" | tee $LOGFILE
-    echo "         wd: '$PWD'" | tee $LOGFILE
+    echo "The test ended."
+    echo "  exit_code: $exit_code"
+    echo "         wd: '$PWD'"
+
+    echo "The test ended." >> $LOGFILE
+    echo "  exit_code: $exit_code" >> $LOGFILE
+    echo "         wd: '$PWD'" >> $LOGFILE
 
     echo "Looking for core file" >> $LOGFILE
 
