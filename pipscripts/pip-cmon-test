@@ -321,7 +321,7 @@ function result_file_name_base()
 #
 function script_log_file_name()
 {
-    echo "$(result_file_name_base ${$OPTION_TEST_NAME}).slog"
+    echo "$(result_file_name_base ${OPTION_TEST_NAME}).slog"
 }
 
 #
@@ -937,16 +937,16 @@ function ft_test_ended()
             ft_full/ft_full "$core_file" \
             >>$LOGFILE 2>>$LOGFILE
 
-        mkdir -p "$HOME/tmp"
+        sudo mkdir -p "$HOME/tmp"
 
-        #sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name)"
-        #scp "$HOME/tmp/$(log_core_file_name)" "${PROJECT_TEST_REPORT_URL}"
-        #sudo rm "$HOME/tmp/$(log_core_file_name)"
+        sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
+        scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
+        sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
 
-        #sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
-        #        "$HOME/tmp/$(log_bin_file_name)"
-        #scp "$HOME/tmp/$(log_bin_file_name)" "${PROJECT_TEST_REPORT_URL}"
-        #sudo rm "$HOME/tmp/$(log_bin_file_name)"
+        sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
+                "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
+        scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
+        sudo rm "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         pip-host-control --log "Saving backtrace (no crash)"
