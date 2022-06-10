@@ -800,7 +800,7 @@ function check_exit_code()
             ps aux | grep cmon
             echo "$ ps aux | grep ft_full"
             ps aux | grep ft_full
-            sudo gdb $HOME/clustercontrol-enterprise/tests/ft_full -batch -q --pid=$(pidof ft_full) -ex 'thread apply all bt' -ex quit
+            sudo gdb $HOME/clustercontrol-enterprise/tests/ft_full/ft_full -batch -q --pid=$(pidof ft_full) -ex 'thread apply all bt' -ex quit
         fi
 
         jobId=$(\

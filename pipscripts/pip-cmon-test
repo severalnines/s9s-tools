@@ -1198,11 +1198,6 @@ function run_test()
     if [ $? -ne 0 ]; then
         message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
-    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
-    sudo sysctl -p /etc/sysctl.conf
-    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
-    echo "User limits :"
-    sudo bash -c 'ulimit -a'
 
     for core_file in \
         /tmp/ft_full.core \
@@ -1223,6 +1218,15 @@ function run_test()
     if [ $? -ne 0 ]; then
         message "Failed: ulimit -c unlimited"
     fi
+
+    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
+    sudo sysctl -p /etc/sysctl.conf
+    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
+    echo "User limits :"
+    sudo bash -c 'ulimit -a'
+    sudo bash -c 'ulimit -c unlimited'
+    echo "User limits :"
+    sudo bash -c 'ulimit -a'
 
     #
     # Running the actual test.
