@@ -916,19 +916,7 @@ function ft_test_ended()
         sudo apt-get -y --force-yes install gdb
     fi
 
-    if [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
-        pip-host-control --log "Saving backtrace (no crash)"
-        echo "Saving backtrace (no crash)"
-        sudo gdb \
-            -p $backend_pid -batch \
-            -ex "thread apply all back" \
-            -ex "quit" \
-            >>$LOGFILE 2>>$LOGFILE
-    
-        #sudo gdb -p $backend_pid -batch \
-        #    -ex "thread apply all back" \
-        #    -ex "quit" 
-    elif [ -e "$core_file" ]; then
+    if [ -e "$core_file" ]; then
         pip-host-control --log "Saving backtrace (crash)"
         echo "Saving backtrace (crash)"
         sudo gdb \
@@ -937,10 +925,30 @@ function ft_test_ended()
             -ex "quit" \
             ft_full/ft_full "$core_file" \
             >>$LOGFILE 2>>$LOGFILE
+
+        sudo gdb \
+            -batch \
+            -ex "thread apply all back" \
+            -ex "quit" \
+            ft_full/ft_full "$core_file"
+
         sudo mv $core_file \
                 "$PROJECT_DATA_ROOT/test-results/$(log_core_file_name)"
         sudo cp $HOME/clustercontrol-enterprise/tests/ft_full/ft_full \
                 "$PROJECT_DATA_ROOT/test-results/$(log_bin_file_name)"
+    elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
+        pip-host-control --log "Saving backtrace (no crash)"
+        echo "Saving backtrace (no crash)"
+        sudo gdb \
+            -p $backend_pid -batch \
+            -ex "thread apply all back" \
+            -ex "quit" \
+            >>$LOGFILE 2>>$LOGFILE
+
+        sudo gdb \
+            -p $backend_pid -batch \
+            -ex "thread apply all back" \
+            -ex "quit"
     else
         echo "No backtrace is necessary. No rash, no error on exit."
     fi
