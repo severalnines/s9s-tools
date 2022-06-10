@@ -694,6 +694,7 @@ function compile_source_dir()
                 ccdir="$(find_clustercontrol_source_directory)"
 
                 if [ -d "$repodir" ]; then
+                    echo "Using previously compiled ft_full from $repodir"
                     cp $repodir/ft_full $ccdir/tests/ft_full/
                 fi
             ;;
@@ -772,6 +773,7 @@ function compile_source_dir()
                 ccdir="$(find_clustercontrol_source_directory)"
 
                 mkdir -p "$repodir"
+                echo "Saving ft_full to $repodir"
                 cp $ccdir/tests/ft_full/ft_full $repodir/
             ;;
             *)
