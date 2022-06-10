@@ -945,7 +945,7 @@ function ft_test_ended()
 
         sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
         scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
-        sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
+        #sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
 
         sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
                 "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
