@@ -795,14 +795,6 @@ function check_exit_code()
     if [ "$exitCode" -ne 0 ]; then
         failure "The exit code is ${exitCode}"
 
-        if [ "$exitCode" = "5" ]; then
-            echo "$ ps aux | grep cmon"
-            ps aux | grep cmon
-            echo "$ ps aux | grep ft_full"
-            ps aux | grep ft_full
-            sudo gdb $HOME/clustercontrol-enterprise/tests/ft_full/ft_full -batch -q --pid=$(pidof ft_full) -ex 'thread apply all bt' -ex quit
-        fi
-
         jobId=$(\
             s9s job --list --batch $password_option | \
             grep FAIL | \
