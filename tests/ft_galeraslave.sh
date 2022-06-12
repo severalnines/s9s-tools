@@ -5,12 +5,14 @@ MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 VERSION="1.0.0"
-LOG_OPTION="--wait"
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
 OPTION_INSTALL=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
+
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 OPTION_VENDOR="percona"
 

@@ -5,7 +5,9 @@ MYDIR=$(dirname $0)
 MYHOSTNAME="$(hostname)"
 VERBOSE=""
 VERSION="0.0.3"
-LOG_OPTION="--wait"
+
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 CONTAINER_SERVER="$MYHOSTNAME"
 CONTAINER_IP=""

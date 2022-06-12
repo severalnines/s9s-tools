@@ -4,8 +4,10 @@ MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
 VERSION="0.0.4"
-LOG_OPTION="--wait"
 CONTAINER_SERVER=""
+
+LOG_OPTION="--log"
+DEBUG_OPTION="--debug"
 
 CLUSTER_NAME="galera_002"
 CLUSTER_ID=""
