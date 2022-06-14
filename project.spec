@@ -32,6 +32,8 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT/usr/include/s9s
+# to make OpenSUSE package linter happy, and we wont install these anyways
+sh -c 'pushd tests; make clean; popd' || true
 
 %files
 %doc README TODO COPYING ChangeLog
