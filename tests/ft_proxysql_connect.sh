@@ -410,6 +410,54 @@ function testAddProxySql1()
     end_verbatim
 }
 
+function testImportUserWithAllPrivileges()
+{
+    local sql_host="$PROXY_SERVER"
+    local sql_port="6033"
+    local db_name="test_database"
+    local sql_user="$PROJECT_OWNER"
+    local sql_password="password"
+    local reply
+
+    print_title "Creating a user with '%' allowhost."
+
+    begin_verbatim
+
+    mysqlCmd="mysql \
+            --disable-auto-rehash \
+            --batch \
+            -h$sql_host \
+            -P$sql_port \
+            -u$sql_user \
+            -p$sql_password \
+            $db_name \
+            -e \"create user proxytest@'%' identified by 'pass'\""
+
+    echo "$mysqlCmd"
+    reply=$($mysqlCmd | tail -n +2)
+
+    end_verbatim
+
+    print_title "Granting all privileges."
+
+    begin_verbatim
+
+    mysqlCmd="mysql \
+            --disable-auto-rehash \
+            --batch \
+            -h$sql_host \
+            -P$sql_port \
+            -u$sql_user \
+            -p$sql_password \
+            $db_name \
+            -e \"grant all on *.* to proxytest@'%'\""
+
+    echo "$mysqlCmd"
+    reply=$($mysqlCmd | tail -n +2)
+
+    end_verbatim
+}
+
 function testConnect02()
 {
     local sql_host="$PROXY_SERVER"
@@ -486,6 +534,7 @@ else
     runFunctionalTest testCreateDatabase
     runFunctionalTest testAddProxySql
     runFunctionalTest testConnect02
+    runFunctionalTest testImportUserWithAllPrivileges
 fi
 
 endTests

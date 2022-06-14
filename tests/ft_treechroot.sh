@@ -182,7 +182,7 @@ function testRegisterServer()
     OWNER=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
     GROUP=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
 
-    if [ "$OWNER" != '${PROJECT_OWNER}' ]; then
+    if [ "$OWNER" != "$PROJECT_OWNER" ]; then
         s9s tree --list /$CONTAINER_SERVER 
         failure "The owner is '$OWNER' should be '$USER'."
     else
