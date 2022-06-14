@@ -43,7 +43,6 @@ AC_CHECK_FUNCS([strdup strtol strcmp strncmp])
 AC_CHECK_HEADERS([openssl/crypto.h],,AC_MSG_ERROR("Missing OpenSSL headers"))
 AC_CHECK_LIB(crypto,EVP_EncryptUpdate,,AC_MSG_ERROR("libcrypto library not found."))
 AC_CHECK_LIB(ssl,SSL_connect,,AC_MSG_ERROR("libssl library not found."))
-AC_CHECK_LIB(pthread,pthread_yield,,AC_MSG_ERROR([pthread library not found.]))
 LIBS+="-pthread"
 
 #AC_CHECK_LIB(ncurses, initscr)

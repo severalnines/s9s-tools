@@ -1,3 +1,9 @@
+s9s-tools (1.9.2022061400-release1) UNRELEASED; urgency=medium
+
+  * Prepared some packaging fixes
+
+ -- David Kedves <kedazo@severalnines.com>  Tue, 14 Jun 2022 17:16:29 +0200
+
 s9s-tools (1.9.2022060720-release1) UNRELEASED; urgency=medium
 
   [ David Kedves ]

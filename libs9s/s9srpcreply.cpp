@@ -2455,7 +2455,7 @@ S9sRpcReply::printSnapshotRepositoriesLong()
         }
         else
         {
-            PRINT_ERROR("Invalid snapshot repository type: %s", type);
+            PRINT_ERROR("Invalid snapshot repository type: %s", type.c_str());
             return;
         }
         ++nLines;

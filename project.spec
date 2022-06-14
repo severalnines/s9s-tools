@@ -10,6 +10,7 @@ URL: https://github.com/severalnines/s9s-tools/
 Source0: https://github.com/severalnines/s9s-tools/archive/master.zip
 
 BuildRequires: bison
+BuildRequires: (unzip or zip)
 BuildRequires: automake
 BuildRequires: gcc-c++
 BuildRequires: openssl-devel
@@ -42,6 +43,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Tue Jun 14 2022 David Kedves <kedazo@severalnines.com> 1.9.2022061400
+- Prepared some packaging fixes.
 * Tue Jun  7 2022 Severalnines <support@severalnines.com> 1.9.2022060720
 - Release 1.9.2022060720.
 * Wed May 11 2022 David Kedves <kedazo@severalnines.com> 1.9.2022051109
