@@ -26,6 +26,7 @@ Severalnines ClusterControl CLI Tools
 %build
 CFLAGS="-Wno-error=odr" CXXFLAGS="-Wno-error=odr" ./autogen.sh --with-no-tests
 %configure
+CFLAGS="${CFLAGS} -Wno-error=odr" CXXFLAGS="${CXXFLAGS} -Wno-error=odr" ./configure --with-no-tests
 make %{?_smp_mflags}
 
 %install
