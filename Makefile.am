@@ -5,7 +5,7 @@ SUBDIRS =       \
 	doc         \
 	libs9s		\
 	s9s			\
-	tests
+	$(TESTS_DIR)
 
 EXTRA_DIST =   \
 	autogen.sh 

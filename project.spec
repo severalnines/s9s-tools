@@ -24,7 +24,7 @@ Severalnines ClusterControl CLI Tools
 %setup -q -n s9s-tools-master
 
 %build
-./autogen.sh
+./autogen.sh --with-no-tests
 %configure
 make %{?_smp_mflags}
 

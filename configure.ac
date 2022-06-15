@@ -70,6 +70,11 @@ BUILD_VERSION=$([LC_ALL=C TZ=UTC head -n1 debian/changelog | cut -d'(' -f2 | cut
 AC_DEFINE_UNQUOTED([BUILD_VERSION], ["$BUILD_VERSION"], [The build version])
 AC_SUBST(BUILD_VERSION)
 
+TESTS_DIR="tests"
+AC_ARG_WITH(no-tests, AC_HELP_STRING([--with-no-tests], [You may disable the compilation of tests]),TESTS_DIR="")
+
+AC_SUBST(TESTS_DIR)
+
 # Check for running on Darwin
 AC_MSG_CHECKING([Checking if running on Darwin])
 UNAME=`uname -s`
