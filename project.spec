@@ -106,8 +106,6 @@ sh -c 'pushd tests; make clean; popd' || true
 - A new public release
 * Mon Aug 24 2020 David Kedves <kedazo@severalnines.com> 1.8.20200824
 - Creating a pre-release build
-* Thu Aug  4 2020 David Kedves <kedazo@severalnines.com> 1.7.20200804
-- Creating a pre-release build
 * Thu May 28 2020 David Kedves <kedazo@severalnines.com> 1.7.20200528
 - Creating a new build
 * Tue May 26 2020 David Kedves <kedazo@severalnines.com> 1.7.20200526
