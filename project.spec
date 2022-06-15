@@ -5,7 +5,8 @@ Version: 1.9
 Release: %{build_timestamp}%{?dist}
 Summary: Severalnines ClusterControl CLI Tools
 
-License: GPLv2+
+License: GPL-2.0-or-later
+Group: Development/Tools/Navigators
 URL: https://github.com/severalnines/s9s-tools/
 Source0: https://github.com/severalnines/s9s-tools/archive/master.zip
 
@@ -32,6 +33,8 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+# remove development stuff
+rm -f $RPM_BUILD_ROOT/%{_libdir}/*.a
 rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 
 %files
