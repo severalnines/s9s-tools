@@ -5,6 +5,7 @@
 #
 
 dist="Unknown"
+distversion=""
 regex_lsb="Description:[[:space:]]*([^ ]*)"
 regex_etc="/etc/(.*)[-_]"
 
@@ -27,11 +28,29 @@ do_lsb() {
     return 1
 }
 
+detect_suse_version() {
+    dist="suse"
+    # we only build for 15.3, 15.4 and tumbleweed for now
+    distversion="15.3" # as a fallback
+    if grep '15\.4' /etc/os-release >/dev/null 2>/dev/null; then
+        distversion="15.4"
+    elif grep tumbleweed /etc/os-release >/dev/null 2>/dev/null; then
+        distversion="tumbleweed"
+    fi
+}
+
 do_release_file() {
     etc_files=`ls /etc/*[-_]{release,version} 2>/dev/null`
     for file in $etc_files; do
         # /etc/SuSE-release is deprecated and will be removed in the future, use /etc/os-release instead
         if [[ $file == "/etc/os-release" ]]; then
+            if grep SLE $file >/dev/null 2>/dev/null; then
+                detect_suse_version
+                break
+            elif grep opensuse $file >/dev/null 2>/dev/null; then
+                detect_suse_version
+                break
+            fi
             continue
         fi
         if [[ $file =~ $regex_etc ]]; then
@@ -41,9 +60,9 @@ do_release_file() {
             dist=$(echo $dist | tr '[:upper:]' '[:lower:]')
             if [[ $dist == "redhat" ]] || [[ $dist == "red" ]] || [[ $dist == "fedora" ]]; then
                 $(grep -q " 7." $file)
-                [[ $? -eq 0 ]] && rhel_version=7 && break
+                [[ $? -eq 0 ]] && distversion=7 && break
                 $(grep -q "21" $file)
-                [[ $? -eq 0 ]] && rhel_version=7 && break
+                [[ $? -eq 0 ]] && distversion=7 && break
             fi
         fi
     done
@@ -68,6 +87,7 @@ case $dist in
     fedora) dist="redhat";;
     oracle) dist="redhat";;
     system) dist="redhat";; # amazon ami
+    suse)   dist="suse";;
     *) log_msg "=> This Script is currently not supported on $dist. You can try changing the distribution check."; exit 1
 esac
 
@@ -86,10 +106,10 @@ add_s9s_commandline_yum() {
     if [[ ! -e $repo_source_file ]]; then
         if [[ -z $CENTOS ]]; then
             REPO="RHEL_6"
-            [[ $rhel_version == "7" ]] && REPO="RHEL_7"
+            [[ $distversion == "7" ]] && REPO="RHEL_7"
         else
             REPO="CentOS_6"
-            [[ $rhel_version == "7" ]] && REPO="CentOS_7"
+            [[ $distversion == "7" ]] && REPO="CentOS_7"
         fi
         cat > $repo_source_file << EOF
 [s9s-tools]
@@ -106,13 +126,32 @@ EOF
     fi
 }
 
+add_s9s_commandline_zypper() {
+    log_msg "=> Adding Zypper repository ..."
+    repo_source_file=/tmp/s9s-tools.repo
+    cat > $repo_source_file << EOF
+[s9s-tools]
+name=s9s-tools (Suse ${distversion})
+type=rpm-md
+baseurl=http://repo.severalnines.com/s9s-tools/${distversion}
+gpgcheck=1
+gpgkey=http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key
+enabled=1
+EOF
+    zypper -n addrepo --refresh ${repo_source_file}
+    log_msg "=> Added ${repo_source_file}"
+}
+
+
 install_s9s_commandline() {
     log_msg "=> Installing s9s-tools ..."
     if [[ $dist == "redhat" ]]; then
         yum -y install s9s-tools
     elif [[ $dist == "debian" ]]; then
         apt-get -y install s9s-tools
-     fi
+    elif [[ $dist == "suse" ]]; then
+        zypper -n install --no-confirm s9s-tools
+    fi
     [[ $? -ne 0 ]] && log_msg "Unable to install s9s-tools"
 }
 
@@ -214,6 +253,10 @@ fi
 
 if [[ "$dist" == "redhat" ]]; then
     add_s9s_commandline_yum
+fi
+
+if [[ "$dist" == "suse" ]]; then
+    add_s9s_commandline_zypper
 fi
 
 install_s9s_commandline
