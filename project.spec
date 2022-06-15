@@ -24,17 +24,15 @@ Severalnines ClusterControl CLI Tools
 %setup -q -n s9s-tools-master
 
 %build
-CFLAGS="-Wno-error=odr" CXXFLAGS="-Wno-error=odr" ./autogen.sh --with-no-tests --with-no-rpath
+CFLAGS="-Wno-error=odr" CXXFLAGS="-Wno-error=odr" ./autogen.sh --with-no-tests --with-no-rpath --libdir=%{_libdir}
 %configure
-CFLAGS="${CFLAGS} -Wno-error=odr" CXXFLAGS="${CXXFLAGS} -Wno-error=odr" ./configure --with-no-tests --with-no-rpath
+CFLAGS="${CFLAGS} -Wno-error=odr" CXXFLAGS="${CXXFLAGS} -Wno-error=odr" ./configure --with-no-tests --with-no-rpath --libdir=%{_libdir}
 make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT/usr/include/s9s
-# to make OpenSUSE package linter happy, and we wont install these anyways
-sh -c 'pushd tests; make clean; popd' || true
 
 %files
 %doc README TODO COPYING ChangeLog
