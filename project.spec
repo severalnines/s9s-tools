@@ -24,9 +24,9 @@ Severalnines ClusterControl CLI Tools
 %setup -q -n s9s-tools-master
 
 %build
-CFLAGS="-Wno-error=odr" CXXFLAGS="-Wno-error=odr" ./autogen.sh --with-no-tests
+CFLAGS="-Wno-error=odr" CXXFLAGS="-Wno-error=odr" ./autogen.sh --with-no-tests --with-no-rpath
 %configure
-CFLAGS="${CFLAGS} -Wno-error=odr" CXXFLAGS="${CXXFLAGS} -Wno-error=odr" ./configure --with-no-tests
+CFLAGS="${CFLAGS} -Wno-error=odr" CXXFLAGS="${CXXFLAGS} -Wno-error=odr" ./configure --with-no-tests --with-no-rpath
 make %{?_smp_mflags}
 
 %install
