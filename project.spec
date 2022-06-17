@@ -17,6 +17,7 @@ BuildRequires: gcc-c++
 BuildRequires: openssl-devel
 BuildRequires: flex
 BuildRequires: gdb
+BuildRequires: sed
 
 %description
 Severalnines ClusterControl CLI Tools
@@ -25,9 +26,15 @@ Severalnines ClusterControl CLI Tools
 %setup -q -n s9s-tools-master
 
 %build
-CFLAGS="-Wno-error=odr" CXXFLAGS="-Wno-error=odr" ./autogen.sh --with-no-tests --with-no-rpath --libdir=%{_libdir}
+# kill weirdo failures on redhat/suse systems
+sed -e 's/-Werror//g' -i libs9s/Makefile.am
+export EXTRAFLAGS="-Wno-error=odr"
+if LC_ALL='C' g++ -Wodr 2>&1 | grep 'unrecognized.*Wodr'; then
+    export EXTRAFLAGS=""
+fi
+CFLAGS="${CFLAGS} ${EXTRAFLAGS}" CXXFLAGS="${CXXFLAGS} ${EXTRAFLAGS}" ./autogen.sh --with-no-tests --with-no-rpath --libdir=%{_libdir}
 %configure
-CFLAGS="${CFLAGS} -Wno-error=odr" CXXFLAGS="${CXXFLAGS} -Wno-error=odr" ./configure --with-no-tests --with-no-rpath --libdir=%{_libdir}
+CFLAGS="${CFLAGS} ${EXTRAFLAGS}" CXXFLAGS="${CXXFLAGS} ${EXTRAFLAGS}" ./configure --with-no-tests --with-no-rpath --libdir=%{_libdir}
 make %{?_smp_mflags}
 
 %install
@@ -47,6 +54,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Fri Jun 17 2022 David Kedves <kedazo@severalnines.com> 1.9.2022061700
+- Some more packaging fixes.
 * Wed Jun 15 2022 Severalnines <support@severalnines.com> 1.9.2022061515
 - Release 1.9.2022061515.
 * Tue Jun 14 2022 David Kedves <kedazo@severalnines.com> 1.9.2022061400
