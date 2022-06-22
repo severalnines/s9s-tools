@@ -11,8 +11,8 @@ AM_CPPFLAGS += -pipe
 
 LDADD = -L../libs9s -ls9s -lrt -lpthread
 
-#add '../libs9s' to the lib search path
-s9s_LDFLAGS = -pthread -Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,./libs9s
+#add '../libs9s' to the lib search path (for normal builds)
+s9s_LDFLAGS = -pthread $(RPATH_ARGS)
 
 if COND_GCOV
    AM_CPPFLAGS += -fprofile-arcs -ftest-coverage --no-inline

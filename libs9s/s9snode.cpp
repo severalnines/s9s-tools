@@ -1228,10 +1228,20 @@ S9sNode::message() const
 
     if (m_properties.contains("message"))
         retval = m_properties.at("message").toString();
+
+    if (!retval.empty() &&
+        m_properties.contains("readonly"))
+    {
+        retval.replace(".", "");        
+        if (m_properties.at("readonly").toBoolean())
+            retval += " (read-only).";
+        else
+            retval += " (read-write).";
+    }
     
     if (retval.empty() && m_properties.contains("errormsg"))
         retval = m_properties.at("errormsg").toString();
-
+    
     retval.replace("\n", "\\n");
     retval.replace("\r", "\\r");
     return retval;

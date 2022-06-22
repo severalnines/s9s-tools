@@ -75,6 +75,11 @@ AC_ARG_WITH(no-tests, AC_HELP_STRING([--with-no-tests], [You may disable the com
 
 AC_SUBST(TESTS_DIR)
 
+RPATH_ARGS="-Wl,-rpath,. -Wl,-rpath,../libs9s -Wl,-rpath,./libs9s"
+AC_ARG_WITH(no-rpath, AC_HELP_STRING([--with-no-rpath], [Disable the rpath defines]),RPATH_ARGS="")
+
+AC_SUBST(RPATH_ARGS)
+
 # Check for running on Darwin
 AC_MSG_CHECKING([Checking if running on Darwin])
 UNAME=`uname -s`

@@ -8036,7 +8036,7 @@ S9sRpcReply::printNodeListLong()
         S9sString     clusterName = hostMap["cluster_name"].toString();
         bool maintenance = hostMap["maintenance_mode_active"].toBoolean();
         int           port      = hostMap["port"].toInt(-1);
-            
+        
         // Filtering...
         if (!properties.isSubSet(hostMap))
             continue;

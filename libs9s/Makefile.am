@@ -3,7 +3,7 @@
 #
 AM_LDFLAGS   = ""
 
-AM_CPPFLAGS  = -Wall -Werror -fno-strict-aliasing
+AM_CPPFLAGS  = -Wall  -fno-strict-aliasing
 AM_CPPFLAGS += -std=c++0x
 AM_CPPFLAGS += -Wno-deprecated-declarations
 AM_CPPFLAGS += -fPIC -pipe
