@@ -114,6 +114,7 @@ enum S9sOptionType
     OptionVerify,
     OptionDeleteOld,
     OptionDeleteAll,
+    OptionDbClusterId,
     OptionBackupId,
     OptionBackupMethod,
     OptionBackupDirectory,
@@ -2171,6 +2172,21 @@ int
 S9sOptions::remoteClusterId() const
 {
     return getInt("remote_cluster_id");
+}
+
+int
+S9sOptions::dbClusterId() const
+{
+    return getInt("db_cluster_id");
+}
+
+/**
+ * \returns true if the --db-cluster-id command line option was provided.
+ */
+bool
+S9sOptions::hasDbClusterIdOption() const
+{
+    return m_options.contains("db_cluster_id");
 }
 
 /**
@@ -6485,6 +6501,7 @@ S9sOptions::printHelpCluster()
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --provider-version=VER     The version of the software.\n" 
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
+"  --db-cluster-id=ID         cluster ID when there is no cluster, only data on db.\n"
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
@@ -7364,6 +7381,8 @@ S9sOptions::readOptionsBackup(
         { "delete",           no_argument,       0, OptionDelete          },
         { "delete-old",       no_argument,       0, OptionDeleteOld       },
         { "delete-all",       no_argument,       0, OptionDeleteAll       },
+        { "db-cluster-id",    required_argument, 0, OptionDbClusterId     },
+        { "forced",           no_argument,       0, OptionForce           },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
@@ -7605,6 +7624,16 @@ S9sOptions::readOptionsBackup(
             case OptionDeleteAll:
                 // --delete-all
                 m_options["delete_all_backups"] = true;
+                break;
+
+            case OptionDbClusterId:
+                // --db-cluster-id=ID
+                m_options["db_cluster_id"] = optarg;
+                break;
+
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
                 break;
 
 
