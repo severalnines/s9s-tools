@@ -138,6 +138,17 @@ gpgcheck=1
 gpgkey=http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key
 enabled=1
 EOF
+    # make sure curl or wget is available
+    command -v curl || zypper -n install --no-confirm curl || command -v wget || zypper -n install --no-confirm wget
+    if command -v curl; then
+        curl "http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key" -o/tmp/s9s-tools.asc
+        rpm --import /tmp/s9s-tools.asc
+    elif command -v wget; then
+        wget "http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key" -O/tmp/s9s-tools.asc
+        rpm --import /tmp/s9s-tools.asc
+    else
+        rpm --import "http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key"
+    fi
     zypper -n addrepo --refresh ${repo_source_file}
     log_msg "=> Added ${repo_source_file}"
 }
