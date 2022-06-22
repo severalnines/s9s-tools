@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # This is the s9s-tools install script. It installs the s9s CLI.
-# Copyright 2017-2018 severalnines.com
+# Copyright 2017-2022 severalnines.com
 #
 
 dist="Unknown"
@@ -50,8 +50,10 @@ do_release_file() {
             elif grep opensuse $file >/dev/null 2>/dev/null; then
                 detect_suse_version
                 break
+            else
+                grep -q "VERSION=.*7." $file >/dev/null 2>/dev/null && distversion=7 && break
+                grep -q "VERSION=.*8." $file >/dev/null 2>/dev/null && distversion=8 && break
             fi
-            continue
         fi
         if [[ $file =~ $regex_etc ]]; then
             dist=${BASH_REMATCH[1]}
@@ -59,10 +61,9 @@ do_release_file() {
             #dist=${dist,,}
             dist=$(echo $dist | tr '[:upper:]' '[:lower:]')
             if [[ $dist == "redhat" ]] || [[ $dist == "red" ]] || [[ $dist == "fedora" ]]; then
-                $(grep -q " 7." $file)
-                [[ $? -eq 0 ]] && distversion=7 && break
-                $(grep -q "21" $file)
-                [[ $? -eq 0 ]] && distversion=7 && break
+                grep -q " 7." $file >/dev/null 2>/dev/null && distversion=7 && break
+                grep -q " 8." $file >/dev/null 2>/dev/null && distversion=8 && break
+                grep -q "21" $file >/dev/null 2>/dev/null && distversion=7 && break
             fi
         fi
     done
@@ -103,14 +104,16 @@ add_s9s_commandline_apt() {
 add_s9s_commandline_yum() {
     log_msg "=> Adding YUM repository ..."
     repo_source_file=/etc/yum.repos.d/s9s-tools.repo
+    if [[ -z $CENTOS ]]; then
+        REPO="RHEL_7"
+        [[ $distversion == "8" ]] && REPO="RHEL_8"
+    else
+        REPO="CentOS_7"
+        [[ $distversion == "8" ]] && REPO="CentOS_8"
+    fi
+    # after dist upgrade or errors we must re-recreate this repo file
+    grep -q ${REPO} $repo_source_file >/dev/null 2>/dev/null || rm -f $repo_source_file
     if [[ ! -e $repo_source_file ]]; then
-        if [[ -z $CENTOS ]]; then
-            REPO="RHEL_6"
-            [[ $distversion == "7" ]] && REPO="RHEL_7"
-        else
-            REPO="CentOS_6"
-            [[ $distversion == "7" ]] && REPO="CentOS_7"
-        fi
         cat > $repo_source_file << EOF
 [s9s-tools]
 name=s9s-tools (${REPO})
@@ -275,3 +278,4 @@ create_local_s9s_user
 
 log_msg "=> s9s-tools installation has finished."
 exit 0
+
