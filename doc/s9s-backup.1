@@ -80,14 +80,17 @@ s9s backup \\
 .B \-\^\-delete\-all
 Delete all backups (filtering by some property as snapshot repository name). This command 
 line option will initiate a job that checks for all backups and 
-removes them from the system.
+removes them from the system. db_cluster_id property is used as it could be
+that no cluster exists but there is data on db. With forced option it will delete backup
+record on db even when backup deletion failed.
 
 .B EXAMPLE
 .nf
 s9s backup \\
     --delete-all \\
-    --cluster-id=1 \\
+    --db-cluster-id=1 \\
     --snapshot-repository=my_s3_repo \\
+    --forced
     --log
 .fi
 

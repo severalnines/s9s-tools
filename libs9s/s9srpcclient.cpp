@@ -5620,9 +5620,9 @@ S9sRpcClient::addElasticNode(
             nodei["hostname"] = hosts[i].toNode().hostName();
             nodei["protocol"] = "elastic";
             S9sString roles = hosts[i].toNode().roles();
-            if(roles != "data")
+            if(roles != "data" && roles != "master" && roles != "master-data" && roles != "data-master")
             {
-                PRINT_ERROR("Only nodes with data role can be added");
+                PRINT_ERROR("Only nodes with data and/or master role can be added");
                 return false;
             }
             nodei["roles"] = roles;
@@ -8541,12 +8541,24 @@ S9sRpcClient::deleteAllBackups()
     S9sString       title;
     S9sString       uri = "/v2/jobs/";
     bool            retval;
+    int             dbClusterId;
 
-    if (!options->hasClusterIdOption() && !options->hasClusterNameOption())
+    if (!options->hasDbClusterIdOption())
     {
-        PRINT_ERROR("The cluster ID or the cluster name must be specified.");
+        PRINT_ERROR("The cluster ID or the cluster name must be specified on --db-cluster-id.");
         return false;
     }
+    else
+    {
+        dbClusterId = options->dbClusterId();
+        jobData["db_cluster_id"] = dbClusterId;
+    }
+
+    if (options->hasForceOption())
+    {
+        jobData["force"] = true;
+    }
+
 
     title.sprintf("Delete All Backups");
     

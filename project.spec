@@ -5,7 +5,8 @@ Version: 1.9
 Release: %{build_timestamp}%{?dist}
 Summary: Severalnines ClusterControl CLI Tools
 
-License: GPLv2+
+License: GPL-2.0-or-later
+Group: Development/Tools/Navigators
 URL: https://github.com/severalnines/s9s-tools/
 Source0: https://github.com/severalnines/s9s-tools/archive/master.zip
 
@@ -16,6 +17,7 @@ BuildRequires: gcc-c++
 BuildRequires: openssl-devel
 BuildRequires: flex
 BuildRequires: gdb
+BuildRequires: sed
 
 %description
 Severalnines ClusterControl CLI Tools
@@ -24,16 +26,23 @@ Severalnines ClusterControl CLI Tools
 %setup -q -n s9s-tools-master
 
 %build
-./autogen.sh --with-no-tests
+# kill weirdo failures on redhat/suse systems
+sed -e 's/-Werror//g' -i libs9s/Makefile.am
+export EXTRAFLAGS="-Wno-error=odr"
+if LC_ALL='C' g++ -Wodr 2>&1 | grep 'unrecognized.*Wodr'; then
+    export EXTRAFLAGS=""
+fi
+CFLAGS="${CFLAGS} ${EXTRAFLAGS}" CXXFLAGS="${CXXFLAGS} ${EXTRAFLAGS}" ./autogen.sh --with-no-tests --with-no-rpath --libdir=%{_libdir}
 %configure
+CFLAGS="${CFLAGS} ${EXTRAFLAGS}" CXXFLAGS="${CXXFLAGS} ${EXTRAFLAGS}" ./configure --with-no-tests --with-no-rpath --libdir=%{_libdir}
 make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+# remove development stuff
+rm -f $RPM_BUILD_ROOT/%{_libdir}/*.a
 rm -rf $RPM_BUILD_ROOT/usr/include/s9s
-# to make OpenSUSE package linter happy, and we wont install these anyways
-sh -c 'pushd tests; make clean; popd' || true
 
 %files
 %doc README TODO COPYING ChangeLog
@@ -45,6 +54,10 @@ sh -c 'pushd tests; make clean; popd' || true
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Fri Jun 17 2022 David Kedves <kedazo@severalnines.com> 1.9.2022061700
+- Some more packaging fixes.
+* Wed Jun 15 2022 Severalnines <support@severalnines.com> 1.9.2022061515
+- Release 1.9.2022061515.
 * Tue Jun 14 2022 David Kedves <kedazo@severalnines.com> 1.9.2022061400
 - Prepared some packaging fixes.
 * Tue Jun  7 2022 Severalnines <support@severalnines.com> 1.9.2022060720
@@ -104,8 +117,6 @@ sh -c 'pushd tests; make clean; popd' || true
 * Thu Sep  3 2020 David Kedves <kedazo@severalnines.com> 1.8.20200903
 - A new public release
 * Mon Aug 24 2020 David Kedves <kedazo@severalnines.com> 1.8.20200824
-- Creating a pre-release build
-* Thu Aug  4 2020 David Kedves <kedazo@severalnines.com> 1.7.20200804
 - Creating a pre-release build
 * Thu May 28 2020 David Kedves <kedazo@severalnines.com> 1.7.20200528
 - Creating a new build

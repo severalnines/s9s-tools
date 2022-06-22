@@ -1,10 +1,11 @@
 #!/bin/bash
 #
 # This is the s9s-tools install script. It installs the s9s CLI.
-# Copyright 2017-2018 severalnines.com
+# Copyright 2017-2022 severalnines.com
 #
 
 dist="Unknown"
+distversion=""
 regex_lsb="Description:[[:space:]]*([^ ]*)"
 regex_etc="/etc/(.*)[-_]"
 
@@ -27,12 +28,32 @@ do_lsb() {
     return 1
 }
 
+detect_suse_version() {
+    dist="suse"
+    # we only build for 15.3, 15.4 and tumbleweed for now
+    distversion="15.3" # as a fallback
+    if grep '15\.4' /etc/os-release >/dev/null 2>/dev/null; then
+        distversion="15.4"
+    elif grep tumbleweed /etc/os-release >/dev/null 2>/dev/null; then
+        distversion="tumbleweed"
+    fi
+}
+
 do_release_file() {
     etc_files=`ls /etc/*[-_]{release,version} 2>/dev/null`
     for file in $etc_files; do
         # /etc/SuSE-release is deprecated and will be removed in the future, use /etc/os-release instead
         if [[ $file == "/etc/os-release" ]]; then
-            continue
+            if grep SLE $file >/dev/null 2>/dev/null; then
+                detect_suse_version
+                break
+            elif grep opensuse $file >/dev/null 2>/dev/null; then
+                detect_suse_version
+                break
+            else
+                grep -q "VERSION=.*7." $file >/dev/null 2>/dev/null && distversion=7 && break
+                grep -q "VERSION=.*8." $file >/dev/null 2>/dev/null && distversion=8 && break
+            fi
         fi
         if [[ $file =~ $regex_etc ]]; then
             dist=${BASH_REMATCH[1]}
@@ -40,10 +61,9 @@ do_release_file() {
             #dist=${dist,,}
             dist=$(echo $dist | tr '[:upper:]' '[:lower:]')
             if [[ $dist == "redhat" ]] || [[ $dist == "red" ]] || [[ $dist == "fedora" ]]; then
-                $(grep -q " 7." $file)
-                [[ $? -eq 0 ]] && rhel_version=7 && break
-                $(grep -q "21" $file)
-                [[ $? -eq 0 ]] && rhel_version=7 && break
+                grep -q " 7." $file >/dev/null 2>/dev/null && distversion=7 && break
+                grep -q " 8." $file >/dev/null 2>/dev/null && distversion=8 && break
+                grep -q "21" $file >/dev/null 2>/dev/null && distversion=7 && break
             fi
         fi
     done
@@ -68,6 +88,7 @@ case $dist in
     fedora) dist="redhat";;
     oracle) dist="redhat";;
     system) dist="redhat";; # amazon ami
+    suse)   dist="suse";;
     *) log_msg "=> This Script is currently not supported on $dist. You can try changing the distribution check."; exit 1
 esac
 
@@ -83,14 +104,16 @@ add_s9s_commandline_apt() {
 add_s9s_commandline_yum() {
     log_msg "=> Adding YUM repository ..."
     repo_source_file=/etc/yum.repos.d/s9s-tools.repo
+    if [[ -z $CENTOS ]]; then
+        REPO="RHEL_7"
+        [[ $distversion == "8" ]] && REPO="RHEL_8"
+    else
+        REPO="CentOS_7"
+        [[ $distversion == "8" ]] && REPO="CentOS_8"
+    fi
+    # after dist upgrade or errors we must re-recreate this repo file
+    grep -q ${REPO} $repo_source_file >/dev/null 2>/dev/null || rm -f $repo_source_file
     if [[ ! -e $repo_source_file ]]; then
-        if [[ -z $CENTOS ]]; then
-            REPO="RHEL_6"
-            [[ $rhel_version == "7" ]] && REPO="RHEL_7"
-        else
-            REPO="CentOS_6"
-            [[ $rhel_version == "7" ]] && REPO="CentOS_7"
-        fi
         cat > $repo_source_file << EOF
 [s9s-tools]
 name=s9s-tools (${REPO})
@@ -106,13 +129,43 @@ EOF
     fi
 }
 
+add_s9s_commandline_zypper() {
+    log_msg "=> Adding Zypper repository ..."
+    repo_source_file=/tmp/s9s-tools.repo
+    cat > $repo_source_file << EOF
+[s9s-tools]
+name=s9s-tools (Suse ${distversion})
+type=rpm-md
+baseurl=http://repo.severalnines.com/s9s-tools/${distversion}
+gpgcheck=1
+gpgkey=http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key
+enabled=1
+EOF
+    # make sure curl or wget is available
+    command -v curl || zypper -n install --no-confirm curl || command -v wget || zypper -n install --no-confirm wget
+    if command -v curl; then
+        curl "http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key" -o/tmp/s9s-tools.asc
+        rpm --import /tmp/s9s-tools.asc
+    elif command -v wget; then
+        wget "http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key" -O/tmp/s9s-tools.asc
+        rpm --import /tmp/s9s-tools.asc
+    else
+        rpm --import "http://repo.severalnines.com/s9s-tools/${distversion}/repodata/repomd.xml.key"
+    fi
+    zypper -n addrepo --refresh ${repo_source_file}
+    log_msg "=> Added ${repo_source_file}"
+}
+
+
 install_s9s_commandline() {
     log_msg "=> Installing s9s-tools ..."
     if [[ $dist == "redhat" ]]; then
         yum -y install s9s-tools
     elif [[ $dist == "debian" ]]; then
         apt-get -y install s9s-tools
-     fi
+    elif [[ $dist == "suse" ]]; then
+        zypper -n install --no-confirm s9s-tools
+    fi
     [[ $? -ne 0 ]] && log_msg "Unable to install s9s-tools"
 }
 
@@ -216,8 +269,13 @@ if [[ "$dist" == "redhat" ]]; then
     add_s9s_commandline_yum
 fi
 
+if [[ "$dist" == "suse" ]]; then
+    add_s9s_commandline_zypper
+fi
+
 install_s9s_commandline
 create_local_s9s_user
 
 log_msg "=> s9s-tools installation has finished."
 exit 0
+
