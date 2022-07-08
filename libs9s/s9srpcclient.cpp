@@ -8441,10 +8441,14 @@ S9sRpcClient::getSnapshotRepositories(
     S9sVariantMap  request;
     bool           retval;
 
-    request["operation"] = "getSnapshotRepositories";
 
     if (clusterId > 0)
+    {
+        request["operation"] = "getSnapshotRepositories";
         request["cluster_id"] = clusterId;
+    }
+    else
+        request["operation"] = "getAllSnapshotRepositories";
 
     retval = executeRequest(uri, request);
 

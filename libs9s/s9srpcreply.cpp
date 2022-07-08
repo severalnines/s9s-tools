@@ -2372,7 +2372,7 @@ S9sRpcReply::printBackupSchedulesLong()
 }
 
 void 
-S9sRpcReply::printSnapshotRepositories()
+S9sRpcReply::printSnapshotRepositories(bool allClusters)
 {
     S9sOptions *options = S9sOptions::instance();
     
@@ -2384,9 +2384,9 @@ S9sRpcReply::printSnapshotRepositories()
         PRINT_ERROR("%s", STR(errorString()));
     } else if (options->isLongRequested())
     {
-        printSnapshotRepositoriesLong();
+        printSnapshotRepositoriesLong(allClusters);
     } else {
-        printSnapshotRepositoriesBrief();
+        printSnapshotRepositoriesBrief(allClusters);
     }
 }
 
@@ -2396,20 +2396,43 @@ S9sRpcReply::printSnapshotRepositories()
  * Prints the snapshot repositories in brief format.
  */
 void
-S9sRpcReply::printSnapshotRepositoriesBrief()
+S9sRpcReply::printSnapshotRepositoriesBrief(bool allClusters)
 {
     S9sVariantMap  repositories;
 
-    if (contains("snapshot_repositories"))
-        repositories = operator[]("snapshot_repositories").toVariantMap();
-
-    /*
-     * We go through the data and print the titles. 
-     */
-    for (S9sString key : repositories.keys())
+    if(allClusters)
     {
-        S9sVariantMap  theMap    = repositories.operator[](key.c_str()).toVariantMap();
-        printf("%s\n", STR(key));
+        S9sVariantMap  infoByCluster;
+        if (contains("snapshot_repositories_list"))
+            infoByCluster = operator[]("snapshot_repositories_list").toVariantMap();
+
+        /*
+         * We go through the clusters and its data and print the snapshot info. 
+         */
+        for (S9sString cidStr : infoByCluster.keys())
+        {
+
+            repositories = infoByCluster[cidStr].toVariantMap();
+            for (S9sString key : repositories.keys())
+            {
+                S9sVariantMap  theMap    = repositories.operator[](key.c_str()).toVariantMap();
+                printf("cluster: %s\trepository name:%s\n", STR(cidStr), STR(key));
+            }
+        }
+    }
+    else
+    {
+        if (contains("snapshot_repositories"))
+            repositories = operator[]("snapshot_repositories").toVariantMap();
+
+        /*
+         * We go through the data and print the snapshot info.
+         */
+        for (S9sString key : repositories.keys())
+        {
+            S9sVariantMap  theMap    = repositories.operator[](key.c_str()).toVariantMap();
+            printf("%s\n", STR(key));
+        }
     }
 
 }
@@ -2418,88 +2441,182 @@ S9sRpcReply::printSnapshotRepositoriesBrief()
  * Prints the snapshot repository in long format.
  */
 void
-S9sRpcReply::printSnapshotRepositoriesLong()
+S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
 {
     S9sOptions     *options = S9sOptions::instance();
-    S9sVariantMap  repositories = operator[]("snapshot_repositories").toVariantMap();
+    S9sVariantMap  repositories;
     S9sFormat      nameFormat;
+    S9sFormat      cidFormat;
     S9sFormat      typeFormat;
     S9sFormat      settingsFormat;
     int            nLines = 0;
 
-    for (S9sString key : repositories.keys())
+    if(allClusters)
     {
-        S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
-        S9sString     repoName    = key;
-        S9sString     type        = repoMap["type"].toString();
-        S9sString     uuid        = repoMap["uuid"].toString();
-        S9sString     location;
-        S9sString     bucket;
-        S9sString     region;
-        S9sVariantMap settings    = repoMap["settings"].toVariantMap();
-        
-
-        nameFormat.widen(repoName);
-        if(type == "fs")
+        S9sVariantMap infoByCluster = operator[]("snapshot_repositories_list").toVariantMap();
+        for (S9sString cidStr : infoByCluster.keys())
         {
-            settingsFormat.widen(settings["location"].toString());
-            typeFormat.widen(sharedFileSystemStr);
+            repositories = infoByCluster[cidStr].toVariantMap();
+            for(S9sString key : repositories.keys())
+            {
+                S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
+                S9sString     repoName    = key;
+                S9sString     type        = repoMap["type"].toString();
+                S9sString     uuid        = repoMap["uuid"].toString();
+                S9sString     location;
+                S9sString     bucket;
+                S9sString     region;
+                S9sVariantMap settings    = repoMap["settings"].toVariantMap();
+            
+                cidFormat.widen(cidStr);
+                nameFormat.widen(repoName);
+                if(type == "fs")
+                {
+                    settingsFormat.widen(settings["location"].toString());
+                    typeFormat.widen(sharedFileSystemStr);
+                }
+                else if(type == "s3")
+                {
+                    S9sString field = settings["bucket"].toString() + 
+                                      "/" + 
+                                      settings["region"].toString();
+                    settingsFormat.widen(field);
+                    typeFormat.widen(awsStr);
+                }
+                else
+                {
+                    PRINT_ERROR("Invalid snapshot repository type: %s", type.c_str());
+                    return;
+                }
+                ++nLines;
+            }
         }
-        else if(type == "s3")
-        {
-            S9sString field = settings["bucket"].toString() + 
-                              "/" + 
-                              settings["region"].toString();
-            settingsFormat.widen(field);
-            typeFormat.widen(awsStr);
-        }
-        else
-        {
-            PRINT_ERROR("Invalid snapshot repository type: %s", type.c_str());
-            return;
-        }
-        ++nLines;
-    }
     
-    if (!options->isNoHeaderRequested() && nLines > 0)
-    {
-        printf("%s", headerColorBegin());
-        nameFormat.printHeader("NAME");
-        typeFormat.printHeader("TYPE");
-        settingsFormat.printHeader("SETTINGS");
-        printf("%s", headerColorEnd());
-        printf("\n");        
-    }
+        if (!options->isNoHeaderRequested() && nLines > 0)
+        {
+            printf("%s", headerColorBegin());
+            cidFormat.printHeader("CID");
+            nameFormat.printHeader("NAME");
+            typeFormat.printHeader("TYPE");
+            settingsFormat.printHeader("SETTINGS");
+            printf("%s", headerColorEnd());
+            printf("\n");        
+        }
     
-    for (S9sString key : repositories.keys())
-    {
-        S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
-        S9sString     repoName    = key;
-        S9sString     type        = repoMap["type"].toString();
-        S9sString     typeString;
-        S9sString     uuid        = repoMap["uuid"].toString();
-        S9sString     location;
-        S9sString     bucket;
-        S9sString     region;
-        S9sVariantMap settings    = repoMap["settings"].toVariantMap();
-        S9sString     settingsField;
-        if(type == "fs")
+        for (S9sString cidStr : infoByCluster.keys())
         {
-            settingsField = settings["location"].toString();
-            typeString = sharedFileSystemStr;
-        }
-        else if(type == "s3")
-        {
-            settingsField = settings["bucket"].toString() +
-                            " (" +
-                            settings["region"].toString() + ")";
+            repositories = infoByCluster[cidStr].toVariantMap();
+            for (S9sString key : repositories.keys())
+            {
+                S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
+                S9sString     repoName    = key;
+                S9sString     type        = repoMap["type"].toString();
+                S9sString     typeString;
+                S9sString     uuid        = repoMap["uuid"].toString();
+                S9sString     location;
+                S9sString     bucket;
+                S9sString     region;
+                S9sVariantMap settings    = repoMap["settings"].toVariantMap();
+                S9sString     settingsField;
+                if(type == "fs")
+                {
+                    settingsField = settings["location"].toString();
+                    typeString = sharedFileSystemStr;
+                }
+                else if(type == "s3")
+                {
+                    settingsField = settings["bucket"].toString() +
+                                    " (" +
+                                    settings["region"].toString() + ")";
 
-            typeString = awsStr;
+                    typeString = awsStr;
+                }
+                cidFormat.printf(cidStr);
+                nameFormat.printf(repoName);
+                typeFormat.printf(typeString);
+                settingsFormat.printf(settingsField);
+                printf("\n");        
+            }
         }
-        nameFormat.printf(repoName);
-        typeFormat.printf(typeString);
-        settingsFormat.printf(settingsField);
-        printf("\n");        
+
+    }
+    else
+    {
+        repositories = operator[]("snapshot_repositories").toVariantMap();
+        for (S9sString key : repositories.keys())
+        {
+            S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
+            S9sString     repoName    = key;
+            S9sString     type        = repoMap["type"].toString();
+            S9sString     uuid        = repoMap["uuid"].toString();
+            S9sString     location;
+            S9sString     bucket;
+            S9sString     region;
+            S9sVariantMap settings    = repoMap["settings"].toVariantMap();
+            
+
+            nameFormat.widen(repoName);
+            if(type == "fs")
+            {
+                settingsFormat.widen(settings["location"].toString());
+                typeFormat.widen(sharedFileSystemStr);
+            }
+            else if(type == "s3")
+            {
+                S9sString field = settings["bucket"].toString() + 
+                                  "/" + 
+                                  settings["region"].toString();
+                settingsFormat.widen(field);
+                typeFormat.widen(awsStr);
+            }
+            else
+            {
+                PRINT_ERROR("Invalid snapshot repository type: %s", type.c_str());
+                return;
+            }
+            ++nLines;
+        }
+    
+        if (!options->isNoHeaderRequested() && nLines > 0)
+        {
+            printf("%s", headerColorBegin());
+            nameFormat.printHeader("NAME");
+            typeFormat.printHeader("TYPE");
+            settingsFormat.printHeader("SETTINGS");
+            printf("%s", headerColorEnd());
+            printf("\n");        
+        }
+    
+        for (S9sString key : repositories.keys())
+        {
+            S9sVariantMap repoMap     = repositories.operator[](key.c_str()).toVariantMap();
+            S9sString     repoName    = key;
+            S9sString     type        = repoMap["type"].toString();
+            S9sString     typeString;
+            S9sString     uuid        = repoMap["uuid"].toString();
+            S9sString     location;
+            S9sString     bucket;
+            S9sString     region;
+            S9sVariantMap settings    = repoMap["settings"].toVariantMap();
+            S9sString     settingsField;
+            if(type == "fs")
+            {
+                settingsField = settings["location"].toString();
+                typeString = sharedFileSystemStr;
+            }
+            else if(type == "s3")
+            {
+                settingsField = settings["bucket"].toString() +
+                                " (" +
+                                settings["region"].toString() + ")";
+
+                typeString = awsStr;
+            }
+            nameFormat.printf(repoName);
+            typeFormat.printf(typeString);
+            settingsFormat.printf(settingsField);
+            printf("\n");        
+        }
     }
     
     if (!options->isBatchRequested())
