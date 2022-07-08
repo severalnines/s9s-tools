@@ -6868,6 +6868,7 @@ S9sOptions::printHelpReplication()
 "\n"
 "  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
+"  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
 "  --replication-master=NODE  The same as --master.\n"
 "  --replication-slave=NODE   The same as --slave.\n"
 "  --slave=NODE               The replication slave.\n"
