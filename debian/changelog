@@ -1,8 +1,12 @@
-s9s-tools (1.9.2022061700-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2022062321-release1) UNRELEASED; urgency=medium
 
+  [ David Kedves ]
   * Some more packaging fixes. 
 
- -- David Kedves <kedazo@severalnines.com>  Fri, 17 Jun 2022 16:36:47 +0200
+  [ Severalnines ]
+  * Release 1.9.2022062321.
+
+ -- Severalnines <support@severalnines.com>  Thu, 23 Jun 2022 21:29:21 +0900
 
 s9s-tools (1.9.2022061515-release1) UNRELEASED; urgency=medium
 

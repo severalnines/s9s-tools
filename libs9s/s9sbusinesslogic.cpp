@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "iostream"
 #include "s9sbusinesslogic.h"
 
 #include "S9sStringList"
@@ -1900,12 +1901,13 @@ S9sBusinessLogic::printSnapshotRepositories(
     int         clusterId = options->clusterId();
     S9sRpcReply reply;
     bool        success;
+    bool        allClusters = clusterId <= 0;
 
     success = client.getSnapshotRepositories(clusterId);
     if (success)
     {
         reply = client.reply();
-        reply.printSnapshotRepositories();
+        reply.printSnapshotRepositories(allClusters);
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
     }

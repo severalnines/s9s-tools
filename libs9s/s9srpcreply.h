@@ -121,9 +121,9 @@ class S9sRpcReply : public S9sVariantMap
         void printJobList();
         void printBackupList();
 
-        void printSnapshotRepositories();
-        void printSnapshotRepositoriesBrief();
-        void printSnapshotRepositoriesLong();
+        void printSnapshotRepositories(bool allClusters=false);
+        void printSnapshotRepositoriesBrief(bool allClusters=false);
+        void printSnapshotRepositoriesLong(bool allClusters=false);
         
         void printBackupSchedules();
         void printBackupSchedulesBrief();
