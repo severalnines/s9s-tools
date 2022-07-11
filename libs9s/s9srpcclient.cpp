@@ -1481,7 +1481,8 @@ S9sRpcClient::getJobInstances(
     if (options->offset() >= 0)
         request["offset"] = options->offset();
 
-    if (S9S_CLUSTER_ID_IS_VALID(clusterId))
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId) ||
+        clusterId == 0)
         request["cluster_id"] = clusterId;
     
     if (!clusterName.empty())
