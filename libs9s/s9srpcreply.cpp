@@ -2448,7 +2448,8 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
     S9sFormat      nameFormat;
     S9sFormat      cidFormat;
     S9sFormat      typeFormat;
-    S9sFormat      settingsFormat;
+    S9sFormat      locationFormat;
+    S9sFormat      storageHostFormat;
     int            nLines = 0;
 
     if(allClusters)
@@ -2472,7 +2473,8 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
                 nameFormat.widen(repoName);
                 if(type == "fs")
                 {
-                    settingsFormat.widen(settings["location"].toString());
+                    locationFormat.widen(settings["location"].toString());
+                    storageHostFormat.widen(settings["storage_host"].toString());
                     typeFormat.widen(sharedFileSystemStr);
                 }
                 else if(type == "s3")
@@ -2480,8 +2482,9 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
                     S9sString field = settings["bucket"].toString() + 
                                       "/" + 
                                       settings["region"].toString();
-                    settingsFormat.widen(field);
+                    locationFormat.widen(field);
                     typeFormat.widen(awsStr);
+                    storageHostFormat.widen("s3");
                 }
                 else
                 {
@@ -2498,7 +2501,8 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
             cidFormat.printHeader("CID");
             nameFormat.printHeader("NAME");
             typeFormat.printHeader("TYPE");
-            settingsFormat.printHeader("SETTINGS");
+            locationFormat.printHeader("LOCATION");
+            storageHostFormat.printHeader("STORAGE HOST");
             printf("%s", headerColorEnd());
             printf("\n");        
         }
@@ -2517,15 +2521,16 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
                 S9sString     bucket;
                 S9sString     region;
                 S9sVariantMap settings    = repoMap["settings"].toVariantMap();
-                S9sString     settingsField;
+                S9sString     locationField;
+                S9sString     storageHostField = repoMap["storage_host"].toString();
                 if(type == "fs")
                 {
-                    settingsField = settings["location"].toString();
+                    locationField = settings["location"].toString();
                     typeString = sharedFileSystemStr;
                 }
                 else if(type == "s3")
                 {
-                    settingsField = settings["bucket"].toString() +
+                    locationField = settings["bucket"].toString() +
                                     " (" +
                                     settings["region"].toString() + ")";
 
@@ -2534,7 +2539,8 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
                 cidFormat.printf(cidStr);
                 nameFormat.printf(repoName);
                 typeFormat.printf(typeString);
-                settingsFormat.printf(settingsField);
+                storageHostFormat.printf(storageHostField);
+                locationFormat.printf(locationField);
                 printf("\n");        
             }
         }
@@ -2556,9 +2562,10 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
             
 
             nameFormat.widen(repoName);
+            storageHostFormat.widen(settings["storage_host"].toString());
             if(type == "fs")
             {
-                settingsFormat.widen(settings["location"].toString());
+                locationFormat.widen(settings["location"].toString());
                 typeFormat.widen(sharedFileSystemStr);
             }
             else if(type == "s3")
@@ -2566,7 +2573,7 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
                 S9sString field = settings["bucket"].toString() + 
                                   "/" + 
                                   settings["region"].toString();
-                settingsFormat.widen(field);
+                locationFormat.widen(field);
                 typeFormat.widen(awsStr);
             }
             else
@@ -2582,7 +2589,8 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
             printf("%s", headerColorBegin());
             nameFormat.printHeader("NAME");
             typeFormat.printHeader("TYPE");
-            settingsFormat.printHeader("SETTINGS");
+            storageHostFormat.printHeader("STORAGE HOST");
+            locationFormat.printHeader("LOCATION");
             printf("%s", headerColorEnd());
             printf("\n");        
         }
@@ -2598,15 +2606,17 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
             S9sString     bucket;
             S9sString     region;
             S9sVariantMap settings    = repoMap["settings"].toVariantMap();
-            S9sString     settingsField;
+            S9sString     locationField;
+            S9sString     storageHostField;
+            storageHostField = repoMap["storage_host"].toString();
             if(type == "fs")
             {
-                settingsField = settings["location"].toString();
+                locationField = settings["location"].toString();
                 typeString = sharedFileSystemStr;
             }
             else if(type == "s3")
             {
-                settingsField = settings["bucket"].toString() +
+                locationField = settings["bucket"].toString() +
                                 " (" +
                                 settings["region"].toString() + ")";
 
@@ -2614,7 +2624,8 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
             }
             nameFormat.printf(repoName);
             typeFormat.printf(typeString);
-            settingsFormat.printf(settingsField);
+            storageHostFormat.printf(storageHostField);
+            locationFormat.printf(locationField);
             printf("\n");        
         }
     }
