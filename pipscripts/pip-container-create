@@ -447,6 +447,19 @@ function create_container()
     fi
 
     if [ -z "$parent_name" -a -z "$vendor_name" ]; then
+        if [ -d "/var/lib/lxc/opensuse" ]; then
+            printVerbose "Chose 'opensuse tumbleweed'  as template."
+            vendor_name="opensuse"
+            release_name="tumbleweed"
+        else
+            printVerbose "Chose ubuntu xenial."
+            vendor_name="ubuntu"
+            release_name="xenial"
+        fi
+    fi
+
+
+    if [ -z "$parent_name" -a -z "$vendor_name" ]; then
         if [ -d "/var/lib/lxc/ubuntu" ]; then
             printVerbose "Chose 'ubuntu' as template."
             parent_name="ubuntu"
@@ -463,6 +476,14 @@ function create_container()
             release_name="xenial"
         fi
     fi
+
+    if [ "$vendor_name" == "opensuse" ]; then
+        if [ -z "$release_name" ]; then
+            printVerbose "Chose 'tumbleweed' release."
+            release_name="tumbleweed"
+        fi
+    fi
+
 
     if [ "$vendor_name" ]; then
         if [ -z "$release_name" ]; then
@@ -509,25 +530,27 @@ function create_container()
     if [ "$parent_name" ]; then
         printVerbose "Creating container $new_name from template $parent_name."
         lxc-copy -n "$parent_name" --newname="$new_name"
-    else 
-        #
-        # The network configuration is in 
-        # /etc/lxc/default.conf
-        #
+    else
         printVerbose "Creating cointainer with $vendor_name $release_name."
-        printVerbose "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
-            -t download --name=$new_name \
-                -- \
-                --dist $vendor_name \
-                --release $release_name \
-                --arch amd64 --no-validate"
-        DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
-            -t download --name="$new_name" \
-                -- \
-                --dist "$vendor_name" \
-                --release "$release_name" \
-                --arch amd64 --no-validate\
-                >>$temp_file 2>>$temp_file
+        if [ "$vendor_name" == "ubuntu" ]; then
+            printVerbose "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create -t download --name=$new_name -- --dist $vendor_name --release $release_name --arch amd64"
+            DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
+                -t download --name="$new_name" \
+                    -- \
+                    --dist "$vendor_name" \
+                    --release "$release_name" \
+                    --arch amd64 \
+                    >>$temp_file 2>>$temp_file
+        elif [ "$vendor_name" == "opensuse" ]; then
+            printVerbose "lxc-create -t download --name=$new_name -- --dist $vendor_name --release $release_name --arch amd64"
+            lxc-create \
+                -t download --name="$new_name" \
+                    -- \
+                    --dist "$vendor_name" \
+                    --release "$release_name" \
+                    --arch amd64 \
+                    >>$temp_file 2>>$temp_file
+        fi
     fi
    
     container_root="/var/lib/lxc/$new_name"
@@ -608,11 +631,6 @@ function create_container()
     # Seems to make sense to install this.
     #
     install_package_in_container "$new_name" "dnsutils"
-
-    printVerbose "Removing 'ubuntu' user."
-    lxc-attach -n "$new_name" -- \
-        /usr/sbin/userdel --remove "ubuntu" \
-        2>/dev/null
 
     #
     # Creating the new user.
