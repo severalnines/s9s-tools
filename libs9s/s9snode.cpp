@@ -935,6 +935,16 @@ S9sNode::roleFlag() const
             return 'D';
         else if (roles == "master-data")
             return 'U';  // multi
+        //else if (roles == "master-data_hot")
+        //    return 'U';  // multi
+        //else if (roles == "master-data_warm")
+        //    return 'U';  // multi
+        //else if (roles == "master-data_frozen")
+        //    return 'U';  // multi
+        //else if (roles == "master-data_content")
+        //    return 'U';  // multi
+        else if (roles == "coordinator_only")
+            return 'c';  // coordinator only
         else 
             return '-';  // others
     }

@@ -5621,9 +5621,13 @@ S9sRpcClient::addElasticNode(
             nodei["hostname"] = hosts[i].toNode().hostName();
             nodei["protocol"] = "elastic";
             S9sString roles = hosts[i].toNode().roles();
-            if(roles != "data" && roles != "master" && roles != "master-data" && roles != "data-master")
+            if(roles != "data"        &&
+               roles != "master"      && 
+               roles != "master-data" && 
+               roles != "data-master" &&
+               roles != "coordinator_only")
             {
-                PRINT_ERROR("Only nodes with data and/or master role can be added");
+                PRINT_ERROR("Only nodes with data and/or master role or coordinator_only can be added");
                 return false;
             }
             nodei["roles"] = roles;
