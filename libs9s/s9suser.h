@@ -40,6 +40,7 @@ class S9sUser : public S9sObject
 
         S9sString userName() const;
         S9sString emailAddress(const S9sString &defaultValue = "") const;
+        S9sString uiConfig(const S9sString &defaultValue = "") const;
         int userId() const;
         S9sString firstName() const;
         S9sString lastName() const;

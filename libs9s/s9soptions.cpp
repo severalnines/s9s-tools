@@ -140,6 +140,7 @@ enum S9sOptionType
     OptionFirstName,
     OptionEmailAddress,
     OptionLastName,
+    OptionUiConfig,
     OptionTitle,
     OptionJobTitle,
     OptionStart,
@@ -10920,6 +10921,7 @@ S9sOptions::readOptionsUser(
         // Options about the user.
         { "create-group",     no_argument,       0, OptionCreateGroup     },
         { "email-address",    required_argument, 0, OptionEmailAddress    },
+        { "ui-config",        required_argument, 0, OptionUiConfig        },
         { "first-name",       required_argument, 0, OptionFirstName       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "group",            required_argument, 0, OptionGroup           },
@@ -11161,6 +11163,12 @@ S9sOptions::readOptionsUser(
                 // --email-address=ADDRESSS
                 m_options["email_address"] = optarg;
                 break;
+
+            case OptionUiConfig:
+                // --ui-config="CONFIG-INFO-TO-SAVE"
+                m_options["ui_config"] = optarg;
+                break;
+
             
             case OptionUserFormat:
                 // --user-format=VALUE
@@ -15978,6 +15986,16 @@ S9sOptions::emailAddress() const
 {
     return getString("email_address");
 }
+
+/**
+ * \returns The argument of the --ui-config command line option.
+ */
+S9sString
+S9sOptions::uiConfig() const
+{
+    return getString("ui_config");
+}
+
 
 bool 
 S9sOptions::getBool(
