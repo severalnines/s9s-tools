@@ -59,6 +59,7 @@ UtS9sUser::testConstruct()
     "{\n"
     "    'class_name': 'CmonUser',\n"
     "    'email_address': 'warrior@ds9.com',\n"
+    "    'ui_config': 'someJsonStringHere',\n"
     "    'first_name': 'Worf',\n"
     "    'groups': [ \n"
     "    {\n"
@@ -77,6 +78,7 @@ UtS9sUser::testConstruct()
 
     S9S_COMPARE(user.userName(),          "worf");
     S9S_COMPARE(user.emailAddress(),      "warrior@ds9.com");
+    S9S_COMPARE(user.uiConfig(),          "someJsonStringHere");
     S9S_COMPARE(user.firstName(),         "Worf");
     S9S_COMPARE(user.lastName(),          "");
     S9S_COMPARE(user.middleName(),        "");
