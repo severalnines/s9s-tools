@@ -333,6 +333,9 @@ class S9sOptions
         S9sVariantList volumes() const;
         bool appendVolumes(const S9sString &stringRep);
 
+        S9sString remoteUser() const;
+        S9sString remotePassword() const;
+
         bool force() const;
         bool dry() const;
         bool extended() const;

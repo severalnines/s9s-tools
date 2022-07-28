@@ -214,6 +214,8 @@ enum S9sOptionType
     OptionUntil,
     OptionForce,
     OptionExtended,
+    OptionRemoteUser,
+    OptionRemotePassword,
     OptionDry,
     OptionDebug,
     OptionWarning,
@@ -2990,6 +2992,24 @@ S9sOptions::appendVolumes(
     m_options["volumes"] = volumesToSet;
 
     return true;
+}
+
+/**
+ * \returns the value of --remote-user parameter
+ */
+S9sString
+S9sOptions::remoteUser() const
+{
+    return getString("remote_user");
+}
+
+/**
+ * \returns the value of --remote-password parameter
+ */
+S9sString
+S9sOptions::remotePassword() const
+{
+    return getString("remote_password");
 }
 
 /**
@@ -6437,6 +6457,8 @@ S9sOptions::printHelpCluster()
 "  --add-node                 Add a new node to the cluster.\n"
 "  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
+"  --remote-user              The ssh user to connect to refered remote hosts.\n"
+"  --remote-password          The ssh password to connect to refered remote hosts.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
 "  --create-account           Create a user account on the cluster.\n"
 "  --create                   Create and install a new cluster.\n"
@@ -12289,6 +12311,8 @@ S9sOptions::readOptionsCluster(
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
+        { "remote-user",      required_argument, 0, OptionRemoteUser      },
+        { "remote-password",  required_argument, 0, OptionRemotePassword  },
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
@@ -12681,6 +12705,18 @@ S9sOptions::readOptionsCluster(
                 // --check-hosts
                 m_options["check_hosts"] = true;
                 break;
+
+            case OptionRemoteUser:
+                // --remote-user
+                m_options["remote_user"] = optarg;
+                break;
+
+            case OptionRemotePassword:
+                // --remote-password
+                m_options["remote_password"] = optarg;
+                break;
+
+
 
             case 'h':
                 // -h, --human-readable
