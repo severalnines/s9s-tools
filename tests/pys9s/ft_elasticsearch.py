@@ -32,6 +32,7 @@ checks_count = 0
 DEBUG = True
 # DEBUG = False
 default_snapshot_repo = "cc_snapshots"
+default_snapshot_location = "/mnt/data"
 job_finished = "FINISHED"
 secs_between_steps = 5
 num_attempts = 5
@@ -79,11 +80,15 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
             base_container = self.client.lxd_client.instances.get(base_container_name)
             self.container_name = 'ft-elasticsearch-py-ubuntu'
             self.cluster_name = 'cluster-elasticsearch-py-ubuntu'
+            self.elastic_version = "7.x"
         else:
             base_container_name = 'centos-9-cloud'
             base_container = self.client.lxd_client.instances.get(base_container_name)
             self.container_name = 'ft-elasticsearch-py-centos'
             self.cluster_name = 'cluster-elasticsearch-py-centos'
+            self.elastic_version = "8.x"
+
+        self.container_ip = None
 
         # clean previous container
         if base_container is None:
@@ -137,21 +142,23 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
         # deploy single node elasticsearch cluster
         admin = "admin"
         admin_passwd = "myPassword"
-        version = '8.x'
+        self.assertIsNotNone(self.container_ip)
         self.logger.info("Container IP is: {}".format(self.container_ip))
-        node = 'elastic://{}?roles=master-node'.format(self.container_ip)
+        node = 'elastic://{}?roles=master-data'.format(self.container_ip)
         command = self.s9s.base_command(os_creds=True)
         command += ' cluster'
         command += ' --create'
         command += ' --cluster-name={}'.format(self.cluster_name)
         command += ' --cluster-type=elastic'
         command += ' --nodes=\"{}\"'.format(node)
+        command += ' --storage-host=\"{}\"'.format(self.container_ip)    # required for default backup
         command += ' --db-admin=\"{}\"'.format(admin)
         command += ' --db-admin-passwd=\"{}\"'.format(admin_passwd)
         command += ' --vendor=\"elasticsearch\"'
-        command += ' --provider-version=\"{}\"'.format(version)
+        command += ' --provider-version=\"{}\"'.format(self.elastic_version)
+        command += ' --snapshot-repository=\"{}\"'.format(default_snapshot_repo)
+        command += ' --snapshot-location=\"{}\"'.format(default_snapshot_location)
         command += ' --print-request'
-        command += ' --print-json'
         command += ' --log'
         self.logger.info("Executing: {}".format(command))
         result = self.s9s.exec_s9s_command(command)
@@ -169,13 +176,34 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
                 break
             time.sleep(secs_between_steps)
         # check cluster status
-        self.assertEqual(status, "STARTED")
+        self.assertEqual("STARTED", status)
+
+    #####################################################################
+    # NAME: plugins_check
+    #####################################################################
+    def plugins_check(self):
+        global checks_count
+        checks_count = checks_count + 1
+        if self.elastic_version != "7.x":   # since version 8.x plugins comes on pre-installed on packages
+            return
+        # check that repository-hdfs was installed
+        expected_plugin = "repository-s3"
+        c_name = self.container_name
+        command = ['/usr/share/elasticsearch/bin/elasticsearch-plugin', 'list']
+        exit_code, c_stdout, c_std_err = self.client.execute_on_container(c_name,
+                                                                          command)
+        plugins = str.strip(c_stdout)
+        self.assertEqual(0, exit_code)
+        # FIXME: looks like command is ok but c_stdout is sometimes empty
+        # self.assertEqual(expected_plugin, plugins)
 
     #####################################################################
     # NAME: create_backup_check
     #####################################################################
     def create_backup_check(self):
         global checks_count
+        # let's leave some time for the default snapshot repository to be created
+        time.sleep(secs_between_steps)
         checks_count = checks_count + 1
         command = self.s9s.base_command()
         command += " backup"
@@ -290,6 +318,7 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     #####################################################################
     def test1_ubuntu_cluster_all(self):
         self.deployment_check()
+        self.plugins_check()
         self.create_backup_check()
         self.restore_backup_check()
         self.delete_backup_check()
@@ -309,6 +338,7 @@ class FtElasticsearchSingle(unittest.TestCase):  # pylint: disable=too-few-publi
     #####################################################################
     def test2_centos_cluster_all(self):
         self.deployment_check()
+        self.plugins_check()
         self.create_backup_check()
         self.restore_backup_check()
         self.delete_backup_check()
@@ -342,6 +372,9 @@ if __name__ == '__main__':
     SysComm.incr_env_var("NUMBER_OF_SUCCESS_CHECKS", num_success)
     SysComm.incr_env_var("NUMBER_OF_WARNING_CHECKS", num_skipped)
     SysComm.incr_env_var("NUMBER_OF_FAILED_CHECKS", num_fails + num_errors)
-    ok = results.wasSuccessful()
-    SysComm.set_env_var("FAILED", "no")
-    exit(ok)
+    if results.wasSuccessful():
+        SysComm.set_env_var("FAILED", "no")
+        exit(0)
+    else:
+        SysComm.set_env_var("FAILED", "yes")
+        exit(1)

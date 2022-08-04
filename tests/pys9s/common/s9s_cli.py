@@ -56,7 +56,8 @@ class S9sCli:  # pylint: disable=too-few-public-methods
     def load_configuration(self):
         use_ft_full = True if SysComm.get_env_var("USE_FT_FULL", "NO") == "YES" else False
         self.ssh_user = "root"
-        self.ssh_user_cert = "/home/alvaro/.ssh/id_rsa"  # ssh private key
+        exec_user = SysComm.get_env_var("USER", "pipas")
+        self.ssh_user_cert = "/home/{}/.ssh/id_rsa".format(exec_user)  # ssh private key
         self.cmon_user = "pipas" if use_ft_full else "pipas"
         print("cmon user : " + self.cmon_user)
         self.logger.info("cmon user: {}".format(self.cmon_user))
@@ -107,6 +108,32 @@ class S9sCli:  # pylint: disable=too-few-public-methods
             if not cid.isnumeric():
                 return None, None
             return cid, status
+
+    ###############################################################################
+    # cluster_exist
+    # \param cluster_id
+    # \return true if cluster_id exists
+    ###############################################################################
+    def cluster_exist(self, cluster_id):
+        command = self.base_command()
+        command += ' cluster'
+        command += ' --list'
+        command += ' --long'
+        command += ' --batch'
+        command += ' --cluster-id={}'.format(cluster_id)
+        self.logger.debug("Executing: {}".format(command))
+        result = SysComm.exec_command(command)
+        if len(result["stderr"]) > err_chars_threshold:
+            self.logger.error(result["stderr"])
+            return False
+        else:
+            self.logger.debug("Output: {}".format(result["stdout"]))
+            cid = result["stdout"].split(' ')[0]
+            status = result["stdout"].split(' ')[1]
+            self.logger.debug("cluster id found: {}".format(cid))
+            if not cid.isnumeric():
+                return False
+            return True
 
     ###############################################################################
     # get_backup_id
@@ -162,10 +189,11 @@ class S9sCli:  # pylint: disable=too-few-public-methods
         result = SysComm.exec_command(command)
         if len(result["stderr"]) > err_chars_threshold:
             self.logger.error(result["stderr"])
-            return False
         else:
             self.logger.debug("Output: {}".format(result["stdout"]))
-            return True
+        if self.cluster_exist(cluster_id):
+            return False
+        return True
 
     ###############################################################################
     # exec_s9s_command

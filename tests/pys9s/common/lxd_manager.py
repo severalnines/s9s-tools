@@ -47,6 +47,8 @@ class LxdManager:  # pylint: disable=too-few-public-methods
         self.logger = get_logger()
         self.lxc_bin = "/usr/bin/lxc"  # LxdManager.exec_command('which lxc')['stdout']
         self.instances = dict()  # map with key (container_name) and value (container object)
+        self.cmd_stdout = None
+        self.cmd_stderr = None
 
     ###############################################################################
     # get_containers
@@ -230,3 +232,27 @@ class LxdManager:  # pylint: disable=too-few-public-methods
             state = container.state()
             ip = state.network['eth0']['addresses'][0]['address']
             return ip
+
+    ###############################################################################
+    # execute_on_container
+    # Executes a command on specified container
+    #
+    # \param container_name: Name of the container
+    # \param command: The command and arguments as a list of strings
+    # \return A tuple with command exit code, stdout and stderr
+    ###############################################################################
+    # ALVC REVIEW -- call to this method crash execution
+    def execute_on_container(self, container_name, command):
+        if container_name not in self.instances.keys():
+            err = "Container {} has not an instance".format(container_name)
+            self.logger.error(err)
+            return -1, "", err
+        else:
+            container = self.instances[container_name]
+            if container.status != 'Running':
+                err = " container is not Running. State:".format(container_name)
+                self.logger.error(err)
+                return -1, "", err
+            return container.execute(command,
+                                     stdout_handler=self.cmd_stdout,
+                                     stderr_handler=self.cmd_stderr)

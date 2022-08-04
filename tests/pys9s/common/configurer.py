@@ -45,7 +45,7 @@ def get_logger(logfile_name=None):
         logfile_name = SysComm.get_env_var(log_file_env_var, default_logfile)
     log_file = logfile_name.replace('.py', '.log')
     print("log file is: " + log_file)
-    log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
+    log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(filename)s:%(lineno)d : %(message)s')
     user = os.environ.get("USER", "pipas")
     logger = logging.getLogger(user)
     file_handler = RotatingFileHandler(filename=log_file,
