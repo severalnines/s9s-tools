@@ -823,7 +823,6 @@ function print_host_list_long()
                 ;;
 
             *)
-                echo "--> HOST_STATUS: $HOST_STATUS"
                 let SUM_SERVERS+=1
                 ;;
         esac
