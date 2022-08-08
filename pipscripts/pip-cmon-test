@@ -43,8 +43,6 @@ declare -A REMOTE_SERVER_STATE
 
 source $MYDIR/utilityfunctions.sh
 
-pip-host-control --testing --log "--------------------------------------"
-
 function printHelpAndExit()
 {
 cat <<EOF
@@ -73,8 +71,6 @@ Usage:
 
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
-  --unit-tests            Run all the unit tests.
-  --functional-tests      Run all the functional tests.
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
@@ -162,26 +158,6 @@ while true; do
             OPTION_TEST_NAME="$1"
             TEST_NAME_OPTION="--test=$OPTION_TEST_NAME"
             shift
-            ;;
-
-        --unit-tests)
-            shift
-            if [ -z "$OPTION_FUNCTIONAL_TESTS" ]; then
-                OPTION_UNIT_TESTS="yes"
-            else
-                printError "The --test and --functional-tests are exclusive."
-                exit 6
-            fi
-            ;;
-        
-        --functional-tests)
-            shift
-            if [ -z "$OPTION_TEST_NAME" ]; then
-                OPTION_FUNCTIONAL_TESTS="yes"
-            else
-                printError "The --test and --functional-tests are exclusive."
-                exit 6
-            fi
             ;;
 
         --os)
@@ -327,7 +303,6 @@ function upload_slog_file()
 function message()
 {
     printVerbose "$1"
-    #pip-host-control --status="$1"
 }
 
 function test_name_to_test()
@@ -1255,8 +1230,6 @@ function run_test()
     pip-host-control --log "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
-            cd ${PROJECT_S9S_TESTORIGIN_DIR}
-
             #
             # Running the ft_full
             #
@@ -1306,6 +1279,21 @@ function run_test()
             fi
 
             popd >/dev/null 2>/dev/null
+
+            message "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}'..."
+            cd ${PROJECT_S9S_TESTORIGIN_DIR}
+
+            if [ ! -f "$test_name" ]; then
+                message "Program $test_name was not found."
+                pip-host-control \
+                    --status "$test_name is missing." \
+                    --error "Program $test_name was not found." \
+                    --status "Program $test_name was not found."
+
+                pip-host-control --error "  pwd: $PWD"
+
+                return 1
+            fi
 
             # 
             # Running the test script itself.
@@ -1723,7 +1711,6 @@ function run_tests_remote()
     echo -e "test        : '$test_name'"
     echo -e "compiled    : '${already_compiled[$idle_server]}'"
 
-    pip-host-control --log "Starting test on '$idle_server'."
     ssh -o UserKnownHostsFile=/dev/null \
         -o StrictHostKeyChecking=no \
         -o LogLevel=quiet \
@@ -1750,52 +1737,7 @@ function run_tests_remote()
     fi
 
     already_compiled[$idle_server]="yes"
-    sleep 2
-
 }
-
-if [ "$OPTION_UNIT_TESTS" ]; then
-    printVerbose "OPTION_UNIT_TESTS is true"
-    if [ "$S9S_OPTION" ]; then
-        OPTION_TEST_NAME+="ut_library ut_s9sbackup ut_s9sconfigfile "
-        OPTION_TEST_NAME+="ut_s9sgraph ut_s9soptions ut_s9srpcclient "
-        OPTION_TEST_NAME+="ut_s9surl ut_s9svariantmap ut_s9saccount "
-        OPTION_TEST_NAME+="ut_s9scluster ut_s9sdatetime ut_s9snode "
-        OPTION_TEST_NAME+="ut_s9sregexp ut_s9sstring ut_s9svariant "
-    else
-        directory=$(find_clustercontrol_source_directory)
-        if [ -d "$directory/tests" ]; then
-            pushd "$directory/tests"
-            OPTION_TEST_NAME="$(ls -d ut_*)"
-            popd
-        fi
-        
-        if [ -z "$OPTION_TEST_NAME" ]; then
-            printError "Could not find clustercontrol unit tests."
-            exit 6
-        fi
-    fi
-fi
-
-if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
-    printVerbose "OPTION_FUNCTIONAL_TESTS is true"
-    if [ "$S9S_OPTION" ]; then
-        directory=$(find_s9s_source_directory)
-        printVerbose "  directory: $directory" 
-
-        if [ -d "$directory/tests" ]; then
-            pushd "$directory/tests" >/dev/null 2>/dev/null
-            OPTION_TEST_NAME="$(ls ft_*.sh)"
-            popd >/dev/null 2>/dev/null
-        fi
-
-        if [ -z "$OPTION_TEST_NAME" ]; then
-            printError "Could not find s9s functional tests."
-            exit 6
-        fi
-    fi
-fi
-
 
 if [ "$OPTION_PID" ]; then
     printVerbose "OPTION_PID is true"
@@ -1817,16 +1759,10 @@ if [ "$OPTION_PID" ]; then
     exit 1
 elif [ "$SERVER" ]; then
     printVerbose "OPTION_SERVER is true"
-    #
-    # Running the tests on multiple remote servers.
-    #
-    #pip-host-control --testing --log="--------------------------------------"
-    #pip-host-control --testing --log="Running tests..."
-    #pip-host-control --status "Testing..."
+
+    # Running test on remote host.
 
     run_tests_remote "$SERVER"
-    #waitForProcessesToEnd 
-    #pip-host-control --idle --status="Idle."
 else
     #checkOtherInstances
     #printVerbose "checkOtherInstances : $?"

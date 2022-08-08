@@ -171,7 +171,7 @@ function start_test()
     # It takes some time till the pip-cmon-test will be started
     # on the choosen host and sets the host status properly.
 
-    sleep 5
+    sleep 10
 
     rm -f "$config_file"
 }
