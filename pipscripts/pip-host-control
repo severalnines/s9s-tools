@@ -7,6 +7,13 @@ VERSION="0.0.17"
 VERBOSE=""
 LOGFILE=""
 
+if [ -f "$MYDIR/utilityfunctions.sh" ]; then
+    source $MYDIR/utilityfunctions.sh
+else
+    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
+    exit 5
+fi
+
 STATUS_TEXT=""
 SHUTDOWN=""
 MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
@@ -15,13 +22,6 @@ HOST_LOG_FILE="$PROJECT_HOST_STAT_DIR/$(hostname).hostlog"
 HOST_CONTAINERS_FILE="$PROJECT_HOST_STAT_DIR/$(hostname).containers"
 HOST_STATUS="IDLE"
 CSV_OUTPUT=""
-
-if [ -f "$MYDIR/utilityfunctions.sh" ]; then
-    source $MYDIR/utilityfunctions.sh
-else
-    echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
-    exit 5
-fi
 
 #
 # Prints the help text and exits.
