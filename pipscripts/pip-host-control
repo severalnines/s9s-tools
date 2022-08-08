@@ -390,7 +390,8 @@ if [ "$VERBOSE" ]; then
     cat "$HOST_INFO_FILE"
 fi
 
-send_host_info
+#Lets not use MQTT yet. We have no system config for it and we don't need it.
+#send_host_info
 
 if [ "$(which lxc-ls)" ]; then
     sudo lxc-ls -f >"$HOST_CONTAINERS_FILE"
