@@ -210,6 +210,18 @@ function print_report()
     printf "\n\n\n"
 }
 
+function pull_source()
+{
+    pushd "${PROJECT_CC_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+    pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+}
+
 #
 # The main function that does some polling by checking the scheduled tests and
 # returns once in every round.
@@ -224,6 +236,8 @@ function process_scheduled_tests()
         sleep 5
         return 0
     fi
+
+    pull_source
 
     for config_file in $(schedule_files); do
         printVerbose "*** config_file: $config_file"
