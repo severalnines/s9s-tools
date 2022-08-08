@@ -843,7 +843,7 @@ function print_host_list_long()
         printf "%2dc "  "$NUMBER_OF_CORES"
         printf "%3dG "  "$MEMORY_GIGABYTES"
         printf "%'6dG " "$DISK_GIGABYTES"
-        printf "%2d "   "$NUMBER_OF_CONTAINERS"
+        printf "%3d "   "$NUMBER_OF_CONTAINERS"
         printf "%6s "   "$AVERAGE_LOAD"
 
         if [ "$HOST_STATUS" == "IDLE" ]; then
