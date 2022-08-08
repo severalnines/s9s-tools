@@ -661,7 +661,7 @@ function download_current_data()
 
         printVerbose "Downloading '$CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR/${CONF_HOST_NAME}.hostinfo'..."
         scp -p $CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR/${CONF_HOST_NAME}.hostinfo . >/dev/null 2>/dev/null
-        chown $PROJECT_OWNER:$PROJECT_OWNER ${CONF_HOST_NAME}.hostinfo
+        chown $PROJECT_OWNER:$PROJECT_OWNER ${CONF_HOST_NAME}.hostinfo >/dev/null 2>/dev/null
 
         popd >/dev/null 2>/dev/null
     done
