@@ -398,12 +398,12 @@ else
     echo "" >"$HOST_CONTAINERS_FILE"
 fi
 
-upload_file "$HOST_INFO_FILE" "$PROJECT_SERVER_STAT_URL/$(hostname).hostinfo"
-upload_file "$HOST_LOG_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).hostlog"
-upload_file "$HOST_CONTAINERS_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).containers"
+upload_file "$HOST_INFO_FILE" "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/$(hostname).hostinfo"
+upload_file "$HOST_LOG_FILE"  "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/$(hostname).hostlog"
+upload_file "$HOST_CONTAINERS_FILE"  "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/$(hostname).containers"
 
 if [ "$CSV_OUTPUT" ]; then
-    upload_file "$CSV_OUTPUT" "$PROJECT_SERVER_STAT_URL/test_matrix.csv" ""
+    upload_file "$CSV_OUTPUT" "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/test_matrix.csv" ""
 fi
 
 if [ "$SHUTDOWN" == "true" ]; then

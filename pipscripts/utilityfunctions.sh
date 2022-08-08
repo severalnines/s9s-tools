@@ -78,9 +78,9 @@ EOF
     exit -1
 fi
 
-if [ "${PROJECT_TEST_REPORT_URL}" == "" ]; then
+if [ "${PROJECT_SERVER}" == "" ]; then
     cat <<EOF
-Environment variable PROJECT_TEST_REPORT_URL is empty.
+Environment variable PROJECT_SERVER is empty.
 It is likely because project.conf file is not available
 or wrong. Please fix it. An example content can be found
 in project.conf.example.
@@ -88,9 +88,19 @@ EOF
     exit -1
 fi
 
-if [ "${PROJECT_SERVER_STAT_URL}" == "" ]; then
+if [ "${PROJECT_TEST_REPORT_DIR}" == "" ]; then
     cat <<EOF
-Environment variable PROJECT_SERVER_STAT_URL is empty.
+Environment variable PROJECT_TEST_REPORT_DIR is empty.
+It is likely because project.conf file is not available
+or wrong. Please fix it. An example content can be found
+in project.conf.example.
+EOF
+    exit -1
+fi
+
+if [ "${PROJECT_HOST_STAT_DIR}" == "" ]; then
+    cat <<EOF
+Environment variable PROJECT_HOST_STAT_DIR is empty.
 It is likely because project.conf file is not available
 or wrong. Please fix it. An example content can be found
 in project.conf.example.

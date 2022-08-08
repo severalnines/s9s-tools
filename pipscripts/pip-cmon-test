@@ -302,7 +302,8 @@ printVerbose "              hostname: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
-printVerbose "       TEST_REPORT_URL: $PROJECT_TEST_REPORT_URL"
+printVerbose "           TEST SERVER: $PROJECT_SERVER"
+printVerbose "       TEST_REPORT_DIR: $PROJECT_TEST_REPORT_DIR"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
@@ -338,8 +339,8 @@ function upload_slog_file()
         touch "/tmp/$remotefile"
     fi
         
-    #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_TEST_REPORT_URL\""
-    scp "/tmp/$remotefile" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
+    scp "/tmp/$remotefile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
     rm -f "/tmp/$remotefile"
 }
 
@@ -944,17 +945,17 @@ function ft_test_ended()
         sudo mkdir -p "$HOME/tmp"
 
         sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
-        scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
+        scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         #sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
         chown $PROJECT_OWNER:$PROJECT_OWNER \
-            "${PROJECT_TEST_REPORT_URL}/$(log_core_file_name $OPTION_TEST_NAME)"
+            "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_core_file_name $OPTION_TEST_NAME)"
 
         sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
                 "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
-        scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
+        scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         sudo rm "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
         chown $PROJECT_OWNER:$PROJECT_OWNER \
-            "${PROJECT_TEST_REPORT_URL}/$(log_bin_file_name $OPTION_TEST_NAME)"
+            "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_bin_file_name $OPTION_TEST_NAME)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         pip-host-control --log "Saving backtrace (no crash)"
@@ -988,8 +989,8 @@ function upload_report_file_ascii()
     </html>
 EOF
 
-    #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-    scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
     rm -f "$tmp_file"
 }
 
@@ -1050,8 +1051,8 @@ function upload_result_file()
     while true; do
         if [ -f "$log_file" ]; then
             #pip-host-control --log "Uploading '$log_file'."
-            #printVerbose scp "$log_file" "$PROJECT_TEST_REPORT_URL"
-            scp "$log_file" "$PROJECT_TEST_REPORT_URL"
+            #printVerbose scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+            scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         fi
 
         upload_report_file_ascii \
@@ -1066,17 +1067,17 @@ function upload_result_file()
 
         #pip-host-control --log "Uploading '$tmp_file'."
 
-        #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-        scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         if [ -z "$unit_test_option" -a \
             -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
             #printVerbose scp \
             #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-            #    "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
+            #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
             scp \
                 "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-                "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
+                "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -1521,8 +1522,8 @@ function run_test()
     # Uploading the output of the test program as log file.
     #
     if [ -f "$logfile" ]; then
-        #printVerbose "scp \"$logfile\" \"$PROJECT_TEST_REPORT_URL\""
-        scp "$logfile" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose "scp \"$logfile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
+        scp "$logfile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         rm -f "$logfile"
     fi
             
@@ -1622,8 +1623,8 @@ function main()
         --test-state "PREPARING" \
         >$tmp_file
 
-    #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-    scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
     compile_source
     if [ $? -ne 0 ]; then
@@ -1639,8 +1640,8 @@ function main()
             --test-state "FAILURE" \
             >$tmp_file
 
-        #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-        scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         pip-host-control \
             --idle \
