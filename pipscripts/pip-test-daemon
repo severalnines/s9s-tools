@@ -118,7 +118,7 @@ function start_test()
 
     let counter=0
     printVerbose "pip-server-control --list --idle"
-    test_server=$(pip-server-control --list --idle)
+    test_server=$(pip-server-control --list --idle | head -n 1)
     if [ -z "$user" ]; then
         user="$USER"
     fi
