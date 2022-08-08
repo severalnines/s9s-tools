@@ -294,17 +294,6 @@ function upload_slog_file()
     rm -f "/tmp/$remotefile"
 }
 
-#export PATH="$HOME/bin:$PATH"
-
-#
-# Prints a message and also sends it to the server so it is made available as
-# status string.
-#
-function message()
-{
-    printVerbose "$1"
-}
-
 function test_name_to_test()
 {
     if [ "$OPTION_TEST_NAME" ]; then
@@ -442,10 +431,13 @@ function print_title()
 
 function pull_test_source()
 {
+    printVerbose "Pulling in directory '${PROJECT_CC_TESTORIGIN_DIR}'"
     pushd "${PROJECT_CC_TESTORIGIN_DIR}"
     git reset --hard HEAD >/dev/null 2>/dev/null
     git pull >/dev/null 2>/dev/null
     popd
+
+    printVerbose "Pulling in directory '${PROJECT_S9S_TESTORIGIN_DIR}'"
     pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
     git reset --hard HEAD >/dev/null 2>/dev/null
     git pull >/dev/null 2>/dev/null
@@ -495,6 +487,7 @@ function prepare_source()
             --log "Pulling source." \
             --status "Pulling source." 
         
+        printVerbose "Pulling in directory '${PWD}'"
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
 
@@ -539,6 +532,7 @@ function prepare_source()
         fi
 
         printVerbose "$prompt git pull"
+        printVerbose "Pulling in directory '${PWD}'"
         git pull >>$LOGFILE 2>>$LOGFILE
 
         if [ ! -z "$requested_commit" ]; then
@@ -699,7 +693,7 @@ function compile_source_dir()
             pip-host-control \
                 --tail "$PWD/autogen.log" \
                 --error "The ./autogen.sh returned an error ($retcode)."
-            exit 6
+            return 6
         fi
     fi
     
@@ -1053,7 +1047,7 @@ function upload_result_file()
         # We are not gonna run indefinitely, that is a huge disaster.
         let counter+=10
         if [ $counter -gt 5400 ]; then
-            message "One and a half hour elapsed, the watcher will abort now."
+            printVerbose "One and a half hour elapsed, the watcher will abort now."
             break
         fi
 
@@ -1184,13 +1178,13 @@ function run_test()
     #
     # Notifying the user about a test is starting.
     #
-    message "Preparing to run $test_name."
+    printVerbose "Preparing to run $test_name."
     upload_slog_file
 
-    message "Enabling core file creation."
+    printVerbose "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern
     if [ $? -ne 0 ]; then
-        message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
+        printVerbose "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
 
     for core_file in \
@@ -1209,11 +1203,11 @@ function run_test()
 
     ulimit -c unlimited
     if [ $? -ne 0 ]; then
-        message "Failed: ulimit -c unlimited"
+        printVerbose "Failed: ulimit -c unlimited"
     fi
 
     sudo sysctl -p /etc/sysctl.conf
-    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
+    printVerbose "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     echo ""
     echo "User limits :"
     echo ""
@@ -1239,7 +1233,7 @@ function run_test()
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
-                message "Running 'ft_full'..."
+                printVerbose "Running 'ft_full'..."
 
                 echo "Current directory: $(pwd)"
                 echo "Sudo environment: $(sudo env)"
@@ -1257,7 +1251,7 @@ function run_test()
 
                     sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                     backend_pid=$!
-                    message "Backend PID is ${backend_pid}."
+                    printVerbose "Backend PID is ${backend_pid}."
 
                     for delay in $(seq 1 100); do
                         if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
@@ -1267,9 +1261,9 @@ function run_test()
                         sleep 3
                     done
                 else
-                    message "ft_full is already running"
-                    message "Backend PID is ${backend_pid}."
-                    message "PID won't be stored, so ft_full won't be stopped."
+                    printVerbose "ft_full is already running"
+                    printVerbose "Backend PID is ${backend_pid}."
+                    printVerbose "PID won't be stored, so ft_full won't be stopped."
                     backend_pid=""
                 fi
             else
@@ -1280,13 +1274,12 @@ function run_test()
 
             popd >/dev/null 2>/dev/null
 
-            message "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}'..."
-            cd ${PROJECT_S9S_TESTORIGIN_DIR}
+            printVerbose "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}'..."
+            cd ${PROJECT_S9S_TESTORIGIN_DIR}/tests
 
             if [ ! -f "$test_name" ]; then
-                message "Program $test_name was not found."
+                printVerbose "Program $test_name was not found."
                 pip-host-control \
-                    --status "$test_name is missing." \
                     --error "Program $test_name was not found." \
                     --status "Program $test_name was not found."
 
@@ -1298,7 +1291,7 @@ function run_test()
             # 
             # Running the test script itself.
             # 
-            message "Running '$test_name'..."
+            printVerbose "Running '$test_name'..."
             upload_slog_file
             printVerbose "timeout --kill-after=92m 90m ./$test_name \
                 --print-commands --reset-config --server=$(hostname) \
@@ -1312,7 +1305,7 @@ function run_test()
                 >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
-            message "Test script PID is ${test_pid}."
+            printVerbose "Test script PID is ${test_pid}."
 
             #
             # Starting a watcher that keeps uploading the output...
@@ -1323,19 +1316,19 @@ function run_test()
                 "$test_name" "RUNNING" $logfile &
             
             watcher_pid=$!
-            message "Watcher PID is ${watcher_pid}."
+            printVerbose "Watcher PID is ${watcher_pid}."
             upload_slog_file
 
             #
             # Waiting for the test to be ended.
             #
-            message "Waiting until the test script ends..."
+            printVerbose "Waiting until the test script ends..."
             wait "$test_pid" 2>/dev/null
             return_code=$?
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
 
-            message "Waiting for test watcher to end..."
+            printVerbose "Waiting for test watcher to end..."
             wait "$watcher_pid" 2>/dev/null
 
             pushd "$(find_clustercontrol_source_directory)/tests"
@@ -1349,7 +1342,7 @@ function run_test()
             # Cleaning up after.
             #
             if [ "$backend_pid" != "" ]; then
-                message "Stopping the ft_full backend."
+                printVerbose "Stopping the ft_full backend."
                 sudo kill $backend_pid
                 sleep 3
                 sudo kill -9 $backend_pid
@@ -1373,7 +1366,7 @@ function run_test()
             ;;
 
         ft_*)
-            #message "WD: $PWD test_name: $test_name."
+            #printVerbose "WD: $PWD test_name: $test_name."
 
             if [ -f "Vagrantfile" ]; then
                 vagrant destroy -f
@@ -1385,12 +1378,12 @@ function run_test()
 
             pip-host-control --log "Running ${test_name}."
             if [ -f "tests/$test_name/$test_name" ]; then
-                message "Entering directory 'tests'..."
+                printVerbose "Entering directory 'tests'..."
                 cd tests
             fi
 
             if [ ! -f "$test_name/$test_name" ]; then
-                message "Program $test_name was not found."
+                printVerbose "Program $test_name was not found."
                 pip-host-control \
                     --status "$test_name is missing." \
                     --error "Program $test_name was not found." \
@@ -1407,7 +1400,7 @@ function run_test()
                     version_option="--provider-version=$version"
                 fi
             fi
-            message "Running $test_name."
+            printVerbose "Running $test_name."
             ./$test_name/$test_name \
                 --template=headless \
                 --vendor="$(vendor_to_test)" \
@@ -1472,7 +1465,7 @@ function run_test()
                 return 1
             fi
 
-            message "Running $test_name."
+            printVerbose "Running $test_name."
             $test_name/$test_name --color >>$logfile 2>>$logfile
             return_code=$?
 
@@ -1501,24 +1494,24 @@ function run_test()
         rm -f "$logfile"
     fi
             
-    message "Finished running '$test_name' ($return_code)."
+    printVerbose "Finished running '$test_name' ($return_code)."
     upload_slog_file
 }
 
 function install_packages_on_test_server()
 {
     if [ -z "$(psql --version)" ]; then
-        message "Installing postgresql..."
+        printVerbose "Installing postgresql..."
         sudo apt-get -y --force-yes install postgresql
     fi
 
     if [ -z "$(bc --version)" ]; then
-        message "Installing bc..."
+        printVerbose "Installing bc..."
         sudo apt-get -y --force-yes install bc
     fi
 
     if [ ! -f "/usr/include/hiredis/hiredis.h" ]; then
-        message "Installing hiredis..."
+        printVerbose "Installing hiredis..."
         sudo apt-get -y --force-yes install libhiredis-dev
     fi
 }
@@ -1551,7 +1544,7 @@ function main()
     source_root=$(find_clustercontrol_source_directory)
     if [ ! -d "$source_root" ]; then
         printError "Directory '$source_root' does not exist."
-        exit 6
+        return 6
     fi
     
     rm -f "$source_root/*.log"
@@ -1603,7 +1596,8 @@ function main()
     scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
     compile_source
-    if [ $? -ne 0 ]; then
+    $ret_code=$?
+    if [ $ret_code -ne 0 ]; then
         current_test_name="$OPTION_TEST_NAME"
         
         printVerbose "3487 Failed to compile source."
@@ -1625,7 +1619,7 @@ function main()
             --status "Idle."
 
         upload_slog_file
-        return 1
+        return $ret_code
     fi
 
     #
@@ -1768,7 +1762,9 @@ else
     #printVerbose "checkOtherInstances : $?"
     pip-host-control --testing --log="Starting..."
     main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+    RET=$?
     pip-host-control --idle
+    exit $RET
 fi
 
 
