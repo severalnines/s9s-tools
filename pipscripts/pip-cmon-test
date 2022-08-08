@@ -465,6 +465,18 @@ function print_title()
     echo "<h3>$*</h3>"
 }
 
+function pull_test_source()
+{
+    pushd "${PROJECT_CC_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+    pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+}
+
 #
 # FIXME: This will be more complicated.
 # FIXME: This expects to be in the source directory.
@@ -1243,7 +1255,7 @@ function run_test()
     pip-host-control --log "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
-            cd ${PROJECT_TEST_SCRIPT_DIR}
+            cd ${PROJECT_S9S_TESTORIGIN_DIR}
 
             #
             # Running the ft_full
@@ -1540,6 +1552,8 @@ function main()
         --testing \
         --log "Preparing test ($MYNAME ver. $VERSION)." \
         --status "Preparing test."
+
+    pull_test_source
 
     install_packages_on_test_server
 
