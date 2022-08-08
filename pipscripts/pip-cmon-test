@@ -60,9 +60,7 @@ Usage:
   --log-file=FILE         Store all the messages in the given file too.
  
   --user=USERNAME         The name of the user requested the test.
-  --server=SERVER         The server or the servers where the tests will run.
-  --blades                Set the servers to my blades.
-  --all-servers           Try to use all servers we have.
+  --server=SERVER         The server where the test will run.
 
   --pid                   Print the PID of the test script if it is running.
   
@@ -80,15 +78,10 @@ Usage:
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
-  --os=LIST               The name of the OS to test.
+  --os=OS                 The name of the OS to test.
 
 EXAMPLE:
   $MYNAME --server=blade01 --os=debian8 --vendor=mariadb --sqlversion=5.6
-
-  $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=mariadb,percona,codership --sqlversion="5.6,5.7"
-  
-  $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=postgresql --sqlversion="5.6"
-
 
 EOF
 
@@ -98,7 +91,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
+        -l "help,verbose,version,log-file:,user:,server:,\
 pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
 no-git-pull,no-compile,keep-nodes,shut-down-after,wait,git-branch:,git-commit:" \
@@ -147,30 +140,11 @@ while true; do
         --server)
             shift
             SERVER="$1"
-            SERVER=$(echo $SERVER | tr ',' ' ' | tr ';' ' ')
             if [ "x$SERVER" = "x" ]; then
                 printError "No server was specified."
                 exit 6
             fi
             shift
-            ;;
-
-        --blades)
-            shift
-            if [ -f "$HOME/.pip/blades" ]; then
-                SERVER=$(cat "$HOME/.pip/blades" | tr ',' ' ')
-            else
-                SERVER="blade01 blade02 blade03 blade04 blade05 "
-                SERVER+="blade06 blade07 blade08 blade09 blade10"
-                echo "$SERVER" >"$HOME/.pip/blades"
-            fi
-            ;;
-
-        --all-servers)
-            shift
-            SERVER="host01 host02 host03 host04 host05 host06 host07 "
-            SERVER+="blade01 blade02 blade03 blade04 blade05 blade06 "
-            SERVER+="blade07 blade08 blade09 blade10"
             ;;
 
         --pid)
@@ -377,7 +351,7 @@ function version_to_test()
     # Command line overrules everything.
     #
     if [ "$OPTION_VERSION" ]; then
-        echo "$OPTION_VERSION" | tr ',' ' '
+        echo "$OPTION_VERSION"
         return 0
     fi
 
@@ -396,7 +370,7 @@ function vendor_to_test()
     # Command line overrules everything.
     #
     if [ "$OPTION_VENDOR" ]; then
-        echo "$OPTION_VENDOR" | tr ',' ' ' | tr ';' ' '
+        echo "$OPTION_VENDOR"
         return 0
     fi
 
@@ -414,7 +388,7 @@ function os_to_test()
     # Command line option overrules everything.
     #
     if [ "$OPTION_OS" ]; then
-        echo $OPTION_OS | tr ',' ' '
+        echo $OPTION_OS
         return 0;
     fi
 
@@ -1699,110 +1673,14 @@ function is_server_running_ssh()
     return 1
 }
 
-function print_main_screen()
-{
-    local server
-    local host_state
-    local mycolumns=0
-
-    for server in $SERVER; do
-        host_state="${REMOTE_SERVER_STATE[$server]}"
-        if [ -z "$host_state" ]; then
-            host_state="-"
-        fi
-
-        printf "%8s:%-10s " "$server" "$host_state" >&2
-        let mycolumns+=1
-        if [ $mycolumns -gt 3 ]; then
-            echo "" >&2
-            mycolumns=0
-        fi
-    done
-
-    echo "" >&2
-}
-
 LAST_USED_SERVER=""
-
-#
-#
-#
-function find_idle_server()
-{
-    local server
-    local host_state
-   
-    #printVerbose "find_idle_server()"
-
-    for server in $SERVER; do
-        lock_file=$(lockFile)
-
-        if [ "$LAST_USED_SERVER" ]; then
-            if [ "$LAST_USED_SERVER" == "$server" ]; then
-                LAST_USED_SERVER=""
-            fi
-
-            continue
-        fi
-
-        if ! is_server_running_ssh "$server"; then
-            printVerbose "Server '$server' is off-line."
-            REMOTE_SERVER_STATE[$server]="OFF-LINE"
-            continue
-        fi
-
-        printVerbose \
-            ssh -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no \
-                -o LogLevel=quiet \
-                "$server" -- pip-cmon-test --pid
-
-        other_pid=$( \
-            ssh -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no \
-                -o LogLevel=quiet \
-                "$server" -- pip-cmon-test --pid)
-
-        printVerbose "server     : '$server'"
-        printVerbose "lock_file  : '$lock_file'"
-        printVerbose "other_pid  : '$other_pid'"
-        if [ "$other_pid" ]; then
-            REMOTE_SERVER_STATE[$server]="TESTING "
-            continue
-        fi
-
-        LAST_USED_SERVER="$server"
-        echo "$server"
-        break
-    done
-
-    LAST_USED_SERVER="$server"
-}
-
-function wait_for_idle_server()
-{
-    local idle_server
-
-    printVerbose "Waiting for an idle server..."
-    while true; do
-        idle_server=$(find_idle_server)
-  
-        # Finding a server that is idle and ready to execute a test.
-        if [ "$idle_server" ]; then
-            echo "$idle_server"
-            return 0
-        fi
-
-        sleep 3
-    done
-}
 
 function run_tests_remote()
 {
     local os
     local version
     local vendor
-    local idle_server
+    local idle_server="$1"
     local test_name
     local no_git_pull_option
     local no_compile_option
@@ -1813,56 +1691,53 @@ function run_tests_remote()
     printVerbose "vendor_to_test: $(vendor_to_test)"
     printVerbose "OPTION_TEST_NAME: $(echo "$OPTION_TEST_NAME" | tr ',' ' ')"
 
-    for os in $(os_to_test); do 
-        for version in $(version_to_test); do
-            for vendor in $(vendor_to_test); do
-                for test_name in $(echo "$OPTION_TEST_NAME" | tr ',' ' '); do
-                    idle_server=$(wait_for_idle_server)
-                    no_git_pull_option="$NO_GIT_PULL_OPTION"
-                    no_compile_option="$NO_COMPILE_OPTION"
+    os=$(os_to_test)
+    version=$(version_to_test)
+    vendor=$(vendor_to_test)
+    test_name="$OPTION_TEST_NAME"
 
-                    if [ "${already_compiled[$idle_server]}" ]; then
-                        no_git_pull_option="--no-git-pull"
-                        no_compile_option="--no-compile"
-                    fi
+    no_git_pull_option="$NO_GIT_PULL_OPTION"
+    no_compile_option="$NO_COMPILE_OPTION"
 
-                    echo "-------------------------------------"
-                    echo -e "idle_server : $(STR_GREEN "$idle_server")"
-                    echo -e "test        : '$test_name'"
-                    echo -e "compiled    : '${already_compiled[$idle_server]}'"
+    if [ "${already_compiled[$idle_server]}" ]; then
+        no_git_pull_option="--no-git-pull"
+        no_compile_option="--no-compile"
+    fi
 
-                    pip-host-control --log "Starting test on '$idle_server'."
-                    ssh -o UserKnownHostsFile=/dev/null \
-                        -o StrictHostKeyChecking=no \
-                        -o LogLevel=quiet \
-                        $idle_server -- nohup pip-cmon-test \
-                            $no_git_pull_option \
-                            $no_compile_option \
-                            $S9S_OPTION \
-                            $VERBOSE_OPTION \
-                            $OPTION_KEEP_NODES \
-                            --os=$os \
-                            --vendor=$vendor \
-                            --sqlversion=$version \
-                            --test="$test_name" \
-                            --git-branch="$OPTION_GIT_BRANCH" \
-                            --git-commit="$OPTION_GIT_COMMIT"
-                            # Uncomment below if many test server are in use
-                            # and there are too many messages on the konsole
-                            #>/dev/null 2>/dev/null &
+    echo "-------------------------------------"
+    echo -e "idle_server : $(STR_GREEN "$idle_server")"
+    echo -e "test        : '$test_name'"
+    echo -e "compiled    : '${already_compiled[$idle_server]}'"
 
-                    if [ -n "$WAIT_OPTION" ]; then
-                        printVerbose "Waiting until the test ends."
-                        waitForProcessesToEnd 0
-                        printVerbose "Test ended..."
-                    fi
+    pip-host-control --log "Starting test on '$idle_server'."
+    ssh -o UserKnownHostsFile=/dev/null \
+        -o StrictHostKeyChecking=no \
+        -o LogLevel=quiet \
+        $idle_server -- nohup pip-cmon-test \
+            $no_git_pull_option \
+            $no_compile_option \
+            $S9S_OPTION \
+            $VERBOSE_OPTION \
+            $OPTION_KEEP_NODES \
+            --os=$os \
+            --vendor=$vendor \
+            --sqlversion=$version \
+            --test="$test_name" \
+            --git-branch="$OPTION_GIT_BRANCH" \
+            --git-commit="$OPTION_GIT_COMMIT"
+            # Uncomment below if many test server are in use
+            # and there are too many messages on the konsole
+            #>/dev/null 2>/dev/null &
 
-                    already_compiled[$idle_server]="yes"
-                    sleep 2
-                done
-            done
-        done
-    done
+    if [ -n "$WAIT_OPTION" ]; then
+        printVerbose "Waiting until the test ends."
+        waitForProcessesToEnd 0
+        printVerbose "Test ended..."
+    fi
+
+    already_compiled[$idle_server]="yes"
+    sleep 2
+
 }
 
 if [ "$OPTION_UNIT_TESTS" ]; then
@@ -1931,17 +1806,17 @@ elif [ "$SERVER" ]; then
     #
     # Running the tests on multiple remote servers.
     #
-    pip-host-control --testing --log="--------------------------------------"
-    pip-host-control --testing --log="Running tests..."
-    pip-host-control --status "Testing..."
+    #pip-host-control --testing --log="--------------------------------------"
+    #pip-host-control --testing --log="Running tests..."
+    #pip-host-control --status "Testing..."
 
-    run_tests_remote
+    run_tests_remote "$SERVER"
     #waitForProcessesToEnd 
-    pip-host-control --idle --status="Idle."
+    #pip-host-control --idle --status="Idle."
 else
-    checkOtherInstances
-    printVerbose "checkOtherInstances : $?"
-
+    #checkOtherInstances
+    #printVerbose "checkOtherInstances : $?"
+    pip-host-control --testing --log="Starting..."
     main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
     pip-host-control --idle
 fi
