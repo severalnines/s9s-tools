@@ -640,7 +640,7 @@ function download_current_data()
 
         printVerbose "Collecting hostinfo on $CONF_HOST_NAME"
 
-        ssh $CONF_HOST_NAME -- sudo pip-host-control
+        #ssh $CONF_HOST_NAME -- "sudo pip-host-control"
 
         printVerbose "Downloading current data from $CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR"
         if [ ! -d "$root_dir" ]; then
