@@ -615,33 +615,56 @@ EOF
     exit -1
 fi
 
-SERVER_STAT_ROOT="$PROJECT_DATA_ROOT/servers"
+HOST_STAT_ROOT="$PROJECT_DATA_ROOT/servers"
 function download_current_data()
 {
-    local root_dir=$SERVER_STAT_ROOT
+    local root_dir=$HOST_STAT_ROOT
 
-    printVerbose "Downloading current data from $PROJECT_SERVER_STAT_URL..."
-    if [ ! -d "$root_dir" ]; then
-        printVerbose "Creating directory '$root_dir'."
-        mkdir -p "$root_dir"
+    for config in /etc/s9s-cmon-test/*.host; do
+        if [ ! -f "$config" ]; then 
+            continue
+        fi
+        
+        CONF_HOST_NAME=""
+        CONF_HOST_URL=""
+        CONF_HOST_CATEGORY=""
+        CONF_HOST_STANDARD=""
+        CONF_HOST_MAC=""
+        CONF_HOST_PROTECTED=""
+
+        source "$config"
+
+        if [ -n "$category" -a "$CONF_HOST_CATEGORY" != "$category" ]; then
+            continue
+        fi
+
+        printVerbose "Collecting hostinfo on $CONF_HOST_NAME"
+
+        #ssh $CONF_HOST_NAME -- "sudo pip-host-control"
+
+        printVerbose "Downloading current data from $CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR"
         if [ ! -d "$root_dir" ]; then
-            printError "Unable to create '$root_dir'."
+            printVerbose "Creating directory '$root_dir'."
+            mkdir -p "$root_dir"
+            if [ ! -d "$root_dir" ]; then
+                printError "Unable to create '$root_dir'."
+                return 1
+            fi
+        fi
+
+        printVerbose "Entering directory '$root_dir'..."
+        pushd $root_dir >/dev/null 2>/dev/null
+        if [ $? -ne 0 ]; then
+            printError "Unable to jump into '$root_dir'."
             return 1
         fi
-    fi
 
-    printVerbose "Entering directory '$root_dir'..."
-    pushd $root_dir >/dev/null 2>/dev/null
-    if [ $? -ne 0 ]; then
-        printError "Unable to jump into '$root_dir'."
-        return 1
-    fi
+        printVerbose "Downloading '$CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR/${CONF_HOST_NAME}.hostinfo'..."
+        scp -p $CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR/${CONF_HOST_NAME}.hostinfo . >/dev/null 2>/dev/null
+        chown $PROJECT_OWNER:$PROJECT_OWNER ${CONF_HOST_NAME}.hostinfo >/dev/null 2>/dev/null
 
-    printVerbose "Downloading '$PROJECT_SERVER_STAT_URL/*.hostinfo'..."
-    scp -p $PROJECT_SERVER_STAT_URL/*.hostinfo . >/dev/null 2>/dev/null
-    chown $PROJECT_OWNER:$PROJECT_OWNER *.hostinfo
-
-    popd >/dev/null 2>/dev/null
+        popd >/dev/null 2>/dev/null
+    done
 }
 
 #
@@ -675,8 +698,8 @@ function print_host_list_long()
 
         #echo "device_name=\$(basename $config_file .host)"
         device_name=$(basename "$config_file" .host)
-        #echo "info_file=$SERVER_STAT_ROOT/${device_name}.hostinfo"
-        info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
+        #echo "info_file=$HOST_STAT_ROOT/${device_name}.hostinfo"
+        info_file="$HOST_STAT_ROOT/${device_name}.hostinfo"
         printVerbose "info_file: $info_file"
 
         if ! is_server_requested "$device_name"; then
@@ -800,7 +823,6 @@ function print_host_list_long()
                 ;;
 
             *)
-                echo "--> HOST_STATUS: $HOST_STATUS"
                 let SUM_SERVERS+=1
                 ;;
         esac
@@ -820,7 +842,7 @@ function print_host_list_long()
         printf "%2dc "  "$NUMBER_OF_CORES"
         printf "%3dG "  "$MEMORY_GIGABYTES"
         printf "%'6dG " "$DISK_GIGABYTES"
-        printf "%2d "   "$NUMBER_OF_CONTAINERS"
+        printf "%3d "   "$NUMBER_OF_CONTAINERS"
         printf "%6s "   "$AVERAGE_LOAD"
 
         if [ "$HOST_STATUS" == "IDLE" ]; then
@@ -869,7 +891,7 @@ function print_host_list_brief()
         fi
 
         device_name=$(basename "$config_file" .host)
-        info_file="$SERVER_STAT_ROOT/${device_name}.hostinfo"
+        info_file="$HOST_STAT_ROOT/${device_name}.hostinfo"
         
         if ! is_server_requested "$device_name"; then
             continue

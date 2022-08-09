@@ -7,21 +7,21 @@ VERSION="0.0.17"
 VERBOSE=""
 LOGFILE=""
 
-STATUS_TEXT=""
-SHUTDOWN=""
-MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
-HOST_INFO_FILE="$HOME/.piphostinfo"
-HOST_LOG_FILE="$HOME/.piphostinfo.log"
-HOST_CONTAINERS_FILE="$HOME/.pip-host-control.containers"
-HOST_STATUS="IDLE"
-CSV_OUTPUT=""
-
 if [ -f "$MYDIR/utilityfunctions.sh" ]; then
     source $MYDIR/utilityfunctions.sh
 else
     echo "File '$MYDIR/utilityfunctions.sh' was not found." >&2
     exit 5
 fi
+
+STATUS_TEXT=""
+SHUTDOWN=""
+MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
+HOST_INFO_FILE="$PROJECT_HOST_STAT_DIR/$(hostname).hostinfo"
+HOST_LOG_FILE="$PROJECT_HOST_STAT_DIR/$(hostname).hostlog"
+HOST_CONTAINERS_FILE="$PROJECT_HOST_STAT_DIR/$(hostname).containers"
+HOST_STATUS="IDLE"
+CSV_OUTPUT=""
 
 #
 # Prints the help text and exits.
@@ -390,7 +390,8 @@ if [ "$VERBOSE" ]; then
     cat "$HOST_INFO_FILE"
 fi
 
-send_host_info
+#Lets not use MQTT yet. We have no system config for it and we don't need it.
+#send_host_info
 
 if [ "$(which lxc-ls)" ]; then
     sudo lxc-ls -f >"$HOST_CONTAINERS_FILE"
@@ -398,12 +399,12 @@ else
     echo "" >"$HOST_CONTAINERS_FILE"
 fi
 
-upload_file "$HOST_INFO_FILE" "$PROJECT_SERVER_STAT_URL/$(hostname).hostinfo"
-upload_file "$HOST_LOG_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).hostlog"
-upload_file "$HOST_CONTAINERS_FILE"  "$PROJECT_SERVER_STAT_URL/$(hostname).containers"
+upload_file "$HOST_INFO_FILE" "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/$(hostname).hostinfo"
+upload_file "$HOST_LOG_FILE"  "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/$(hostname).hostlog"
+upload_file "$HOST_CONTAINERS_FILE"  "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/$(hostname).containers"
 
 if [ "$CSV_OUTPUT" ]; then
-    upload_file "$CSV_OUTPUT" "$PROJECT_SERVER_STAT_URL/test_matrix.csv" ""
+    upload_file "$CSV_OUTPUT" "$PROJECT_SERVER:$PROJECT_HOST_STAT_DIR/test_matrix.csv" ""
 fi
 
 if [ "$SHUTDOWN" == "true" ]; then

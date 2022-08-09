@@ -118,7 +118,7 @@ function start_test()
 
     let counter=0
     printVerbose "pip-server-control --list --idle"
-    test_server=$(pip-server-control --list --idle)
+    test_server=$(pip-server-control --list --idle | head -n 1)
     if [ -z "$user" ]; then
         user="$USER"
     fi
@@ -166,15 +166,14 @@ function start_test()
         --test="$testname" \
         --user="$user" \
         --git-branch="$gitbranch" \
-        --git-commit="$gitcommit"
+        --git-commit="$gitcommit" &
 
-    retcode=$?
-    printVerbose "pip-cmon-test retcode: $retcode"
+    # It takes some time till the pip-cmon-test will be started
+    # on the choosen host and sets the host status properly.
 
-    # Here is a peculiar thing, the script needs some time to make this host
-    # busy...
-    sleep 3
-    return $retcode
+    sleep 10
+
+    rm -f "$config_file"
 }
 
 #
@@ -210,6 +209,18 @@ function print_report()
     printf "\n\n\n"
 }
 
+function pull_source()
+{
+    pushd "${PROJECT_CC_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+    pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+}
+
 #
 # The main function that does some polling by checking the scheduled tests and
 # returns once in every round.
@@ -221,9 +232,11 @@ function process_scheduled_tests()
 
     if [ -z "$config_files" ]; then
         #printVerbose "No tests scheduled."
-        sleep 5
+        sleep 10
         return 0
     fi
+
+    pull_source
 
     for config_file in $(schedule_files); do
         printVerbose "*** config_file: $config_file"
@@ -237,17 +250,8 @@ function process_scheduled_tests()
 
         start_test "$config_file"
 
-        ret_code=$?
-        if [ $ret_code -ne 6 ]; then
-            rm -f "$config_file"
-            ${PROJECT_SCRIPT_ROOT}/delete_old_results.sh
-        fi
-
         print_report
     done
-        
-    print_report
-    #sleep 1
 }
 
 if [ "$OPTION_CONTINUOUS" ]; then

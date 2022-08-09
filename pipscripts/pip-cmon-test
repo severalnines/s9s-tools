@@ -43,8 +43,6 @@ declare -A REMOTE_SERVER_STATE
 
 source $MYDIR/utilityfunctions.sh
 
-pip-host-control --testing --log "--------------------------------------"
-
 function printHelpAndExit()
 {
 cat <<EOF
@@ -60,9 +58,7 @@ Usage:
   --log-file=FILE         Store all the messages in the given file too.
  
   --user=USERNAME         The name of the user requested the test.
-  --server=SERVER         The server or the servers where the tests will run.
-  --blades                Set the servers to my blades.
-  --all-servers           Try to use all servers we have.
+  --server=SERVER         The server where the test will run.
 
   --pid                   Print the PID of the test script if it is running.
   
@@ -75,20 +71,13 @@ Usage:
 
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
-  --unit-tests            Run all the unit tests.
-  --functional-tests      Run all the functional tests.
 
   --sqlversion=VERSION    The version to test.
   --vendor=VENDOR         The vendor name to test.
-  --os=LIST               The name of the OS to test.
+  --os=OS                 The name of the OS to test.
 
 EXAMPLE:
   $MYNAME --server=blade01 --os=debian8 --vendor=mariadb --sqlversion=5.6
-
-  $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=mariadb,percona,codership --sqlversion="5.6,5.7"
-  
-  $MYNAME --server=host01,host02 --os=debian7,debian8 --vendor=postgresql --sqlversion="5.6"
-
 
 EOF
 
@@ -98,7 +87,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:,user:,server:,all-servers,blades,\
+        -l "help,verbose,version,log-file:,user:,server:,\
 pid,\
 test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
 no-git-pull,no-compile,keep-nodes,shut-down-after,wait,git-branch:,git-commit:" \
@@ -147,30 +136,11 @@ while true; do
         --server)
             shift
             SERVER="$1"
-            SERVER=$(echo $SERVER | tr ',' ' ' | tr ';' ' ')
             if [ "x$SERVER" = "x" ]; then
                 printError "No server was specified."
                 exit 6
             fi
             shift
-            ;;
-
-        --blades)
-            shift
-            if [ -f "$HOME/.pip/blades" ]; then
-                SERVER=$(cat "$HOME/.pip/blades" | tr ',' ' ')
-            else
-                SERVER="blade01 blade02 blade03 blade04 blade05 "
-                SERVER+="blade06 blade07 blade08 blade09 blade10"
-                echo "$SERVER" >"$HOME/.pip/blades"
-            fi
-            ;;
-
-        --all-servers)
-            shift
-            SERVER="host01 host02 host03 host04 host05 host06 host07 "
-            SERVER+="blade01 blade02 blade03 blade04 blade05 blade06 "
-            SERVER+="blade07 blade08 blade09 blade10"
             ;;
 
         --pid)
@@ -188,26 +158,6 @@ while true; do
             OPTION_TEST_NAME="$1"
             TEST_NAME_OPTION="--test=$OPTION_TEST_NAME"
             shift
-            ;;
-
-        --unit-tests)
-            shift
-            if [ -z "$OPTION_FUNCTIONAL_TESTS" ]; then
-                OPTION_UNIT_TESTS="yes"
-            else
-                printError "The --test and --functional-tests are exclusive."
-                exit 6
-            fi
-            ;;
-        
-        --functional-tests)
-            shift
-            if [ -z "$OPTION_TEST_NAME" ]; then
-                OPTION_FUNCTIONAL_TESTS="yes"
-            else
-                printError "The --test and --functional-tests are exclusive."
-                exit 6
-            fi
             ;;
 
         --os)
@@ -302,7 +252,8 @@ printVerbose "              hostname: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
-printVerbose "       TEST_REPORT_URL: $PROJECT_TEST_REPORT_URL"
+printVerbose "           TEST SERVER: $PROJECT_SERVER"
+printVerbose "       TEST_REPORT_DIR: $PROJECT_TEST_REPORT_DIR"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
@@ -338,21 +289,9 @@ function upload_slog_file()
         touch "/tmp/$remotefile"
     fi
         
-    #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_TEST_REPORT_URL\""
-    scp "/tmp/$remotefile" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
+    scp "/tmp/$remotefile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
     rm -f "/tmp/$remotefile"
-}
-
-#export PATH="$HOME/bin:$PATH"
-
-#
-# Prints a message and also sends it to the server so it is made available as
-# status string.
-#
-function message()
-{
-    printVerbose "$1"
-    #pip-host-control --status="$1"
 }
 
 function test_name_to_test()
@@ -376,7 +315,7 @@ function version_to_test()
     # Command line overrules everything.
     #
     if [ "$OPTION_VERSION" ]; then
-        echo "$OPTION_VERSION" | tr ',' ' '
+        echo "$OPTION_VERSION"
         return 0
     fi
 
@@ -395,7 +334,7 @@ function vendor_to_test()
     # Command line overrules everything.
     #
     if [ "$OPTION_VENDOR" ]; then
-        echo "$OPTION_VENDOR" | tr ',' ' ' | tr ';' ' '
+        echo "$OPTION_VENDOR"
         return 0
     fi
 
@@ -413,7 +352,7 @@ function os_to_test()
     # Command line option overrules everything.
     #
     if [ "$OPTION_OS" ]; then
-        echo $OPTION_OS | tr ',' ' '
+        echo $OPTION_OS
         return 0;
     fi
 
@@ -490,6 +429,21 @@ function print_title()
     echo "<h3>$*</h3>"
 }
 
+function pull_test_source()
+{
+    printVerbose "Pulling in directory '${PROJECT_CC_TESTORIGIN_DIR}'"
+    pushd "${PROJECT_CC_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+
+    printVerbose "Pulling in directory '${PROJECT_S9S_TESTORIGIN_DIR}'"
+    pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
+    git reset --hard HEAD >/dev/null 2>/dev/null
+    git pull >/dev/null 2>/dev/null
+    popd
+}
+
 #
 # FIXME: This will be more complicated.
 # FIXME: This expects to be in the source directory.
@@ -533,6 +487,7 @@ function prepare_source()
             --log "Pulling source." \
             --status "Pulling source." 
         
+        printVerbose "Pulling in directory '${PWD}'"
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
 
@@ -577,6 +532,7 @@ function prepare_source()
         fi
 
         printVerbose "$prompt git pull"
+        printVerbose "Pulling in directory '${PWD}'"
         git pull >>$LOGFILE 2>>$LOGFILE
 
         if [ ! -z "$requested_commit" ]; then
@@ -737,7 +693,7 @@ function compile_source_dir()
             pip-host-control \
                 --tail "$PWD/autogen.log" \
                 --error "The ./autogen.sh returned an error ($retcode)."
-            exit 6
+            return 6
         fi
     fi
     
@@ -944,17 +900,17 @@ function ft_test_ended()
         sudo mkdir -p "$HOME/tmp"
 
         sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
-        scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
+        scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         #sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
         chown $PROJECT_OWNER:$PROJECT_OWNER \
-            "${PROJECT_TEST_REPORT_URL}/$(log_core_file_name $OPTION_TEST_NAME)"
+            "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_core_file_name $OPTION_TEST_NAME)"
 
         sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
                 "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
-        scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_TEST_REPORT_URL}"
+        scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         sudo rm "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
         chown $PROJECT_OWNER:$PROJECT_OWNER \
-            "${PROJECT_TEST_REPORT_URL}/$(log_bin_file_name $OPTION_TEST_NAME)"
+            "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_bin_file_name $OPTION_TEST_NAME)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         pip-host-control --log "Saving backtrace (no crash)"
@@ -988,8 +944,8 @@ function upload_report_file_ascii()
     </html>
 EOF
 
-    #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-    scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
     rm -f "$tmp_file"
 }
 
@@ -1050,8 +1006,8 @@ function upload_result_file()
     while true; do
         if [ -f "$log_file" ]; then
             #pip-host-control --log "Uploading '$log_file'."
-            #printVerbose scp "$log_file" "$PROJECT_TEST_REPORT_URL"
-            scp "$log_file" "$PROJECT_TEST_REPORT_URL"
+            #printVerbose scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+            scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         fi
 
         upload_report_file_ascii \
@@ -1066,17 +1022,17 @@ function upload_result_file()
 
         #pip-host-control --log "Uploading '$tmp_file'."
 
-        #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-        scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         if [ -z "$unit_test_option" -a \
             -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
             #printVerbose scp \
             #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-            #    "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
+            #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
             scp \
                 "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-                "$PROJECT_TEST_REPORT_URL/$daemon_log_file"
+                "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -1091,7 +1047,7 @@ function upload_result_file()
         # We are not gonna run indefinitely, that is a huge disaster.
         let counter+=10
         if [ $counter -gt 5400 ]; then
-            message "One and a half hour elapsed, the watcher will abort now."
+            printVerbose "One and a half hour elapsed, the watcher will abort now."
             break
         fi
 
@@ -1222,13 +1178,13 @@ function run_test()
     #
     # Notifying the user about a test is starting.
     #
-    message "Preparing to run $test_name."
+    printVerbose "Preparing to run $test_name."
     upload_slog_file
 
-    message "Enabling core file creation."
+    printVerbose "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern
     if [ $? -ne 0 ]; then
-        message "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
+        printVerbose "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
 
     for core_file in \
@@ -1247,11 +1203,11 @@ function run_test()
 
     ulimit -c unlimited
     if [ $? -ne 0 ]; then
-        message "Failed: ulimit -c unlimited"
+        printVerbose "Failed: ulimit -c unlimited"
     fi
 
     sudo sysctl -p /etc/sysctl.conf
-    message "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
+    printVerbose "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     echo ""
     echo "User limits :"
     echo ""
@@ -1268,8 +1224,6 @@ function run_test()
     pip-host-control --log "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
-            cd ${PROJECT_TEST_SCRIPT_DIR}
-
             #
             # Running the ft_full
             #
@@ -1279,7 +1233,7 @@ function run_test()
 
             if [ -x "./ft_full/ft_full" ]; then
                 pip-host-control --log "Running ft_full..."
-                message "Running 'ft_full'..."
+                printVerbose "Running 'ft_full'..."
 
                 echo "Current directory: $(pwd)"
                 echo "Sudo environment: $(sudo env)"
@@ -1297,7 +1251,7 @@ function run_test()
 
                     sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                     backend_pid=$!
-                    message "Backend PID is ${backend_pid}."
+                    printVerbose "Backend PID is ${backend_pid}."
 
                     for delay in $(seq 1 100); do
                         if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
@@ -1307,9 +1261,9 @@ function run_test()
                         sleep 3
                     done
                 else
-                    message "ft_full is already running"
-                    message "Backend PID is ${backend_pid}."
-                    message "PID won't be stored, so ft_full won't be stopped."
+                    printVerbose "ft_full is already running"
+                    printVerbose "Backend PID is ${backend_pid}."
+                    printVerbose "PID won't be stored, so ft_full won't be stopped."
                     backend_pid=""
                 fi
             else
@@ -1320,10 +1274,24 @@ function run_test()
 
             popd >/dev/null 2>/dev/null
 
+            printVerbose "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}'..."
+            cd ${PROJECT_S9S_TESTORIGIN_DIR}/tests
+
+            if [ ! -f "$test_name" ]; then
+                printVerbose "Program $test_name was not found."
+                pip-host-control \
+                    --error "Program $test_name was not found." \
+                    --status "Program $test_name was not found."
+
+                pip-host-control --error "  pwd: $PWD"
+
+                return 1
+            fi
+
             # 
             # Running the test script itself.
             # 
-            message "Running '$test_name'..."
+            printVerbose "Running '$test_name'..."
             upload_slog_file
             printVerbose "timeout --kill-after=92m 90m ./$test_name \
                 --print-commands --reset-config --server=$(hostname) \
@@ -1337,7 +1305,7 @@ function run_test()
                 >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
-            message "Test script PID is ${test_pid}."
+            printVerbose "Test script PID is ${test_pid}."
 
             #
             # Starting a watcher that keeps uploading the output...
@@ -1348,19 +1316,19 @@ function run_test()
                 "$test_name" "RUNNING" $logfile &
             
             watcher_pid=$!
-            message "Watcher PID is ${watcher_pid}."
+            printVerbose "Watcher PID is ${watcher_pid}."
             upload_slog_file
 
             #
             # Waiting for the test to be ended.
             #
-            message "Waiting until the test script ends..."
+            printVerbose "Waiting until the test script ends..."
             wait "$test_pid" 2>/dev/null
             return_code=$?
 
             pip-host-control --log "Finished ${test_name} ($return_code)."
 
-            message "Waiting for test watcher to end..."
+            printVerbose "Waiting for test watcher to end..."
             wait "$watcher_pid" 2>/dev/null
 
             pushd "$(find_clustercontrol_source_directory)/tests"
@@ -1374,7 +1342,7 @@ function run_test()
             # Cleaning up after.
             #
             if [ "$backend_pid" != "" ]; then
-                message "Stopping the ft_full backend."
+                printVerbose "Stopping the ft_full backend."
                 sudo kill $backend_pid
                 sleep 3
                 sudo kill -9 $backend_pid
@@ -1398,7 +1366,7 @@ function run_test()
             ;;
 
         ft_*)
-            #message "WD: $PWD test_name: $test_name."
+            #printVerbose "WD: $PWD test_name: $test_name."
 
             if [ -f "Vagrantfile" ]; then
                 vagrant destroy -f
@@ -1410,12 +1378,12 @@ function run_test()
 
             pip-host-control --log "Running ${test_name}."
             if [ -f "tests/$test_name/$test_name" ]; then
-                message "Entering directory 'tests'..."
+                printVerbose "Entering directory 'tests'..."
                 cd tests
             fi
 
             if [ ! -f "$test_name/$test_name" ]; then
-                message "Program $test_name was not found."
+                printVerbose "Program $test_name was not found."
                 pip-host-control \
                     --status "$test_name is missing." \
                     --error "Program $test_name was not found." \
@@ -1432,7 +1400,7 @@ function run_test()
                     version_option="--provider-version=$version"
                 fi
             fi
-            message "Running $test_name."
+            printVerbose "Running $test_name."
             ./$test_name/$test_name \
                 --template=headless \
                 --vendor="$(vendor_to_test)" \
@@ -1497,7 +1465,7 @@ function run_test()
                 return 1
             fi
 
-            message "Running $test_name."
+            printVerbose "Running $test_name."
             $test_name/$test_name --color >>$logfile 2>>$logfile
             return_code=$?
 
@@ -1521,29 +1489,29 @@ function run_test()
     # Uploading the output of the test program as log file.
     #
     if [ -f "$logfile" ]; then
-        #printVerbose "scp \"$logfile\" \"$PROJECT_TEST_REPORT_URL\""
-        scp "$logfile" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose "scp \"$logfile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
+        scp "$logfile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         rm -f "$logfile"
     fi
             
-    message "Finished running '$test_name' ($return_code)."
+    printVerbose "Finished running '$test_name' ($return_code)."
     upload_slog_file
 }
 
 function install_packages_on_test_server()
 {
     if [ -z "$(psql --version)" ]; then
-        message "Installing postgresql..."
+        printVerbose "Installing postgresql..."
         sudo apt-get -y --force-yes install postgresql
     fi
 
     if [ -z "$(bc --version)" ]; then
-        message "Installing bc..."
+        printVerbose "Installing bc..."
         sudo apt-get -y --force-yes install bc
     fi
 
     if [ ! -f "/usr/include/hiredis/hiredis.h" ]; then
-        message "Installing hiredis..."
+        printVerbose "Installing hiredis..."
         sudo apt-get -y --force-yes install libhiredis-dev
     fi
 }
@@ -1566,6 +1534,8 @@ function main()
         --log "Preparing test ($MYNAME ver. $VERSION)." \
         --status "Preparing test."
 
+    pull_test_source
+
     install_packages_on_test_server
 
     #
@@ -1574,7 +1544,7 @@ function main()
     source_root=$(find_clustercontrol_source_directory)
     if [ ! -d "$source_root" ]; then
         printError "Directory '$source_root' does not exist."
-        exit 6
+        return 6
     fi
     
     rm -f "$source_root/*.log"
@@ -1622,11 +1592,12 @@ function main()
         --test-state "PREPARING" \
         >$tmp_file
 
-    #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-    scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+    #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
     compile_source
-    if [ $? -ne 0 ]; then
+    $ret_code=$?
+    if [ $ret_code -ne 0 ]; then
         current_test_name="$OPTION_TEST_NAME"
         
         printVerbose "3487 Failed to compile source."
@@ -1639,8 +1610,8 @@ function main()
             --test-state "FAILURE" \
             >$tmp_file
 
-        #printVerbose scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
-        scp "$tmp_file" "$PROJECT_TEST_REPORT_URL"
+        #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         pip-host-control \
             --idle \
@@ -1648,7 +1619,7 @@ function main()
             --status "Idle."
 
         upload_slog_file
-        return 1
+        return $ret_code
     fi
 
     #
@@ -1698,110 +1669,14 @@ function is_server_running_ssh()
     return 1
 }
 
-function print_main_screen()
-{
-    local server
-    local host_state
-    local mycolumns=0
-
-    for server in $SERVER; do
-        host_state="${REMOTE_SERVER_STATE[$server]}"
-        if [ -z "$host_state" ]; then
-            host_state="-"
-        fi
-
-        printf "%8s:%-10s " "$server" "$host_state" >&2
-        let mycolumns+=1
-        if [ $mycolumns -gt 3 ]; then
-            echo "" >&2
-            mycolumns=0
-        fi
-    done
-
-    echo "" >&2
-}
-
 LAST_USED_SERVER=""
-
-#
-#
-#
-function find_idle_server()
-{
-    local server
-    local host_state
-   
-    #printVerbose "find_idle_server()"
-
-    for server in $SERVER; do
-        lock_file=$(lockFile)
-
-        if [ "$LAST_USED_SERVER" ]; then
-            if [ "$LAST_USED_SERVER" == "$server" ]; then
-                LAST_USED_SERVER=""
-            fi
-
-            continue
-        fi
-
-        if ! is_server_running_ssh "$server"; then
-            printVerbose "Server '$server' is off-line."
-            REMOTE_SERVER_STATE[$server]="OFF-LINE"
-            continue
-        fi
-
-        printVerbose \
-            ssh -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no \
-                -o LogLevel=quiet \
-                "$server" -- pip-cmon-test --pid
-
-        other_pid=$( \
-            ssh -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no \
-                -o LogLevel=quiet \
-                "$server" -- pip-cmon-test --pid)
-
-        printVerbose "server     : '$server'"
-        printVerbose "lock_file  : '$lock_file'"
-        printVerbose "other_pid  : '$other_pid'"
-        if [ "$other_pid" ]; then
-            REMOTE_SERVER_STATE[$server]="TESTING "
-            continue
-        fi
-
-        LAST_USED_SERVER="$server"
-        echo "$server"
-        break
-    done
-
-    LAST_USED_SERVER="$server"
-}
-
-function wait_for_idle_server()
-{
-    local idle_server
-
-    printVerbose "Waiting for an idle server..."
-    while true; do
-        idle_server=$(find_idle_server)
-  
-        # Finding a server that is idle and ready to execute a test.
-        if [ "$idle_server" ]; then
-            echo "$idle_server"
-            return 0
-        fi
-
-        sleep 3
-    done
-}
 
 function run_tests_remote()
 {
     local os
     local version
     local vendor
-    local idle_server
+    local idle_server="$1"
     local test_name
     local no_git_pull_option
     local no_compile_option
@@ -1812,100 +1687,51 @@ function run_tests_remote()
     printVerbose "vendor_to_test: $(vendor_to_test)"
     printVerbose "OPTION_TEST_NAME: $(echo "$OPTION_TEST_NAME" | tr ',' ' ')"
 
-    for os in $(os_to_test); do 
-        for version in $(version_to_test); do
-            for vendor in $(vendor_to_test); do
-                for test_name in $(echo "$OPTION_TEST_NAME" | tr ',' ' '); do
-                    idle_server=$(wait_for_idle_server)
-                    no_git_pull_option="$NO_GIT_PULL_OPTION"
-                    no_compile_option="$NO_COMPILE_OPTION"
+    os=$(os_to_test)
+    version=$(version_to_test)
+    vendor=$(vendor_to_test)
+    test_name="$OPTION_TEST_NAME"
 
-                    if [ "${already_compiled[$idle_server]}" ]; then
-                        no_git_pull_option="--no-git-pull"
-                        no_compile_option="--no-compile"
-                    fi
+    no_git_pull_option="$NO_GIT_PULL_OPTION"
+    no_compile_option="$NO_COMPILE_OPTION"
 
-                    echo "-------------------------------------"
-                    echo -e "idle_server : $(STR_GREEN "$idle_server")"
-                    echo -e "test        : '$test_name'"
-                    echo -e "compiled    : '${already_compiled[$idle_server]}'"
+    if [ "${already_compiled[$idle_server]}" ]; then
+        no_git_pull_option="--no-git-pull"
+        no_compile_option="--no-compile"
+    fi
 
-                    pip-host-control --log "Starting test on '$idle_server'."
-                    ssh -o UserKnownHostsFile=/dev/null \
-                        -o StrictHostKeyChecking=no \
-                        -o LogLevel=quiet \
-                        $idle_server -- nohup pip-cmon-test \
-                            $no_git_pull_option \
-                            $no_compile_option \
-                            $S9S_OPTION \
-                            $VERBOSE_OPTION \
-                            $OPTION_KEEP_NODES \
-                            --os=$os \
-                            --vendor=$vendor \
-                            --sqlversion=$version \
-                            --test="$test_name" \
-                            --git-branch="$OPTION_GIT_BRANCH" \
-                            --git-commit="$OPTION_GIT_COMMIT"
-                            # Uncomment below if many test server are in use
-                            # and there are too many messages on the konsole
-                            #>/dev/null 2>/dev/null &
+    echo "-------------------------------------"
+    echo -e "idle_server : $(STR_GREEN "$idle_server")"
+    echo -e "test        : '$test_name'"
+    echo -e "compiled    : '${already_compiled[$idle_server]}'"
 
-                    if [ -n "$WAIT_OPTION" ]; then
-                        printVerbose "Waiting until the test ends."
-                        waitForProcessesToEnd 0
-                        printVerbose "Test ended..."
-                    fi
+    ssh -o UserKnownHostsFile=/dev/null \
+        -o StrictHostKeyChecking=no \
+        -o LogLevel=quiet \
+        $idle_server -- nohup pip-cmon-test \
+            $no_git_pull_option \
+            $no_compile_option \
+            $S9S_OPTION \
+            $VERBOSE_OPTION \
+            $OPTION_KEEP_NODES \
+            --os=$os \
+            --vendor=$vendor \
+            --sqlversion=$version \
+            --test="$test_name" \
+            --git-branch="$OPTION_GIT_BRANCH" \
+            --git-commit="$OPTION_GIT_COMMIT"
+            # Uncomment below if many test server are in use
+            # and there are too many messages on the konsole
+            #>/dev/null 2>/dev/null &
 
-                    already_compiled[$idle_server]="yes"
-                    sleep 2
-                done
-            done
-        done
-    done
+    if [ -n "$WAIT_OPTION" ]; then
+        printVerbose "Waiting until the test ends."
+        waitForProcessesToEnd 0
+        printVerbose "Test ended..."
+    fi
+
+    already_compiled[$idle_server]="yes"
 }
-
-if [ "$OPTION_UNIT_TESTS" ]; then
-    printVerbose "OPTION_UNIT_TESTS is true"
-    if [ "$S9S_OPTION" ]; then
-        OPTION_TEST_NAME+="ut_library ut_s9sbackup ut_s9sconfigfile "
-        OPTION_TEST_NAME+="ut_s9sgraph ut_s9soptions ut_s9srpcclient "
-        OPTION_TEST_NAME+="ut_s9surl ut_s9svariantmap ut_s9saccount "
-        OPTION_TEST_NAME+="ut_s9scluster ut_s9sdatetime ut_s9snode "
-        OPTION_TEST_NAME+="ut_s9sregexp ut_s9sstring ut_s9svariant "
-    else
-        directory=$(find_clustercontrol_source_directory)
-        if [ -d "$directory/tests" ]; then
-            pushd "$directory/tests"
-            OPTION_TEST_NAME="$(ls -d ut_*)"
-            popd
-        fi
-        
-        if [ -z "$OPTION_TEST_NAME" ]; then
-            printError "Could not find clustercontrol unit tests."
-            exit 6
-        fi
-    fi
-fi
-
-if [ "$OPTION_FUNCTIONAL_TESTS" ]; then
-    printVerbose "OPTION_FUNCTIONAL_TESTS is true"
-    if [ "$S9S_OPTION" ]; then
-        directory=$(find_s9s_source_directory)
-        printVerbose "  directory: $directory" 
-
-        if [ -d "$directory/tests" ]; then
-            pushd "$directory/tests" >/dev/null 2>/dev/null
-            OPTION_TEST_NAME="$(ls ft_*.sh)"
-            popd >/dev/null 2>/dev/null
-        fi
-
-        if [ -z "$OPTION_TEST_NAME" ]; then
-            printError "Could not find s9s functional tests."
-            exit 6
-        fi
-    fi
-fi
-
 
 if [ "$OPTION_PID" ]; then
     printVerbose "OPTION_PID is true"
@@ -1927,22 +1753,18 @@ if [ "$OPTION_PID" ]; then
     exit 1
 elif [ "$SERVER" ]; then
     printVerbose "OPTION_SERVER is true"
-    #
-    # Running the tests on multiple remote servers.
-    #
-    pip-host-control --testing --log="--------------------------------------"
-    pip-host-control --testing --log="Running tests..."
-    pip-host-control --status "Testing..."
 
-    run_tests_remote
-    #waitForProcessesToEnd 
-    pip-host-control --idle --status="Idle."
+    # Running test on remote host.
+
+    run_tests_remote "$SERVER"
 else
-    checkOtherInstances
-    printVerbose "checkOtherInstances : $?"
-
+    #checkOtherInstances
+    #printVerbose "checkOtherInstances : $?"
+    pip-host-control --testing --log="Starting..."
     main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+    RET=$?
     pip-host-control --idle
+    exit $RET
 fi
 
 
