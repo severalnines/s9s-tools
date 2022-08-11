@@ -7,13 +7,14 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <getopt.h>
 #include <math.h>
 #include <locale.h>
+#include <ctime>
 
 #ifndef _GNU_SOURCE
 #include <libgen.h>

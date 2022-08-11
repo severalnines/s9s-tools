@@ -33,6 +33,7 @@
 #include <cstring>
 #include <cstdio>
 #include <iostream> 
+#include <ctime>
 
 //#define DEBUG
 #define WARNING

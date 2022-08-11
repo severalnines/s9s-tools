@@ -4,6 +4,7 @@
 #include "s9scmongraph.h"
 
 #include "S9sOptions"
+#include <ctime>
 
 #define DEBUG
 #define WARNING

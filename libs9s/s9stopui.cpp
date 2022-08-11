@@ -25,9 +25,10 @@
 #include "S9sMutexLocker"
 #include "S9sSqlProcess"
 
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
+#include <ctime>
 
 #define DEBUG
 #define WARNING

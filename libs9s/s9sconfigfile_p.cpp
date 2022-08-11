@@ -19,6 +19,7 @@
  */
 
 #include "s9sconfigfile_p.h"
+#include <ctime>
 
 S9sConfigFilePrivate::S9sConfigFilePrivate() :
     m_referenceCounter(1),

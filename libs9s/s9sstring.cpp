@@ -20,16 +20,17 @@
 #include "s9sstring.h"
 
 #include <strings.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 #include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <algorithm>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <ctime>
 
 #include <regex.h>
 #include "S9sRegExp"
