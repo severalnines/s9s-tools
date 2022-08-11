@@ -1240,6 +1240,7 @@ function run_test()
 
                 backend_pid=$(pidof ft_full)
                 if [ "" == "$backend_pid" ]; then 
+                    rm -fr ft_full.log 
                     echo "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.
                     echo "sudo rm -rvf /tmp/cmon*"
@@ -1374,7 +1375,7 @@ function run_test()
             fi
 
             rm -f test_ssh_key.pub*
-            echo "" >ft_full.log 
+            rm -fr ft_full.log 
 
             pip-host-control --log "Running ${test_name}."
             if [ -f "tests/$test_name/$test_name" ]; then
@@ -1534,8 +1535,7 @@ function main()
         --log "Preparing test ($MYNAME ver. $VERSION)." \
         --status "Preparing test."
 
-    #pull_testorigin_source
-
+    pull_testorigin_source
     install_packages_on_test_server
 
     #

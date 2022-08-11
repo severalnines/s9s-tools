@@ -92,13 +92,38 @@ while true; do
     esac
 done
 
+function pull_on_testhost()
+{
+    local idle_server=$1
+
+    printVerbose "Install fresh pipscripts to ${idle_server} before starting testing."
+
+    pushd ${PROJECT_S9S_TESTORIGIN_DIR}
+    ./install.sh --server=${idle_server}
+    popd
+
+    #printVerbose "Pulling in ${idle_server}:${PROJECT_CC_TESTORIGIN_DIR}"
+
+    #ssh -o UserKnownHostsFile=/dev/null \
+    #    -o StrictHostKeyChecking=no \
+    #    -o LogLevel=quiet \
+    #    $idle_server -- "cd ${PROJECT_CC_TESTORIGIN_DIR} && git pull"
+
+    #printVerbose "Pulling in ${idle_server}:${PROJECT_S9S_TESTORIGIN_DIR}"
+
+    #ssh -o UserKnownHostsFile=/dev/null \
+    #    -o StrictHostKeyChecking=no \
+    #    -o LogLevel=quiet \
+    #    $idle_server -- "cd ${PROJECT_S9S_TESTORIGIN_DIR} && git pull"
+}
+
 #
 # Waits until it finds an idle server, then starts the given test on it.
 #
 function start_test()
 {
     local config_file="$1"
-    local test_server=""
+    local idle_server=""
     local testname=""
     local state=""
     local user=""
@@ -118,12 +143,12 @@ function start_test()
 
     let counter=0
     printVerbose "pip-server-control --list --idle"
-    test_server=$(pip-server-control --list --idle | head -n 1)
+    idle_server=$(pip-server-control --list --idle | head -n 1)
     if [ -z "$user" ]; then
         user="$USER"
     fi
 
-    if [ "$test_server" == "" ]; then
+    if [ "$idle_server" == "" ]; then
         printVerbose "No idle test server available"
         return 6
     fi
@@ -131,12 +156,11 @@ function start_test()
     LAST_USER_NAME="$user"
 
     echo " ---------------------------------"
-    echo "   test_server: $test_server"
+    echo "   idle_server: $idle_server"
     echo "      testname: $testname"
     echo "         state: $state"
     echo "          user: $user"
     echo "       project: $project"
-    echo "        server: $test_server"
     echo "    git branch: $gitbranch"
     echo "    git commit: $gitcommit"
 
@@ -144,16 +168,18 @@ function start_test()
         option_s9s="--s9s"
     fi
 
+    pull_on_testhost $idle_server
+
     LAST_TEST_STARTED=$(date)
     LAST_TEST_NAME="$testname"
-    LAST_HOST_NAME="$test_server"
+    LAST_HOST_NAME="$idle_server"
 
     let SUM_STARTED_TESTS+=1
 
     printVerbose "pip-cmon-test "\
         "$VERBOSE_OPTION "\
         "$option_s9s "\
-        "--server=$test_server "\
+        "--server=$idle_server "\
         "--test=$testname "\
         "--user=$user "\
         "--git-branch=$gitbranch"\
@@ -162,7 +188,7 @@ function start_test()
     pip-cmon-test \
         $VERBOSE_OPTION \
         $option_s9s \
-        --server="$test_server" \
+        --server="$idle_server" \
         --test="$testname" \
         --user="$user" \
         --git-branch="$gitbranch" \
@@ -209,7 +235,7 @@ function print_report()
     printf "\n\n\n"
 }
 
-function pull_source()
+function pull_local_testorigin_source()
 {
     pushd "${PROJECT_CC_TESTORIGIN_DIR}"
     git reset --hard HEAD >/dev/null 2>/dev/null
@@ -236,7 +262,7 @@ function process_scheduled_tests()
         return 0
     fi
 
-    pull_source
+    pull_local_testorigin_source
 
     for config_file in $(schedule_files); do
         printVerbose "*** config_file: $config_file"

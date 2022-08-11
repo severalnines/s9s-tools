@@ -44,6 +44,8 @@ if [ "${S9S_TEST_EMAIL}" != "" ]; then
 fi
 if [ "${S9S_TEST_CONTAINER_SERVER}" != "" ]; then
 	export CONTAINER_SERVER=${S9S_TEST_CONTAINER_SERVER}
+else
+    export CONTAINER_SERVER="$(hostname)"
 fi
 if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
 	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
