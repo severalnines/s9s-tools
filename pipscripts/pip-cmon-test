@@ -1228,7 +1228,7 @@ function run_test()
             # Running the ft_full
             #
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
-            pushd "$(find_clustercontrol_source_directory)/tests" \
+            pushd "${test_dir}/tests" \
                 >/dev/null 2>/dev/null
 
             if [ -x "./ft_full/ft_full" ]; then
@@ -1240,7 +1240,8 @@ function run_test()
 
                 backend_pid=$(pidof ft_full)
                 if [ "" == "$backend_pid" ]; then 
-                    rm -fr ft_full.log 
+                    echo rm -fr ${test_dir}/tests/ft_full.log 
+                    rm -fr ${test_dir}/tests/ft_full.log 
                     echo "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.
                     echo "sudo rm -rvf /tmp/cmon*"
