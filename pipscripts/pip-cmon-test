@@ -248,7 +248,7 @@ done
 #
 echo "" >$LOGFILE
 printVerbose "Starting test runner script..."
-printVerbose "              hostname: $(hostname)"
+printVerbose "             TEST HOST: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
