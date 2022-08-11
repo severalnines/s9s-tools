@@ -7009,13 +7009,6 @@ S9sRpcClient::checkHosts()
     S9sOptions    *options     = S9sOptions::instance();
     S9sVariantList hosts       = options->nodes();
     S9sString      clusterType = options->clusterType();
-    S9sVariantMap  ssh_creds;
-
-    if(!options->remoteUser().empty())
-        ssh_creds["user_name"]  = options->remoteUser();
-    if(!options->remoteUser().empty())
-        ssh_creds["password"]   = options->remotePassword();
-    // ALVc -- ssh_creds["ssh_keyfile"]= "/home/alvaro/.ssh/id_rsa.pub";
 
     if (hosts.empty())
         return true;
@@ -7039,28 +7032,13 @@ S9sRpcClient::checkHosts()
 
         job["class_name"]         = "CmonJobInstance";
         job["job_spec"]           = jobSpec;
-        if(!ssh_creds.empty())
-        {
-            ssh_creds["class_name"] = "CmonSshCredentials";
-            job["ssh_credentials"]= ssh_creds;
-        }
 
         request["check_job"]      = true;
         request["job"]            = job;
     }
 
-    #if 0
-    S9sVariantMap credentials;
-
-    credentials["class_name"]      = "CmonSshCredentials";
-    credentials["user_name"]       = "pipas";
-    credentials["password"]        = "";
-    credentials["public_key_file"] = "./configs/testing_id_rsa";
-    //credentials["port"]            = ;
-    //credentials["timeout"]         = ;
-    //credentials["tty_for_sudo"]    = ;
-    request["ssh_credentials"]     = credentials;
-    #endif
+    if (options->hasSshCredentials())
+        request["ssh_credentials"] = options->sshCredentials().toVariantMap();
 
     return executeRequest(uri, request);
 }

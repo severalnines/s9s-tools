@@ -1868,7 +1868,14 @@ S9sOptions::hasSshCredentials()
     {
         return true;
     }
-    
+
+    // TODO FIXME remove these once not used anymore
+    if (m_options.contains("remote_user") ||
+        m_options.contains("remote_password"))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -1884,6 +1891,14 @@ S9sOptions::sshCredentials(
     
     retval.setUserName(osUser());
     retval.setPassword(osPassword());
+
+    // gosh these are duplicated options :-S
+    // TODO: FIXME: drop these, now i kept them for compatibility <David>
+    if (!getString("remote_user").empty())
+        retval.setUserName(getString("remote_user"));
+    if (!getString("remote_password").empty())
+        retval.setPassword(getString("remote_password"));
+
     retval.setPublicKeyFilePath(osKeyFile());
 
     return retval;
@@ -2992,24 +3007,6 @@ S9sOptions::appendVolumes(
     m_options["volumes"] = volumesToSet;
 
     return true;
-}
-
-/**
- * \returns the value of --remote-user parameter
- */
-S9sString
-S9sOptions::remoteUser() const
-{
-    return getString("remote_user");
-}
-
-/**
- * \returns the value of --remote-password parameter
- */
-S9sString
-S9sOptions::remotePassword() const
-{
-    return getString("remote_password");
 }
 
 /**
@@ -6457,8 +6454,6 @@ S9sOptions::printHelpCluster()
 "  --add-node                 Add a new node to the cluster.\n"
 "  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
-"  --remote-user              The ssh user to connect to refered remote hosts.\n"
-"  --remote-password          The ssh password to connect to refered remote hosts.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
 "  --create-account           Create a user account on the cluster.\n"
 "  --create                   Create and install a new cluster.\n"
@@ -12311,6 +12306,8 @@ S9sOptions::readOptionsCluster(
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
+        // TODO: FIXME: drop the following two,
+        // as we already have --os-user and --os-password
         { "remote-user",      required_argument, 0, OptionRemoteUser      },
         { "remote-password",  required_argument, 0, OptionRemotePassword  },
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },

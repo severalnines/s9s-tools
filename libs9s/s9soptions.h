@@ -174,9 +174,8 @@ class S9sOptions
         bool hasSshCredentials();
         S9sSshCredentials
             sshCredentials(
-                    const S9sString &categoryName,
-                    const S9sString &hostName);
-
+                    const S9sString &categoryName = "",
+                    const S9sString &hostName = "");
 
         S9sString osUser(bool defaultsToCmonUser = true) const;
         S9sString osKeyFile() const;
@@ -332,9 +331,6 @@ class S9sOptions
         S9sString imageOsUser() const;
         S9sVariantList volumes() const;
         bool appendVolumes(const S9sString &stringRep);
-
-        S9sString remoteUser() const;
-        S9sString remotePassword() const;
 
         bool force() const;
         bool dry() const;
