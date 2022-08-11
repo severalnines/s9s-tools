@@ -429,7 +429,7 @@ function print_title()
     echo "<h3>$*</h3>"
 }
 
-function pull_test_source()
+function pull_testorigin_source()
 {
     printVerbose "Pulling in directory '${PROJECT_CC_TESTORIGIN_DIR}'"
     pushd "${PROJECT_CC_TESTORIGIN_DIR}"
@@ -1274,7 +1274,7 @@ function run_test()
 
             popd >/dev/null 2>/dev/null
 
-            printVerbose "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}'..."
+            printVerbose "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}/tests'"
             cd ${PROJECT_S9S_TESTORIGIN_DIR}/tests
 
             if [ ! -f "$test_name" ]; then
@@ -1534,7 +1534,7 @@ function main()
         --log "Preparing test ($MYNAME ver. $VERSION)." \
         --status "Preparing test."
 
-    pull_test_source
+    #pull_testorigin_source
 
     install_packages_on_test_server
 
