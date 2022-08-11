@@ -24,7 +24,7 @@ clean:
 	dh_testroot
 	dh_testdir
 	-@ $(MAKE) $(MAKEOPTS) distclean
-	dh_clean
+	-@dh_clean
 
 build:
 	dh_testdir
