@@ -21,6 +21,8 @@ CXXFLAGS += $(shell dpkg-parsechangelog | sed -n 's/^Version: //p' | \
 			  echo '-O2 -g -DPUBLIC_RELEASE -DNDEBUG')
 
 clean:
+	# a possible workaround to allow builds on 22.04 as well
+	-@sh -c 'grep '22\.04' /etc/os-release && echo 7 > debian/compat'
 	dh_testroot
 	dh_testdir
 	-@ $(MAKE) $(MAKEOPTS) distclean
