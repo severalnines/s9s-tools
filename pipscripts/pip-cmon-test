@@ -220,6 +220,18 @@ printVerbose "       TEST_REPORT_DIR: $PROJECT_TEST_REPORT_DIR"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
+function changedir()
+{
+    local dir=$1
+    printVerbose "cd $dir"
+    cd $dir > /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to change directory to $dir."
+        return 1
+    fi
+    return 0
+}
+
 function pushdir()
 {
     local dir=$1
@@ -569,7 +581,7 @@ function compile_source()
 
     pip-host-control --testing --status="Compiling CC for $OPTION_TEST_NAME"
 
-    pushdir "${PROJECT_CC_WORKER_DIR}"
+    changedir "${PROJECT_CC_WORKER_DIR}"
     compile_source_dir \
         --cmon-compilation
 
@@ -577,7 +589,6 @@ function compile_source()
         #--prefix=$HOME/cmonrepo/$GIT_BRANCH-$GIT_HASH
 
     retcode=$?
-    popdir
     
     if [ "$retcode" -ne 0 ]; then
         printVerbose "The return code is $retcode..."
@@ -590,7 +601,7 @@ function compile_source()
 
     pip-host-control --testing --status="Compiling s9s for $OPTION_TEST_NAME"
 
-    pushdir "${PROJECT_S9S_WORKER_DIR}"
+    changedir "${PROJECT_S9S_WORKER_DIR}"
     prepare_source \
         --package-name "s9s-tools"
 
@@ -600,7 +611,6 @@ function compile_source()
         #--prefix=$HOME/tests9s
 
     retcode="$?"
-    popdir
 
     return "$retcode"
 }
@@ -993,10 +1003,8 @@ function run_test()
             #
             # Running the ft_full
             #
-            pushdir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
-
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
-            pushdir "${PROJECT_CC_WORKER_DIR}/tests"
+            changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
             if [ -x "./ft_full/ft_full" ]; then
                 printVerbose "Running 'ft_full'..."
@@ -1037,16 +1045,13 @@ function run_test()
             else
                 printVerbose "The ft_full/ft_full was not found."
                 upload_slog_file
-                popdir
-                popdir
                 return 1
             fi
 
-            popdir
+            changedir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
 
             if [ ! -f "$test_name" ]; then
                 printVerbose "Program $test_name was not found in $PWD"
-                popdir
                 return 1
             fi
 
@@ -1095,14 +1100,12 @@ function run_test()
             printVerbose "Waiting for test watcher to end..."
             wait "$watcher_pid" 2>/dev/null
 
-            pushdir "${PROJECT_CC_WORKER_DIR}/tests"
+            changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
             ft_test_ended \
                 "$return_code" \
                 "$backend_pid" \
                 >>ft_full.log 2>>ft_full.log
-
-            popdir
             
             #
             # Cleaning up after.
@@ -1129,12 +1132,10 @@ function run_test()
                     --functional-test \
                     "$test_name" "FAILURE" $logfile
             fi
-
-            popdir
             ;;
 
         ft_*)
-            pushdir "${PROJECT_CC_WORKER_DIR}/tests"
+            changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
             if [ -f "Vagrantfile" ]; then
                 vagrant destroy -f
@@ -1149,7 +1150,6 @@ function run_test()
             if [ ! -f "$test_name/$test_name" ]; then
                 printVerbose "Program $test_name was not found."
 
-                popdir
                 return 1
             fi
 
@@ -1193,14 +1193,13 @@ function run_test()
                     --functional-test \
                     "$test_name" "FAILURE" $logfile
             fi
-            popdir
             ;;
 
         ut_s9s*)
             #
             # This is under development.
             #
-            pushdir "${PROJECT_S9S_WORKER_DIR}/tests"
+            changedir "${PROJECT_S9S_WORKER_DIR}/tests"
 
             upload_result_file \
                 --unit-test \
@@ -1219,7 +1218,6 @@ function run_test()
                     --unit-test \
                     "$test_name" "FAILURE" $logfile
 
-                popdir
                 return 1
             fi
 
@@ -1240,7 +1238,6 @@ function run_test()
                     --unit-test \
                     "$test_name" "FAILURE" $logfile
             fi
-            popdir
             ;;
 
         *)
@@ -1322,7 +1319,7 @@ function main()
     # Preparing the clustercontrol source, generating a file holding the test 
     # results.
     #
-    pushdir "${PROJECT_CC_WORKER_DIR}"
+    changedir "${PROJECT_CC_WORKER_DIR}"
 
     prepare_source \
         --package-name      "clustercontrol" \
@@ -1337,8 +1334,6 @@ function main()
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
-
-    popdir
 
     result_file=$(result_file_name "$OPTION_TEST_NAME")
     tmp_file="/var/tmp/$result_file"
