@@ -247,6 +247,7 @@ function save_to_results()
     local savedfile="${PROJECT_TEST_REPORT_DIR}/$2"
 
     if [ -f "$localfile" ]; then
+        printVerbose "cp $localfile $savedfile"
         cp "$localfile" "$savedfile"
     else
         touch "$savedfile"
@@ -260,6 +261,7 @@ function move_to_results()
 {
     save_to_results "$1" "$2"
 
+    printVerbose "rm -f $1"
     rm -f "$1"
 }
 
