@@ -898,6 +898,8 @@ function print_host_list_brief()
         CONF_HOST_URL=""
         CONF_HOST_VIRTUAL=""
         CONF_HOST_CONTAINERS=""
+        CONF_HOST_DATA_ROOT=""
+        CONF_HOST_USER=""
 
         HOSTNAME=""
         NUMBER_OF_CORES=""

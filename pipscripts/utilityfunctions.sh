@@ -66,6 +66,29 @@ VERSION_COLOR="\033[1m\033[38;5;190m"
 # maintain one instance and work less while achieving more.
 #
 
+function pushdir()
+{
+    local dir=$1
+    printVerbose "pushd $dir"
+    pushd $dir > /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to change directory to $dir."
+        return 1
+    fi
+    return 0
+}
+
+function popdir()
+{
+    dir=$(popd > /dev/null 2> /dev/null)
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to popd."
+        return 1
+    fi
+    printVerbose "popd to $PWD"
+    return 0
+}
+
 #
 # Standard ANSI to HTML filter.
 #

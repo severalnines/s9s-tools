@@ -7,6 +7,7 @@ PATH=${MYDIR}:${PATH}
 VERSION="0.0.1"
 
 OPTION_CONTINUOUS=""
+OPTION_MANAGER="false"
 
 START_TIME=$(date)
 LAST_TEST_STARTED="-"
@@ -41,6 +42,7 @@ Usage:
   -v, --version      Print version information and exit.
   --verbose          Print more messages.
   --log-file=FILE    Store all the messages in the given file too.
+  --manager          Don start pip-cmon-test, just scp schedules to worker hosts
   --continuous       Continue watching if no schedules found.
 
 EOF
@@ -50,7 +52,7 @@ EOF
 ARGS=$(\
     getopt \
         -o hv \
-        -l "help,verbose,version,log-file:,continuous" \
+        -l "help,verbose,version,log-file:,manager,continuous" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -75,6 +77,11 @@ while true; do
             printVersionAndExit
             ;;
 
+        --manager)
+            shift
+            OPTION_MANAGER="true"
+            ;;
+
         --continuous)
             shift
             OPTION_CONTINUOUS="true"
@@ -91,100 +98,16 @@ while true; do
     esac
 done
 
-#
-# Waits until it finds an idle server, then starts the given test on it.
-#
-function start_test()
+function changedir()
 {
-    local config_file="$1"
-    local idle_server=""
-    local testname=""
-    local state=""
-    local user=""
-    local project=""
-    local option_s9s=""
-    local retcode
-    local counter
-
-    echo "Loading '$config_file'..."
-    source "$config_file"
-    local gitcommit="$githash"
-
-    # 
-    # Getting the list of available servers.
-    #
-    echo "Getting idle test servers"
-
-    let counter=0
-    echo "pip-server-control --list --idle"
-    idle_server=$(pip-server-control --list --idle | head -n 1)
-    if [ -z "$user" ]; then
-        user="$USER"
+    local dir=$1
+    printVerbose "cd $dir"
+    cd $dir > /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to change directory to $dir."
+        return 1
     fi
-
-    if [ "$idle_server" == "" ]; then
-        echo "No idle test server available"
-        return 6
-    fi
-
-    logbasename="$PROJECT_TEST_REPORT_DIR/${testname}-${gitbranch}-${gitcommit}"
-    pipcmontestlog="${logbasename}.pip-cmon-test.log"
-
-    LAST_USER_NAME="$user"
-
-    echo " --------------------------------------"
-    echo "      idle_server: $idle_server"
-    echo "         testname: $testname"
-    echo "            state: $state"
-    echo "             user: $user"
-    echo "          project: $project"
-    echo "       git branch: $gitbranch"
-    echo "       git commit: $gitcommit"
-    echo "pip-cmon-test.log: $pipcmontestlog"
-    echo ""
-
-    if [ "$project" == "s9s-tools" ]; then
-        option_s9s="--s9s"
-    fi
-
-    LAST_TEST_STARTED=$(date)
-    LAST_TEST_NAME="$testname"
-    LAST_HOST_NAME="$idle_server"
-
-    let SUM_STARTED_TESTS+=1
-
-    echo "pip-cmon-test "\
-        "$VERBOSE_OPTION "\
-        "$option_s9s "\
-        "--test=$testname "\
-        "--user=$user "\
-        "--git-branch=$gitbranch"\
-        "--git-commit=$gitcommit"
-
-    #nohup ?
-    pip-cmon-test \
-        $VERBOSE_OPTION \
-        $option_s9s \
-        --test="$testname" \
-        --user="$user" \
-        --git-branch="$gitbranch" \
-        --git-commit="$gitcommit" > ${pipcmontestlog} 2> ${pipcmontestlog}
-
-    mv "$PROJECT_LOGDIR/pip-cmon-test.log" "${logbasename}.slog"
-
-    rm -f "$config_file"
-
-    #clear
-    echo ""
-    printf "        Start time: %s\n" "$START_TIME"
-    printf "      Current time: %s\n" "$(date)"
-    printf " Last test started: %s\n" "$LAST_TEST_STARTED"
-    printf "\n"
-    printf "    Last test name: %s\n" "$LAST_TEST_NAME"
-    printf "         Last user: %s\n" "$LAST_USER_NAME"
-    printf "    Last host name: %s\n" "$LAST_HOST_NAME"
-    printf "           Started: %'d test(s)\n" "$SUM_STARTED_TESTS"
-    printf "\n\n\n"
+    return 0
 }
 
 #
@@ -212,18 +135,210 @@ function pull_local_testorigin_source()
 
         echo "Pulling in ${idle_server}:${PROJECT_CC_TESTORIGIN_DIR}"
 
-        pushd "${PROJECT_CC_TESTORIGIN_DIR}"
+        changedir "${PROJECT_CC_TESTORIGIN_DIR}"
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
-        popd
 
         echo "Pulling in ${idle_server}:${PROJECT_S9S_TESTORIGIN_DIR}"
 
-        pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
+        changedir "${PROJECT_S9S_TESTORIGIN_DIR}"
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
-        popd
     fi
+}
+
+
+function run_test()
+{
+    local config_file="$1"
+    local idle_server=""
+    local testname=""
+    local state=""
+    local user=""
+    local project=""
+    local retcode
+    local counter
+
+    echo "Loading '$config_file'..."
+    source "$config_file"
+
+    # 
+    # Getting the list of available servers.
+    #
+    echo "Getting idle test servers"
+
+    let counter=0
+    echo "pip-server-control --list --idle"
+    idle_server=$(pip-server-control --list --idle | head -n 1)
+    if [ -z "$user" ]; then
+        user="$USER"
+    fi
+
+    if [ "$idle_server" == "" ]; then
+        echo "No idle test server available"
+        return 6
+    fi
+
+    logbasename="$PROJECT_TEST_REPORT_DIR/${testname}-${gitbranch}-${githash}"
+    pipcmontestlog="${logbasename}.pip-cmon-test.log"
+
+    LAST_USER_NAME="$user"
+
+    echo " --------------------------------------"
+    echo "      idle_server: $idle_server"
+    echo "         testname: $testname"
+    echo "            state: $state"
+    echo "             user: $user"
+    echo "          project: $project"
+    echo "       git branch: $gitbranch"
+    echo "       git commit: $githash"
+    echo "pip-cmon-test.log: $pipcmontestlog"
+    echo ""
+
+    LAST_TEST_STARTED=$(date)
+    LAST_TEST_NAME="$testname"
+    LAST_HOST_NAME="$idle_server"
+
+    let SUM_STARTED_TESTS+=1
+
+    echo "pip-cmon-test "\
+        "$VERBOSE_OPTION "\
+        "--test=$testname "\
+        "--user=$user "\
+        "--git-branch=$gitbranch"\
+        "--git-commit=$githash"
+
+    #nohup ?
+    pip-cmon-test \
+        $VERBOSE_OPTION \
+        --test="$testname" \
+        --user="$user" \
+        --git-branch="$gitbranch" \
+        --git-commit="$githash" > ${pipcmontestlog} 2> ${pipcmontestlog}
+
+    mv "$PROJECT_LOGDIR/pip-cmon-test.log" "${logbasename}.slog"
+
+    rm -f "$config_file"
+
+    #clear
+    echo ""
+    printf "        Start time: %s\n" "$START_TIME"
+    printf "      Current time: %s\n" "$(date)"
+    printf " Last test started: %s\n" "$LAST_TEST_STARTED"
+    printf "\n"
+    printf "    Last test name: %s\n" "$LAST_TEST_NAME"
+    printf "         Last user: %s\n" "$LAST_USER_NAME"
+    printf "    Last host name: %s\n" "$LAST_HOST_NAME"
+    printf "           Started: %'d test(s)\n" "$SUM_STARTED_TESTS"
+    printf "\n\n\n"
+}
+
+function collect_test_results()
+{
+    local remote=$1
+    local user=$2
+    local data_root=$3
+
+    echo scp "$user"@"$remote":"${data_root}/*" ${PROJECT_DATA_ROOT}/test-results/
+    scp "$user"@"$remote":"${data_root}/*" ${PROJECT_DATA_ROOT}/test-results/
+
+    echo ssh "${user}"@"${remote}" rm ${PROJECT_DATA_ROOT}/test-results/*
+    ssh "${user}"@"${remote}" rm ${PROJECT_DATA_ROOT}/test-results/*
+}
+
+function delegate_test()
+{
+    local config_file="$1"
+    local idle_server=""
+    local testname=""
+    local state=""
+    local user=""
+    local project=""
+    local retcode
+
+    echo "Loading '$config_file'..."
+    source "$config_file"
+
+    if [ -z "$user" ]; then
+        user="$USER"
+    fi
+
+    echo "pip-server-control --list --idle"
+    idle_server=$(pip-server-control --list --idle | head -n 1)
+
+    if [ "$idle_server" == "" ]; then
+        echo "No idle test server available"
+        return 6
+    fi
+
+    #logbasename="$PROJECT_TEST_REPORT_DIR/${testname}-${gitbranch}-${githash}"
+
+    echo " --------------------------------------"
+    echo "      idle_server: $idle_server"
+    echo "         testname: $testname"
+    echo "            state: $state"
+    echo "             user: $user"
+    echo "          project: $project"
+    echo "       git branch: $gitbranch"
+    echo "       git commit: $githash"
+    echo ""
+
+    #
+    # Load the host config file of the found idle server
+    #
+
+    # Lets source host config file for the found idle host
+    CONF_HOST_CATEGORY=""
+    CONF_HOST_MAC=""
+    CONF_HOST_NAME=""
+    CONF_HOST_PDU=""
+    CONF_HOST_PROTECTED=""
+    CONF_HOST_URL=""
+    CONF_HOST_VIRTUAL=""
+    CONF_HOST_CONTAINERS=""
+    CONF_HOST_DATA_ROOT=""
+    CONF_HOST_USER=""
+    if [ ! -e /etc/s9s-cmon-test/${idle_server}.host ]; then
+        echo "ERROR: Host file for idle host ${idle_server} not found."
+        return 1
+    fi
+    source /etc/s9s-cmon-test/${idle_server}.host
+    if [ "${CONF_HOST_USER}" == "" ]; then
+        CONF_HOST_USER=${USER}
+    fi
+    if [ "${CONF_HOST_DATA_ROOT}" == "" ]; then
+        echo "ERROR: No test data root is define for host ${idle_host}"
+        return 1
+    fi
+
+    #
+    # Collect any previous test results from ${idle_server}
+    #
+
+    collect_test_results "${idle_server}" "${CONF_HOST_USER}" "${CONF_HOST_DATA_ROOT}"
+
+    #
+    # Delegate the ${config_file} schedule to $}idle_server}
+    #
+
+    echo scp "${config_file}" ${CONF_HOST_USER}@${idle_server}:${CONF_HOST_DATA_ROOT}/scheduled-tests
+
+    scp "${config_file}" ${CONF_HOST_USER}@${idle_server}:${CONF_HOST_DATA_ROOT}/scheduled-tests
+
+    echo "rm -f $config_file"
+    rm -f "$config_file"
+
+    echo "ssh ${CONF_HOST_USER}@${idle_server} "\
+        "pip-host-control "\
+        "--testing "\
+        "--status=Scheduled for $(basename ${config_file})"
+
+    ssh ${CONF_HOST_USER}@${idle_server} \
+        pip-host-control \
+        --testing \
+        --status="Scheduled for $(basename ${config_file})"
+
+    sleep 2
 }
 
 #
@@ -252,7 +367,14 @@ function process_scheduled_tests()
             continue
         fi
 
-        start_test "$config_file"
+        if [ "$OPTION_MANAGER" == "true" ]; then
+            delegate_test "$config_file"
+            if [ $? -ne 0 ]; then
+                break
+            fi
+        else
+            run_test "$config_file"
+        fi
     done
 }
 
