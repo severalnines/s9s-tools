@@ -5,9 +5,8 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.1"
 VERBOSE="true"
-LOGDIR="$HOME/.pip.log"
-#LOGFILE="$LOGDIR/${MYNAME}.log"
-LOGFILE="/dev/null"
+LOGDIR="$HOME/"
+LOGFILE="$LOGDIR/${MYNAME}.log"
 
 source $MYDIR/utilityfunctions.sh
 

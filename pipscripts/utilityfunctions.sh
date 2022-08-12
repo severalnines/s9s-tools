@@ -1,6 +1,11 @@
 #! /bin/bash
 
-source "/etc/s9s-cmon-test/project.conf"
+if [ -f "$MYDIR/load_config.sh" ]; then
+    source $MYDIR/load_config.sh
+else
+    echo "File $MYDIR/load_config.sh was not found." >&2
+    exit 5
+fi
 
 UTILITY_FUNCTIONS_VERSION="1.0.0"
 
@@ -53,60 +58,6 @@ NORM_COLOR="$XTERM_COLOR_BLUE"
 DATE_COLOR="\033[1m\033[38;5;215m"
 DIST_COLOR="\033[1m\033[38;5;93m"
 VERSION_COLOR="\033[1m\033[38;5;190m"
-
-if [ "${PROJECT_CC_TESTORIGIN_DIR}" == "" ]; then
-    cat <<EOF
-Environment variable PROJECT_CC_TESTORIGIN_DIR is empty.
-It is likely because project.conf file is not available
-or wrong. Please fix it. An example content can be found
-in project.conf.example.
-This directory should not be the one that is used for
-testing (~/clusterconrol-enterprise), but another clone.
-EOF
-    exit -1
-fi
-
-if [ "${PROJECT_S9S_TESTORIGIN_DIR}" == "" ]; then
-    cat <<EOF
-Environment variable PROJECT_S9S_TESTORIGIN_DIR is empty.
-It is likely because project.conf file is not available
-or wrong. Please fix it. An example content can be found
-in project.conf.example.
-This directory should not be the one that is used for
-testing (~/s9s-tools), but another clone.
-EOF
-    exit -1
-fi
-
-if [ "${PROJECT_SERVER}" == "" ]; then
-    cat <<EOF
-Environment variable PROJECT_SERVER is empty.
-It is likely because project.conf file is not available
-or wrong. Please fix it. An example content can be found
-in project.conf.example.
-EOF
-    exit -1
-fi
-
-if [ "${PROJECT_TEST_REPORT_DIR}" == "" ]; then
-    cat <<EOF
-Environment variable PROJECT_TEST_REPORT_DIR is empty.
-It is likely because project.conf file is not available
-or wrong. Please fix it. An example content can be found
-in project.conf.example.
-EOF
-    exit -1
-fi
-
-if [ "${PROJECT_HOST_STAT_DIR}" == "" ]; then
-    cat <<EOF
-Environment variable PROJECT_HOST_STAT_DIR is empty.
-It is likely because project.conf file is not available
-or wrong. Please fix it. An example content can be found
-in project.conf.example.
-EOF
-    exit -1
-fi
 
 #
 # Various utility functions that are used (or should be used) in many scrips.
@@ -682,21 +633,6 @@ function deleteOldLogFiles()
     done
 
     popd >/dev/null
-}
-
-function lockFile()
-{
-    local id="$1"
-    local mybasename=$(basename "$MYNAME" .sh)
-    local lock
-    
-    if [ "$id" ]; then
-        lock="/var/tmp/${mybasename}_${id}.pid"
-    else
-        lock="/var/tmp/${mybasename}.pid"
-    fi
-
-    echo "$lock"
 }
 
 #

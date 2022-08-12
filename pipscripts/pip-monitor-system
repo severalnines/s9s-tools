@@ -446,11 +446,11 @@ function start()
     sudo -H -u pipas bash -c 'pip-host-control --idle --status "Started."'
 
     if [ "\$(hostname)" == "core2" ]; then
-        pip-say --beep "Computer secondary core is on-line."
+        printVerbose "Computer secondary core is on-line."
     elif [ "\$(hostname)" == "core3" ]; then
-        pip-say --beep "Computer tertiary core is on-line."
+        printVerbose "Computer tertiary core is on-line."
     elif [ "\$(hostname)" == "core4" ]; then
-        pip-say --beep "Core4 is on-line."
+        printVerbose "Core4 is on-line."
     fi
 }
 
@@ -463,11 +463,11 @@ function stop()
     sudo -H -u pipas bash -c 'pip-host-control --halted --status "Shut down."'
     
     if [ "\$(hostname)" == "core2" ]; then
-        pip-say --beep "Computer secondary core is shutting down."
+        printVerbose "Computer secondary core is shutting down."
     elif [ "\$(hostname)" == "core3" ]; then
-        pip-say --beep "Computer tertiary core is shutting down."
+        printVerbose "Computer tertiary core is shutting down."
     elif [ "\$(hostname)" == "core4" ]; then
-        pip-say --beep "Core4 is shutting down."
+        printVerbose "Core4 is shutting down."
     fi
 }
 

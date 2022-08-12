@@ -4,7 +4,7 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.9"
 VERBOSE=""
-LOGFILE="$HOME/pip-cmon-test.log"
+LOGFILE="$HOME/$MYNAME.log"
 EXITCODE=0
 
 COMMAND_LINE_OPTIONS="$0 $*"
@@ -974,7 +974,7 @@ fi
 
 cd "$HOME/tests"
 if [ "$PWD" != "$HOME/tests" ]; then
-    pip-say "Downloading test results failed, target directory was not found."
+    printVerbose "Downloading test results failed, target directory was not found."
     printError "Could not create '$HOME/tests'..."
     exit 1
 fi
@@ -982,7 +982,7 @@ fi
 #
 #
 #
-#pip-say "Downloading daily test results."
+#printVerbose "Downloading daily test results."
 export WWW_PASSWORD="$PASSWORD"
 export WWW_USER="$USER"
 
@@ -1019,14 +1019,14 @@ if [ -n "$OPTION_UPLOAD" ]; then
 fi
 
 if [ -z "$WWW_PASSWORD" ]; then
-    pip-say "The 'PASSWORD' environment variable should be present."
+    printVerbose "The 'PASSWORD' environment variable should be present."
     exit 1
 else
     printVerbose "***  www_passwd: 'xxxxxxxxx'" 
 fi
 
 if [ -z "$WWW_USER" ]; then
-    pip-say "The 'WWW_USER' environment variable should be present."
+    printVerbose "The 'WWW_USER' environment variable should be present."
     exit 1
 else
     printVerbose "***    www_user: '$WWW_USER'" 

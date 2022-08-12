@@ -305,6 +305,11 @@ function send_host_info()
 
 function upload_file()
 {
+    # I am changing the architecture, no upload should happen
+    # from test worker host ot test manager host.
+
+    return 0
+
     local source_file="$1"
     local target_file="$2"
     local temp_file

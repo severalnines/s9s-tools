@@ -7,10 +7,10 @@ VERSION="0.0.6"
 VERBOSE=""
 LOGFILE=""
 
-if [ -f "/etc/s9s-cmon-test/project.conf" ]; then
-    source /etc/s9s-cmon-test/project.conf
+if [ -f "$MYDIR/load_config.sh" ]; then
+    source $MYDIR/load_config.sh
 else
-    echo "File '/etc/s9s-cmon-test/project.conf' was not found." >&2
+    echo "File $MYDIR/load_config.sh was not found." >&2
     exit 5
 fi
 
@@ -386,10 +386,10 @@ function wake_server()
         source "$config_file"
     fi
 
-    pip-say --beep "Controller is starting up ${hostname}."
+    printVerbose "Controller is starting up ${hostname}."
 
     if [ -n "$CONF_HOST_PDU" ]; then
-        pip-say "Powering on server $CONF_HOST_NAME through the power distribution unit."
+        printVerbose "Powering on server $CONF_HOST_NAME through the power distribution unit."
         for pdu in $(echo "$CONF_HOST_PDU" | tr ',' ' '); do
             printVerbose "Switching on PDU $pdu."
             pip-pdu-control --on $pdu
@@ -400,17 +400,17 @@ function wake_server()
 
     if [ -n "$CONF_HOST_ILOM" ]; then
         printVerbose "Will use ILOM of ${CONF_HOST_NAME}."
-        pip-say "Will use integrated lights out manager on ${CONF_HOST_NAME}."
+        printVerbose "Will use integrated lights out manager on ${CONF_HOST_NAME}."
 
         # ILOM needs time to start...
         sleep 20
-        pip-say "ILOM start on ${CONF_HOST_NAME} proceeds in 40 seconds"
+        printVerbose "ILOM start on ${CONF_HOST_NAME} proceeds in 40 seconds"
         
         sleep 20
-        pip-say "ILOM start on ${CONF_HOST_NAME} proceeds in 20 seconds"
+        printVerbose "ILOM start on ${CONF_HOST_NAME} proceeds in 20 seconds"
 
         sleep 20
-        pip-say "Calling ILOM to start ${CONF_HOST_NAME}."
+        printVerbose "Calling ILOM to start ${CONF_HOST_NAME}."
         printVerbose "Using ILOM to start ${CONF_HOST_NAME}."
         file="/tmp/ilom.expect"
 
@@ -435,19 +435,19 @@ EOF
         retcode=$?
 
         if [ "$retcode" -ne 0 ]; then
-            pip-say "ILOM request failed with error code $retcode, attempting to compensate."
+            printVerbose "ILOM request failed with error code $retcode, attempting to compensate."
             printWarning "output: $output"
             printWarning "The $file exited with error."
             sleep 30
             timeout 15 $file
 
             if [ $? -ne 0 ]; then
-                pip-say "The second ILOM request is failed, server is off-line."
+                printVerbose "The second ILOM request is failed, server is off-line."
             else
-                pip-say "The second ILOM request succeeded."
+                printVerbose "The second ILOM request succeeded."
             fi
         else
-            pip-say "ILOM request suceeded, server is booting."
+            printVerbose "ILOM request suceeded, server is booting."
         fi
 
         rm -f $file
@@ -455,12 +455,12 @@ EOF
         macAddress=$(mac_for_server "$hostName")
         if [ -z "$macAddress" ]; then
             printError "MAC address for $hostName was not found."
-            pip-say "MAC address for $hostName was not found."
+            printVerbose "MAC address for $hostName was not found."
             return 1
         fi
 
         printVerbose "Waking server ${hostName} on ${macAddress}."
-        pip-say "Sending wake on lan message to host ${hostName}."
+        printVerbose "Sending wake on lan message to host ${hostName}."
         wakeonlan "$macAddress" >/dev/null 2>/dev/null
     fi
 
@@ -475,7 +475,7 @@ function shut_down_server()
         return 1
     fi
 
-    pip-say --beep "Shutting down ${hostname}."
+    printVerbose "Shutting down ${hostname}."
     echo "Trying to shut down host ${hostname}."
     if [ -n "$OPTION_USER" ]; then
         ssh -o UserKnownHostsFile=/dev/null \
@@ -606,15 +606,6 @@ EOF
     fi
 }
 
-if [ -z "$PROJECT_DATA_ROOT" ]; then
-cat <<EOF
-Environment variable PROJECT_DATA_ROOT is empty. It is likely
-because project.conf file is not available or wrong. Please
-fix it. An example content can be found in project.conf.example.
-EOF
-    exit -1
-fi
-
 HOST_STAT_ROOT="$PROJECT_DATA_ROOT/servers"
 function download_current_data()
 {
@@ -631,6 +622,8 @@ function download_current_data()
         CONF_HOST_STANDARD=""
         CONF_HOST_MAC=""
         CONF_HOST_PROTECTED=""
+        CONF_HOST_DATA_ROOT=""
+        CONF_HOST_USER=""
 
         source "$config"
 
@@ -989,7 +982,7 @@ function print_host_list_brief()
 
 function wake_all()
 {
-    pip-say "Starting all servers."
+    printVerbose "Starting all servers."
         for server in \
             core2 core3 storage01 \
             host01 host02 host03 host04 host05 \
@@ -1003,7 +996,7 @@ function wake_all()
         sleep 1
         pip-pdu-control --on dell1955_pdu01,dell1955_pdu02
 
-    pip-say "Starting all servers finished."
+    printVerbose "Starting all servers finished."
 }
 
 if [ -n "$LIST_OPTION" ]; then
@@ -1026,7 +1019,7 @@ elif [ -n "$ALL_OPTION" ]; then
     if [ "$WAKE_OPTION" ]; then
         wake_all
     elif [ "$SHUT_DOWN_OPTION" ]; then
-        pip-say "Shutting down all servers."
+        printVerbose "Shutting down all servers."
         for server in \
             core2 core3 \
             host01 host02 host03 host04 host05 \
@@ -1036,7 +1029,7 @@ elif [ -n "$ALL_OPTION" ]; then
         do
             pip-server-control --shut-down $server
         done
-        pip-say "Shutting down all servers finished."
+        printVerbose "Shutting down all servers finished."
     fi
 elif [ -n "$SHUT_DOWN_OPTION" ]; then
     for hostname in $(echo "$ARGUMENTS" | tr ',' ' '); do 

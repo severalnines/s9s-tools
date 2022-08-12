@@ -5,7 +5,7 @@ MYDIR=$(dirname $0)
 MYDIR=$(readlink -m $MYDIR)
 VERSION="0.0.7"
 VERBOSE=""
-LOGFILE="$HOME/pip-cmon-test.log"
+LOGFILE="$HOME/$MYNAME.log"
 EXITCODE=0
 COMMAND_LINE_OPTIONS="$0 $*"
 
@@ -22,12 +22,10 @@ OPTION_KEEP_NODES=""
 DO_CLEAN=""
 
 SHUT_DOWN_AFTER=""
-SHUT_DOWN_AFTER_OPTION=""
 
 OPTION_TEST_NAME=""
 OPTION_VENDOR=""
 OPTION_VERSION=""
-OPTION_PID=""
 OPTION_USER="$USER"
 OPTION_GIT_BRANCH=""
 OPTION_GIT_COMMIT=""
@@ -36,12 +34,13 @@ S9S_OPTION=""
 
 current_test_name=""
 
-SERVER=""
-SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
-
 declare -A REMOTE_SERVER_STATE
 
 source $MYDIR/utilityfunctions.sh
+
+if [ "${PROJECT_AUTO_PULL_WORKER}" != "true" ]; then
+    NO_GIT_PULL="true"
+fi
 
 function printHelpAndExit()
 {
@@ -58,7 +57,6 @@ Usage:
   --log-file=FILE         Store all the messages in the given file too.
  
   --user=USERNAME         The name of the user requested the test.
-  --server=SERVER         The server where the test will run.
 
   --pid                   Print the PID of the test script if it is running.
   
@@ -133,21 +131,6 @@ while true; do
             shift
             ;;
 
-        --server)
-            shift
-            SERVER="$1"
-            if [ "x$SERVER" = "x" ]; then
-                printError "No server was specified."
-                exit 6
-            fi
-            shift
-            ;;
-
-        --pid)
-            shift
-            OPTION_PID="true"
-            ;;
-
         --s9s)
             shift
             S9S_OPTION="--s9s"
@@ -177,17 +160,6 @@ while true; do
             shift
             OPTION_VENDOR="$1"
 
-            if [ "$OPTION_VENDOR" == "all" ]; then
-                OPTION_VENDOR=""
-                OPTION_VENDOR+="mysqlcluster_oracle "
-                OPTION_VENDOR+="mysql_replication_percona "
-                OPTION_VENDOR+="10gen "
-                OPTION_VENDOR+="percona "
-                OPTION_VENDOR+="mariadb "
-                OPTION_VENDOR+="codership "
-                OPTION_VENDOR+="postgresql"
-            fi
-
             shift
             ;;
             
@@ -200,19 +172,16 @@ while true; do
         --no-git-pull)
             shift
             NO_GIT_PULL="true"
-            NO_GIT_PULL_OPTION="--no-git-pull"
             ;;
 
         --no-compile)
             shift
             OPTION_NO_COMPILE="true"
-            NO_COMPILE_OPTION="--no-compile"
             ;;
 
         --shut-down-after)
             shift
             SHUT_DOWN_AFTER="true"
-            SHUT_DOWN_AFTER_OPTION="--shut-down-after"
             ;;
 
         --wait)
@@ -290,7 +259,7 @@ function upload_slog_file()
     fi
         
     #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
-    scp "/tmp/$remotefile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    #scp "/tmp/$remotefile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
     rm -f "/tmp/$remotefile"
 }
 
@@ -427,21 +396,6 @@ function find_s9s_source_directory()
 function print_title()
 {
     echo "<h3>$*</h3>"
-}
-
-function pull_testorigin_source()
-{
-    printVerbose "Pulling in directory '${PROJECT_CC_TESTORIGIN_DIR}'"
-    pushd "${PROJECT_CC_TESTORIGIN_DIR}"
-    git reset --hard HEAD >/dev/null 2>/dev/null
-    git pull >/dev/null 2>/dev/null
-    popd
-
-    printVerbose "Pulling in directory '${PROJECT_S9S_TESTORIGIN_DIR}'"
-    pushd "${PROJECT_S9S_TESTORIGIN_DIR}"
-    git reset --hard HEAD >/dev/null 2>/dev/null
-    git pull >/dev/null 2>/dev/null
-    popd
 }
 
 #
@@ -900,14 +854,14 @@ function ft_test_ended()
         sudo mkdir -p "$HOME/tmp"
 
         sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
-        scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
+        #scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         #sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
         chown $PROJECT_OWNER:$PROJECT_OWNER \
             "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_core_file_name $OPTION_TEST_NAME)"
 
         sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
                 "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
-        scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
+        #scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         sudo rm "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
         chown $PROJECT_OWNER:$PROJECT_OWNER \
             "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_bin_file_name $OPTION_TEST_NAME)"
@@ -945,7 +899,7 @@ function upload_report_file_ascii()
 EOF
 
     #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-    scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
     rm -f "$tmp_file"
 }
 
@@ -1007,7 +961,7 @@ function upload_result_file()
         if [ -f "$log_file" ]; then
             #pip-host-control --log "Uploading '$log_file'."
             #printVerbose scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-            scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+            #scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         fi
 
         upload_report_file_ascii \
@@ -1023,16 +977,16 @@ function upload_result_file()
         #pip-host-control --log "Uploading '$tmp_file'."
 
         #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-        scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         if [ -z "$unit_test_option" -a \
             -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
             #printVerbose scp \
             #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
             #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
-            scp \
-                "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
-                "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
+            #scp \
+            #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
+            #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -1492,7 +1446,7 @@ function run_test()
     #
     if [ -f "$logfile" ]; then
         #printVerbose "scp \"$logfile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
-        scp "$logfile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        #scp "$logfile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         rm -f "$logfile"
     fi
             
@@ -1536,7 +1490,6 @@ function main()
         --log "Preparing test ($MYNAME ver. $VERSION)." \
         --status "Preparing test."
 
-    pull_testorigin_source
     install_packages_on_test_server
 
     #
@@ -1594,7 +1547,7 @@ function main()
         >$tmp_file
 
     #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-    scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+    #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
     compile_source
     ret_code=$?
@@ -1612,7 +1565,7 @@ function main()
             >$tmp_file
 
         #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-        scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         pip-host-control \
             --idle \
@@ -1654,118 +1607,11 @@ function main()
     fi
 }
 
-#
-# $1: the server name
-#
-function is_server_running_ssh()
-{
-    local serverName="$1"
-    local isOK
-
-    isOk=$(ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
-    if [ "$isOk" == "OK" ]; then
-        return 0
-    fi
-
-    return 1
-}
-
-LAST_USED_SERVER=""
-
-function run_tests_remote()
-{
-    local os
-    local version
-    local vendor
-    local idle_server="$1"
-    local test_name
-    local no_git_pull_option
-    local no_compile_option
-    declare -A already_compiled
-
-    printVerbose "os_to_test: $(os_to_test)"
-    printVerbose "version_to_test: $(version_to_test)"
-    printVerbose "vendor_to_test: $(vendor_to_test)"
-    printVerbose "OPTION_TEST_NAME: $(echo "$OPTION_TEST_NAME" | tr ',' ' ')"
-
-    os=$(os_to_test)
-    version=$(version_to_test)
-    vendor=$(vendor_to_test)
-    test_name="$OPTION_TEST_NAME"
-
-    no_git_pull_option="$NO_GIT_PULL_OPTION"
-    no_compile_option="$NO_COMPILE_OPTION"
-
-    if [ "${already_compiled[$idle_server]}" ]; then
-        no_git_pull_option="--no-git-pull"
-        no_compile_option="--no-compile"
-    fi
-
-    echo "-------------------------------------"
-    echo -e "idle_server : $(STR_GREEN "$idle_server")"
-    echo -e "test        : '$test_name'"
-    echo -e "compiled    : '${already_compiled[$idle_server]}'"
-
-    ssh -o UserKnownHostsFile=/dev/null \
-        -o StrictHostKeyChecking=no \
-        -o LogLevel=quiet \
-        $idle_server -- nohup pip-cmon-test \
-            $no_git_pull_option \
-            $no_compile_option \
-            $S9S_OPTION \
-            $VERBOSE_OPTION \
-            $OPTION_KEEP_NODES \
-            --os=$os \
-            --vendor=$vendor \
-            --sqlversion=$version \
-            --test="$test_name" \
-            --git-branch="$OPTION_GIT_BRANCH" \
-            --git-commit="$OPTION_GIT_COMMIT"
-            # Uncomment below if many test server are in use
-            # and there are too many messages on the konsole
-            #>/dev/null 2>/dev/null &
-
-    if [ -n "$WAIT_OPTION" ]; then
-        printVerbose "Waiting until the test ends."
-        waitForProcessesToEnd 0
-        printVerbose "Test ended..."
-    fi
-
-    already_compiled[$idle_server]="yes"
-}
-
-if [ "$OPTION_PID" ]; then
-    printVerbose "OPTION_PID is true"
-    #
-    # Printing the PID of the running test script and exiting.
-    #
-    lock_file=$(lockFile)
-    if [ -f "$lock_file" ]; then
-        pid=$(cat "$lock_file")
-        if [[ -e /proc/${pid} ]]; then
-            echo "$pid"
-            exit 0
-        fi
-
-        rm -f "$lock_file"
-        exit 0
-    fi
-
-    exit 1
-elif [ "$SERVER" ]; then
-    printVerbose "OPTION_SERVER is true"
-
-    # Running test on remote host.
-
-    run_tests_remote "$SERVER"
-else
-    #checkOtherInstances
-    #printVerbose "checkOtherInstances : $?"
-    pip-host-control --testing --log="Starting..."
-    main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
-    RET=$?
-    pip-host-control --idle
-    exit $RET
-fi
-
+#checkOtherInstances
+#printVerbose "checkOtherInstances : $?"
+pip-host-control --testing --log="Starting..."
+main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+RET=$?
+pip-host-control --idle
+exit $RET
 

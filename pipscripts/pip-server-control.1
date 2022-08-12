@@ -160,6 +160,8 @@ CONF_HOST_NAME="Host12"
 CONF_HOST_URL="https://host12:1311"
 CONF_HOST_CATEGORY="Hosts"
 CONF_HOST_MAC=""
+CONF_HOST_DATA_ROOT=""
+CONF_HOST_USER=""
 .fi
 
 .RS 7
@@ -203,6 +205,16 @@ If this value is a non-empty string the server is actually a virtual machine and
 should be handled accordingly. Statistics are not aggregated from these hosts
 since their resources are already considered when the parent server is checked.
 .RE
+
+.TP
+.B CONF_HOST_DATA_ROOT
+Test data root directory on CONF_HOST_NAME host. Same value as the host's
+PROJECT_DATA_ROOT config value.
+
+.TP
+.B CONF_HOST_USER
+The OS user name that owns the CONF_HOST_DATA_ROOT on the host. The running
+pip-test-daemon should have ssh access to this user on the CONF_HOST_NAME host.
 
 .\"
 .\" Descrption of the *.hostinfo files.

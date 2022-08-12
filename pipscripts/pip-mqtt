@@ -4,9 +4,8 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.1"
 VERBOSE="true"
-LOGDIR="$HOME/.pip.log"
-#LOGFILE="$LOGDIR/${MYNAME}.log"
-LOGFILE="/dev/null"
+LOGDIR="$HOME/"
+LOGFILE="$LOGDIR/${MYNAME}.log"
 
 MQTT_CONFIG_FILE="$HOME/.pip/mqtt.conf"
 
@@ -181,8 +180,8 @@ EOF
 
     if [ -n "$name" ]; then
         printVerbose "ACT $name at $location."
-        #pip-say --beep
-        pip-say "Sensor $name at $location activated."
+        #printVerbose
+        printVerbose "Sensor $name at $location activated."
     fi
 
     case "$name" in
@@ -245,7 +244,7 @@ function change_state()
     printf "State %s -> %s\n" "$PIP_STATE" "$new_state"
     case "$new_state" in 
         night)
-            pip-say "Changing $PIP_STATE mode to $new_state mode now." &
+            printVerbose "Changing $PIP_STATE mode to $new_state mode now."
             pip-pdu-control --on  --group=safety_lights
             pip-pdu-control --off --group=main_lights
             pip-pdu-control --off --group=safety_lights
@@ -253,7 +252,7 @@ function change_state()
             ;;
 
         party)
-            pip-say "Changing $PIP_STATE mode to $new_state mode now." &
+            printVerbose "Changing $PIP_STATE mode to $new_state mode now."
             pip-pdu-control --on  --group=safety_lights
             pip-pdu-control --off --group=main_lights
             ;;
@@ -520,7 +519,7 @@ EOF
     timedSwitch --check --name sonoff23
 }
 
-pip-say "Core system process is starting now." &
+printVerbose "Core system process is starting now."
 
 MQTT_SERVER="192.168.0.5"
 MQTT_SERVER="mqtt"

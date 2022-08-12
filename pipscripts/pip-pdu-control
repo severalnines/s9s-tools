@@ -5,7 +5,7 @@ MYDIR=$(dirname "$0")
 MYDIR=$(readlink -m "$MYDIR")
 VERSION="0.0.6"
 VERBOSE=""
-LOGDIR="$HOME/.pip.log"
+LOGDIR="$HOME/"
 LOGFILE="$LOGDIR/${MYNAME}.log"
 
 OPTION_DEVICE=""
@@ -270,7 +270,6 @@ OPTION_DEVICES="$@"
 #
 # Preparing the lo file.
 #
-#LOGFILE="$HOME/.pip.log/${OPTION_DEVICES}.log"
 rm -f $HOME/.pip/*.log
 
 [ ! -d "$LOGDIR" ] && mkdir -p "$LOGDIR"
