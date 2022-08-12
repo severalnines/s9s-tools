@@ -791,7 +791,7 @@ function generate_test_result_info()
     local test_state
 
     while true; do
-        case "$OPTION_TEST_NAME" in 
+        case "$1" in 
             --unit-test)
                 shift
                 is_unit_test="true"
@@ -978,7 +978,7 @@ function run_test()
             upload_result_file \
                 --functional-test \
                 --pid "$test_pid" \
-                "RUNNING" &
+                "RUNNING"
             
             watcher_pid=$!
             printVerbose "Watcher PID is ${watcher_pid}."
