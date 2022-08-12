@@ -336,8 +336,6 @@ function delegate_test()
         pip-host-control \
         --testing \
         --status="Scheduled for $(basename ${config_file})"
-
-    sleep 2
 }
 
 #
