@@ -1597,7 +1597,7 @@ function main()
     scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
     compile_source
-    $ret_code=$?
+    ret_code=$?
     if [ $ret_code -ne 0 ]; then
         current_test_name="$OPTION_TEST_NAME"
         
