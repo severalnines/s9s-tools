@@ -1193,13 +1193,12 @@ function run_test()
                 --print-commands --reset-config --server=$(hostname) \
                 \>\>$logfile 2\>\>$logfile"
 
-            #timeout --kill-after=92m 90m ./$test_name \
-            #    --print-commands \
-            #    --reset-config \
-            #    --server=$(hostname) \
-            #    $OPTION_KEEP_NODES \
-            #    >>"$logfile" 2>>"$logfile" &
-            true
+            timeout --kill-after=92m 90m ./$test_name \
+                --print-commands \
+                --reset-config \
+                --server=$(hostname) \
+                $OPTION_KEEP_NODES \
+                >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
             printVerbose "Test script PID is ${test_pid}."
