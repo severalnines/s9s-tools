@@ -635,7 +635,7 @@ function download_current_data()
 
         #ssh $CONF_HOST_NAME -- "sudo pip-host-control"
 
-        printVerbose "Downloading current data from $CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR"
+        printVerbose "Downloading current data from $CONF_HOST_NAME:$CONF_HOST_DATA_ROOT/servers"
         if [ ! -d "$root_dir" ]; then
             printVerbose "Creating directory '$root_dir'."
             mkdir -p "$root_dir"
@@ -652,8 +652,8 @@ function download_current_data()
             return 1
         fi
 
-        printVerbose "Downloading '$CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR/${CONF_HOST_NAME}.hostinfo'..."
-        scp -p $CONF_HOST_NAME:$PROJECT_HOST_STAT_DIR/${CONF_HOST_NAME}.hostinfo . >/dev/null 2>/dev/null
+        printVerbose "Downloading $CONF_HOST_NAME:$CONF_HOST_DATA_ROOT/servers/${CONF_HOST_NAME}.hostinfo..."
+        scp -p $CONF_HOST_NAME:$CONF_HOST_DATA_ROOT/servers/${CONF_HOST_NAME}.hostinfo . >/dev/null 2>/dev/null
         chown $PROJECT_OWNER:$PROJECT_OWNER ${CONF_HOST_NAME}.hostinfo >/dev/null 2>/dev/null
 
         popd >/dev/null 2>/dev/null

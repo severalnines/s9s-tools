@@ -232,13 +232,17 @@ function collect_test_results()
 {
     local remote=$1
     local user=$2
-    local data_root=$3
+    local worker_data_root=$3
 
-    echo scp "$user"@"$remote":"${data_root}/*" ${PROJECT_DATA_ROOT}/test-results/
-    scp "$user"@"$remote":"${data_root}/*" ${PROJECT_DATA_ROOT}/test-results/
+    echo "scp $user@$remote:${worker_data_root}/* ${PROJECT_TEST_REPORT_DIR}/"
+    scp "$user"@"$remote":"${worker_data_root}/*" "${PROJECT_TEST_REPORT_DIR}/"
 
-    echo ssh "${user}"@"${remote}" rm ${PROJECT_DATA_ROOT}/test-results/*
-    ssh "${user}"@"${remote}" rm ${PROJECT_DATA_ROOT}/test-results/*
+    echo "ssh ${user}@${remote} rm ${worker_data_root}/test-results/*"
+    ssh "${user}"@"${remote}" rm "${worker_data_root}/test-results/*"
+
+    echo "scp $user@$remote:${worker_data_root}/servers/* ${PROJECT_HOST_STAT_DIR}/"
+    scp "$user"@"$remote":"${worker_data_root}/servers/${remote}.*" \
+                                "${PROJECT_HOST_STAT_DIR}/"
 }
 
 function delegate_test()

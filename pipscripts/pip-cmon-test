@@ -17,20 +17,19 @@ START_EPOCH_TIME="$(date +%s)"
 
 NO_GIT_PULL=""
 OPTION_NO_COMPILE=""
-OPTION_OS="ubuntu"
+OS_OPTION=""
 OPTION_KEEP_NODES=""
 DO_CLEAN=""
 
 SHUT_DOWN_AFTER=""
 
 OPTION_TEST_NAME=""
-OPTION_VENDOR=""
-OPTION_VERSION="0.0"
+# May be empty would be better for vendor
+VENDOR_OPTION=""
+VERSION_OPTION=""
 OPTION_USER="$USER"
 OPTION_GIT_BRANCH=""
 OPTION_GIT_COMMIT=""
-
-current_test_name=""
 
 declare -A REMOTE_SERVER_STATE
 
@@ -147,20 +146,19 @@ while true; do
 
         --os)
             shift
-            OPTION_OS="$1"
+            OS_OPTION="--os=$1"
             shift
             ;;
 
         --vendor)
             shift
-            OPTION_VENDOR="$1"
-
+            VENDOR_OPTION="--vendor=$1"
             shift
             ;;
             
         --sqlversion)
             shift
-            OPTION_VERSION="$1"
+            VERSION_OPTION="--provider-version=$1"
             shift
             ;;
 
@@ -215,7 +213,6 @@ printVerbose "             TEST HOST: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
 printVerbose "                 MYDIR: $MYDIR"
 printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
-printVerbose "           TEST SERVER: $PROJECT_SERVER"
 printVerbose "       TEST_REPORT_DIR: $PROJECT_TEST_REPORT_DIR"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
@@ -232,87 +229,45 @@ function changedir()
     return 0
 }
 
-function pushdir()
-{
-    local dir=$1
-    printVerbose "pushd $dir"
-    pushd $dir > /dev/null 2> /dev/null
-    if [ $? -ne 0 ]; then
-        printVerbose "Failed to change directory to $dir."
-        return 1
-    fi
-    return 0
-}
-
-function popdir()
-{
-    dir=$(popd > /dev/null 2> /dev/null)
-    if [ $? -ne 0 ]; then
-        printVerbose "Failed to popd."
-        return 1
-    fi
-    printVerbose "popd to $PWD"
-    return 0
-}
-
 #
 # $1: test name
 #
 function result_file_name_base()
 {
-    local test_name=$1
-    echo "${test_name}-${GIT_BRANCH}-${GIT_HASH}"
-    #echo "${OPTION_USER}-$(hostname)-${test_name}-${GIT_HASH}"
+    echo "${OPTION_TEST_NAME}-${GIT_BRANCH}-${GIT_HASH}"
 }
 
 #
-# The basename of the pip-cmon-test log file on the server.
+# Copies the log file of this script to the test report directory
 #
-function script_log_file_name()
+function save_to_results()
 {
-    echo "$(result_file_name_base ${OPTION_TEST_NAME}).slog"
-}
-
-#
-# Uploads the log file of this script to the web server.
-#
-function upload_slog_file()
-{
-    local localfile="$HOME/pip-cmon-test.log"
-    local remotefile="$(script_log_file_name)"
+    local localfile="$1"
+    local savedfile="${PROJECT_TEST_REPORT_DIR}/$2"
 
     if [ -f "$localfile" ]; then
-        cp "$localfile" "/tmp/$remotefile"
+        cp "$localfile" "$savedfile"
     else
-        touch "/tmp/$remotefile"
+        touch "$savedfile"
     fi
-        
-    #printVerbose "scp \"/tmp/$remotefile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
-    #scp "/tmp/$remotefile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-    rm -f "/tmp/$remotefile"
 }
 
 #
-# Prints the name of the vendor to test.
+# Moves the log file of this script to the test report directory
 #
-function vendor_to_test()
+function move_to_results()
 {
-    local host_name=$(hostname)
+    save_to_results "$1" "$2"
 
-    #
-    # Command line overrules everything.
-    #
-    if [ "$OPTION_VENDOR" ]; then
-        echo "$OPTION_VENDOR"
-        return 0
-    fi
-
-    echo "codership"
+    rm -f "$1"
 }
 
-function print_title()
+#
+# Copies the log file of this script to the test report directory
+#
+function save_slog_file()
 {
-    echo "<h3>$*</h3>"
+    save_to_results "$LOGFILE" "$(result_file_name_base).slog"
 }
 
 #
@@ -467,7 +422,7 @@ function compile_source_dir()
         export PATH="$mysql_dir/bin:$PATH"
     fi
 
-    upload_slog_file
+    save_slog_file
 
     #
     # Not gonna compile the source when the --no-compile command line option is
@@ -622,32 +577,32 @@ function compile_source()
 #
 function report_file_name()
 {
-    local test_name=$1
-    echo "$(result_file_name_base $test_name).html"
+    echo "$(result_file_name_base).html"
 }
 
 function result_file_name()
 {
-    local test_name=$1
-    echo "$(result_file_name_base $test_name).result"
+    echo "$(result_file_name_base).result"
 }
 
 function log_bin_file_name()
 {
-    local test_name=$1
-    echo "$(result_file_name_base $test_name).ft_full"
+    echo "$(result_file_name_base).ft_full"
 }
 
 function log_core_file_name()
 {
-    local test_name=$1
-    echo "$(result_file_name_base $test_name).core"
+    echo "$(result_file_name_base).core"
 }
 
 function log_file_name()
 {
-    local test_name=$1
-    echo "$(result_file_name_base $test_name).log"
+    echo "$(result_file_name_base).log"
+}
+
+function daemon_log_file_name()
+{
+    echo "$(result_file_name_base).dlog"
 }
 
 function ft_test_ended()
@@ -699,18 +654,13 @@ function ft_test_ended()
 
         sudo mkdir -p "$HOME/tmp"
 
-        sudo mv "$core_file" "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
-        #scp "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
-        #sudo rm "$HOME/tmp/$(log_core_file_name $OPTION_TEST_NAME)"
-        chown $PROJECT_OWNER:$PROJECT_OWNER \
-            "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_core_file_name $OPTION_TEST_NAME)"
+        #sudo mv "$core_file" "/tmp/$(log_core_file_name)"
+        #sudo chown $USER:$USER "/tmp/$(log_core_file_name)"
+        #move_to_results "/tmp/$(log_core_file_name)" "$(log_core_file_name)"
+        move_to_results "$core_file" "$(log_core_file_name)"
 
-        sudo mv "${PROJECT_CC_WORKER_DIR}/tests/ft_full/ft_full" \
-                "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
-        #scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
-        sudo rm "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
-        chown $PROJECT_OWNER:$PROJECT_OWNER \
-            "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_bin_file_name $OPTION_TEST_NAME)"
+        move_to_results "${PROJECT_CC_WORKER_DIR}/tests/ft_full/ft_full" \
+                        "$(log_bin_file_name)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         printVerbose "Saving backtrace (no crash)"
@@ -724,14 +674,9 @@ function ft_test_ended()
     fi
 }
 
-#
-# $1: test name
-# $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
-# $3: file with the test program output
-#
-function upload_report_file_ascii()
+function save_report_file_ascii()
 {
-    local report_file=$(report_file_name "$1")
+    local report_file=$(report_file_name)
     local tmp_file="/var/tmp/$report_file"
 
     cat <<EOF >>$tmp_file
@@ -743,23 +688,15 @@ function upload_report_file_ascii()
     </html>
 EOF
 
-    #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-    #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-    rm -f "$tmp_file"
+    move_to_results "$tmp_file" "$report_file"
 }
 
 #
-# $1: test name
 # $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
-# $3: file with the test program output
 #
 function upload_result_file()
 {
-    local test_name
     local test_state
-    local result_file
-    local log_file
-    local tmp_file
     local unit_test_option
     local functional_test_option
     local pid_to_watch
@@ -788,12 +725,7 @@ function upload_result_file()
         esac
     done
 
-    test_name="$1"
-    test_state="$2"
-    result_file=$(result_file_name "$test_name")
-    log_file=$(log_file_name "$test_name")
-    daemon_log_file="$(basename "$log_file" .log).dlog"
-    tmp_file="/var/tmp/$result_file"
+    test_state="$1"
 
 
     #
@@ -803,34 +735,17 @@ function upload_result_file()
     counter=0
 
     while true; do
-        if [ -f "$log_file" ]; then
-            #printVerbose scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-            #scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-            true
-        fi
-
-        upload_report_file_ascii \
-            "$test_name"  "$test_state" "$3"
+        save_report_file_ascii
 
         generate_test_result_info \
             $unit_test_option \
             $functional_test_option \
-            --test-name  "$test_name" \
             --test-state "$test_state" \
-            >$tmp_file
-
-        #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-        #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
 
         if [ -z "$unit_test_option" -a \
             -f "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" ]; then
-            #printVerbose scp \
-            #    "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" \
-            #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
-            #scp \
-            #    "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" \
-            #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
-            true
+            save_to_results "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" "$(daemon_log_file_name)"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -850,8 +765,6 @@ function upload_result_file()
 
         sleep 10
     done
-
-    rm -f "$tmp_file"
 }
 
 function elapsedTimeString()
@@ -864,20 +777,15 @@ function elapsedTimeString()
         "$((T/3600%24))" "$((T/60%60))" "$((T%60))"
 }
 
-#
-# $1: test name
-# $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
-#
 function generate_test_result_info()
 {
     local git_has_local_changes="no"
     local elapsed_time
     local is_unit_test="true"
-    local test_name
     local test_state
 
     while true; do
-        case "$1" in 
+        case "$OPTION_TEST_NAME" in 
             --unit-test)
                 shift
                 is_unit_test="true"
@@ -886,12 +794,6 @@ function generate_test_result_info()
             --functional-test)
                 shift
                 is_unit_test="false"
-                ;;
-
-            --test-name)
-                shift
-                test_name="$1"
-                shift
                 ;;
 
             --test-state)
@@ -916,13 +818,13 @@ function generate_test_result_info()
 
     cat <<EOF
 test_server="$(hostname)"
-testname="$test_name"
+testname="$OPTION_TEST_NAME"
 githash="$GIT_HASH"
 gitbranch="$GIT_BRANCH"
 gitcommitdate="$GIT_COMMIT_DATE"
 githaslocalchanges="$git_has_local_changes"
 state="$test_state"
-report_file="$(report_file_name $test_name)"
+report_file="$(report_file_name)"
 user="$OPTION_USER"
 elapsed_time="$elapsed_time"
 elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
@@ -931,30 +833,18 @@ is_unit_test="$is_unit_test"
 EOF
 }
 
-#
-# $1: the test name
-# $2: the single os name to test
-# $3: the single version to test
-#
 function run_test()
 {
-    local test_name="$(basename "$1")"
-    local os="$2"
-    local version="$3"
-    local vendor="$(vendor_to_test)"
     local return_code
-    local tmp_file
     local logfile
-    local scriptlogfile
 
-    current_test_name="$test_name"
-    logfile=$(log_file_name "$test_name")
+    logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
 
     #
     # Notifying the user about a test is starting.
     #
-    printVerbose "Preparing to run $test_name."
-    upload_slog_file
+    printVerbose "Preparing to run $OPTION_TEST_NAME."
+    save_slog_file
 
     printVerbose "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern >> $LOGFILE 2>> $LOGFILE
@@ -997,8 +887,8 @@ function run_test()
     # Running the actual test.
     #
     printVerbose "PWD: $(pwd)"
-    printVerbose "Test name is '${test_name}'."
-    case "$test_name" in 
+    printVerbose "Test name is '${OPTION_TEST_NAME}'."
+    case "$OPTION_TEST_NAME" in 
         ft_*.sh)
             #
             # Running the ft_full
@@ -1044,29 +934,29 @@ function run_test()
                 fi
             else
                 printVerbose "The ft_full/ft_full was not found."
-                upload_slog_file
+                save_slog_file
                 return 1
             fi
 
             changedir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
 
-            if [ ! -f "$test_name" ]; then
-                printVerbose "Program $test_name was not found in $PWD"
+            if [ ! -f "$OPTION_TEST_NAME" ]; then
+                printVerbose "Program $OPTION_TEST_NAME was not found in $PWD"
                 return 1
             fi
 
             # 
             # Running the test script itself.
             # 
-            printVerbose "Running '$test_name'..."
-            upload_slog_file
-            printVerbose "timeout --kill-after=92m 90m ./$test_name \
+            printVerbose "Running '$OPTION_TEST_NAME'..."
+            save_slog_file
+            printVerbose "timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
                 --print-commands --reset-config --server=$(hostname) \
                 \>\>$logfile 2\>\>$logfile"
 
             pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
-            timeout --kill-after=92m 90m ./$test_name \
+            timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
                 --print-commands \
                 --reset-config \
                 --server=$(hostname) \
@@ -1082,11 +972,11 @@ function run_test()
             upload_result_file \
                 --functional-test \
                 --pid "$test_pid" \
-                "$test_name" "RUNNING" $logfile &
+                "RUNNING" &
             
             watcher_pid=$!
             printVerbose "Watcher PID is ${watcher_pid}."
-            upload_slog_file
+            save_slog_file
 
             #
             # Waiting for the test to be ended.
@@ -1095,7 +985,7 @@ function run_test()
             wait "$test_pid" 2>/dev/null
             return_code=$?
 
-            printVerbose "Finished ${test_name} ($return_code)."
+            printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
 
             printVerbose "Waiting for test watcher to end..."
             wait "$watcher_pid" 2>/dev/null
@@ -1126,11 +1016,11 @@ function run_test()
             if [ $return_code -eq 0 ]; then
                 upload_result_file \
                     --functional-test \
-                    "$test_name" "SUCCESS" $logfile
+                    "SUCCESS"
             else
                 upload_result_file \
                     --functional-test \
-                    "$test_name" "FAILURE" $logfile
+                    "FAILURE"
             fi
             ;;
 
@@ -1145,40 +1035,34 @@ function run_test()
             rm -f test_ssh_key.pub*
             rm -fr ft_full.log 
 
-            printVerbose "Running ${test_name}."
+            printVerbose "Running ${OPTION_TEST_NAME}."
 
-            if [ ! -f "$test_name/$test_name" ]; then
-                printVerbose "Program $test_name was not found."
+            if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
+                printVerbose "Program $OPTION_TEST_NAME was not found."
 
                 return 1
             fi
 
-            version_option=
-            if [ "$version" != "" ]; then
-                if [ "$version" != "0.0" ]; then
-                    version_option="--provider-version=$version"
-                fi
-            fi
             pip-host-control --testing --status="Running $OPTION_TEST_NAME"
-            printVerbose "Running $test_name."
-            ./$test_name/$test_name \
+            printVerbose "Running $OPTION_TEST_NAME."
+            ./$OPTION_TEST_NAME/$OPTION_TEST_NAME \
                 --template=headless \
-                --vendor="$(vendor_to_test)" \
-                $version_option \
-                --os="$os" >>"$logfile" 2>>"$logfile" &
+                $VENDOR_OPTION \
+                $VERSION_OPTION \
+                $OS_OPTION >>"$logfile" 2>>"$logfile" &
 
             test_pid=$!
             
             upload_result_file \
                 --functional-test \
                 --pid "$test_pid" \
-                "$test_name" "RUNNING" $logfile 
+                "RUNNING"
 
             watcher_pid=$!
             wait "$test_pid"
             return_code=$?
 
-            printVerbose "Finished ${test_name} ($return_code)."
+            printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
             
             ft_test_ended \
                 "$return_code" \
@@ -1187,11 +1071,11 @@ function run_test()
             if [ $return_code -eq 0 ]; then
                 upload_result_file \
                     --functional-test \
-                    "$test_name" "SUCCESS" $logfile
+                    "SUCCESS"
             else
                 upload_result_file \
                     --functional-test \
-                    "$test_name" "FAILURE" $logfile
+                    "FAILURE"
             fi
             ;;
 
@@ -1203,58 +1087,49 @@ function run_test()
 
             upload_result_file \
                 --unit-test \
-                "$test_name" "RUNNING" $logfile
+                "RUNNING"
 
             #
             # Running the test.
             #
-            printVerbose "Running $(basename $test_name)."
-            printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
+            printVerbose "Running $OPTION_TEST_NAME."
+            printVerbose "$OPTION_TEST_NAME/$OPTION_TEST_NAME >>$logfile 2>>$logfile"
 
-            if [ ! -f "$test_name/$test_name" ]; then
-                printVerbose "File $test_name/$test_name not found in ${PWD}."
+            if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
+                printVerbose "File $OPTION_TEST_NAME/$OPTION_TEST_NAME not found in ${PWD}."
                 
                 upload_result_file \
                     --unit-test \
-                    "$test_name" "FAILURE" $logfile
+                    "FAILURE"
 
                 return 1
             fi
 
-            printVerbose "Running $test_name."
+            printVerbose "Running $OPTION_TEST_NAME."
 
             pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
-            $test_name/$test_name --color >>$logfile 2>>$logfile
+            $OPTION_TEST_NAME/$OPTION_TEST_NAME --color >>$logfile 2>>$logfile
             return_code=$?
 
-            printVerbose "Finished ${test_name} ($return_code)."
+            printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
             if [ $return_code -eq 0 ]; then
                 upload_result_file \
                     --unit-test \
-                    "$test_name" "SUCCESS" $logfile
+                    "SUCCESS"
             else
                 upload_result_file \
                     --unit-test \
-                    "$test_name" "FAILURE" $logfile
+                    "FAILURE"
             fi
             ;;
 
         *)
-            printVerbose "Unhandled test name '${test_name}'."
+            printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
     esac
-   
-    #
-    # Uploading the output of the test program as log file.
-    #
-    if [ -f "$logfile" ]; then
-        #printVerbose "scp \"$logfile\" \"$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR\""
-        #scp "$logfile" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-        rm -f "$logfile"
-    fi
-            
-    printVerbose "Finished running '$test_name' ($return_code)."
-    upload_slog_file
+
+    printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
+    save_slog_file
 }
 
 function install_packages_on_test_server()
@@ -1278,16 +1153,8 @@ function install_packages_on_test_server()
 }
 
 #
-# $1: os
-# $2: test name
-# $3: version
-#
 function main()
 {
-    local os="$1"
-    local name="$2"
-    local version="$3"
-
     printVerbose "Starting main()."
     printVerbose "Preparing test ($MYNAME ver. $VERSION)."
     pip-host-control --testing --status="Prepare host for $OPTION_TEST_NAME"
@@ -1335,44 +1202,31 @@ function main()
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
 
-    result_file=$(result_file_name "$OPTION_TEST_NAME")
-    tmp_file="/var/tmp/$result_file"
-
-    printVerbose "Preliminary test result file: $result_file"
+    printVerbose "Preliminary test result file: $(result_file_name)"
     generate_test_result_info \
-        --test-name  "$OPTION_TEST_NAME" \
         --test-state "PREPARING" \
-        >$tmp_file
-
-    #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-    #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+        > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
 
     compile_source
     ret_code=$?
     if [ $ret_code -ne 0 ]; then
-        current_test_name="$OPTION_TEST_NAME"
-        
         printVerbose "3487 Failed to compile source."
 
         printVerbose "Environment: $(env)"
         printVerbose "Sudo environment: $(sudo env)"
 
         generate_test_result_info \
-            --test-name  "$OPTION_TEST_NAME" \
             --test-state "FAILURE" \
-            >$tmp_file
+            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
 
-        #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-        #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
-
-        upload_slog_file
+        save_slog_file
         return $ret_code
     fi
 
     #
     # Running the test.
     #
-    run_test "$name" "$os" "$version"
+    run_test
 
     printVerbose "Finished with tests, idle."
 
@@ -1389,7 +1243,7 @@ function main()
 #checkOtherInstances
 #printVerbose "checkOtherInstances : $?"
 pip-host-control --testing --status="Started with $OPTION_TEST_NAME"
-main "$OPTION_OS" "$OPTION_TEST_NAME" "$OPTION_VERSION"
+main
 RET=$?
 pip-host-control --idle --status="Idle after $OPTION_TEST_NAME"
 exit $RET

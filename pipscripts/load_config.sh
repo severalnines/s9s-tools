@@ -122,19 +122,5 @@ fi
 
 
 
-if [ "${PROJECT_SERVER}" == "" ]; then
-    cat <<EOF
-Environment variable PROJECT_S9S_TESTORIGIN_DIR is empty.
-Please specify it in /etc/s9s-cmon-test/project.conf file.
-
-This should be the host where to upload test data.
-
-DEPRECATED, I am about to drop uploading.
-EOF
-    exit -1
-fi
-
-
-
 PROJECT_SCRIPT_ROOT=${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/test_ui
 

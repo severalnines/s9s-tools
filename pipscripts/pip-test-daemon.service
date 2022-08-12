@@ -15,10 +15,10 @@ Environment=LC_ALL=C
 Environment=RPC_PORT=9556
 Environment=DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
 
-ExecStart=bash -c 'pip-test-daemon --continuous --verbose --log-file=/var/log/pip-test-daemon.log'
+ExecStart=bash -c 'pip-test-daemon --continuous --verbose'
 Type=simple
-StandardOutput=append:/var/log/pip-test-daemon-output.log
-StandardError=append:/var/log/pip-test-daemon-output.log
+StandardOutput=append:/var/log/pip-test-daemon.log
+StandardError=append:/var/log/pip-test-daemon.log
 
 User=tester
 Group=tester
