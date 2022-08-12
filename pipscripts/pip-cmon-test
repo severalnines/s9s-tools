@@ -17,7 +17,7 @@ START_EPOCH_TIME="$(date +%s)"
 
 NO_GIT_PULL=""
 OPTION_NO_COMPILE=""
-OPTION_OS=""
+OPTION_OS="ubuntu"
 OPTION_KEEP_NODES=""
 DO_CLEAN=""
 
@@ -25,12 +25,10 @@ SHUT_DOWN_AFTER=""
 
 OPTION_TEST_NAME=""
 OPTION_VENDOR=""
-OPTION_VERSION=""
+OPTION_VERSION="0.0"
 OPTION_USER="$USER"
 OPTION_GIT_BRANCH=""
 OPTION_GIT_COMMIT=""
-
-S9S_OPTION=""
 
 current_test_name=""
 
@@ -141,28 +139,15 @@ while true; do
             shift
             ;;
 
-        --s9s)
-            shift
-            S9S_OPTION="--s9s"
-            ;;
-
         --test)
             shift
             OPTION_TEST_NAME="$1"
-            TEST_NAME_OPTION="--test=$OPTION_TEST_NAME"
             shift
             ;;
 
         --os)
             shift
             OPTION_OS="$1"
-
-            if [ "$OPTION_OS" == "all" ]; then
-                OPTION_OS="centos70,centos66,centos64,centos63,centos56,"
-                OPTION_OS+="debian6,debian7,debian8,"
-                OPTION_OS+="ubuntu1204,ubuntu1404,ubuntu1604"
-            fi
-
             shift
             ;;
 
@@ -235,6 +220,29 @@ printVerbose "       TEST_REPORT_DIR: $PROJECT_TEST_REPORT_DIR"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 
+function pushdir()
+{
+    local dir=$1
+    printVerbose "pushd $dir"
+    pushd $dir > /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to change directory to $dir."
+        return 1
+    fi
+    return 0
+}
+
+function popdir()
+{
+    dir=$(popd > /dev/null 2> /dev/null)
+    if [ $? -ne 0 ]; then
+        printVerbose "Failed to popd."
+        return 1
+    fi
+    printVerbose "popd to $PWD"
+    return 0
+}
+
 #
 # $1: test name
 #
@@ -272,35 +280,6 @@ function upload_slog_file()
     rm -f "/tmp/$remotefile"
 }
 
-function test_name_to_test()
-{
-    if [ "$OPTION_TEST_NAME" ]; then
-        echo "$OPTION_TEST_NAME"
-        return 0
-    fi
-
-    echo "ft_install"
-}
-
-#
-# This function prints the version that will be tested.
-#
-function version_to_test()
-{
-    local host_name=$(hostname)
-   
-    #
-    # Command line overrules everything.
-    #
-    if [ "$OPTION_VERSION" ]; then
-        echo "$OPTION_VERSION"
-        return 0
-    fi
-
-    # Lets have 0.0 as default. Later logic don't let this default to be empty 
-    echo "0.0"
-}
-
 #
 # Prints the name of the vendor to test.
 #
@@ -319,32 +298,13 @@ function vendor_to_test()
     echo "codership"
 }
 
-#
-# Prints one or more operatig system name that should be tested.
-#
-function os_to_test()
-{
-    local host_name=$(hostname)
-   
-    #
-    # Command line option overrules everything.
-    #
-    if [ "$OPTION_OS" ]; then
-        echo $OPTION_OS
-        return 0;
-    fi
-
-    echo "ubuntu"
-}
-
 function print_title()
 {
     echo "<h3>$*</h3>"
 }
 
 #
-# FIXME: This will be more complicated.
-# FIXME: This expects to be in the source directory.
+# This expects to be in the source directory.
 #
 function prepare_source()
 {
@@ -377,13 +337,8 @@ function prepare_source()
         esac
     done
 
-    pip-host-control --status "Preparing source." 
-
     if [ -z "$NO_GIT_PULL" ]; then
         printVerbose "Pulling source for $package_name."
-        pip-host-control \
-            --log "Pulling source." \
-            --status "Pulling source." 
         
         printVerbose "Pulling in directory '${PWD}'"
         git reset --hard HEAD >/dev/null 2>/dev/null
@@ -437,11 +392,6 @@ function prepare_source()
             printVerbose "$prompt git checkout $requested_commit"
             git checkout $requested_commit >>$LOGFILE 2>>$LOGFILE
         fi
-       
-        #
-        #
-        #
-        pip-host-control --log "Pulled source."
 
         # Files are left everywhere... :(
         if [ -d "./tests/configs/tls" ]; then
@@ -452,12 +402,7 @@ function prepare_source()
     if [ "$DO_CLEAN" ]; then
         printVerbose "Cleaning source dir."
 
-        pip-host-control \
-            --log "Cleaning source dir." \
-            --status "Cleaning source."
-
         git clean -dfx >/dev/null 2>/dev/null
-        pip-host-control --log "Cleaned source."
     fi
 }
 
@@ -478,7 +423,6 @@ function find_mysql()
 #
 function compile_source_dir()
 {
-    local source_root
     local mysql_dir=$(find_mysql)    
     local do_install
     local prefix_option=""
@@ -486,11 +430,6 @@ function compile_source_dir()
 
     while [ -n "$1" ]; do
         case "$1" in 
-            --source-root)
-                source_root="$2"
-                shift 2
-                ;;
-
             --prefix)
                 prefix_option="--prefix=$2"
                 shift 2
@@ -512,32 +451,10 @@ function compile_source_dir()
         esac
     done
 
-    if [ -z "$source_root" ]; then
-        printError "The source root is not provided."
-        return 1
-    fi
-
     if [ "$mysql_dir" ]; then
         export PATH="$mysql_dir/bin:$PATH"
     fi
 
-    #
-    # Finding the source and entering the directory.
-    #
-    if [ ! -d "$source_root" ]; then
-        pip-host-control --error "Directory '$source_root' is not found."
-        return 1
-    fi
-
-    printVerbose "Entering directory '$source_root'..."
-    pip-host-control --log "Entering directory '$source_root'..."
-    retcode="$?"
-
-    if [ "$retcode" -ne 0 ]; then
-        pip-host-control --error "Could not chdir to '$source_root'."
-        return 1
-    fi
-    
     upload_slog_file
 
     #
@@ -574,9 +491,6 @@ function compile_source_dir()
     #
     if [ ! -f "Makefile" ]; then
         printVerbose "Running autogen.sh."
-        pip-host-control \
-            --log "Running 'autogen.sh'." \
-            --status "Running 'autogen.sh'."
 
         rm -f autogen.log
 
@@ -588,9 +502,6 @@ function compile_source_dir()
         retcode $?
         if [ $retcode -ne 0 ]; then
             printVerbose "Script autogen.sh failed."
-            pip-host-control \
-                --tail "$PWD/autogen.log" \
-                --error "The ./autogen.sh returned an error ($retcode)."
             return 6
         fi
     fi
@@ -599,9 +510,6 @@ function compile_source_dir()
     # Running make in source root.
     #
     printVerbose "Running 'make'."
-    pip-host-control \
-        --log "Running 'make'." \
-        --status "Running 'make'."
 
     rm -f "make.log"
 
@@ -612,18 +520,11 @@ function compile_source_dir()
         printVerbose "Program 'make' failed."
         tail -n 50 "$PWD/make.log" >>$LOGFILE
 
-        pip-host-control \
-            --tail "$PWD/make.log" \
-            --error "Program make returned an error ($retcode)."
-
         return 1
     fi
 
     if [ -n "$do_install" ]; then
         printVerbose "Running 'make install'."
-        pip-host-control \
-            --log "Running 'make install'." \
-            --status "Running 'make install'."
 
         sudo make install >>"make.log" 2>>"make.log"
 
@@ -658,7 +559,6 @@ function compile_source_dir()
 function compile_source()
 {
     local retcode
-    local directory
 
     printVerbose "Preparing clustercontrol"
 
@@ -666,18 +566,18 @@ function compile_source()
     # Compiling the controller.
     # The source is already prepared in advance.
     #
-    directory="${PROJECT_CC_WORKER_DIR}"
 
-    pushd "$directory" > /dev/null 2> /dev/null
+    pip-host-control --testing --status="Compiling CC for $OPTION_TEST_NAME"
+
+    pushdir "${PROJECT_CC_WORKER_DIR}"
     compile_source_dir \
-        --source-root "$directory" \
         --cmon-compilation
 
         #--prefix=$HOME/testcmon
         #--prefix=$HOME/cmonrepo/$GIT_BRANCH-$GIT_HASH
 
     retcode=$?
-    popd  > /dev/null 2> /dev/null
+    popdir
     
     if [ "$retcode" -ne 0 ]; then
         printVerbose "The return code is $retcode..."
@@ -687,22 +587,20 @@ function compile_source()
     #
     # Compiling the s9s-tools, the source is not yet prepared.
     #
-    if [ -n "$S9S_OPTION" ]; then
-        directory="${PROJECT_S9S_WORKER_DIR}"
 
-        pushd "$directory" > /dev/null 2> /dev/null
-        prepare_source \
-            --package-name "s9s-tools"
+    pip-host-control --testing --status="Compiling s9s for $OPTION_TEST_NAME"
 
-        compile_source_dir \
-            --source-root "$directory" \
-            --install 
+    pushdir "${PROJECT_S9S_WORKER_DIR}"
+    prepare_source \
+        --package-name "s9s-tools"
 
-            #--prefix=$HOME/tests9s
+    compile_source_dir \
+        --install 
 
-        retcode="$?"
-        popd > /dev/null 2> /dev/null
-    fi
+        #--prefix=$HOME/tests9s
+
+    retcode="$?"
+    popdir
 
     return "$retcode"
 }
@@ -754,6 +652,8 @@ function ft_test_ended()
     printVerbose "  exit_code: $exit_code"
     printVerbose "         wd: '$PWD'"
 
+    pip-host-control --testing --status="Finishing $OPTION_TEST_NAME"
+
     #for core_file in \
     #    *core* \
     #    */*core* \
@@ -766,7 +666,6 @@ function ft_test_ended()
             continue
         fi
 
-        pip-host-control --log "Core file found: $core_file"
         printVerbose "Core file found: $core_file"
     done
 
@@ -775,13 +674,11 @@ function ft_test_ended()
     fi
 
     if [ -z "$(which gdb)" ]; then
-        pip-host-control --log "Installing gdb."
         printVerbose "Installing gdb."
         sudo apt-get -y --force-yes install gdb
     fi
 
     if [ -e "$core_file" ]; then
-        pip-host-control --log "Saving backtrace (crash)"
         printVerbose "Saving backtrace (crash)"
         sudo gdb \
             -batch \
@@ -806,7 +703,6 @@ function ft_test_ended()
             "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_bin_file_name $OPTION_TEST_NAME)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
-        pip-host-control --log "Saving backtrace (no crash)"
         printVerbose "Saving backtrace (no crash)"
         sudo gdb \
             -p $backend_pid -batch \
@@ -898,7 +794,6 @@ function upload_result_file()
 
     while true; do
         if [ -f "$log_file" ]; then
-            #pip-host-control --log "Uploading '$log_file'."
             #printVerbose scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
             #scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
             true
@@ -913,8 +808,6 @@ function upload_result_file()
             --test-name  "$test_name" \
             --test-state "$test_state" \
             >$tmp_file
-
-        #pip-host-control --log "Uploading '$tmp_file'."
 
         #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
@@ -935,7 +828,6 @@ function upload_result_file()
         fi
 
         if ! ps --pid $pid_to_watch; then
-            pip-host-control --log "The PID $pid_to_watch ended."
             break
         fi
 
@@ -1027,12 +919,6 @@ elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
 test_start_epoch="$START_EPOCH_TIME"
 is_unit_test="$is_unit_test"
 EOF
-
-    if [ "$S9S_OPTION" ]; then
-        printVerbose "project=\"s9s-tools\""
-    else
-        printVerbose "project=\"clustercontrol-enterprise\""
-    fi
 }
 
 #
@@ -1046,7 +932,6 @@ function run_test()
     local os="$2"
     local version="$3"
     local vendor="$(vendor_to_test)"
-    local test_dir
     local return_code
     local tmp_file
     local logfile
@@ -1054,22 +939,7 @@ function run_test()
 
     current_test_name="$test_name"
     logfile=$(log_file_name "$test_name")
-    if [ "$S9S_OPTION" ]; then
-        test_dir="${PROJECT_S9S_WORKER_DIR}"
-    else
-        test_dir="${PROJECT_CC_WORKER_DIR}"
-    fi
 
-    printVerbose "Entering '$test_dir'..."
-    if [ ! -d "$test_dir" ]; then
-        pip-host-control --error "Directory '$test_dir' does not exist."
-        printError "Directory '$test_dir' does not exist."
-        return 1
-    else
-        pip-host-control --log "Entering '$test_dir'..."
-        pushd "$test_dir" >/dev/null 2>/dev/null
-    fi
-    
     #
     # Notifying the user about a test is starting.
     #
@@ -1116,21 +986,19 @@ function run_test()
     #
     # Running the actual test.
     #
-    pip-host-control --log "Test name is '${test_name}'."
+    printVerbose "PWD: $(pwd)"
+    printVerbose "Test name is '${test_name}'."
     case "$test_name" in 
         ft_*.sh)
             #
             # Running the ft_full
             #
-
-            printVerbose "test name: $test_name"
+            pushdir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
 
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
-            pushd "${test_dir}/tests" \
-                >/dev/null 2>/dev/null
+            pushdir "${PROJECT_CC_WORKER_DIR}/tests"
 
             if [ -x "./ft_full/ft_full" ]; then
-                pip-host-control --log "Running ft_full..."
                 printVerbose "Running 'ft_full'..."
 
                 printVerbose "Current directory: $(pwd)"
@@ -1138,8 +1006,7 @@ function run_test()
 
                 backend_pid=$(pidof ft_full)
                 if [ "" == "$backend_pid" ]; then 
-                    printVerbose rm -fr ${test_dir}/tests/ft_full.log 
-                    rm -fr ${test_dir}/tests/ft_full.log 
+                    rm -fr ${PROJECT_CC_WORKER_DIR}/tests/ft_full.log 
                     printVerbose "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.
                     printVerbose "sudo rm -rvf /tmp/cmon*"
@@ -1152,6 +1019,7 @@ function run_test()
                     sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                     backend_pid=$!
                     printVerbose "Backend PID is ${backend_pid}."
+                    printVerbose "Waiting for ft_full to create /tmp/cmon_test/usermgmt.fifo"
 
                     for delay in $(seq 1 100); do
                         if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
@@ -1167,24 +1035,18 @@ function run_test()
                     backend_pid=""
                 fi
             else
-                pip-host-control --error "The ft_full/ft_full was not found."
+                printVerbose "The ft_full/ft_full was not found."
                 upload_slog_file
+                popdir
+                popdir
                 return 1
             fi
 
-            popd >/dev/null 2>/dev/null
-
-            printVerbose "Entering directory '${PROJECT_S9S_TESTORIGIN_DIR}/tests'"
-            cd ${PROJECT_S9S_TESTORIGIN_DIR}/tests
+            popdir
 
             if [ ! -f "$test_name" ]; then
-                printVerbose "Program $test_name was not found."
-                pip-host-control \
-                    --error "Program $test_name was not found." \
-                    --status "Program $test_name was not found."
-
-                pip-host-control --error "  pwd: $PWD"
-
+                printVerbose "Program $test_name was not found in $PWD"
+                popdir
                 return 1
             fi
 
@@ -1196,6 +1058,8 @@ function run_test()
             printVerbose "timeout --kill-after=92m 90m ./$test_name \
                 --print-commands --reset-config --server=$(hostname) \
                 \>\>$logfile 2\>\>$logfile"
+
+            pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
             timeout --kill-after=92m 90m ./$test_name \
                 --print-commands \
@@ -1226,17 +1090,19 @@ function run_test()
             wait "$test_pid" 2>/dev/null
             return_code=$?
 
-            pip-host-control --log "Finished ${test_name} ($return_code)."
+            printVerbose "Finished ${test_name} ($return_code)."
 
             printVerbose "Waiting for test watcher to end..."
             wait "$watcher_pid" 2>/dev/null
 
-            pushd "${PROJECT_CC_WORKER_DIR}/tests" > /dev/null 2> /dev/null
+            pushdir "${PROJECT_CC_WORKER_DIR}/tests"
+
             ft_test_ended \
                 "$return_code" \
                 "$backend_pid" \
                 >>ft_full.log 2>>ft_full.log
-            popd > /dev/null 2> /dev/null
+
+            popdir
             
             #
             # Cleaning up after.
@@ -1263,10 +1129,12 @@ function run_test()
                     --functional-test \
                     "$test_name" "FAILURE" $logfile
             fi
+
+            popdir
             ;;
 
         ft_*)
-            #printVerbose "WD: $PWD test_name: $test_name."
+            pushdir "${PROJECT_CC_WORKER_DIR}/tests"
 
             if [ -f "Vagrantfile" ]; then
                 vagrant destroy -f
@@ -1276,21 +1144,12 @@ function run_test()
             rm -f test_ssh_key.pub*
             rm -fr ft_full.log 
 
-            pip-host-control --log "Running ${test_name}."
-            if [ -f "tests/$test_name/$test_name" ]; then
-                printVerbose "Entering directory 'tests'..."
-                cd tests
-            fi
+            printVerbose "Running ${test_name}."
 
             if [ ! -f "$test_name/$test_name" ]; then
                 printVerbose "Program $test_name was not found."
-                pip-host-control \
-                    --status "$test_name is missing." \
-                    --error "Program $test_name was not found." \
-                    --status "Program $test_name was not found."
-                
-                pip-host-control --error "  pwd: $PWD"
-                    
+
+                popdir
                 return 1
             fi
 
@@ -1300,6 +1159,7 @@ function run_test()
                     version_option="--provider-version=$version"
                 fi
             fi
+            pip-host-control --testing --status="Running $OPTION_TEST_NAME"
             printVerbose "Running $test_name."
             ./$test_name/$test_name \
                 --template=headless \
@@ -1318,7 +1178,7 @@ function run_test()
             wait "$test_pid"
             return_code=$?
 
-            pip-host-control --log "Finished ${test_name} ($return_code)."
+            printVerbose "Finished ${test_name} ($return_code)."
             
             ft_test_ended \
                 "$return_code" \
@@ -1333,13 +1193,15 @@ function run_test()
                     --functional-test \
                     "$test_name" "FAILURE" $logfile
             fi
+            popdir
             ;;
 
-        ut_*)
+        ut_s9s*)
             #
             # This is under development.
             #
-            cd tests
+            pushdir "${PROJECT_S9S_WORKER_DIR}/tests"
+
             upload_result_file \
                 --unit-test \
                 "$test_name" "RUNNING" $logfile
@@ -1347,28 +1209,28 @@ function run_test()
             #
             # Running the test.
             #
-            pip-host-control --log "Running $(basename $test_name)."
+            printVerbose "Running $(basename $test_name)."
             printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
 
             if [ ! -f "$test_name/$test_name" ]; then
                 printVerbose "File $test_name/$test_name not found in ${PWD}."
-
-                pip-host-control \
-                    --error "$test_name/$test_name was not found in $PWD." \
-                    --status "Program $test_name was not found."
                 
                 upload_result_file \
                     --unit-test \
                     "$test_name" "FAILURE" $logfile
-                
+
+                popdir
                 return 1
             fi
 
             printVerbose "Running $test_name."
+
+            pip-host-control --testing --status="Running $OPTION_TEST_NAME"
+
             $test_name/$test_name --color >>$logfile 2>>$logfile
             return_code=$?
 
-            pip-host-control --log "Finished ${test_name} ($return_code)."
+            printVerbose "Finished ${test_name} ($return_code)."
             if [ $return_code -eq 0 ]; then
                 upload_result_file \
                     --unit-test \
@@ -1378,10 +1240,11 @@ function run_test()
                     --unit-test \
                     "$test_name" "FAILURE" $logfile
             fi
+            popdir
             ;;
 
         *)
-            pip-host-control --error "Unhandled test name '${test_name}'."
+            printVerbose "Unhandled test name '${test_name}'."
     esac
    
     #
@@ -1399,6 +1262,8 @@ function run_test()
 
 function install_packages_on_test_server()
 {
+    pip-host-control --testing --status="Started host for $OPTION_TEST_NAME"
+
     if [ -z "$(psql --version)" ]; then
         printVerbose "Installing postgresql..."
         sudo apt-get -y --force-yes install postgresql
@@ -1425,27 +1290,23 @@ function main()
     local os="$1"
     local name="$2"
     local version="$3"
-    local source_root
 
     printVerbose "Starting main()."
-    pip-host-control \
-        --testing \
-        --log "Preparing test ($MYNAME ver. $VERSION)." \
-        --status "Preparing test."
+    printVerbose "Preparing test ($MYNAME ver. $VERSION)."
+    pip-host-control --testing --status="Prepare host for $OPTION_TEST_NAME"
 
     install_packages_on_test_server
 
     #
     # Finding the source root.
     #
-    source_root=${PROJECT_CC_WORKER_DIR}
-    if [ ! -d "$source_root" ]; then
-        printError "Directory '$source_root' does not exist."
+    if [ ! -d "${PROJECT_CC_WORKER_DIR}" ]; then
+        printError "Directory '${PROJECT_CC_WORKER_DIR}' does not exist."
         return 6
     fi
     
-    rm -f "$source_root/*.log"
-    rm -f "$source_root/tests/*.log"
+    rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
+    rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
 
     #
     # If the user removes this file we cancel the shutdown request, otherwise we
@@ -1461,8 +1322,7 @@ function main()
     # Preparing the clustercontrol source, generating a file holding the test 
     # results.
     #
-    printVerbose "Entering directory '$source_root'..."
-    pushd "$source_root" >/dev/null 2>/dev/null
+    pushdir "${PROJECT_CC_WORKER_DIR}"
 
     prepare_source \
         --package-name      "clustercontrol" \
@@ -1477,8 +1337,8 @@ function main()
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
     GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
     GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
-    
-    popd >/dev/null 2>/dev/null
+
+    popdir
 
     result_file=$(result_file_name "$OPTION_TEST_NAME")
     tmp_file="/var/tmp/$result_file"
@@ -1510,11 +1370,6 @@ function main()
         #printVerbose scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
         #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
-        pip-host-control \
-            --idle \
-            --log    "Failed to compile, idle." \
-            --status "Idle."
-
         upload_slog_file
         return $ret_code
     fi
@@ -1522,23 +1377,9 @@ function main()
     #
     # Running the test.
     #
-    pip-host-control --log "Entering '$source_root/tests'..."
-    pushd "$source_root/tests" >/dev/null 2>/dev/null
-    
-    for os in $os; do 
-        for version in $version; do
-            for test_name in $name; do
-                run_test "$test_name" "$os" "$version"
-            done
-        done
-    done
-    
-    popd >/dev/null 2>/dev/null
+    run_test "$name" "$os" "$version"
 
-    pip-host-control \
-        --idle \
-        --log    "Finished with tests, idle." \
-        --status "Idle."
+    printVerbose "Finished with tests, idle."
 
     #
     # If the "shutdown after the test" is requested and the user did not delete
@@ -1552,9 +1393,9 @@ function main()
 
 #checkOtherInstances
 #printVerbose "checkOtherInstances : $?"
-pip-host-control --testing --log="Starting..."
-main "$(os_to_test)" "$(test_name_to_test)" "$(version_to_test)"
+pip-host-control --testing --status="Started with $OPTION_TEST_NAME"
+main "$OPTION_OS" "$OPTION_TEST_NAME" "$OPTION_VERSION"
 RET=$?
-pip-host-control --idle
+pip-host-control --idle --status="Idle after $OPTION_TEST_NAME"
 exit $RET
 
