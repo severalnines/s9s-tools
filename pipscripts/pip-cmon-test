@@ -607,6 +607,7 @@ function compile_source_dir()
 
     make -j10 >>"make.log" 2>>"make.log"
     retcode=$?
+    make -j10
     if [ "$retcode" -ne 0 ]; then
         printVerbose "Program 'make' failed."
         tail -n 50 "$PWD/make.log" >>$LOGFILE
@@ -1121,6 +1122,9 @@ function run_test()
             #
             # Running the ft_full
             #
+
+            printVerbose "test name: $test_name"
+
             export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
             pushd "${test_dir}/tests" \
                 >/dev/null 2>/dev/null
