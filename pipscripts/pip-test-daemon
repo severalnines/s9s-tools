@@ -228,7 +228,7 @@ function run_test()
     printf "\n\n\n"
 }
 
-function collect_test_results()
+function collect_test_results_now()
 {
     local remote=$1
     local user=$2
@@ -246,6 +246,42 @@ function collect_test_results()
                                 "${PROJECT_HOST_STAT_DIR}/"
     scp "$user"@"$remote":"${worker_data_root}/servers/${remote}.*" \
                                 "${PROJECT_HOST_STAT_DIR}/"
+}
+
+function collect_test_results()
+{
+    #
+    # Even if there is no new test to start, we should check if
+    # any worker host has results files to download from
+    #
+
+    if [ "$OPTION_MANAGER" == "true" ]; then
+        echo "Checking for idle workers to download results from"
+
+        for idle_server in $(pip-server-control --list --idle); do
+            #echo "Found idle worker: ${idle_server}"
+
+            if [ ! -e /etc/s9s-cmon-test/${idle_server}.host ]; then
+                echo "ERROR: Host file for idle host ${idle_server} not found."
+                continue
+            fi
+
+            source /etc/s9s-cmon-test/${idle_server}.host
+            if [ "${CONF_HOST_USER}" == "" ]; then
+                CONF_HOST_USER=${USER}
+            fi
+            if [ "${CONF_HOST_DATA_ROOT}" == "" ]; then
+                echo "ERROR: No test data root is defined for host ${idle_host}"
+                return 1
+            fi
+
+            #echo "Lets collect results from ${idle_server}"
+            collect_test_results_now \
+                "${idle_server}" \
+                "${CONF_HOST_USER}" \
+                "${CONF_HOST_DATA_ROOT}"
+        done
+    fi
 }
 
 function delegate_test()
@@ -317,7 +353,10 @@ function delegate_test()
     # Collect any previous test results from ${idle_server}
     #
 
-    collect_test_results "${idle_server}" "${CONF_HOST_USER}" "${CONF_HOST_DATA_ROOT}"
+    collect_test_results_now \
+        "${idle_server}" \
+        "${CONF_HOST_USER}" \
+        "${CONF_HOST_DATA_ROOT}"
 
     #
     # Delegate the ${config_file} schedule to $}idle_server}
@@ -349,6 +388,8 @@ function process_scheduled_tests()
 {
     local config_file
     local config_files=$(schedule_files)
+
+    collect_test_results
 
     if [ -z "$config_files" ]; then
         #echo "No tests scheduled."
