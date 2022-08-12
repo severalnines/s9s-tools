@@ -3,8 +3,8 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m "$MYDIR")
+PATH=${MYDIR}:${PATH}
 VERSION="0.0.1"
-LOGFILE="/dev/null"
 
 OPTION_CONTINUOUS=""
 
@@ -75,12 +75,6 @@ while true; do
             printVersionAndExit
             ;;
 
-        --log-file)
-            shift
-            LOGFILE=$(readlink -m "$1")
-            shift
-            ;;
-            
         --continuous)
             shift
             OPTION_CONTINUOUS="true"
@@ -133,16 +127,21 @@ function start_test()
         return 6
     fi
 
+    logbasename="$PROJECT_TEST_REPORT_DIR/${testname}-${gitbranch}-${gitcommit}"
+    pipcmontestlog="${logbasename}.pip-cmon-test.log"
+
     LAST_USER_NAME="$user"
 
-    echo " ---------------------------------"
-    echo "   idle_server: $idle_server"
-    echo "      testname: $testname"
-    echo "         state: $state"
-    echo "          user: $user"
-    echo "       project: $project"
-    echo "    git branch: $gitbranch"
-    echo "    git commit: $gitcommit"
+    echo " --------------------------------------"
+    echo "      idle_server: $idle_server"
+    echo "         testname: $testname"
+    echo "            state: $state"
+    echo "             user: $user"
+    echo "          project: $project"
+    echo "       git branch: $gitbranch"
+    echo "       git commit: $gitcommit"
+    echo "pip-cmon-test.log: $pipcmontestlog"
+    echo ""
 
     if [ "$project" == "s9s-tools" ]; then
         option_s9s="--s9s"
@@ -163,20 +162,29 @@ function start_test()
         "--git-commit=$gitcommit"
 
     #nohup ?
-    #pip-cmon-test \
-    #    $VERBOSE_OPTION \
-    #    $option_s9s \
-    #    --test="$testname" \
-    #    --user="$user" \
-    #    --git-branch="$gitbranch" \
-    #    --git-commit="$gitcommit" &
+    pip-cmon-test \
+        $VERBOSE_OPTION \
+        $option_s9s \
+        --test="$testname" \
+        --user="$user" \
+        --git-branch="$gitbranch" \
+        --git-commit="$gitcommit" > ${pipcmontestlog} 2> ${pipcmontestlog}
 
-    # It takes some time till the pip-cmon-test will be started
-    # on the choosen host and sets the host status properly.
-
-    sleep 5
+    mv "$PROJECT_LOGDIR/pip-cmon-test.log" "${logbasename}.slog"
 
     rm -f "$config_file"
+
+    #clear
+    echo ""
+    printf "        Start time: %s\n" "$START_TIME"
+    printf "      Current time: %s\n" "$(date)"
+    printf " Last test started: %s\n" "$LAST_TEST_STARTED"
+    printf "\n"
+    printf "    Last test name: %s\n" "$LAST_TEST_NAME"
+    printf "         Last user: %s\n" "$LAST_USER_NAME"
+    printf "    Last host name: %s\n" "$LAST_HOST_NAME"
+    printf "           Started: %'d test(s)\n" "$SUM_STARTED_TESTS"
+    printf "\n\n\n"
 }
 
 #
@@ -196,20 +204,6 @@ function schedule_files()
     fi
 
     ls -tr $root_dir/scheduled-tests/*.conf 2>/dev/null
-}
-
-function print_report()
-{
-    #clear
-    printf "        Start time: %s\n" "$START_TIME"
-    printf "      Current time: %s\n" "$(date)"
-    printf " Last test started: %s\n" "$LAST_TEST_STARTED"
-    printf "\n"
-    printf "    Last test name: %s\n" "$LAST_TEST_NAME"
-    printf "         Last user: %s\n" "$LAST_USER_NAME"
-    printf "    Last host name: %s\n" "$LAST_HOST_NAME"
-    printf "           Started: %'d test(s)\n" "$SUM_STARTED_TESTS"
-    printf "\n\n\n"
 }
 
 function pull_local_testorigin_source()
@@ -259,8 +253,6 @@ function process_scheduled_tests()
         fi
 
         start_test "$config_file"
-
-        print_report
     done
 }
 

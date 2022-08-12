@@ -21,7 +21,7 @@ OPTION_CONFIG_NAME="s9s-tests"
 # This is where the XML and HTML files are placed before we upload them to the
 # Jenkins server.
 #
-OPTION_OUTPUT_DIR="$HOME/clustercontrol-enterprise/"
+OPTION_OUTPUT_DIR="${PROJECT_CC_WORKER_DIR}"
 OPTION_OUTPUT_DIR+="tests/s9s_test"
 
 MAIL_LIST_FILE=""
@@ -859,7 +859,7 @@ function test_names()
     #
     # The cmon tests.
     #
-    test_dirs+=" $HOME/clustercontrol-enterprise/tests"
+    test_dirs+=" ${PROJECT_CC_WORKER_DIR}/tests"
 
 
     #

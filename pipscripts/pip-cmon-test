@@ -36,6 +36,16 @@ current_test_name=""
 
 declare -A REMOTE_SERVER_STATE
 
+if [ -f "$MYDIR/load_config.sh" ]; then
+    source $MYDIR/load_config.sh
+else
+    echo "File $MYDIR/load_config.sh was not found." >&2
+    exit 5
+fi
+
+LOGFILE="$PROJECT_LOGDIR/$MYNAME.log"
+echo "" >$LOGFILE
+
 source $MYDIR/utilityfunctions.sh
 
 if [ "${PROJECT_AUTO_PULL_WORKER}" != "true" ]; then
@@ -215,7 +225,6 @@ done
 #
 # This is how we log from this script. Every run truncates the log file.
 #
-echo "" >$LOGFILE
 printVerbose "Starting test runner script..."
 printVerbose "             TEST HOST: $(hostname)"
 printVerbose "                MYNAME: $MYNAME"
@@ -326,71 +335,6 @@ function os_to_test()
     fi
 
     echo "ubuntu"
-}
-
-#
-# Prints the directory name where the clustercontrol source can be found.
-#
-function find_clustercontrol_source_directory()
-{
-    local dir_path
-    
-    dir_path="$HOME/clustercontrol-enterprise"
-    if [ -d "$dir_path" ]; then
-        echo "$dir_path"
-        return 0
-    fi
-
-    dir_path="$HOME/Desktop/stuff/work/clustercontrol-enterprise"
-    if [ -d "$dir_path" ]; then
-        echo "$dir_path"
-        return 0
-    fi
-    
-    #
-    # Well, we did not find it, but we did not find any others either.
-    #
-    pip-host-control \
-        --error "Could not find clustercontrol source in '$dir_path'."
-
-    echo "$HOME/clustercontrol-enterprise"
-}
-
-function find_s9s_source_directory()
-{
-    local dir_path
-    
-    dir_path="$HOME/Desktop/stuff/work/s9s-tools"
-    if [ -d "$dir_path" ]; then
-        echo "$dir_path"
-        return 0
-    fi
-    
-    
-    dir_path="$HOME/s9s-tools"
-    if [ ! -d "$dir_path" ]; then
-        pushd "$HOME" >/dev/null 2>/dev/null
-        pip-host-control --log "Cloning s9s-tools.git."
-
-        git clone git@github.com:severalnines/s9s-tools.git \
-            >/dev/null 2>/dev/null
-
-        popd >/dev/null 2>/dev/null
-    fi
-
-    if [ -d "$dir_path" ]; then
-        echo "$dir_path"
-        return 0
-    fi
-
-    
-    #
-    # Well, we did not find it, but we did not find any others either.
-    #
-    pip-host-control \
-        --error "Could not find s9s source in '$dir_path'."
-
-    echo "$HOME/s9s-tools"
 }
 
 function print_title()
@@ -611,10 +555,10 @@ function compile_source_dir()
         case "$OPTION_TEST_NAME" in 
             ft_*.sh)
                 repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
-                ccdir="$(find_clustercontrol_source_directory)"
+                ccdir="${PROJECT_CC_WORKER_DIR}"
 
                 if [ -d "$repodir" ]; then
-                    echo "Using previously compiled ft_full from $repodir"
+                    printVerbose "Using previously compiled ft_full from $repodir"
                     cp $repodir/ft_full $ccdir/tests/ft_full/
                     return
                 fi
@@ -695,10 +639,10 @@ function compile_source_dir()
         case "$OPTION_TEST_NAME" in 
             ft_*.sh)
                 repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
-                ccdir="$(find_clustercontrol_source_directory)"
+                ccdir="${PROJECT_CC_WORKER_DIR}"
 
                 mkdir -p "$repodir"
-                echo "Saving ft_full to $repodir"
+                printVerbose "Saving ft_full to $repodir"
                 cp $ccdir/tests/ft_full/ft_full $repodir/
             ;;
             *)
@@ -721,9 +665,9 @@ function compile_source()
     # Compiling the controller.
     # The source is already prepared in advance.
     #
-    directory="$(find_clustercontrol_source_directory)"
+    directory="${PROJECT_CC_WORKER_DIR}"
 
-    pushd "$directory"
+    pushd "$directory" > /dev/null 2> /dev/null
     compile_source_dir \
         --source-root "$directory" \
         --cmon-compilation
@@ -732,7 +676,7 @@ function compile_source()
         #--prefix=$HOME/cmonrepo/$GIT_BRANCH-$GIT_HASH
 
     retcode=$?
-    popd 
+    popd  > /dev/null 2> /dev/null
     
     if [ "$retcode" -ne 0 ]; then
         printVerbose "The return code is $retcode..."
@@ -743,9 +687,9 @@ function compile_source()
     # Compiling the s9s-tools, the source is not yet prepared.
     #
     if [ -n "$S9S_OPTION" ]; then
-        directory=$(find_s9s_source_directory)
+        directory="${PROJECT_S9S_WORKER_DIR}"
 
-        pushd "$directory"
+        pushd "$directory" > /dev/null 2> /dev/null
         prepare_source \
             --package-name "s9s-tools"
 
@@ -756,7 +700,7 @@ function compile_source()
             #--prefix=$HOME/tests9s
 
         retcode="$?"
-        popd
+        popd > /dev/null 2> /dev/null
     fi
 
     return "$retcode"
@@ -803,23 +747,17 @@ function ft_test_ended()
     local backend_pid="$2"
     local core_file
 
-    #echo "<h2>Backtrace</h2>" 
+    #printVerbose "<h2>Backtrace</h2>" 
 
-    echo "The test ended."
-    echo "  exit_code: $exit_code"
-    echo "         wd: '$PWD'"
-
-    echo "The test ended." >> $LOGFILE
-    echo "  exit_code: $exit_code" >> $LOGFILE
-    echo "         wd: '$PWD'" >> $LOGFILE
-
-    echo "Looking for core file" >> $LOGFILE
+    printVerbose "The test ended."
+    printVerbose "  exit_code: $exit_code"
+    printVerbose "         wd: '$PWD'"
 
     #for core_file in \
     #    *core* \
     #    */*core* \
-    #    $HOME/clustercontrol-enterprise/*core* \
-    #    $HOME/clustercontrol-enterprise/tests/*core* \
+    #    ${PROJECT_CC_WORKER_DIR}/*core* \
+    #    ${PROJECT_CC_WORKER_DIR}/tests/*core* \
     for core_file in \
         /tmp/*.core;
     do
@@ -828,7 +766,7 @@ function ft_test_ended()
         fi
 
         pip-host-control --log "Core file found: $core_file"
-        echo "Core file found: $core_file" >> $LOGFILE
+        printVerbose "Core file found: $core_file"
     done
 
     if [ ! -f "$core_file" -a "$exit_code" -eq 0 ]; then
@@ -837,13 +775,13 @@ function ft_test_ended()
 
     if [ -z "$(which gdb)" ]; then
         pip-host-control --log "Installing gdb."
-        echo "Installing gdb." >> $LOGFILE
+        printVerbose "Installing gdb."
         sudo apt-get -y --force-yes install gdb
     fi
 
     if [ -e "$core_file" ]; then
         pip-host-control --log "Saving backtrace (crash)"
-        echo "Saving backtrace (crash)" >> $LOGFILE
+        printVerbose "Saving backtrace (crash)"
         sudo gdb \
             -batch \
             -ex "thread apply all back" \
@@ -859,7 +797,7 @@ function ft_test_ended()
         chown $PROJECT_OWNER:$PROJECT_OWNER \
             "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}/$(log_core_file_name $OPTION_TEST_NAME)"
 
-        sudo mv "$HOME/clustercontrol-enterprise/tests/ft_full/ft_full" \
+        sudo mv "${PROJECT_CC_WORKER_DIR}/tests/ft_full/ft_full" \
                 "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
         #scp "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)" "${PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR}"
         sudo rm "$HOME/tmp/$(log_bin_file_name $OPTION_TEST_NAME)"
@@ -868,14 +806,14 @@ function ft_test_ended()
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         pip-host-control --log "Saving backtrace (no crash)"
-        echo "Saving backtrace (no crash)" >> $LOGFILE
+        printVerbose "Saving backtrace (no crash)"
         sudo gdb \
             -p $backend_pid -batch \
             -ex "thread apply all back" \
             -ex "quit" \
             >>$LOGFILE 2>>$LOGFILE
     else
-        echo "No backtrace is necessary. No rash, no error on exit." >> $LOGFILE
+        printVerbose "No backtrace is necessary. No rash, no error on exit."
     fi
 }
 
@@ -962,6 +900,7 @@ function upload_result_file()
             #pip-host-control --log "Uploading '$log_file'."
             #printVerbose scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
             #scp "$log_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
+            true
         fi
 
         upload_report_file_ascii \
@@ -980,13 +919,14 @@ function upload_result_file()
         #scp "$tmp_file" "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR"
 
         if [ -z "$unit_test_option" -a \
-            -f "$HOME/clustercontrol-enterprise/tests/ft_full.log" ]; then
+            -f "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" ]; then
             #printVerbose scp \
-            #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
+            #    "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" \
             #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
             #scp \
-            #    "$HOME/clustercontrol-enterprise/tests/ft_full.log" \
+            #    "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" \
             #    "$PROJECT_SERVER:$PROJECT_TEST_REPORT_DIR/$daemon_log_file"
+            true
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -1088,9 +1028,9 @@ is_unit_test="$is_unit_test"
 EOF
 
     if [ "$S9S_OPTION" ]; then
-        echo "project=\"s9s-tools\""
+        printVerbose "project=\"s9s-tools\""
     else
-        echo "project=\"clustercontrol-enterprise\""
+        printVerbose "project=\"clustercontrol-enterprise\""
     fi
 }
 
@@ -1114,9 +1054,9 @@ function run_test()
     current_test_name="$test_name"
     logfile=$(log_file_name "$test_name")
     if [ "$S9S_OPTION" ]; then
-        test_dir=$(find_s9s_source_directory)
+        test_dir="${PROJECT_S9S_WORKER_DIR}"
     else
-        test_dir=$(find_clustercontrol_source_directory)
+        test_dir="${PROJECT_CC_WORKER_DIR}"
     fi
 
     printVerbose "Entering '$test_dir'..."
@@ -1136,7 +1076,7 @@ function run_test()
     upload_slog_file
 
     printVerbose "Enabling core file creation."
-    echo "core" | sudo tee /proc/sys/kernel/core_pattern
+    echo "core" | sudo tee /proc/sys/kernel/core_pattern >> $LOGFILE 2>> $LOGFILE
     if [ $? -ne 0 ]; then
         printVerbose "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
@@ -1145,8 +1085,8 @@ function run_test()
         /tmp/*.core \
         *core* \
         */*core* \
-        $HOME/clustercontrol-enterprise/*core* \
-        $HOME/clustercontrol-enterprise/tests/*core*; 
+        ${PROJECT_CC_WORKER_DIR}/*core* \
+        ${PROJECT_CC_WORKER_DIR}/tests/*core*; 
     do
         if [ ! -f "$core_file" ]; then
             continue
@@ -1162,15 +1102,15 @@ function run_test()
 
     sudo sysctl -p /etc/sysctl.conf
     printVerbose "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
-    echo ""
-    echo "User limits :"
-    echo ""
-    sudo bash -c 'ulimit -a'
-    echo ""
-    echo "User limits with sudo:"
-    echo ""
-    sudo bash -c 'ulimit -c unlimited'
-    sudo bash -c 'ulimit -a'
+    printVerbose ""
+    printVerbose "User limits :"
+    printVerbose ""
+    bash -c 'ulimit -a' >> $LOGFILE 2>> $LOGFILE
+    printVerbose ""
+    printVerbose "User limits with sudo:"
+    printVerbose ""
+    sudo bash -c 'ulimit -c unlimited' >> $LOGFILE 2>> $LOGFILE
+    sudo bash -c 'ulimit -a' >> $LOGFILE 2>> $LOGFILE
 
     #
     # Running the actual test.
@@ -1189,19 +1129,19 @@ function run_test()
                 pip-host-control --log "Running ft_full..."
                 printVerbose "Running 'ft_full'..."
 
-                echo "Current directory: $(pwd)"
-                echo "Sudo environment: $(sudo env)"
+                printVerbose "Current directory: $(pwd)"
+                printVerbose "Sudo environment: $(sudo env)"
 
                 backend_pid=$(pidof ft_full)
                 if [ "" == "$backend_pid" ]; then 
-                    echo rm -fr ${test_dir}/tests/ft_full.log 
+                    printVerbose rm -fr ${test_dir}/tests/ft_full.log 
                     rm -fr ${test_dir}/tests/ft_full.log 
-                    echo "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
+                    printVerbose "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.
-                    echo "sudo rm -rvf /tmp/cmon*"
+                    printVerbose "sudo rm -rvf /tmp/cmon*"
                     sudo rm -rvf /tmp/cmon*
                     ls -lh /tmp/cmon*
-                    echo "sudo rm -rvf /tmp/BACKUP-*"
+                    printVerbose "sudo rm -rvf /tmp/BACKUP-*"
                     sudo rm -rvf /tmp/BACKUP-*
                     ls -lh /tmp/BACKUP-*
 
@@ -1253,12 +1193,13 @@ function run_test()
                 --print-commands --reset-config --server=$(hostname) \
                 \>\>$logfile 2\>\>$logfile"
 
-            timeout --kill-after=92m 90m ./$test_name \
-                --print-commands \
-                --reset-config \
-                --server=$(hostname) \
-                $OPTION_KEEP_NODES \
-                >>"$logfile" 2>>"$logfile" &
+            #timeout --kill-after=92m 90m ./$test_name \
+            #    --print-commands \
+            #    --reset-config \
+            #    --server=$(hostname) \
+            #    $OPTION_KEEP_NODES \
+            #    >>"$logfile" 2>>"$logfile" &
+            true
 
             test_pid=$!
             printVerbose "Test script PID is ${test_pid}."
@@ -1287,12 +1228,12 @@ function run_test()
             printVerbose "Waiting for test watcher to end..."
             wait "$watcher_pid" 2>/dev/null
 
-            pushd "$(find_clustercontrol_source_directory)/tests"
+            pushd "${PROJECT_CC_WORKER_DIR}/tests" > /dev/null 2> /dev/null
             ft_test_ended \
                 "$return_code" \
                 "$backend_pid" \
                 >>ft_full.log 2>>ft_full.log
-            popd
+            popd > /dev/null 2> /dev/null
             
             #
             # Cleaning up after.
@@ -1407,8 +1348,7 @@ function run_test()
             printVerbose "$test_name/$test_name >>$logfile 2>>$logfile"
 
             if [ ! -f "$test_name/$test_name" ]; then
-                echo "File $test_name/$test_name not found in ${PWD}." \
-                    >>$logfile 2>>$logfile
+                printVerbose "File $test_name/$test_name not found in ${PWD}."
 
                 pip-host-control \
                     --error "$test_name/$test_name was not found in $PWD." \
@@ -1495,7 +1435,7 @@ function main()
     #
     # Finding the source root.
     #
-    source_root=$(find_clustercontrol_source_directory)
+    source_root=${PROJECT_CC_WORKER_DIR}
     if [ ! -d "$source_root" ]; then
         printError "Directory '$source_root' does not exist."
         return 6
@@ -1556,8 +1496,8 @@ function main()
         
         printVerbose "3487 Failed to compile source."
 
-        echo "Environment: $(env)"
-        echo "Sudo environment: $(sudo env)"
+        printVerbose "Environment: $(env)"
+        printVerbose "Sudo environment: $(sudo env)"
 
         generate_test_result_info \
             --test-name  "$OPTION_TEST_NAME" \

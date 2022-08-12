@@ -285,12 +285,12 @@ function pull_clustercontrol_source()
     pushd "$HOME" >/dev/null 2>/dev/null 
 
     pip-host-control --status="Installing clustercontrol..."
-    if [ -d "clustercontrol-enterprise" ]; then
-        cd clustercontrol-enterprise
+    if [ -d "${PROJECT_CC_WORKER_DIR}" ]; then
+        cd ${PROJECT_CC_WORKER_DIR}
         git pull
     else
         git clone git@github.com:severalnines/clustercontrol-enterprise.git
-        cd "clustercontrol-enterprise"
+        cd "${PROJECT_CC_WORKER_DIR}"
         
         docs/ubuntu_compile.sh
         RETCODE=$?
@@ -310,7 +310,7 @@ function pull_clustercontrol_source()
 
 function compile_clustercontrol()
 {
-    local source_dir="$HOME/clustercontrol-enterprise"
+    local source_dir="${PROJECT_CC_WORKER_DIR}"
 
     pip-host-control --status="Compiling clustercontrol..."
     
