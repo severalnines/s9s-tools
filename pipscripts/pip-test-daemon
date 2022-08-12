@@ -101,10 +101,10 @@ done
 function changedir()
 {
     local dir=$1
-    printVerbose "cd $dir"
+    echo "cd $dir"
     cd $dir > /dev/null 2> /dev/null
     if [ $? -ne 0 ]; then
-        printVerbose "Failed to change directory to $dir."
+        echo "Failed to change directory to $dir."
         return 1
     fi
     return 0
