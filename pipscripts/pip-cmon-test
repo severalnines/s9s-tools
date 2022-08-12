@@ -259,10 +259,13 @@ function save_to_results()
 #
 function move_to_results()
 {
-    save_to_results "$1" "$2"
+    local source="$1"
+    local dest="$2"
 
-    printVerbose "rm -f $1"
-    rm -f "$1"
+    save_to_results "$source" "$dest"
+
+    printVerbose "rm -f $source"
+    rm -f "$source"
 }
 
 #
