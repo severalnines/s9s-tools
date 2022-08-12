@@ -510,6 +510,7 @@ EOF
 
     cat <<EOF
      TEST_SUITE_NAME: $TEST_SUITE_NAME
+                date: $(date "+%Y-%m-%d %H:%M:%S")
 
             hostname: $(hostname)
                model: $model

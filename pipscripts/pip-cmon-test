@@ -216,6 +216,7 @@ printVerbose "  COMMAND_LINE_OPTIONS: $COMMAND_LINE_OPTIONS"
 printVerbose "       TEST_REPORT_DIR: $PROJECT_TEST_REPORT_DIR"
 printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
+printVerbose "                  date: $(date "+%Y-%m-%d %H:%M:%S")"
 
 function changedir()
 {
@@ -670,7 +671,7 @@ function ft_test_ended()
             -ex "quit" \
             >>$LOGFILE 2>>$LOGFILE
     else
-        printVerbose "No backtrace is necessary. No rash, no error on exit."
+        printVerbose "No backtrace is necessary. No crash, no error on exit."
     fi
 }
 
