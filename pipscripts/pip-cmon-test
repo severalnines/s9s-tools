@@ -496,6 +496,21 @@ function compile_source_dir()
         return 1
     fi
 
+    # Lets compile in the tests dir as well in case only some test changed.
+
+    cd tests
+    make -j10 >>"make.log" 2>>"make.log"
+    retcode=$?
+    make -j10
+    if [ "$retcode" -ne 0 ]; then
+        printVerbose "Program 'make' failed."
+        tail -n 50 "$PWD/make.log" >>$LOGFILE
+        cd ..
+        return 1
+    fi
+    cd ..
+
+
     if [ -n "$do_install" ]; then
         printVerbose "Running 'make install'."
 
