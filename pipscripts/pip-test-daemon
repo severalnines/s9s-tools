@@ -131,15 +131,17 @@ function schedule_files()
 
 function pull_local_testorigin_source()
 {
+    local server=$(hostname)
+
     if [ "${PROJECT_AUTO_PULL_TESTORIGIN}" == "true" ]; then
 
-        echo "Pulling in ${idle_server}:${PROJECT_CC_TESTORIGIN_DIR}"
+        echo "Pulling in ${server}:${PROJECT_CC_TESTORIGIN_DIR}"
 
         changedir "${PROJECT_CC_TESTORIGIN_DIR}"
         git reset --hard HEAD >/dev/null 2>/dev/null
         git pull >/dev/null 2>/dev/null
 
-        echo "Pulling in ${idle_server}:${PROJECT_S9S_TESTORIGIN_DIR}"
+        echo "Pulling in ${server}:${PROJECT_S9S_TESTORIGIN_DIR}"
 
         changedir "${PROJECT_S9S_TESTORIGIN_DIR}"
         git reset --hard HEAD >/dev/null 2>/dev/null
@@ -151,7 +153,7 @@ function pull_local_testorigin_source()
 function run_test()
 {
     local config_file="$1"
-    local idle_server=""
+    local server="$(hostname)"
     local testname=""
     local state=""
     local user=""
@@ -168,15 +170,8 @@ function run_test()
     echo "Getting idle test servers"
 
     let counter=0
-    echo "pip-server-control --list --idle"
-    idle_server=$(pip-server-control --list --idle | head -n 1)
     if [ -z "$user" ]; then
         user="$USER"
-    fi
-
-    if [ "$idle_server" == "" ]; then
-        echo "No idle test server available"
-        return 6
     fi
 
     logbasename="$PROJECT_TEST_REPORT_DIR/${testname}-${gitbranch}-${githash}"
@@ -185,7 +180,7 @@ function run_test()
     LAST_USER_NAME="$user"
 
     echo " --------------------------------------"
-    echo "      idle_server: $idle_server"
+    echo "           server: $server"
     echo "         testname: $testname"
     echo "            state: $state"
     echo "             user: $user"
@@ -197,7 +192,7 @@ function run_test()
 
     LAST_TEST_STARTED=$(date)
     LAST_TEST_NAME="$testname"
-    LAST_HOST_NAME="$idle_server"
+    LAST_HOST_NAME="$server"
 
     let SUM_STARTED_TESTS+=1
 
