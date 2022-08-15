@@ -289,7 +289,7 @@ function is_server_running_ssh()
     local isOK
 
     isOk=$(sudo -u $owner -- ssh -o ConnectTimeout=1 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet "$serverName" 2>/dev/null -- echo OK)
-    if [ "$isOk" == "OK" ]; then
+    if [ "$isOk" = "OK" ]; then
         return 0
     fi
 
@@ -401,7 +401,7 @@ function install_package_in_container()
             yum install -y "$package_name" \
             >>"$LOGFILE" 2>>"$LOGFILE"
 
-        if [ "$package_name" == "openssh-server" ]; then
+        if [ "$package_name" = "openssh-server" ]; then
             lxc-attach -n "$container_name" -- \
                 service sshd start \
                 >>"$LOGFILE" 2>>"$LOGFILE"
@@ -457,7 +457,7 @@ function create_container()
         fi
     fi
     
-    if [ "$vendor_name" == "ubuntu" ]; then
+    if [ "$vendor_name" = "ubuntu" ]; then
         if [ -z "$release_name" ]; then
             printVerbose "Chose 'xenial' release."
             release_name="xenial"
@@ -555,12 +555,12 @@ function create_container()
     while [ -z $ip ]; do
         ip=$(lxc-info -n "$new_name" -i | awk '{print $2}')
 
-        if [ "$ip" == "-" ]; then
+        if [ "$ip" = "-" ]; then
             ip=""
         fi
 
         if [ -z "$ip" ]; then
-            if [ "$counter" == 0 ]; then
+            if [ "$counter" = 0 ]; then
                 printVerbose "Waiting for $new_name to get an IP ($counter)."
             fi
             sleep 1
@@ -703,7 +703,7 @@ function list_images_long()
         distribution=$(echo "$line" | awk '{print $1}')
         version=$(echo "$line" | awk '{print $2}')
 
-        if [ "$old_version" == "$version" ]; then
+        if [ "$old_version" = "$version" ]; then
             continue
         else
             old_version="$version"
@@ -741,7 +741,7 @@ if [ -z "$SERVER" -a -z "$LIST_IMAGES_OPTION" ]; then
     fi
 fi
 
-if [ "$OWNER" == "root" -a -n "$LIST_IMAGES_OPTION" ]; then
+if [ "$OWNER" = "root" -a -n "$LIST_IMAGES_OPTION" ]; then
     printError "The owner can't be root."
     printError "Use the --owner command line option to set the owner account."
     exit 1
@@ -777,7 +777,7 @@ if [ -z "$SERVER" ]; then
         # Actually creating the containers here.
         #
         for container in $(container_names $*); do
-            if [ "$VERBOSE" == "true" ]; then
+            if [ "$VERBOSE" = "true" ]; then
                 echo create_container \
                     "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
             fi

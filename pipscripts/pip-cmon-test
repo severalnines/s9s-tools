@@ -924,7 +924,7 @@ function run_test()
                 printVerbose "Sudo environment: $(sudo env)"
 
                 backend_pid=$(pidof ft_full)
-                if [ "" == "$backend_pid" ]; then 
+                if [ "" = "$backend_pid" ]; then 
                     rm -fr ${PROJECT_CC_WORKER_DIR}/tests/ft_full.log 
                     printVerbose "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
                     # Cleaning up before.

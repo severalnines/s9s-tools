@@ -28,7 +28,7 @@ PROJECT_HOST_STAT_DIR="${PROJECT_DATA_ROOT}/servers"
 
 
 
-if [ "${PROJECT_CC_WORKER_DIR}" == "" ]; then
+if [ "${PROJECT_CC_WORKER_DIR}" = "" ]; then
     cat <<EOF
 Environment variable PROJECT_CC_WORKER_DIR is empty.
 Please specify it in /etc/s9s-cmon-test/project.conf file.
@@ -43,7 +43,7 @@ fi
 
 
 
-if [ "${PROJECT_S9S_WORKER_DIR}" == "" ]; then
+if [ "${PROJECT_S9S_WORKER_DIR}" = "" ]; then
     cat <<EOF
 Environment variable PROJECT_S9S_WORKER_DIR is empty.
 Please specify it in /etc/s9s-cmon-test/project.conf file.
@@ -60,7 +60,7 @@ fi
 
 
 
-if [ "${PROJECT_AUTO_PULL_WORKER}" == "" ]; then
+if [ "${PROJECT_AUTO_PULL_WORKER}" = "" ]; then
     cat <<EOF
 Environment variable PROJECT_AUTO_PULL_WORKER is empty.
 Please specify it in /etc/s9s-cmon-test/project.conf file.
@@ -75,7 +75,7 @@ fi
 
 
 
-if [ "${PROJECT_CC_TESTORIGIN_DIR}" == "" ]; then
+if [ "${PROJECT_CC_TESTORIGIN_DIR}" = "" ]; then
     cat <<EOF
 Environment variable PROJECT_CC_TESTORIGIN_DIR is empty.
 Please specify it in /etc/s9s-cmon-test/project.conf file.
@@ -91,7 +91,7 @@ fi
 
 
 
-if [ "${PROJECT_S9S_TESTORIGIN_DIR}" == "" ]; then
+if [ "${PROJECT_S9S_TESTORIGIN_DIR}" = "" ]; then
     cat <<EOF
 Environment variable PROJECT_S9S_TESTORIGIN_DIR is empty.
 Please specify it in /etc/s9s-cmon-test/project.conf file.
@@ -107,7 +107,7 @@ fi
 
 
 
-if [ "${PROJECT_AUTO_PULL_TESTORIGIN}" == "" ]; then
+if [ "${PROJECT_AUTO_PULL_TESTORIGIN}" = "" ]; then
     cat <<EOF
 Environment variable PROJECT_AUTO_PULL_TESTORIGIN is empty.
 Please specify it in /etc/s9s-cmon-test/project.conf file.

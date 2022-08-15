@@ -106,7 +106,7 @@ function host_name()
     local ip="$1"
     local name
 
-    if [ -z "$ip" -o "$ip" == "-" ]; then
+    if [ -z "$ip" -o "$ip" = "-" ]; then
         echo "-"
         return 1
     fi
@@ -135,7 +135,7 @@ function list_containers_long()
     local oldIfs="$IFS"
     local lines
 
-    if [ "$VERBOSE" == "true" ]; then
+    if [ "$VERBOSE" = "true" ]; then
         echo "$SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME"
     fi
     lines=$($SSH $SERVER -- sudo lxc-ls --fancy | grep -v NAME)
@@ -147,7 +147,7 @@ function list_containers_long()
         ip=$(echo $line | awk '{print $5}')
         dns_name=$(host_name "$ip")
 
-        if [ "$state" == "RUNNING" ]; then
+        if [ "$state" = "RUNNING" ]; then
             printf "$CONTAINER_COLOR%-24s$TERM_NORMAL " $name
         else
             printf "$CONTAINER_COLOR_STOPPED%-24s$TERM_NORMAL " $name

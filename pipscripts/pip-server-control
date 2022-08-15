@@ -265,7 +265,7 @@ function is_server_requested()
     fi
 
     for this_server in $(echo "$ARGUMENTS" | tr ',' ' '); do
-        if [ "$this_server" == "$server" ]; then
+        if [ "$this_server" = "$server" ]; then
             return 0
         fi
     done
@@ -282,7 +282,7 @@ function is_server_running_ssh()
     local isOK
 
     isOk=$(ssh -o ConnectTimeout=1 "$serverName" 2>/dev/null -- echo OK)
-    if [ "$isOk" == "OK" ]; then
+    if [ "$isOk" = "OK" ]; then
         return 0
     fi
 
@@ -343,7 +343,7 @@ function mac_for_server()
         field1=$(echo "$line" | cut -d' ' -f1)
         field2=$(echo "$line" | cut -d' ' -f2)
 
-        if [ "$field1" == "$serverName" ]; then
+        if [ "$field1" = "$serverName" ]; then
             echo "$field2"
             return 0
         fi
@@ -755,14 +755,14 @@ function print_host_list_long()
                 HOST_STATUS="MISSING"
         fi
 
-        if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+        if [ "$HOST_STATUS" = "OFF-LINE" ]; then
             ping -c 1 $HOSTNAME > /dev/null 2> /dev/null && \
                 HOST_STATUS="IDLE"
         fi
        
         if [ "$OPTION_STATE_FILTER" ]; then 
-            if [ "$OPTION_STATE_FILTER" == "ON-LINE" ]; then
-                if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            if [ "$OPTION_STATE_FILTER" = "ON-LINE" ]; then
+                if [ "$HOST_STATUS" = "OFF-LINE" ]; then
                     continue
                 fi
             elif [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then
@@ -838,17 +838,17 @@ function print_host_list_long()
         printf "%3d "   "$NUMBER_OF_CONTAINERS"
         printf "%6s "   "$AVERAGE_LOAD"
 
-        if [ "$HOST_STATUS" == "IDLE" ]; then
+        if [ "$HOST_STATUS" = "IDLE" ]; then
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "TESTING" ]; then
+        elif [ "$HOST_STATUS" = "TESTING" ]; then
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "OFF-LINE" ]; then
+        elif [ "$HOST_STATUS" = "OFF-LINE" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "ON-LINE" ]; then
+        elif [ "$HOST_STATUS" = "ON-LINE" ]; then
             printf "$OK_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "HALTED" ]; then
+        elif [ "$HOST_STATUS" = "HALTED" ]; then
             printf "$WARN_COLOR%-9s$TERM_NORMAL " "$HOST_STATUS"
-        elif [ "$HOST_STATUS" == "PROTECTED" ]; then
+        elif [ "$HOST_STATUS" = "PROTECTED" ]; then
             printf "$XTERM_COLOR_RED%-9s$TERM_NORMAL " "$HOST_STATUS"
         else
             printf "%-9s " "$HOST_STATUS"
@@ -949,14 +949,14 @@ function print_host_list_brief()
             fi
         fi
 
-        if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+        if [ "$HOST_STATUS" = "OFF-LINE" ]; then
             ping -c 1 $HOSTNAME > /dev/null 2> /dev/null && \
                 HOST_STATUS="IDLE"
         fi
 
         if [ "$OPTION_STATE_FILTER" ]; then 
-            if [ "$OPTION_STATE_FILTER" == "ON-LINE" ]; then
-                if [ "$HOST_STATUS" == "OFF-LINE" ]; then
+            if [ "$OPTION_STATE_FILTER" = "ON-LINE" ]; then
+                if [ "$HOST_STATUS" = "OFF-LINE" ]; then
                     continue
                 fi
             elif [ "$OPTION_STATE_FILTER" != "$HOST_STATUS" ]; then

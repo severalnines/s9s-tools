@@ -197,7 +197,7 @@ function printVerbose()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    if [ "$VERBOSE" == "true" ]; then
+    if [ "$VERBOSE" = "true" ]; then
         printf "${XTERM_COLOR_GREEN}%-18s${TERM_NORMAL} " "$MYNAME" >&2
         echo -e "$*" >&2
     fi
@@ -217,7 +217,7 @@ function printMessage()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    if [ "$VERBOSE" == "true" ]; then
+    if [ "$VERBOSE" = "true" ]; then
         printf "${XTERM_COLOR_GREEN}%-18s${TERM_NORMAL} " "$MYNAME" >&2
         echo -e "$*" >&2
     fi
@@ -242,7 +242,7 @@ function printDebug()
 {
     local datestring=$(date "+%Y-%m-%d %H:%M:%S")
 
-    if [ "$DEBUG" == "true" ]; then
+    if [ "$DEBUG" = "true" ]; then
         printf "${XTERM_COLOR_GREEN}%-28s${TERM_NORMAL} " "$MYNAME" >&2
         echo -e "$*" >&2
 
@@ -467,9 +467,9 @@ function countLinesOfFile()
     	return 0
     fi
 
-    if [ "${file: -7}" == ".tar.gz" ]; then
+    if [ "${file: -7}" = ".tar.gz" ]; then
         nlines=$(tar xOzf $file | wc -l | cut -d' ' -f1)
-    elif [ "${file: -3}" == ".gz" ]; then
+    elif [ "${file: -3}" = ".gz" ]; then
         nlines=$(zcat $file | wc -l | cut -d' ' -f1)
     else
         nlines=$(cat $file | wc -l | cut -d' ' -f1)
@@ -525,7 +525,7 @@ function containsElement()
 {
     local element
     for element in "${@:2}"; do 
-        [[ "$element" == "$1" ]] && return 0; 
+        [[ "$element" = "$1" ]] && return 0; 
     done
   
     return 1

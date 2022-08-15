@@ -133,7 +133,7 @@ function pull_local_testorigin_source()
 {
     local server=$(hostname)
 
-    if [ "${PROJECT_AUTO_PULL_TESTORIGIN}" == "true" ]; then
+    if [ "${PROJECT_AUTO_PULL_TESTORIGIN}" = "true" ]; then
 
         echo "Pulling in ${server}:${PROJECT_CC_TESTORIGIN_DIR}"
 
@@ -260,7 +260,7 @@ function collect_test_results()
     # any worker host has results files to download from
     #
 
-    if [ "$OPTION_MANAGER" == "true" ]; then
+    if [ "$OPTION_MANAGER" = "true" ]; then
         echo "Checking for idle workers to download results from"
 
         for idle_server in $(pip-server-control --list --idle); do
@@ -272,10 +272,10 @@ function collect_test_results()
             fi
 
             source /etc/s9s-cmon-test/${idle_server}.host
-            if [ "${CONF_HOST_USER}" == "" ]; then
+            if [ "${CONF_HOST_USER}" = "" ]; then
                 CONF_HOST_USER=${USER}
             fi
-            if [ "${CONF_HOST_DATA_ROOT}" == "" ]; then
+            if [ "${CONF_HOST_DATA_ROOT}" = "" ]; then
                 echo "ERROR: No test data root is defined for host ${idle_host}"
                 return 1
             fi
@@ -309,7 +309,7 @@ function delegate_test()
     echo "pip-server-control --list --idle"
     idle_server=$(pip-server-control --list --idle | head -n 1)
 
-    if [ "$idle_server" == "" ]; then
+    if [ "$idle_server" = "" ]; then
         echo "No idle test server available"
         return 6
     fi
@@ -346,10 +346,10 @@ function delegate_test()
         return 1
     fi
     source /etc/s9s-cmon-test/${idle_server}.host
-    if [ "${CONF_HOST_USER}" == "" ]; then
+    if [ "${CONF_HOST_USER}" = "" ]; then
         CONF_HOST_USER=${USER}
     fi
-    if [ "${CONF_HOST_DATA_ROOT}" == "" ]; then
+    if [ "${CONF_HOST_DATA_ROOT}" = "" ]; then
         echo "ERROR: No test data root is define for host ${idle_host}"
         return 1
     fi
@@ -413,7 +413,7 @@ function process_scheduled_tests()
             continue
         fi
 
-        if [ "$OPTION_MANAGER" == "true" ]; then
+        if [ "$OPTION_MANAGER" = "true" ]; then
             delegate_test "$config_file"
             if [ $? -ne 0 ]; then
                 break

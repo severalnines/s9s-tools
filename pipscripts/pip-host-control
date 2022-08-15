@@ -360,7 +360,7 @@ else
     echo "" >"$HOST_CONTAINERS_FILE"
 fi
 
-if [ "$SHUTDOWN" == "true" ]; then
+if [ "$SHUTDOWN" = "true" ]; then
     if [ $(hostname) != "lpere-home" ]; then
         sudo poweroff
     fi
