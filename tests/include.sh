@@ -42,11 +42,6 @@ export POSTGRESQL_DEFAULT_PROVIDER_VERSION="10"
 if [ "${S9S_TEST_EMAIL}" != "" ]; then
 	export TEST_EMAIL=${S9S_TEST_EMAIL}
 fi
-if [ "${S9S_TEST_CONTAINER_SERVER}" != "" ]; then
-	export CONTAINER_SERVER=${S9S_TEST_CONTAINER_SERVER}
-else
-    export CONTAINER_SERVER="$(hostname)"
-fi
 if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
 	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
 fi
@@ -2056,11 +2051,6 @@ function create_node()
         verbose_option="--verbose"
     fi
 
-    if [ -z "$CONTAINER_SERVER" ]; then
-        failure "The container server is not set."
-        return 1
-    fi
-
     container_name=$1
 
     if [ -n "$template_name" ]; then
@@ -2075,8 +2065,7 @@ pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
             $template_option \\
-            $verbose_option \\
-            --server=$CONTAINER_SERVER $container_name 
+            $verbose_option
 EOF
     fi
 
@@ -2087,8 +2076,7 @@ EOF
         $os_vendor_option \
         $os_release_option \
         $template_option \
-        $verbose_option \
-        --server=$CONTAINER_SERVER $container_name)
+        $verbose_option
 
     retval=$?
     if [ "$retval" -ne 0 ]; then
@@ -3627,7 +3615,6 @@ EOF
         echo "containers."
         
         begin_verbatim
-        echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
         end_verbatim
     elif [ "$OPTION_INSTALL" ]; then
@@ -3636,18 +3623,15 @@ EOF
         echo "containers."
         
         begin_verbatim
-        echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
         end_verbatim
     elif [ "$all_created_ip" ]; then
         print_subtitle "Destroying the Containers"
         
         begin_verbatim
-        echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
 
         ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-destroy \
-            --server=$CONTAINER_SERVER \
             "$all_created_ip" \
             >/dev/null 2>/dev/null
         
