@@ -262,7 +262,7 @@ function collect_test_results()
     #
 
     if [ "$OPTION_MANAGER" = "true" ]; then
-        echo "Checking for idle workers to download results from"
+        #echo "Checking for idle workers to download results from"
 
         for idle_server in $(pip-server-control --list --idle); do
             #echo "Found idle worker: ${idle_server}"
