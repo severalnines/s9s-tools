@@ -2076,7 +2076,7 @@ EOF
         $os_vendor_option \
         $os_release_option \
         $template_option \
-        $verbose_option
+        $verbose_option)
 
     retval=$?
     if [ "$retval" -ne 0 ]; then
