@@ -18,6 +18,9 @@ OPTION_NO_SSH_TEST=""
 LIST_IMAGES_OPTION=""
 APT_UPDATED=""
 
+VERBOSE="true"
+VERBOSE_OPTION="--verbose"
+
 #
 # If this is empty, the default will be used.
 # WORKING pool.sks-keyservers.net
