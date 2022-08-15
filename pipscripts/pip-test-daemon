@@ -375,9 +375,6 @@ function delegate_test()
 
     scp "${config_file}" ${CONF_HOST_USER}@${idle_server}:${CONF_HOST_DATA_ROOT}/scheduled-tests
 
-    echo "rm -f $config_file"
-    rm -f "$config_file"
-
     echo "ssh ${CONF_HOST_USER}@${idle_server} "\
         "pip-host-control "\
         "--testing "\
@@ -392,6 +389,9 @@ function delegate_test()
         "${idle_server}" \
         "${CONF_HOST_USER}" \
         "${CONF_HOST_DATA_ROOT}"
+
+    echo "rm -f $config_file"
+    rm -f "$config_file"
 }
 
 #
