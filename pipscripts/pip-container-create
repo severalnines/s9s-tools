@@ -12,7 +12,11 @@ VENDOR_NAME=""
 RELEASE_NAME=""
 
 OWNER=${USER}
+if [ "${OWNER}" = "root" ]; then
+    OWNER=${SUDO_USER}
+fi
 OWNER_OPTION=" --owner=\"$OWNER\""
+
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 OPTION_NO_SSH_TEST=""
 LIST_IMAGES_OPTION=""
