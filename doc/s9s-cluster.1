@@ -61,8 +61,8 @@ This option can be used to check the hosts before creating a new cluster.
 s9s cluster \\
     --check-hosts \\
     --nodes=192.168.0.102 \\
-    --remote-user="ssh_user_name"
-    --remote-password="ssh_user_password"
+    --cluster-type=mssql \\
+    --force-short-hostname=true \\
     --print-json
 .fi
 

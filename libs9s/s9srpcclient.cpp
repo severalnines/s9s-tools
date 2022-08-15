@@ -7024,6 +7024,10 @@ S9sRpcClient::checkHosts()
         S9sVariantMap job, jobData, jobSpec;
 
         jobData["cluster_type"]   = clusterType;
+        if(options->forceShortHostname() == "true")
+            jobData["force_short_hostname"] = "true";
+        else
+            jobData["force_short_hostname"] = "false";
         jobData["nodes"]          = nodesField(hosts);
         jobData["vendor"]         = options->vendor();
         jobData["version"]        = options->providerVersion();

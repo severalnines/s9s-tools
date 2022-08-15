@@ -99,6 +99,7 @@ enum S9sOptionType
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
+    OptionForceShortHostname,
     OptionStop,
     OptionPromoteSlave,
     OptionReset,
@@ -214,8 +215,6 @@ enum S9sOptionType
     OptionUntil,
     OptionForce,
     OptionExtended,
-    OptionRemoteUser,
-    OptionRemotePassword,
     OptionDry,
     OptionDebug,
     OptionWarning,
@@ -1868,14 +1867,6 @@ S9sOptions::hasSshCredentials()
     {
         return true;
     }
-
-    // TODO FIXME remove these once not used anymore
-    if (m_options.contains("remote_user") ||
-        m_options.contains("remote_password"))
-    {
-        return true;
-    }
-
     return false;
 }
 
@@ -1891,14 +1882,6 @@ S9sOptions::sshCredentials(
     
     retval.setUserName(osUser());
     retval.setPassword(osPassword());
-
-    // gosh these are duplicated options :-S
-    // TODO: FIXME: drop these, now i kept them for compatibility <David>
-    if (!getString("remote_user").empty())
-        retval.setUserName(getString("remote_user"));
-    if (!getString("remote_password").empty())
-        retval.setPassword(getString("remote_password"));
-
     retval.setPublicKeyFilePath(osKeyFile());
 
     return retval;
@@ -2040,6 +2023,17 @@ S9sOptions::clusterType() const
 {
     return getString("cluster_type").toLower();
 }
+
+/**
+ * \returns value "true" or "false" for option force_short_hostname
+ *
+ */
+S9sString
+S9sOptions::forceShortHostname() const
+{
+    return getString("force_short_hostname").toLower();
+}
+
 
 /**
  * \param value The date and time to convert to a string.
@@ -6494,6 +6488,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
+"  --force-short-hostname=VAL \"true\" or \"false\" to change node hostname to short instead of fqdn\n"
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
@@ -12306,10 +12301,6 @@ S9sOptions::readOptionsCluster(
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
         { "check-hosts",      no_argument,       0, OptionCheckHosts      },
-        // TODO: FIXME: drop the following two,
-        // as we already have --os-user and --os-password
-        { "remote-user",      required_argument, 0, OptionRemoteUser      },
-        { "remote-password",  required_argument, 0, OptionRemotePassword  },
         { "collect-logs",     no_argument,       0, OptionCollectLogs     },
         { "create-account",   no_argument,       0, OptionCreateAccount   },
         { "create-database",  no_argument,       0, OptionCreateDatabase  },
@@ -12372,6 +12363,7 @@ S9sOptions::readOptionsCluster(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
+        { "force-short-hostname", required_argument, 0, OptionForceShortHostname},
         { "config-template",  required_argument, 0, OptionConfigTemplate  },
         { "haproxy-config-template", required_argument, 0, OptionHaProxyConfigTemplate  },
         { "datadir",          required_argument, 0, OptionDatadir         },
@@ -12703,18 +12695,6 @@ S9sOptions::readOptionsCluster(
                 m_options["check_hosts"] = true;
                 break;
 
-            case OptionRemoteUser:
-                // --remote-user
-                m_options["remote_user"] = optarg;
-                break;
-
-            case OptionRemotePassword:
-                // --remote-password
-                m_options["remote_password"] = optarg;
-                break;
-
-
-
             case 'h':
                 // -h, --human-readable
                 m_options["human_readable"] = true;
@@ -12867,6 +12847,11 @@ S9sOptions::readOptionsCluster(
             case OptionClusterType:
                 // --cluster-type
                 m_options["cluster_type"] = optarg;
+                break;
+
+            case OptionForceShortHostname:
+                // --force-short-hostname
+                m_options["force_short_hostname"] = optarg;
                 break;
                 
             case OptionRpcTls:

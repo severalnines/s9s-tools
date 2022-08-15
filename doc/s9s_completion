@@ -193,6 +193,7 @@ function _s9s()
                 opts+="--cluster-format= "
                 opts+="--cluster-name= "
                 opts+="--cluster-type= "
+                opts+="--force-short-hostname= "
                 opts+="--containers= "
                 opts+="--credential-id= "
                 opts+="--db-admin-passwd= "
