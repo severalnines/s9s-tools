@@ -780,10 +780,7 @@ if [ -z "$SERVER" ]; then
         # Actually creating the containers here.
         #
         for container in $(container_names $*); do
-            if [ "$VERBOSE" = "true" ]; then
-                echo create_container \
-                    "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
-            fi
+            printVerbose create_container "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
             create_container \
                 "$container" "$PARENT_NAME" "$VENDOR_NAME" "$RELEASE_NAME"
         done
