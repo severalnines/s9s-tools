@@ -213,6 +213,11 @@ function run_test()
 
     mv "$PROJECT_LOGDIR/pip-cmon-test.log" "${logbasename}.slog"
 
+    # cleanup containers
+    changedir "${PROJECT_S9S_TESTORIGIN_DIR}"
+    ft_container_list=$(sudo pipscripts/pip-container-list | grep "^ft_")
+    sudo pipscripts/pip-container-destroy ${ft_container_list}
+
     rm -f "$config_file"
 
     #clear
