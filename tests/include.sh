@@ -2072,7 +2072,7 @@ EOF
     printVerbose "WHOAMI : $(whoami)"
     printVerbose "  USER : ${USER}"
     printVerbose "   PWD : ${PWD}"
-    ip=$(${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-create \
+    ip=$(sudo ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-create \
         $os_vendor_option \
         $os_release_option \
         $template_option \
@@ -3631,7 +3631,7 @@ EOF
         begin_verbatim
         echo " containers : $all_created_ip"
 
-        ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-destroy \
+        sudo ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-destroy \
             "$all_created_ip" \
             >/dev/null 2>/dev/null
         
