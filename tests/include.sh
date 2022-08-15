@@ -2073,6 +2073,10 @@ function create_node()
     if [ "$PRINT_PIP_COMMANDS" ]; then
         cat <<EOF >&2
 
+    printVerbose "WHOAMI : $(whoami)"
+    printVerbose "  USER : ${USER}"
+    printVerbose "   PWD : ${PWD}"
+#${PROJECT_S9S_TESTORIGIN_DIR}/
 pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
