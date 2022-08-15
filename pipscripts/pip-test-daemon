@@ -242,15 +242,16 @@ function collect_test_results_now()
     #echo "scp $user@$remote:${worker_data_root}/test-results/* "\
     #                                "${PROJECT_TEST_REPORT_DIR}/"
     scp "$user"@"$remote":"${worker_data_root}/test-results/*" \
-            "${PROJECT_TEST_REPORT_DIR}/"
+            "${PROJECT_TEST_REPORT_DIR}/" > /dev/null 2> /dev/null
 
     #echo "ssh ${user}@${remote} rm ${worker_data_root}/test-results/*"
-    ssh "${user}"@"${remote}" rm "${worker_data_root}/test-results/*"
+    ssh "${user}"@"${remote}" rm "${worker_data_root}/test-results/*" \
+            > /dev/null 2> /dev/null
 
     #echo "scp $user@$remote:${worker_data_root}/servers/* "\
     #                            "${PROJECT_HOST_STAT_DIR}/"
     scp "$user"@"$remote":"${worker_data_root}/servers/${remote}.*" \
-                                "${PROJECT_HOST_STAT_DIR}/"
+            "${PROJECT_HOST_STAT_DIR}/" > /dev/null 2> /dev/null
 }
 
 function collect_test_results()
@@ -404,7 +405,7 @@ function process_scheduled_tests()
     pull_local_testorigin_source
 
     for config_file in $(schedule_files); do
-        echo "*** config_file: $config_file"
+        echo "SCHEDULE file: $config_file"
         if [ ! -f "$config_file" ]; then
             continue
         elif [ ! -x "$config_file" ]; then
