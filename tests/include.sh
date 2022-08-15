@@ -531,7 +531,6 @@ EOF
     fi
    
     CHECK_PROGRAM_INSTALLED jq
-    CHECK_PROGRAM_INSTALLED pip-container-create
     CHECK_PROGRAM_INSTALLED highlight
 
     if [ -z "$S9S" ]; then
@@ -2072,11 +2071,6 @@ function create_node()
 
     if [ "$PRINT_PIP_COMMANDS" ]; then
         cat <<EOF >&2
-
-    printVerbose "WHOAMI : $(whoami)"
-    printVerbose "  USER : ${USER}"
-    printVerbose "   PWD : ${PWD}"
-#${PROJECT_S9S_TESTORIGIN_DIR}/
 pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
@@ -2085,7 +2079,11 @@ pip-container-create \\
             --server=$CONTAINER_SERVER $container_name 
 EOF
     fi
-    ip=$(pip-container-create \
+
+    printVerbose "WHOAMI : $(whoami)"
+    printVerbose "  USER : ${USER}"
+    printVerbose "   PWD : ${PWD}"
+    ip=$(${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-create \
         $os_vendor_option \
         $os_release_option \
         $template_option \
@@ -3648,7 +3646,7 @@ EOF
         echo "     server : $CONTAINER_SERVER"
         echo " containers : $all_created_ip"
 
-        pip-container-destroy \
+        ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-destroy \
             --server=$CONTAINER_SERVER \
             "$all_created_ip" \
             >/dev/null 2>/dev/null
