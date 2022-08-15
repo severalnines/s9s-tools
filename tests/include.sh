@@ -496,7 +496,6 @@ function startTests ()
 EOF
 
     begin_verbatim
-    pip-host-control --status="Running '$TEST_SUITE_NAME'."
 
     echo "Starting test $TEST_SUITE_NAME"
     if [ -n "$COMMAND_LINE_OPTIONS" ]; then
@@ -645,7 +644,6 @@ function endTests ()
             echo ""
         fi
 
-        pip-host-control --status="Passed '$TEST_SUITE_NAME'."
         
         exit_code=0
     else
@@ -660,7 +658,6 @@ function endTests ()
             echo ""
         fi
     
-        pip-host-control --status="Failed '$TEST_SUITE_NAME'."
         exit_code=1
     fi
 
