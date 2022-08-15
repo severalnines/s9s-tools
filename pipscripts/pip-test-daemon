@@ -233,6 +233,14 @@ function run_test()
     printf "\n\n\n"
 }
 
+function collect_host_status_now()
+{
+    #echo "scp $user@$remote:${worker_data_root}/servers/* "\
+    #                            "${PROJECT_HOST_STAT_DIR}/"
+    scp "$user"@"$remote":"${worker_data_root}/servers/${remote}.*" \
+            "${PROJECT_HOST_STAT_DIR}/" > /dev/null 2> /dev/null
+}
+
 function collect_test_results_now()
 {
     local remote=$1
@@ -247,11 +255,6 @@ function collect_test_results_now()
     #echo "ssh ${user}@${remote} rm ${worker_data_root}/test-results/*"
     ssh "${user}"@"${remote}" rm "${worker_data_root}/test-results/*" \
             > /dev/null 2> /dev/null
-
-    #echo "scp $user@$remote:${worker_data_root}/servers/* "\
-    #                            "${PROJECT_HOST_STAT_DIR}/"
-    scp "$user"@"$remote":"${worker_data_root}/servers/${remote}.*" \
-            "${PROJECT_HOST_STAT_DIR}/" > /dev/null 2> /dev/null
 }
 
 function collect_test_results()
@@ -384,6 +387,11 @@ function delegate_test()
         pip-host-control \
         --testing \
         --status="Scheduled for $(basename ${config_file})"
+
+    collect_host_status_now \
+        "${idle_server}" \
+        "${CONF_HOST_USER}" \
+        "${CONF_HOST_DATA_ROOT}"
 }
 
 #
