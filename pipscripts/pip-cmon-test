@@ -1266,6 +1266,6 @@ function main()
 pip-host-control --testing --status="Started with $OPTION_TEST_NAME"
 main
 RET=$?
-pip-host-control --idle --status="Idle after $OPTION_TEST_NAME"
+pip-host-control --idle --status="Idle"
 exit $RET
 
