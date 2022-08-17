@@ -111,23 +111,10 @@ function changedir()
 }
 
 #
-# Lists the schedule files in reverse timestamp order (oldest files first).
 #
-function schedule_files()
-{
-    local root_dir="$PROJECT_DATA_ROOT"
-
-    if [ -z "$root_dir" ]; then
-        root_dir="/var/lib/test-ui"
-    fi
-
-    if [ ! -d "$root_dir" ]; then
-        printError "The project root dir '$root_dir' does not exist."
-        return 1
-    fi
-
-    ls -tr $root_dir/scheduled-tests/*.conf 2>/dev/null
-}
+# Worker server related functions
+#
+#
 
 function pull_local_testorigin_source()
 {
@@ -237,6 +224,59 @@ function run_test()
     printf "    Last host name: %s\n" "$LAST_HOST_NAME"
     printf "           Started: %'d test(s)\n" "$SUM_STARTED_TESTS"
     printf "\n\n\n"
+}
+
+#
+#
+# Manager server related functions
+#
+#
+
+function refresh_daemon_on_worker()
+{
+    local idle_server=$1
+
+    #
+    # Pull testorigin repos on the worker
+    #
+    # FIXME BUGGY, PROJECT_S9S_TESTORIGIN_DIR IS A LOCAL CONFIG VALUE
+    #
+
+    echo "Pulling in ${idle_server}:${PROJECT_S9S_TESTORIGIN_DIR}"
+
+    ssh ${CONF_HOST_USER}@${idle_server} -- \
+    git -C "${PROJECT_S9S_TESTORIGIN_DIR}" reset --hard HEAD
+        #>/dev/null 2>/dev/null
+
+    ssh ${CONF_HOST_USER}@${idle_server} -- \
+    git -C "${PROJECT_S9S_TESTORIGIN_DIR}" pull
+        #>/dev/null 2>/dev/null
+
+    #
+    # Clear the logs on the worker
+    #
+
+    echo "ssh ${CONF_HOST_USER}@${idle_server} -- "\
+        "sudo rm ${CONF_HOST_DATA_ROOT}/log/*"
+
+    ssh ${CONF_HOST_USER}@${idle_server} -- \
+        sudo rm "${CONF_HOST_DATA_ROOT}/log/*"
+
+    echo "ssh ${CONF_HOST_USER}@${idle_server} -- "\
+        "sudo rm /var/log/pip-test-daemon.log"
+
+    ssh ${CONF_HOST_USER}@${idle_server} -- \
+        sudo rm /var/log/pip-test-daemon.log
+
+    #
+    # Restart pip-test-daemon on the worker
+    #
+
+    echo "ssh ${CONF_HOST_USER}@${idle_server} -- "\
+        "sudo systemctl restart pip-test-daemon "
+
+    ssh ${CONF_HOST_USER}@${idle_server} -- \
+        sudo systemctl restart pip-test-daemon
 }
 
 function collect_host_status()
@@ -353,6 +393,7 @@ function delegate_test()
     CONF_HOST_CONTAINERS=""
     CONF_HOST_DATA_ROOT=""
     CONF_HOST_USER=""
+    CONF_HOST_AUTO_UPDATE_WORKER=""
     if [ ! -e /etc/s9s-cmon-test/${idle_server}.host ]; then
         echo "ERROR: Host file for idle host ${idle_server} not found."
         return 1
@@ -375,6 +416,10 @@ function delegate_test()
         "${CONF_HOST_USER}" \
         "${CONF_HOST_DATA_ROOT}"
 
+    if [ "${CONF_HOST_AUTO_UPDATE_WORKER}" = "true" ]; then
+        refresh_daemon_on_worker ${idle_server}
+    fi
+
     #
     # Delegate the ${config_file} schedule to ${idle_server}
     #
@@ -382,6 +427,9 @@ function delegate_test()
     echo scp "${config_file}" ${CONF_HOST_USER}@${idle_server}:${CONF_HOST_DATA_ROOT}/scheduled-tests
 
     scp "${config_file}" ${CONF_HOST_USER}@${idle_server}:${CONF_HOST_DATA_ROOT}/scheduled-tests
+
+    # Immediatelly set testing state on worker,
+    # so we wont delegate it a second scheduled test
 
     echo "ssh ${CONF_HOST_USER}@${idle_server} "\
         "pip-host-control "\
@@ -398,14 +446,46 @@ function delegate_test()
         "${CONF_HOST_USER}" \
         "${CONF_HOST_DATA_ROOT}"
 
+    #
+    # Delete test schedule so we wont
+    # delegate it to another worker
+    #
+
     echo "rm -f $config_file"
     rm -f "$config_file"
 }
 
+
+
+
 #
-# The main function that does some polling by checking the scheduled tests and
+#
+# Common functionc for worker and manager mode
+#
+#
+
+
+# Lists the schedule files in reverse timestamp
+# order (oldest files first).
+function schedule_files()
+{
+    local root_dir="$PROJECT_DATA_ROOT"
+
+    if [ -z "$root_dir" ]; then
+        root_dir="/var/lib/test-ui"
+    fi
+
+    if [ ! -d "$root_dir" ]; then
+        printError "The project root dir '$root_dir' does not exist."
+        return 1
+    fi
+
+    ls -tr $root_dir/scheduled-tests/*.conf 2>/dev/null
+}
+
+# The main function that does some polling
+# by checking the scheduled tests and
 # returns once in every round.
-#
 function process_scheduled_tests()
 {
     local config_file
