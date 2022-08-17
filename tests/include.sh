@@ -1995,8 +1995,8 @@ function create_node()
 
     eval set -- "$args"
 
-    while [ "$1" ]; do
-        case "$1" in 
+    while true; do
+        case "$1" in
             -h|--help)
                 shift
                 echo "Help requested from the create_node() function."
@@ -2051,7 +2051,7 @@ function create_node()
         verbose_option="--verbose"
     fi
 
-    container_name=$1
+    container_name="$1"
 
     if [ -n "$template_name" ]; then
         echo "Creating container from template $template_name" >&2
@@ -2065,7 +2065,8 @@ pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
             $template_option \\
-            $verbose_option
+            $verbose_option \\
+            $container_name
 EOF
     fi
 
@@ -2076,7 +2077,8 @@ EOF
         $os_vendor_option \
         $os_release_option \
         $template_option \
-        $verbose_option)
+        $verbose_option \
+        $container_name)
 
     retval=$?
     if [ "$retval" -ne 0 ]; then

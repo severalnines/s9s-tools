@@ -214,13 +214,19 @@ function run_test()
     mv "$PROJECT_LOGDIR/pip-cmon-test.log" "${logbasename}.slog"
 
     # cleanup containers
+
     changedir "${PROJECT_S9S_TESTORIGIN_DIR}"
     ft_container_list=$(sudo pipscripts/pip-container-list | grep "^ft_")
+    sudo pipscripts/pip-container-destroy ${ft_container_list}
+    ft_container_list=$(sudo pipscripts/pip-container-list | grep "^node")
+    sudo pipscripts/pip-container-destroy ${ft_container_list}
+    ft_container_list=$(sudo pipscripts/pip-container-list | grep "^ftgalera")
     sudo pipscripts/pip-container-destroy ${ft_container_list}
 
     rm -f "$config_file"
 
-    #clear
+    # Some stats
+
     echo ""
     printf "        Start time: %s\n" "$START_TIME"
     printf "      Current time: %s\n" "$(date)"
@@ -233,7 +239,7 @@ function run_test()
     printf "\n\n\n"
 }
 
-function collect_host_status_now()
+function collect_host_status()
 {
     local remote=$1
     local user=$2
@@ -245,11 +251,16 @@ function collect_host_status_now()
             "${PROJECT_HOST_STAT_DIR}/" > /dev/null 2> /dev/null
 }
 
-function collect_test_results_now()
+function collect_test_results()
 {
     local remote=$1
     local user=$2
     local worker_data_root=$3
+
+    # Skip localhost. It would result in deleting local test results
+    if [ "${idle_server}" = "$(hostname)" ]; then
+        continue
+    fi
 
     #echo "scp $user@$remote:${worker_data_root}/test-results/* "\
     #                                "${PROJECT_TEST_REPORT_DIR}/"
@@ -261,40 +272,33 @@ function collect_test_results_now()
             > /dev/null 2> /dev/null
 }
 
-function collect_test_results()
+function collect_test_results_from_idle_workers()
 {
-    #
-    # Even if there is no new test to start, we should check if
-    # any worker host has results files to download from
-    #
+    #echo "Checking for idle workers to download results from"
 
-    if [ "$OPTION_MANAGER" = "true" ]; then
-        #echo "Checking for idle workers to download results from"
+    for idle_server in $(pip-server-control --list --idle); do
+        #echo "Found idle worker: ${idle_server}"
 
-        for idle_server in $(pip-server-control --list --idle); do
-            #echo "Found idle worker: ${idle_server}"
+        if [ ! -e /etc/s9s-cmon-test/${idle_server}.host ]; then
+            echo "ERROR: Host file for idle host ${idle_server} not found."
+            continue
+        fi
 
-            if [ ! -e /etc/s9s-cmon-test/${idle_server}.host ]; then
-                echo "ERROR: Host file for idle host ${idle_server} not found."
-                continue
-            fi
+        source /etc/s9s-cmon-test/${idle_server}.host
+        if [ "${CONF_HOST_USER}" = "" ]; then
+            CONF_HOST_USER=${USER}
+        fi
+        if [ "${CONF_HOST_DATA_ROOT}" = "" ]; then
+            echo "ERROR: No test data root is defined for host ${idle_host}"
+            return 1
+        fi
 
-            source /etc/s9s-cmon-test/${idle_server}.host
-            if [ "${CONF_HOST_USER}" = "" ]; then
-                CONF_HOST_USER=${USER}
-            fi
-            if [ "${CONF_HOST_DATA_ROOT}" = "" ]; then
-                echo "ERROR: No test data root is defined for host ${idle_host}"
-                return 1
-            fi
-
-            #echo "Lets collect results from ${idle_server}"
-            collect_test_results_now \
-                "${idle_server}" \
-                "${CONF_HOST_USER}" \
-                "${CONF_HOST_DATA_ROOT}"
-        done
-    fi
+        #echo "Lets collect results from ${idle_server}"
+        collect_test_results \
+            "${idle_server}" \
+            "${CONF_HOST_USER}" \
+            "${CONF_HOST_DATA_ROOT}"
+    done
 }
 
 function delegate_test()
@@ -366,7 +370,7 @@ function delegate_test()
     # Collect any previous test results from ${idle_server}
     #
 
-    collect_test_results_now \
+    collect_test_results \
         "${idle_server}" \
         "${CONF_HOST_USER}" \
         "${CONF_HOST_DATA_ROOT}"
@@ -389,7 +393,7 @@ function delegate_test()
         --testing \
         --status="Scheduled for $(basename ${config_file})"
 
-    collect_host_status_now \
+    collect_host_status \
         "${idle_server}" \
         "${CONF_HOST_USER}" \
         "${CONF_HOST_DATA_ROOT}"
@@ -407,7 +411,11 @@ function process_scheduled_tests()
     local config_file
     local config_files=$(schedule_files)
 
-    collect_test_results
+    # Even if there is no new test to start, we should check
+    # if any worker host has results files to download
+    if [ "$OPTION_MANAGER" = "true" ]; then
+        collect_test_results_from_idle_workers
+    fi
 
     if [ -z "$config_files" ]; then
         #echo "No tests scheduled."
@@ -421,8 +429,8 @@ function process_scheduled_tests()
         if [ ! -f "$config_file" ]; then
             continue
         elif [ ! -x "$config_file" ]; then
-            # Files that are not executable are being created and not yet 
-            # ready.
+            # Files that are not executable are being
+            # created and not yet ready.
             continue
         fi
 

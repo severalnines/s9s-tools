@@ -30,6 +30,9 @@ CONTAINER_NAME3="${MYBASENAME}_3_$$"
 CONTAINER_NAME4="${MYBASENAME}_4_$$"
 CONTAINER_NAME5="${MYBASENAME}_5_$$"
 CONTAINER_NAME6="${MYBASENAME}_6_$$"
+CONTAINER_NAME7="${MYBASENAME}_7_$$"
+CONTAINER_NAME8="${MYBASENAME}_8_$$"
+CONTAINER_NAME9="${MYBASENAME}_9_$$"
 
 cd $MYDIR
 source ./include.sh
@@ -248,6 +251,7 @@ EOF
 function testRollingRestart()
 {
     print_title "Performing Rolling Restart"
+
     begin_verbatim
 
     #
@@ -273,7 +277,6 @@ function testRollingRestart()
 
 function testAddRemoveNode()
 {
-    local node="ft_mongodb_7_$$"
     local nodeIp
 
     print_title "Adding and Removing Data Node"
@@ -282,7 +285,7 @@ function testAddRemoveNode()
   Both the adding and the removing should of course succeed.
 EOF
 
-    create_node --autodestroy "$node"
+    create_node --autodestroy $CONTAINER_NAME7
     nodeIp="$LAST_ADDED_NODE"
 
     begin_verbatim
@@ -330,17 +333,16 @@ EOF
 #
 function testAddNode()
 {
-    local node="ft_mongodb_8_$$"
-
     print_title "Adding a New Node"
+
     cat <<EOF | paragraph
 This test will add a new node to the cluster.
 
 EOF
 
-    create_node --autodestroy "$node"
-
     begin_verbatim
+
+    create_node --autodestroy $CONTAINER_NAME8
 
     #
     # Adding a node to the cluster.
@@ -596,8 +598,6 @@ function testRemoveBackup()
 #
 function testInstallPBMAgents()
 {
-    local node="ft_mongodb_9_$$"
-
     print_title "Installing PBMAgent nodes"
     cat <<EOF
   Installing Percona Backup for MongoDb agents refered as PBMAgent nodes.
@@ -606,8 +606,12 @@ function testInstallPBMAgents()
 
 EOF
 
-    create_node --autodestroy "$node"
+    begin_verbatim
+
+    create_node --autodestroy $CONTAINER_NAME9
     nodeIp="$LAST_ADDED_NODE"
+
+    end_verbatim
 
     print_subtitle "Installing NFSClient nodes"
 
@@ -652,6 +656,7 @@ EOF
 function testDrop()
 {
     print_title "Dropping the Cluster"
+
     cat <<EOF
   We are at the end of the test script, we now drop the cluster that we created
   at the beginning of this test.
@@ -661,6 +666,7 @@ EOF
     print_subtitle "Printing the Logs"
 
     begin_verbatim
+
     s9s log --list --log-format="%4I %-14h %18c %36B:%-5L %M\n"
 
     #
@@ -674,6 +680,7 @@ EOF
         $DEBUG_OPTION
 
     check_exit_code $?
+
     end_verbatim
 }
 
