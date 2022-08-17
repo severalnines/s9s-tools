@@ -162,6 +162,7 @@ CONF_HOST_CATEGORY="Hosts"
 CONF_HOST_MAC=""
 CONF_HOST_DATA_ROOT=""
 CONF_HOST_USER=""
+CONF_HOST_AUTO_UPDATE_WORKER=""
 .fi
 
 .RS 7
@@ -215,6 +216,17 @@ PROJECT_DATA_ROOT config value.
 .B CONF_HOST_USER
 The OS user name that owns the CONF_HOST_DATA_ROOT on the host. The running
 pip-test-daemon should have ssh access to this user on the CONF_HOST_NAME host.
+
+.TP
+.B CONF_HOST_AUTO_UPDATE_WORKER
+Whether the manager mode of pip-test-daemon should upgrade itself on the worker
+hosts. For this it pulls new s9s source, deletes old test logs and
+pip-test-daemon log, then restarts pip-test-daemon service on the worker before
+giving it task by copiing a schedule file to the worker host.
+
+WARNING: the feature is hacky for now, it requires that the value for
+PROJECT_S9S_TESTORIGIN_DIR is the same on both the worker and the manager hosts.
+
 
 .\"
 .\" Descrption of the *.hostinfo files.
