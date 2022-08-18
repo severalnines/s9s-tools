@@ -183,15 +183,14 @@ function run_test()
 
     let SUM_STARTED_TESTS+=1
 
-    echo "pip-cmon-test "\
+    echo "nohup pip-cmon-test "\
         "$VERBOSE_OPTION "\
         "--test=$testname "\
         "--user=$user "\
         "--git-branch=$gitbranch"\
         "--git-commit=$githash"
 
-    #nohup ?
-    pip-cmon-test \
+    nohup pip-cmon-test \
         $VERBOSE_OPTION \
         --test="$testname" \
         --user="$user" \
