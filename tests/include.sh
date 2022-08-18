@@ -8,7 +8,7 @@ export TEST_NAME=""
 export DONT_PRINT_TEST_MESSAGES=""
 export PRINT_COMMANDS=""
 export PRINT_PIP_COMMANDS=""
-export OPTION_KEEP_NODES=""
+export OPTION_KEEP_NODES="${PROJECT_KEEP_NODE_CONTAINERS}"
 export TEST_EMAIL="laszlo@severalnines.com"
 
 #
