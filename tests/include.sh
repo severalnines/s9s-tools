@@ -10,6 +10,7 @@ export PRINT_COMMANDS=""
 export PRINT_PIP_COMMANDS=""
 export OPTION_KEEP_NODES="${PROJECT_KEEP_NODE_CONTAINERS}"
 export TEST_EMAIL="laszlo@severalnines.com"
+export CONTAINER_LIST_FILE="/tmp/${MYNAME}.containers"
 
 #
 #   Default software versions have to be redefined from time to time.
@@ -476,7 +477,6 @@ function print_ini_file()
 #
 function startTests ()
 {
-    local container_list_file="/tmp/${MYNAME}.containers"
     local model
     local memory
 
@@ -537,9 +537,9 @@ EOF
     #
     # Cleanups before the test.
     #
-    if [ -f "$container_list_file" ]; then
-        echo "Removing '$container_list_file'."
-        rm -f "$container_list_file"
+    if [ -f "$CONTAINER_LIST_FILE" ]; then
+        echo "Removing '$CONTAINER_LIST_FILE'."
+        rm -f "$CONTAINER_LIST_FILE"
     fi
     
     if [ -f "$HOME/.s9s/s9s.state" ]; then
@@ -1974,7 +1974,6 @@ function create_node()
     local retval
     local verbose_option=""
     local option_autodestroy=""
-    local container_list_file="/tmp/${MYNAME}.containers"
     local template_option=""
     local os_vendor_option=""
     local os_release_option=""
@@ -2102,9 +2101,7 @@ EOF
 #        echo -e " $XTERM_COLOR_GREEN[SUCCESS]$TERM_NORMAL" >&2
 #    fi
 
-    if [ "$option_autodestroy" ]; then
-        echo "$ip" >>$container_list_file
-    fi
+    node_created "$ip"
 
     #
     # If we are here we seem to be having a new IP address.
@@ -2136,9 +2133,8 @@ EOF
 function node_created()
 {
     local container_ip="$1"
-    local container_list_file="/tmp/${MYNAME}.containers"
     
-    echo "$container_ip" >>"$container_list_file"
+    echo "$container_ip" >>"$CONTAINER_LIST_FILE"
 }
 
 function emit_s9s_configuration_file()
@@ -3569,17 +3565,18 @@ function check_entry()
 function clean_up_after_test()
 {
     local all_created_ip=""
-    local container_list_file="/tmp/${MYNAME}.containers"
     local container
 
     #
     # Some closing logs.
     #
-    print_subtitle "Preparing to Exit"
+    print_title "Preparing to Exit"
     cat <<EOF
   The clean_up_after_test method is running now to clean up after the test
   script.
 EOF
+
+    begin_verbatim
 
     if false; then
         mys9s tree \
@@ -3596,8 +3593,8 @@ EOF
     fi
 
     # Reading the container list file.
-    if [ -f "$container_list_file" ]; then
-        for container in $(cat $container_list_file); do
+    if [ -f "$CONTAINER_LIST_FILE" ]; then
+        for container in $(cat $CONTAINER_LIST_FILE); do
             if [ -z "$container" ]; then
                 continue
             fi
@@ -3642,8 +3639,8 @@ EOF
     fi
 
     # Destroying the container list file.
-    if [ -f "$container_list_file" ]; then
-        rm -f "$container_list_file"
+    if [ -f "$CONTAINER_LIST_FILE" ]; then
+        rm -f "$CONTAINER_LIST_FILE"
     fi
 
     if [ -f "$HOME/s9s.log" ]; then
@@ -3681,6 +3678,9 @@ EOF
 
 
     echo "Exiting test script now."
+
+    end_verbatim
+
     return 0
 }
 
