@@ -201,7 +201,7 @@ function run_test()
 
     # cleanup containers
 
-    if [ ${PROJECT_KEEP_NODE_CONTAINERS} != "true" ]; then
+    if [ "${PROJECT_KEEP_NODE_CONTAINERS}" != "true" ]; then
         changedir "${PROJECT_S9S_TESTORIGIN_DIR}"
         ft_container_list=$(sudo pipscripts/pip-container-list | grep "^ft_")
         sudo pipscripts/pip-container-destroy ${ft_container_list}
