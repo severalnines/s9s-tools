@@ -184,7 +184,6 @@ class S9sOptions
         S9sString dbAdminUserName(const S9sString &defaultValue = "") const;
         S9sString dbAdminPassword();
         S9sString clusterType() const;
-        S9sString forceShortHostname() const;
         S9sString formatDateTime(S9sDateTime value) const;
         S9s::AddressType addressType() const;
 

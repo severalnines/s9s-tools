@@ -99,7 +99,6 @@ enum S9sOptionType
     OptionDbAdmin,
     OptionDbAdminPassword,
     OptionClusterType,
-    OptionForceShortHostname,
     OptionStop,
     OptionPromoteSlave,
     OptionReset,
@@ -2024,15 +2023,6 @@ S9sOptions::clusterType() const
     return getString("cluster_type").toLower();
 }
 
-/**
- * \returns value "true" or "false" for option force_short_hostname
- *
- */
-S9sString
-S9sOptions::forceShortHostname() const
-{
-    return getString("force_short_hostname").toLower();
-}
 
 
 /**
@@ -6488,7 +6478,6 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
-"  --force-short-hostname=VAL \"true\" or \"false\" to change node hostname to short instead of fqdn\n"
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
@@ -12363,7 +12352,6 @@ S9sOptions::readOptionsCluster(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "cluster-type",     required_argument, 0, OptionClusterType     },
-        { "force-short-hostname", required_argument, 0, OptionForceShortHostname},
         { "config-template",  required_argument, 0, OptionConfigTemplate  },
         { "haproxy-config-template", required_argument, 0, OptionHaProxyConfigTemplate  },
         { "datadir",          required_argument, 0, OptionDatadir         },
@@ -12847,11 +12835,6 @@ S9sOptions::readOptionsCluster(
             case OptionClusterType:
                 // --cluster-type
                 m_options["cluster_type"] = optarg;
-                break;
-
-            case OptionForceShortHostname:
-                // --force-short-hostname
-                m_options["force_short_hostname"] = optarg;
                 break;
                 
             case OptionRpcTls:
