@@ -444,13 +444,15 @@ function compile_source_dir()
     if [ cmon ]; then
         case "$OPTION_TEST_NAME" in 
             ft_*.sh)
-                repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
-                ccdir="${PROJECT_CC_WORKER_DIR}"
+                if [ "$OPTION_GIT_COMMIT" != "" ]; then
+                    repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
+                    ccdir="${PROJECT_CC_WORKER_DIR}"
 
-                if [ -d "$repodir" ]; then
-                    printVerbose "Using previously compiled ft_full from $repodir"
-                    cp $repodir/ft_full $ccdir/tests/ft_full/
-                    return
+                    if [ -d "$repodir" ]; then
+                        printVerbose "Using previously compiled ft_full from $repodir"
+                        cp $repodir/ft_full $ccdir/tests/ft_full/
+                        return
+                    fi
                 fi
             ;;
             *)
