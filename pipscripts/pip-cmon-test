@@ -218,16 +218,55 @@ printVerbose "     OPTION_GIT_BRANCH: $OPTION_GIT_BRANCH"
 printVerbose "     OPTION_GIT_COMMIT: $OPTION_GIT_COMMIT"
 printVerbose "                  date: $(date "+%Y-%m-%d %H:%M:%S")"
 
+function prompt()
+{
+    echo "${XTERM_COLOR_GREEN}$USER@$HOSTNAME:$(pwd)\$${TERM_NORMAL}"
+}
+
+
+# Execute arguments as shell command in silent mode (stdout to null)
+function execs()
+{
+    local cmd="$1"
+    shift
+
+    printVerbose "$(prompt) $cmd $*"
+    $cmd $* > /dev/null 2>> $LOGFILE
+    retcode=$?
+    if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
+        if [ $retcode -gt 1 ]; then
+            printVerbose "Exit code: $retcode"
+        fi
+    elif [ $retcode -ne 0 ]; then
+        printVerbose "Exit code: $retcode"
+    fi
+    return $retcode
+}
+
+# Execute arguments as shell command
+function exec()
+{
+    local cmd="$1"
+    shift
+
+    printVerbose "$(prompt) $cmd $*"
+    $cmd $* 2>> $LOGFILE
+    retcode=$?
+    if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
+        if [ $retcode -gt 1 ]; then
+            printVerbose "Exit code: $retcode"
+        fi
+    elif [ $retcode -ne 0 ]; then
+        printVerbose "Exit code: $retcode"
+    fi
+    return $retcode
+}
+
 function changedir()
 {
     local dir=$1
-    printVerbose "cd $dir"
-    cd $dir > /dev/null 2> /dev/null
-    if [ $? -ne 0 ]; then
-        printVerbose "Failed to change directory to $dir."
-        return 1
-    fi
-    return 0
+    execs cd "$dir"
+    return $?
 }
 
 #
@@ -281,19 +320,12 @@ function save_slog_file()
 #
 function prepare_source()
 {
-    local package_name="unknown"
     local current_branch
     local requested_branch
     local requested_commit
-    local prompt="$USER@$HOSTNAME:$dirname\$"
 
     while [ -n "$1" ]; do
         case "$1" in 
-            --package-name)
-                package_name=$2
-                shift 2
-                ;;
-
             --requested-branch)
                 requested_branch="$2"
                 shift 2
@@ -311,16 +343,10 @@ function prepare_source()
     done
 
     if [ -z "$NO_GIT_PULL" ]; then
-        printVerbose "Pulling source for $package_name."
-        
-        printVerbose "Pulling in directory '${PWD}'"
-        git reset --hard HEAD >/dev/null 2>/dev/null
-        git pull >/dev/null 2>/dev/null
-
         #
         # Checking the branch.
         #
-        current_branch=$(git rev-parse --abbrev-ref HEAD)
+        current_branch=$(exec git rev-parse --abbrev-ref HEAD)
         printVerbose "Current branch is '$current_branch'."
        
         if [ -z "$requested_branch" ]; then
@@ -329,266 +355,233 @@ function prepare_source()
         else 
             printVerbose "Requested branch is '$requested_branch'."
         fi
-
-        #if [ "$current_branch" != "$requested_branch" ]; then
-        #    printVerbose "$prompt git checkout $requested_branch"
-        #    git checkout "$requested_branch" >>$LOGFILE 2>>$LOGFILE
-        #fi
         
-        printVerbose "$prompt git fetch --all"
-        git fetch --all >>$LOGFILE 2>>$LOGFILE
+        execs git fetch --all
 
         # always reset any local changes first, then go to master
-        printVerbose "$prompt git reset --hard"
-        git reset --hard >>$LOGFILE 2>>$LOGFILE
+        execs git reset --hard
 
-        printVerbose "$prompt git checkout master"
-        git checkout master >>$LOGFILE 2>>$LOGFILE
+        execs git checkout master
 
         if [ "$requested_branch" != "master" ]; then
             # first delete any local branch with the same name
             # (as the remote branch might be overwritten from stratch)
-            printVerbose "$prompt git branch -d $requested_branch"
-            git branch -d $requested_branch >>$LOGFILE 2>>$LOGFILE
+            execs git branch -d $requested_branch
 
             # and lets check out the branch now
             # (it will be re-constructed from remote)
-            printVerbose "$prompt git checkout $requested_branch"
-            git checkout $requested_branch >>$LOGFILE 2>>$LOGFILE
+            execs git checkout $requested_branch
         fi
 
-        printVerbose "$prompt git pull"
-        printVerbose "Pulling in directory '${PWD}'"
-        git pull >>$LOGFILE 2>>$LOGFILE
+        execs git pull
 
         if [ ! -z "$requested_commit" ]; then
-            printVerbose "$prompt git checkout $requested_commit"
-            git checkout $requested_commit >>$LOGFILE 2>>$LOGFILE
+            execs git checkout $requested_commit
         fi
 
         # Files are left everywhere... :(
         if [ -d "./tests/configs/tls" ]; then
-            rm -rvf "./tests/configs/tls"
+            execs rm -rvf "./tests/configs/tls"
         fi
     fi
 
     if [ "$DO_CLEAN" ]; then
-        printVerbose "Cleaning source dir."
-
-        git clean -dfx >/dev/null 2>/dev/null
+        execs git clean -dfx
     fi
 }
 
-function find_mysql()
+function compile_clustercontrol()
 {
-    for dir in /opt/mysql-cluster-gpl-7*; do
-        if [ -d "$dir" ]; then
-            echo "$dir"
-            return 0
-        fi
-    done
+    changedir "${PROJECT_CC_WORKER_DIR}"
 
-    return 1
-}
-
-#
-# Expects to be in the source directory.
-#
-function compile_source_dir()
-{
-    local mysql_dir=$(find_mysql)    
-    local do_install
-    local prefix_option=""
-    local cmon=false
-
-    while [ -n "$1" ]; do
-        case "$1" in 
-            --prefix)
-                prefix_option="--prefix=$2"
-                shift 2
-                ;;
-
-            --cmon-compilation)
-                cmon=true
-                shift
-                ;;
-
-            --install)
-                do_install="true"
-                shift
-                ;;
-
-            *)
-                break
-                ;;
-        esac
-    done
-
-    if [ "$mysql_dir" ]; then
-        export PATH="$mysql_dir/bin:$PATH"
-    fi
-
-    save_slog_file
-
-    #
-    # Not gonna compile the source when the --no-compile command line option is
-    # provided.
-    #
     if [ "$OPTION_NO_COMPILE" ]; then
         return 0
     fi
 
     #
-    # Hack to avoid compilation
+    # git pull, checkout the source
     #
-    if [ cmon ]; then
-        case "$OPTION_TEST_NAME" in 
-            ft_*.sh)
-                if [ "$OPTION_GIT_COMMIT" != "" ]; then
-                    repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
-                    ccdir="${PROJECT_CC_WORKER_DIR}"
 
-                    if [ -d "$repodir" ]; then
-                        printVerbose "Using previously compiled ft_full from $repodir"
-                        cp $repodir/ft_full $ccdir/tests/ft_full/
-                        return
-                    fi
-                fi
-            ;;
-            *)
-                # Nothing to do here
-            ;;
-        esac
+    prepare_source \
+        --requested-branch  "$OPTION_GIT_BRANCH" \
+        --requested-commit  "$OPTION_GIT_COMMIT"
+
+    GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$GIT_BRANCH" = "HEAD" ]; then
+        GIT_BRANCH="$OPTION_GIT_BRANCH"
     fi
+    GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
+    GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
+    GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
 
-    #
-    # Running autogen in the source root. 
-    #
-    if [ ! -f "Makefile" ]; then
-        printVerbose "Running autogen.sh."
+    generate_test_result_info \
+        --test-state "PREPARING" \
+        > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
 
-        rm -f autogen.log
+    # Check the ft_full binary cache
 
-        if [ cmon ]; then
-            ./autogen.sh --with-no-optimization $prefix_option >> "autogen.log" 2>>"autogen.log"
-        else
-            ./autogen.sh $prefix_option >> "autogen.log" 2>>"autogen.log"
-        fi
-        retcode $?
-        if [ $retcode -ne 0 ]; then
-            printVerbose "Script autogen.sh failed."
-            return 6
-        fi
-    fi
-    
-    #
-    # Running make in source root.
-    #
-    printVerbose "Running 'make'."
-
-    rm -f "make.log"
-
-    make -j10 >>"make.log" 2>>"make.log"
-    retcode=$?
-    make -j10
-    if [ "$retcode" -ne 0 ]; then
-        printVerbose "Program 'make' failed."
-        tail -n 50 "$PWD/make.log" >>$LOGFILE
-
-        return 1
-    fi
-
-    # Lets compile in the tests dir as well in case only some test changed.
-
-    cd tests
-    make -j10 >>"make.log" 2>>"make.log"
-    retcode=$?
-    make -j10
-    if [ "$retcode" -ne 0 ]; then
-        printVerbose "Program 'make' failed."
-        tail -n 50 "$PWD/make.log" >>$LOGFILE
-        cd ..
-        return 1
-    fi
-    cd ..
-
-
-    if [ -n "$do_install" ]; then
-        printVerbose "Running 'make install'."
-
-        sudo make install >>"make.log" 2>>"make.log"
-
-        if [ $? -ne 0 ]; then
-            printVerbose "Installing with 'make install' failed."
-            return 1
-        fi
-    fi
-
-    #
-    # Hack to cache ft_full avoid compilation next time
-    #
-    if [ cmon ]; then
-        case "$OPTION_TEST_NAME" in 
-            ft_*.sh)
-                repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$OPTION_GIT_COMMIT"
+    case "$OPTION_TEST_NAME" in 
+        ft_*.sh)
+            printVerbose "GIT_HASH: $GIT_HASH"
+            if [ "$GIT_HASH" != "" ]; then
+                repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
+                printVerbose "repodir: $repodir"
                 ccdir="${PROJECT_CC_WORKER_DIR}"
 
-                mkdir -p "$repodir"
-                printVerbose "Saving ft_full to $repodir"
-                cp $ccdir/tests/ft_full/ft_full $repodir/
-            ;;
-            *)
-                # Nothing to do here
-            ;;
-        esac
+                if [ -d "$repodir" ]; then
+                    printVerbose "Using previously compiled ft_full"
+                    execs cp $repodir/ft_full $ccdir/tests/ft_full/
+                    return 0
+                fi
+            fi
+        ;;
+        *)
+            # Nothing to do here
+        ;;
+    esac
+
+    # Cache miss, lets compile
+
+    pip-host-control --testing --status="Compiling CC for $OPTION_TEST_NAME"
+
+    # autogen
+    execs rm -f autogen.log
+    exec ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
+    retcode=$?
+    if [ $retcode -ne 0 ]; then
+        return "$retcode"
     fi
+
+    # make
+
+    execs rm -f make.log
+    exec make -j10 >> make.log
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        #exec tail -n 50 "$PWD/make.log" >>$LOGFILE
+        return $retcode
+    fi
+    
+    # make tests
+
+    execs cd tests
+    exec make -j10 >> make.log
+    retcode=$?
+    printVerbose "$(prompt) cd .."
+    execs cd ..
+    if [ "$retcode" -ne 0 ]; then
+        return $retcode
+    fi
+
+    # make install
+
+    #exec sudo make install >> make.log
+    #retcode=$?
+    #if [ "$retcode" -gt 1 ]; then
+    #    return $retcode
+    #fi
+
+    # cache ft_full
+
+    case "$OPTION_TEST_NAME" in 
+        ft_*.sh)
+            repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
+            ccdir="${PROJECT_CC_WORKER_DIR}"
+
+            execs mkdir -p "$repodir"
+            printVerbose "Saving ft_full to cache"
+            execs cp $ccdir/tests/ft_full/ft_full $repodir/
+        ;;
+        *)
+            # Nothing to do here
+        ;;
+    esac
 
     return 0
 }
 
-function compile_source()
+function compile_s9s_tools()
 {
-    local retcode
+    changedir "${PROJECT_S9S_WORKER_DIR}"
 
-    printVerbose "Preparing clustercontrol"
-
-    #
-    # Compiling the controller.
-    # The source is already prepared in advance.
-    #
-
-    pip-host-control --testing --status="Compiling CC for $OPTION_TEST_NAME"
-
-    changedir "${PROJECT_CC_WORKER_DIR}"
-    compile_source_dir \
-        --cmon-compilation
-
-        #--prefix=$HOME/testcmon
-        #--prefix=$HOME/cmonrepo/$GIT_BRANCH-$GIT_HASH
-
-    retcode=$?
-    
-    if [ "$retcode" -ne 0 ]; then
-        printVerbose "The return code is $retcode..."
-        return "$retcode"
+    if [ "$OPTION_NO_COMPILE" ]; then
+        return 0
     fi
-
-    #
-    # Compiling the s9s-tools, the source is not yet prepared.
-    #
 
     pip-host-control --testing --status="Compiling s9s for $OPTION_TEST_NAME"
 
-    changedir "${PROJECT_S9S_WORKER_DIR}"
     prepare_source \
-        --package-name "s9s-tools"
+        --requested-branch  master
 
-    compile_source_dir \
-        --install 
+    # Check the s9s binary cache
 
-        #--prefix=$HOME/tests9s
+    S9S_GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+    printVerbose "S9S_GIT_HASH: $S9S_GIT_HASH"
+    S9S_GIT_BRANCH=master
+    if [ "$S9S_GIT_HASH" != "" ]; then
+        repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
+        s9sdir="${PROJECT_S9S_WORKER_DIR}"
+        printVerbose "repodir: $repodir"
 
-    retcode="$?"
+        if [ -d "$repodir" ]; then
+            printVerbose "Using previously compiled s9s"
+            execs cp $repodir/s9s $s9sdir/s9s/
+            execs cp $repodir/libs9s.so $s9sdir/libs9s/
+            execs /usr/bin/install -c $repodir/libs9s.so "/usr/lib"
+            execs /usr/bin/install -c $repodir/s9s "/usr/bin"
+            return 0
+        fi
+    fi
+
+    # autogen
+
+    execs rm -f autogen.log
+    exec ./autogen.sh $prefix_option >> autogen.log
+    retcode=$?
+    if [ $retcode -ne 0 ]; then
+        return "$retcode"
+    fi
+
+    # make
+    
+    execs rm -f make.log
+    exec make -j10 >> make.log
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        #tail -n 50 "make.log" >>$LOGFILE
+        return $retcode
+    fi
+    
+    # make tests
+
+    execs cd tests
+    exec make -j10 >> make.log
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
+        #tail -n 50 "make.log" >>$LOGFILE
+        execs cd ..
+        return $retcode
+    fi
+    execs cd ..
+
+    # make install
+
+    exec sudo make install >> make.log
+    retcode=$?
+    if [ "$retcode" -gt 1 ]; then
+        return $retcode
+    fi
+
+    # cache s9s
+
+    repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
+    s9sdir="${PROJECT_S9S_WORKER_DIR}"
+
+    execs mkdir -p "$repodir"
+    printVerbose "Saving s9s to cache"
+    execs cp $s9sdir/s9s/s9s $repodir/
+    execs cp $s9sdir/libs9s/libs9s.so $repodir/
 
     return "$retcode"
 }
@@ -663,19 +656,19 @@ function ft_test_ended()
 
     if [ -z "$(which gdb)" ]; then
         printVerbose "Installing gdb."
-        sudo apt-get -y --force-yes install gdb
+        execs sudo apt-get -y --force-yes install gdb
     fi
 
     if [ -e "$core_file" ]; then
-        printVerbose "Saving backtrace (crash)"
-        sudo gdb \
+        printVerbose "Saving backtrace after crash"
+        exec sudo gdb \
             -batch \
             -ex "thread apply all back" \
             -ex "quit" \
             ft_full/ft_full "$core_file" \
-            >>$LOGFILE 2>>$LOGFILE
+            >>$LOGFILE
 
-        sudo mkdir -p "$HOME/tmp"
+        execs sudo mkdir -p "$HOME/tmp"
 
         #sudo mv "$core_file" "/tmp/$(log_core_file_name)"
         #sudo chown $USER:$USER "/tmp/$(log_core_file_name)"
@@ -686,12 +679,12 @@ function ft_test_ended()
                         "$(log_bin_file_name)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
-        printVerbose "Saving backtrace (no crash)"
-        sudo gdb \
+        printVerbose "Saving backtrace"
+        exec sudo gdb \
             -p $backend_pid -batch \
             -ex "thread apply all back" \
             -ex "quit" \
-            >>$LOGFILE 2>>$LOGFILE
+            >>$LOGFILE
     else
         printVerbose "No backtrace is necessary. No crash, no error on exit."
     fi
@@ -870,8 +863,10 @@ function run_test()
     save_slog_file
 
     printVerbose "Enabling core file creation."
-    echo "core" | sudo tee /proc/sys/kernel/core_pattern >> $LOGFILE 2>> $LOGFILE
-    if [ $? -ne 0 ]; then
+    echo "core" | sudo tee /proc/sys/kernel/core_pattern >> /dev/null 2>> $LOGFILE
+    retcode=$?
+    exec sudo cat /proc/sys/kernel/core_pattern | tee -a $LOGFILE
+    if [ $retcode -ne 0 ]; then
         printVerbose "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
 
@@ -889,28 +884,19 @@ function run_test()
         rm -f "$core_file"
     done
 
-    ulimit -c unlimited
-    if [ $? -ne 0 ]; then
-        printVerbose "Failed: ulimit -c unlimited"
-    fi
+    exec ulimit -c unlimited | tee -a $LOGFILE
 
     sudo sysctl -p /etc/sysctl.conf
     printVerbose "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
-    printVerbose ""
     printVerbose "User limits :"
-    printVerbose ""
-    bash -c 'ulimit -a' >> $LOGFILE 2>> $LOGFILE
-    printVerbose ""
+    exec ulimit -a | tee -a $LOGFILE
     printVerbose "User limits with sudo:"
-    printVerbose ""
-    sudo bash -c 'ulimit -c unlimited' >> $LOGFILE 2>> $LOGFILE
-    sudo bash -c 'ulimit -a' >> $LOGFILE 2>> $LOGFILE
+    exec sudo ulimit -c unlimited | tee -a $LOGFILE
+    exec sudo ulimit -a | tee -a $LOGFILE
 
     #
     # Running the actual test.
     #
-    printVerbose "PWD: $(pwd)"
-    printVerbose "Test name is '${OPTION_TEST_NAME}'."
     case "$OPTION_TEST_NAME" in 
         ft_*.sh)
             #
@@ -922,21 +908,15 @@ function run_test()
             if [ -x "./ft_full/ft_full" ]; then
                 printVerbose "Running 'ft_full'..."
 
-                printVerbose "Current directory: $(pwd)"
-                printVerbose "Sudo environment: $(sudo env)"
-
                 backend_pid=$(pidof ft_full)
                 if [ "" = "$backend_pid" ]; then 
-                    rm -fr ${PROJECT_CC_WORKER_DIR}/tests/ft_full.log 
-                    printVerbose "Starting controller: 'sudo ./ft_full/ft_full'" >ft_full.log
-                    # Cleaning up before.
-                    printVerbose "sudo rm -rvf /tmp/cmon*"
-                    sudo rm -rvf /tmp/cmon*
-                    ls -lh /tmp/cmon*
-                    printVerbose "sudo rm -rvf /tmp/BACKUP-*"
-                    sudo rm -rvf /tmp/BACKUP-*
-                    ls -lh /tmp/BACKUP-*
+                    execs rm -fr ${PROJECT_CC_WORKER_DIR}/tests/ft_full.log 
 
+                    # Cleaning up before.
+                    execs sudo rm -rvf /tmp/cmon*
+                    execs sudo rm -rvf /tmp/BACKUP-*
+
+                    printVerbose "$(prompt) sudo ./ft_full/ft_full \>\>ft_full.log 2\>\>ft_full.log"
                     sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
                     backend_pid=$!
                     printVerbose "Backend PID is ${backend_pid}."
@@ -1005,13 +985,13 @@ function run_test()
             # Waiting for the test to be ended.
             #
             printVerbose "Waiting until the test script ends..."
-            wait "$test_pid" 2>/dev/null
+            wait "$test_pid" 2>> $LOGFILE
             return_code=$?
 
             printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
 
             printVerbose "Waiting for test watcher to end..."
-            wait "$watcher_pid" 2>/dev/null
+            wait "$watcher_pid" 2>> $LOGFILE
 
             changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
@@ -1178,6 +1158,8 @@ function install_packages_on_test_server()
 #
 function main()
 {
+    local retcode
+
     printVerbose "Starting main()."
     printVerbose "Preparing test ($MYNAME ver. $VERSION)."
     pip-host-control --testing --status="Prepare host for $OPTION_TEST_NAME"
@@ -1192,8 +1174,8 @@ function main()
         return 6
     fi
     
-    rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
-    rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
+    execs rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
+    execs rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
 
     #
     # If the user removes this file we cancel the shutdown request, otherwise we
@@ -1201,49 +1183,36 @@ function main()
     #
     if [ "$SHUT_DOWN_AFTER" ]; then
         if [ -z "$DRY" ]; then
-            touch ~/cmontest_will_shut_down
+            execs touch ~/cmontest_will_shut_down
         fi
     fi
 
     #
-    # Preparing the clustercontrol source, generating a file holding the test 
-    # results.
+    # Compile clustercontrol
     #
-    changedir "${PROJECT_CC_WORKER_DIR}"
 
-    prepare_source \
-        --package-name      "clustercontrol" \
-        --requested-branch  "$OPTION_GIT_BRANCH" \
-        --requested-commit  "$OPTION_GIT_COMMIT"
-
-    GIT_HASH=$(git log -n 1 --pretty=format:"%H")
-    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$GIT_BRANCH" = "HEAD" ]; then
-        GIT_BRANCH="$OPTION_GIT_BRANCH"
-    fi
-    GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
-    GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
-    GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
-
-    printVerbose "Preliminary test result file: $(result_file_name)"
-    generate_test_result_info \
-        --test-state "PREPARING" \
-        > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
-
-    compile_source
-    ret_code=$?
-    if [ $ret_code -ne 0 ]; then
-        printVerbose "3487 Failed to compile source."
-
-        printVerbose "Environment: $(env)"
-        printVerbose "Sudo environment: $(sudo env)"
-
+    compile_clustercontrol
+    retcode=$?
+    if [ "$retcode" -ne 0 ]; then
         generate_test_result_info \
             --test-state "FAILURE" \
             > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
-
         save_slog_file
-        return $ret_code
+        return "$retcode"
+    fi
+
+    #
+    # Compile and install s9s tools
+    #
+
+    compile_s9s_tools
+    retcode="$?"
+    if [ "$retcode" -ne 0 ]; then
+        generate_test_result_info \
+            --test-state "FAILURE" \
+            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
+        save_slog_file
+        return "$retcode"
     fi
 
     #
@@ -1258,7 +1227,7 @@ function main()
     # the shutdown file we will now shut down the computer.
     #
     if [ "$SHUT_DOWN_AFTER" -a -f ~/cmontest_will_shut_down ]; then
-        rm -f ~/cmontest_will_shut_down
+        execs rm -f ~/cmontest_will_shut_down
         pip-host-control --shutdown
     fi
 }

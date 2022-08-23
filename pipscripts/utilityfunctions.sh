@@ -203,14 +203,15 @@ function printVerbose()
     fi
 
     if [ "$LOGFILE" ]; then
-        echo -e "$datestring DEBUG $MYNAME($$) $*" | ansi2txt >>"$LOGFILE"
+        echo -e "$datestring $MYNAME($$) $*" >> "$LOGFILE"
     fi
-    
+
+    msg=$(echo "$*" | ansi2txt)
     logger \
         --id=$$ \
         --tag="$MYNAME" \
         --priority="user.notice" \
-        "$*"
+        "$msg"
 }
 
 function printMessage()
