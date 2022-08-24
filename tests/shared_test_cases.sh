@@ -40,8 +40,7 @@ compile the controller source. This may take some time.
 EOF
 
     begin_verbatim
-    #node_ip=$(create_node --autodestroy --template "ubuntu-s9s" "$node_name") 
-    node_ip=$(create_node --autodestroy --template "ubuntu" "$node_name") 
+    node_ip=$(create_node --autodestroy --template "ubuntu-s9s" "$node_name") 
     SECONDARY_CONTROLLER_IP="$node_ip"
     SECONDARY_CONTROLLER_URL="https://$SECONDARY_CONTROLLER_IP:9556"
     end_verbatim
