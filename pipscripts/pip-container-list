@@ -183,7 +183,7 @@ function list_containers_brief()
 
     IFS=$'\n'
     for line in $lines; do
-        if sudo test -d "${line}"; then
+        if sudo test -d "/var/lib/lxc/${line}"; then
             line=$(basename $line)
             echo "$line"
         fi
