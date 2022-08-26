@@ -175,10 +175,10 @@ function destroy_container()
         return 1
     fi
 
-    if [ ! -d "/var/lib/lxc/$container_name" ]; then
+    if sudo test ! -d "/var/lib/lxc/$container_name"; then
         real_name=$(find_name_for_ip "$container_name")
 
-        if [ -d "/var/lib/lxc/$real_name" ]; then
+        if sudo test -d "/var/lib/lxc/$real_name"; then
             destroy_container "$real_name"
             return $?
         fi
@@ -190,10 +190,10 @@ function destroy_container()
     sudo lxc-stop -n "$container_name"
     sudo lxc-destroy -n "$container_name" >/dev/null 2>/dev/null
 
-    if [ -d "/var/lib/lxc/$container_name" ]; then
+    if sudo test -d "/var/lib/lxc/$container_name"; then
         printVerbose "Removing root-fs."
-        umount /var/lib/lxc/$container_name
-        rmdir /var/lib/lxc/$container_name
+        sudo umount /var/lib/lxc/$container_name
+        sudo rmdir /var/lib/lxc/$container_name
     fi
 }
 
@@ -219,7 +219,7 @@ if [ -z "$SERVER" ]; then
         exit 0
     else
         for container in $*; do
-            destroy_container $container
+            destroy_container "$container"
         done
     fi
 else
