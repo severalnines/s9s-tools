@@ -176,9 +176,9 @@ function list_containers_brief()
     local lines
 
     if [ -n "$SERVER" ]; then
-        lines=$($SSH $SERVER -- sudo ls -ld /var/lib/lxc | grep "^d")
+        lines=$($SSH $SERVER -- sudo ls -l /var/lib/lxc | grep "^d")
     else
-        lines=$(sudo ls -ld /var/lib/lxc | grep "^d" 2>/dev/null)
+        lines=$(sudo ls -l /var/lib/lxc | grep "^d" 2>/dev/null)
     fi
 
     IFS=$'\n'
