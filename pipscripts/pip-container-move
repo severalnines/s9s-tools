@@ -201,7 +201,7 @@ else
         sudo tar --numeric-owner -cf "$tar_file_name" "$source_dir" 2>/dev/null
     fi
 
-    #lxc-start --name $CONTAINER
+    #sudo lxc-start --name $CONTAINER
     
 
     echo "Moving archive file..."

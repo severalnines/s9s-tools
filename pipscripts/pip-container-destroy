@@ -135,7 +135,7 @@ function find_name_for_ip()
     local name
     local ip
 
-    OIFS=$IFS; IFS=$'\n'; lines=($(lxc-ls -f)); IFS=$OIFS
+    OIFS=$IFS; IFS=$'\n'; lines=($(sudo lxc-ls -f)); IFS=$OIFS
     
     for line in "${lines[@]}"; do 
         name=$(echo $line | awk '{print $1}')
@@ -187,8 +187,8 @@ function destroy_container()
         return 1
     fi
 
-    lxc-stop -n "$container_name"
-    lxc-destroy -n "$container_name" >/dev/null 2>/dev/null
+    sudo lxc-stop -n "$container_name"
+    sudo lxc-destroy -n "$container_name" >/dev/null 2>/dev/null
 
     if [ -d "/var/lib/lxc/$container_name" ]; then
         printVerbose "Removing root-fs."
@@ -205,14 +205,6 @@ EXTRA_OPTIONS=$*
 if [ -z "$1" ]; then
     printError "The arguments should be container name(s)."
     exit 6
-fi
-
-#
-# Checking root privileges.
-#
-if [ -z "$SERVER" -a "$EUID" -ne 0 ]; then 
-    printError "This script has to have root privileges."
-    exit 5
 fi
 
 #

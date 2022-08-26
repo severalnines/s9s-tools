@@ -199,7 +199,7 @@ function archive_one_container()
     #
     # If the container is running and we are allowed to stop it we stop it.
     #
-    state="$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
+    state="$(sudo lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
             printWarning "Container '$container' is running (no --stop option)."
@@ -209,7 +209,7 @@ function archive_one_container()
             if [ -n "$OPTION_DRY" ]; then
                 echo "DRY: Not stopping container '$container'."
             else
-                lxc-stop -n "$container"
+                sudo lxc-stop -n "$container"
                 stopped=$?
             fi
         fi
@@ -291,9 +291,9 @@ function archive_one_container()
     if [ "$stopped" ]; then
         printVerbose "Starting container '$container'."
         if [ -n "$OPTION_DRY" ]; then
-            echo "DRY: lxc-start -n $container"
+            echo "DRY: sudo lxc-start -n $container"
         else
-            lxc-start -n "$container"
+            sudo lxc-start -n "$container"
         fi
     fi
 
@@ -307,7 +307,7 @@ function check_one_container()
     local state
     local retval=0
 
-    state="$(lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
+    state="$(sudo lxc-ls -f | tail -n +2 | grep "^$container " | awk '{print $2}')"
 
     if [ "$state" == "RUNNING" ]; then
         if [ -z "$STOP_OPTION" ]; then
@@ -546,13 +546,6 @@ function create_archive_auto()
 if [ "$VERSION_OPTION" ]; then
     printVersionAndExit
     exit 0
-fi
-
-if [ -z "$SERVER" ]; then
-    if [ "$EUID" -ne 0 ]; then 
-        printError "This script has to have root privileges."
-        exit 5
-    fi
 fi
 
 if [ -z "$SERVER" ]; then

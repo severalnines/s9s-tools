@@ -360,7 +360,7 @@ function install_package_in_container()
     if [ -f "$container_rootfs/usr/bin/apt-get" ]; then
         if [ -z "$APT_UPDATED" ]; then
             printVerbose "Updating apt package list."
-            lxc-attach -n "$container_name" -- \
+            sudo lxc-attach -n "$container_name" -- \
                 apt-get -m -qq -y update \
                 >>"$LOGFILE" 2>>"$LOGFILE"
 
@@ -369,7 +369,7 @@ function install_package_in_container()
                 printVerbose "Failed to update APT package list."
 
                 printVerbose "/etc/resolv.conf:"
-                lxc-attach -n "$container_name" -- \
+                sudo lxc-attach -n "$container_name" -- \
                     cat /etc/resolv.conf \
                     >>"$LOGFILE" 2>>"$LOGFILE"
 
@@ -380,7 +380,7 @@ function install_package_in_container()
         fi
 
         printVerbose "Installing package '$package_name' with apt-get."
-        lxc-attach -n "$container_name" -- \
+        sudo lxc-attach -n "$container_name" -- \
             apt-get -y --force-yes install "$package_name" \
             >>"$LOGFILE" 2>>"$LOGFILE"
         
@@ -391,25 +391,25 @@ function install_package_in_container()
             echo "/etc/resolv.conf:" \
                 >>"$LOGFILE" 2>>"$LOGFILE"
 
-            lxc-attach -n "$container_name" -- \
+            sudo lxc-attach -n "$container_name" -- \
                 cat /etc/resolv.conf \
                 >>"$LOGFILE" 2>>"$LOGFILE"
             
             echo "/etc/network/interfaces:" \
                 >>"$LOGFILE" 2>>"$LOGFILE"
 
-            lxc-attach -n "$container_name" -- \
+            sudo lxc-attach -n "$container_name" -- \
                 cat /etc/network/interfaces \
                 >>"$LOGFILE" 2>>"$LOGFILE"
         fi
     elif [ -f "$container_rootfs/usr/bin/yum" ]; then
         printVerbose "Installing package '$package_name' with yum."
-        lxc-attach -n "$container_name" -- \
+        sudo lxc-attach -n "$container_name" -- \
             yum install -y "$package_name" \
             >>"$LOGFILE" 2>>"$LOGFILE"
 
         if [ "$package_name" = "openssh-server" ]; then
-            lxc-attach -n "$container_name" -- \
+            sudo lxc-attach -n "$container_name" -- \
                 service sshd start \
                 >>"$LOGFILE" 2>>"$LOGFILE"
         fi
@@ -515,20 +515,20 @@ function create_container()
     #
     if [ "$parent_name" ]; then
         printVerbose "Creating container $new_name from template $parent_name."
-        lxc-copy -n "$parent_name" --newname="$new_name"
+        sudo lxc-copy -n "$parent_name" --newname="$new_name"
     else 
         #
         # The network configuration is in 
         # /etc/lxc/default.conf
         #
         printVerbose "Creating cointainer with $vendor_name $release_name."
-        printVerbose "DOWNLOAD_KEYSERVER=$KEYSERVER lxc-create \
+        printVerbose "DOWNLOAD_KEYSERVER=$KEYSERVER sudo lxc-create \
             -t download --name=$new_name \
                 -- \
                 --dist $vendor_name \
                 --release $release_name \
                 --arch amd64 --no-validate"
-        DOWNLOAD_KEYSERVER="$KEYSERVER" lxc-create \
+        DOWNLOAD_KEYSERVER="$KEYSERVER" sudo lxc-create \
             -t download --name="$new_name" \
                 -- \
                 --dist "$vendor_name" \
@@ -553,14 +553,14 @@ function create_container()
     # 
     # Starting the container. 
     #
-    lxc-start -n "$new_name" >>"$temp_file" 2>>"$temp_file"
+    sudo lxc-start -n "$new_name" >>"$temp_file" 2>>"$temp_file"
     
     #
     # Waiting for IP.
     #
     counter=0
     while [ -z $ip ]; do
-        ip=$(lxc-info -n "$new_name" -i | awk '{print $2}')
+        ip=$(sudo lxc-info -n "$new_name" -i | awk '{print $2}')
 
         if [ "$ip" = "-" ]; then
             ip=""
@@ -617,7 +617,7 @@ function create_container()
     install_package_in_container "$new_name" "dnsutils"
 
     printVerbose "Removing 'ubuntu' user."
-    lxc-attach -n "$new_name" -- \
+    sudo lxc-attach -n "$new_name" -- \
         /usr/sbin/userdel --remove "ubuntu" \
         2>/dev/null
 
@@ -626,7 +626,7 @@ function create_container()
     #
     printVerbose "Creating new user 'pipas'."
 
-    lxc-attach -n "$new_name" -- \
+    sudo lxc-attach -n "$new_name" -- \
         /usr/sbin/useradd --create-home --shell=/bin/bash "$OWNER" \
         2>/dev/null
 
@@ -650,14 +650,14 @@ function create_container()
         "/home/$OWNER/.ssh" \
         "/var/lib/lxc/$new_name/rootfs/home/$OWNER/.ssh"
 
-    lxc-attach -n "$new_name" -- \
+    sudo lxc-attach -n "$new_name" -- \
         chown -R ${OWNER}.${OWNER} "/home/${OWNER}/.ssh" \
         2>/dev/null
 
     #ls -lha /var/lib/lxc/$new_name/rootfs/home/$OWNER
 
     #cp -r "/home/$OWNER/bin/" "/var/lib/lxc/$new_name/rootfs/home/$OWNER/"
-    #lxc-execute -n "$new_name" -- \
+    #sudo lxc-execute -n "$new_name" -- \
     #    chown -R ${OWNER}.${OWNER} "/home/${OWNER}/bin" \
     #    2>/dev/null
 
@@ -673,14 +673,14 @@ function create_container()
     #
     # Installing some packages.
     #
-    #lxc-execute -n "$new_name" -- apt-get -y --force-yes update
-    #lxc-execute -n "$new_name" -- apt-get -y --force-yes upgrade
-    #lxc-execute -n "$new_name" -- apt-get -y --force-yes install xauth vim-gtk3
+    #sudo lxc-execute -n "$new_name" -- apt-get -y --force-yes update
+    #sudo lxc-execute -n "$new_name" -- apt-get -y --force-yes upgrade
+    #sudo lxc-execute -n "$new_name" -- apt-get -y --force-yes install xauth vim-gtk3
 
     #
     # Starting the new container, showing the list.
     #
-    #lxc-start -n "$new_name"
+    #sudo lxc-start -n "$new_name"
 
 
     echo $ip
@@ -737,16 +737,6 @@ function list_images_long()
 # Checking command line arguments.
 #
 EXTRA_OPTIONS=$*
-
-#
-# Checking root privileges.
-#
-if [ -z "$SERVER" -a -z "$LIST_IMAGES_OPTION" ]; then
-    if [ "$EUID" -ne 0 ]; then 
-        printError "This script has to have root privileges."
-        exit 5
-    fi
-fi
 
 if [ "$OWNER" = "root" -a -n "$LIST_IMAGES_OPTION" ]; then
     printError "The owner can't be root."
