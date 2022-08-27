@@ -886,7 +886,7 @@ function check_job()
 #
 function check_log_messages()
 {
-    local log_file="/tmp/cmon.log"
+    local log_file="/var/log/cmon.log"
     local line
     local cmon_user="system"
     local password="secret"
@@ -2272,12 +2272,6 @@ function create_s9s_config()
 
     # FIXME: This should not be here:
     sudo rm -f $HOME/pip-container-create.log 2>/dev/null
-}
-
-function remove_cmon_configs()
-{
-    print_title "Checking Remaining Cmon Configs & Logs"
-    rm -rf /tmp/cmon*
 }
 
 #

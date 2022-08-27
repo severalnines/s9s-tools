@@ -81,7 +81,7 @@ EOF
     fi
     end_verbatim
 
-    ssh_to_controller "rm -rvf /var/tmp/cmon* /tmp/cmon*"
+    ssh_to_controller "rm -rvf /etc/cmon.d/*"
 
     #
     # Starting the secondary controller.

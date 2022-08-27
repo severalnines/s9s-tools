@@ -223,7 +223,7 @@ EOF
         failure "Cluster ID '$CLUSTER_ID' is invalid"
     fi
 
-    my_exec sudo cat /tmp/cmon_${CLUSTER_ID}.cnf
+    my_exec sudo cat /etc/cmon.d/cmon_${CLUSTER_ID}.cnf
     echo "\n\n"
 
     wait_for_cluster_started "$CLUSTER_NAME"
