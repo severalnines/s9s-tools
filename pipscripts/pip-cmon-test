@@ -62,11 +62,11 @@ Usage:
   -v, --version           Print version information and exit.
   --verbose               Print more messages.
   --log-file=FILE         Store all the messages in the given file too.
- 
+
   --user=USERNAME         The name of the user requested the test.
 
   --pid                   Print the PID of the test script if it is running.
-  
+
   --no-git-pull           Do not execute 'git pull' before the test.
   --no-compile            Do not compile the source, use as it is.
   --keep-nodes            Pass --keep-nodes to tests not to destroy containers.
@@ -155,7 +155,7 @@ while true; do
             VENDOR_OPTION="--vendor=$1"
             shift
             ;;
-            
+
         --sqlversion)
             shift
             VERSION_OPTION="--provider-version=$1"
@@ -325,7 +325,7 @@ function prepare_source()
     local requested_commit
 
     while [ -n "$1" ]; do
-        case "$1" in 
+        case "$1" in
             --requested-branch)
                 requested_branch="$2"
                 shift 2
@@ -348,14 +348,14 @@ function prepare_source()
         #
         current_branch=$(exec git rev-parse --abbrev-ref HEAD)
         printVerbose "Current branch is '$current_branch'."
-       
+
         if [ -z "$requested_branch" ]; then
             printVerbose "Requested branch is not set, using 'master'."
             requested_branch="master"
-        else 
+        else
             printVerbose "Requested branch is '$requested_branch'."
         fi
-        
+
         execs git fetch --all
 
         # always reset any local changes first, then go to master
@@ -392,6 +392,8 @@ function prepare_source()
 
 function compile_clustercontrol()
 {
+    local usecache="$1"
+
     changedir "${PROJECT_CC_WORKER_DIR}"
 
     if [ "$OPTION_NO_COMPILE" ]; then
@@ -419,27 +421,22 @@ function compile_clustercontrol()
         --test-state "PREPARING" \
         > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
 
-    # Check the ft_full binary cache
+    # Check the CC binary cache
 
-    case "$OPTION_TEST_NAME" in 
-        ft_*.sh)
-            printVerbose "GIT_HASH: $GIT_HASH"
-            if [ "$GIT_HASH" != "" ]; then
-                repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
-                printVerbose "repodir: $repodir"
-                ccdir="${PROJECT_CC_WORKER_DIR}"
+    if [ "$usecache" = "usecache" ]; then
+        printVerbose "GIT_HASH: $GIT_HASH"
+        if [ "$GIT_HASH" != "" ]; then
+            repodir="$HOME/cc_bin_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
+            ccdir="${PROJECT_CC_WORKER_DIR}"
 
-                if [ -d "$repodir" ]; then
-                    printVerbose "Using previously compiled ft_full"
-                    execs cp $repodir/ft_full $ccdir/tests/ft_full/
-                    return 0
-                fi
+            if [ -d "$repodir" ]; then
+                printVerbose "Using previously compiled binaries from $repodir"
+                execs cp $repodir/ft_full $ccdir/tests/ft_full/
+                execs cp $repodir/cmon $ccdir/src/
+                return 0
             fi
-        ;;
-        *)
-            # Nothing to do here
-        ;;
-    esac
+        fi
+    fi
 
     # Cache miss, lets compile
 
@@ -462,7 +459,7 @@ function compile_clustercontrol()
         #exec tail -n 50 "$PWD/make.log" >>$LOGFILE
         return $retcode
     fi
-    
+
     # make tests
 
     execs cd tests
@@ -476,33 +473,31 @@ function compile_clustercontrol()
 
     # make install
 
-    #exec sudo make install >> make.log
-    #retcode=$?
-    #if [ "$retcode" -gt 1 ]; then
-    #    return $retcode
-    #fi
+    exec sudo make install >> make.log
+    retcode=$?
+    if [ "$retcode" -gt 1 ]; then
+        return $retcode
+    fi
 
-    # cache ft_full
+    # cache created binaries (cmon, ft_full)
 
-    case "$OPTION_TEST_NAME" in 
-        ft_*.sh)
-            repodir="$HOME/ft_full_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
-            ccdir="${PROJECT_CC_WORKER_DIR}"
+    if [ "$usecache" = "usecache" ]; then
+        repodir="$HOME/cc_bin_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
+        ccdir="${PROJECT_CC_WORKER_DIR}"
 
-            execs mkdir -p "$repodir"
-            printVerbose "Saving ft_full to cache"
-            execs cp $ccdir/tests/ft_full/ft_full $repodir/
-        ;;
-        *)
-            # Nothing to do here
-        ;;
-    esac
+        execs mkdir -p "$repodir"
+        printVerbose "Saving created binaries to $repodir"
+        execs cp $ccdir/tests/ft_full/ft_full $repodir/
+        execs cp $ccdir/src/cmon $repodir/
+    fi
 
     return 0
 }
 
 function compile_s9s_tools()
 {
+    local usecache="$1"
+
     changedir "${PROJECT_S9S_WORKER_DIR}"
 
     if [ "$OPTION_NO_COMPILE" ]; then
@@ -516,21 +511,23 @@ function compile_s9s_tools()
 
     # Check the s9s binary cache
 
-    S9S_GIT_HASH=$(git log -n 1 --pretty=format:"%H")
-    printVerbose "S9S_GIT_HASH: $S9S_GIT_HASH"
-    S9S_GIT_BRANCH=master
-    if [ "$S9S_GIT_HASH" != "" ]; then
-        repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
-        s9sdir="${PROJECT_S9S_WORKER_DIR}"
-        printVerbose "repodir: $repodir"
+    if [ "$usecache" = "usecache" ]; then
+        S9S_GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+        printVerbose "S9S_GIT_HASH: $S9S_GIT_HASH"
+        S9S_GIT_BRANCH=master
+        if [ "$S9S_GIT_HASH" != "" ]; then
+            repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
+            s9sdir="${PROJECT_S9S_WORKER_DIR}"
+            printVerbose "repodir: $repodir"
 
-        if [ -d "$repodir" ]; then
-            printVerbose "Using previously compiled s9s"
-            execs cp $repodir/s9s $s9sdir/s9s/
-            execs cp $repodir/libs9s.so $s9sdir/libs9s/
-            execs /usr/bin/install -c $repodir/libs9s.so "/usr/lib"
-            execs /usr/bin/install -c $repodir/s9s "/usr/bin"
-            return 0
+            if [ -d "$repodir" ]; then
+                printVerbose "Using previously compiled s9s"
+                execs cp $repodir/s9s $s9sdir/s9s/
+                execs cp $repodir/libs9s.so $s9sdir/libs9s/
+                execs /usr/bin/install -c $repodir/libs9s.so "/usr/lib"
+                execs /usr/bin/install -c $repodir/s9s "/usr/bin"
+                return 0
+            fi
         fi
     fi
 
@@ -544,7 +541,7 @@ function compile_s9s_tools()
     fi
 
     # make
-    
+
     execs rm -f make.log
     exec make -j10 >> make.log
     retcode=$?
@@ -552,7 +549,7 @@ function compile_s9s_tools()
         #tail -n 50 "make.log" >>$LOGFILE
         return $retcode
     fi
-    
+
     # make tests
 
     execs cd tests
@@ -575,13 +572,15 @@ function compile_s9s_tools()
 
     # cache s9s
 
-    repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
-    s9sdir="${PROJECT_S9S_WORKER_DIR}"
+    if [ "$usecache" = "usecache" ]; then
+        repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
+        s9sdir="${PROJECT_S9S_WORKER_DIR}"
 
-    execs mkdir -p "$repodir"
-    printVerbose "Saving s9s to cache"
-    execs cp $s9sdir/s9s/s9s $repodir/
-    execs cp $s9sdir/libs9s/libs9s.so $repodir/
+        execs mkdir -p "$repodir"
+        printVerbose "Saving s9s to cache"
+        execs cp $s9sdir/s9s/s9s $repodir/
+        execs cp $s9sdir/libs9s/libs9s.so $repodir/
+    fi
 
     return "$retcode"
 }
@@ -603,7 +602,7 @@ function result_file_name()
 
 function log_bin_file_name()
 {
-    echo "$(result_file_name_base).ft_full"
+    echo "$(result_file_name_base).cmon"
 }
 
 function log_core_file_name()
@@ -627,7 +626,7 @@ function ft_test_ended()
     local backend_pid="$2"
     local core_file
 
-    #printVerbose "<h2>Backtrace</h2>" 
+    #printVerbose "<h2>Backtrace</h2>"
 
     printVerbose "The test ended."
     printVerbose "  exit_code: $exit_code"
@@ -665,7 +664,7 @@ function ft_test_ended()
             -batch \
             -ex "thread apply all back" \
             -ex "quit" \
-            ft_full/ft_full "$core_file" \
+            cmon "$core_file" \
             >>$LOGFILE
 
         execs sudo mkdir -p "$HOME/tmp"
@@ -675,7 +674,8 @@ function ft_test_ended()
         #move_to_results "/tmp/$(log_core_file_name)" "$(log_core_file_name)"
         move_to_results "$core_file" "$(log_core_file_name)"
 
-        move_to_results "${PROJECT_CC_WORKER_DIR}/tests/ft_full/ft_full" \
+        move_to_results \
+                        "${PROJECT_DATA_ROOT}/log/cmon.log" \
                         "$(log_bin_file_name)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
@@ -719,7 +719,7 @@ function upload_result_file()
     local counter
 
     while true; do
-        case "$1" in 
+        case "$1" in
             --unit-test)
                 shift
                 unit_test_option="--unit-test"
@@ -760,8 +760,10 @@ function upload_result_file()
             > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
 
         if [ -z "$unit_test_option" -a \
-            -f "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" ]; then
-            save_to_results "${PROJECT_CC_WORKER_DIR}/tests/ft_full.log" "$(daemon_log_file_name)"
+            -f ${PROJECT_DATA_ROOT}/log/cmon.log ]; then
+            save_to_results \
+                ${PROJECT_DATA_ROOT}/log/cmon.log \
+                "$(daemon_log_file_name)"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -801,7 +803,7 @@ function generate_test_result_info()
     local test_state
 
     while true; do
-        case "$1" in 
+        case "$1" in
             --unit-test)
                 shift
                 is_unit_test="true"
@@ -825,7 +827,7 @@ function generate_test_result_info()
 
     git_has_local_changes="no"
 
-    if ! git diff-index --quiet HEAD --; then 
+    if ! git diff-index --quiet HEAD --; then
         git_has_local_changes="yes"
     fi
 
@@ -849,19 +851,8 @@ is_unit_test="$is_unit_test"
 EOF
 }
 
-function run_test()
+function enable_core_file_generation()
 {
-    local return_code
-    local logfile
-
-    logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
-
-    #
-    # Notifying the user about a test is starting.
-    #
-    printVerbose "Preparing to run $OPTION_TEST_NAME."
-    save_slog_file
-
     printVerbose "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern >> /dev/null 2>> $LOGFILE
     retcode=$?
@@ -875,7 +866,7 @@ function run_test()
         *core* \
         */*core* \
         ${PROJECT_CC_WORKER_DIR}/*core* \
-        ${PROJECT_CC_WORKER_DIR}/tests/*core*; 
+        ${PROJECT_CC_WORKER_DIR}/tests/*core*;
     do
         if [ ! -f "$core_file" ]; then
             continue
@@ -893,243 +884,290 @@ function run_test()
     printVerbose "User limits with sudo:"
     exec sudo ulimit -c unlimited | tee -a $LOGFILE
     exec sudo ulimit -a | tee -a $LOGFILE
+}
+
+function run_s9s_ft_test()
+{
+    local return_code
+    local logfile
+
+    logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
+
+    #
+    # Notifying the user about a test is starting.
+    #
+    printVerbose "Preparing to run $OPTION_TEST_NAME."
+    save_slog_file
 
     #
     # Running the actual test.
     #
-    case "$OPTION_TEST_NAME" in 
-        ft_*.sh)
-            #
-            # Running the ft_full
-            #
-            export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
-            changedir "${PROJECT_CC_WORKER_DIR}/tests"
+    export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
+    changedir "${PROJECT_CC_WORKER_DIR}"
 
-            if [ -x "./ft_full/ft_full" ]; then
-                printVerbose "Running 'ft_full'..."
+    if [ ! -x "/usr/sbin/cmon" ]; then
+        printVerbose "/usr/sbin/cmon binary is not found or not executeable."
+        save_slog_file
+        return 1
+    fi
 
-                backend_pid=$(pidof ft_full)
-                if [ "" = "$backend_pid" ]; then 
-                    execs rm -fr ${PROJECT_CC_WORKER_DIR}/tests/ft_full.log 
+    printVerbose "Running 'cmon'..."
 
-                    # Cleaning up before.
-                    execs sudo rm -rvf /tmp/cmon*
-                    execs sudo rm -rvf /tmp/BACKUP-*
+    backend_pid=$(pidof cmon)
+    if [ "" = "$backend_pid" ]; then
+        execs rm -fr ${PROJECT_DATA_ROOT}/log/cmon.log
 
-                    printVerbose "$(prompt) sudo ./ft_full/ft_full \>\>ft_full.log 2\>\>ft_full.log"
-                    sudo ./ft_full/ft_full >>ft_full.log 2>>ft_full.log &
-                    backend_pid=$!
-                    printVerbose "Backend PID is ${backend_pid}."
-                    printVerbose "Waiting for ft_full to create /tmp/cmon_test/usermgmt.fifo"
+        # Cleaning up before.
+        execs sudo rm -rvf /tmp/cmon*
+        execs sudo rm -rvf /tmp/BACKUP-*
 
-                    for delay in $(seq 1 100); do
-                        if [ -e "/tmp/cmon_test/usermgmt.fifo" ]; then
-                            break
-                        fi
+        printVerbose "$(prompt) sudo /usr/abin/cmon -d"
+        sudo /usr/sbin/cmon \
+            >>${PROJECT_DATA_ROOT}/log/cmon.log \
+            2>>${PROJECT_DATA_ROOT}/log/cmon.log &
+        backend_pid=$!
+        printVerbose "Backend PID is ${backend_pid}."
+        printVerbose "Waiting for cmon to create /var/lib/cmon/usermgmt.fifo"
 
-                        sleep 3
-                    done
-                else
-                    printVerbose "ft_full is already running"
-                    printVerbose "Backend PID is ${backend_pid}."
-                    printVerbose "PID won't be stored, so ft_full won't be stopped."
-                    backend_pid=""
-                fi
-            else
-                printVerbose "The ft_full/ft_full was not found."
-                save_slog_file
-                return 1
+        for delay in $(seq 1 100); do
+            if [ -e "/var/lib/cmon/usermgmt.fifo" ]; then
+                break
             fi
 
-            changedir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
+            sleep 3
+        done
+    else
+        printVerbose "cmon is already running"
+        printVerbose "Backend PID is ${backend_pid}."
+        printVerbose "PID won't be stored, so cmon won't be stopped."
+        backend_pid=""
+    fi
 
-            if [ ! -f "$OPTION_TEST_NAME" ]; then
-                printVerbose "Program $OPTION_TEST_NAME was not found in $PWD"
-                return 1
-            fi
+    changedir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
 
-            # 
-            # Running the test script itself.
-            # 
-            printVerbose "Running '$OPTION_TEST_NAME'..."
-            save_slog_file
-            printVerbose "timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
-                --print-commands --reset-config --server=$(hostname) \
-                \>\>$logfile 2\>\>$logfile"
+    if [ ! -f "$OPTION_TEST_NAME" ]; then
+        printVerbose "Program $OPTION_TEST_NAME was not found in $PWD"
+        return 1
+    fi
 
-            pip-host-control --testing --status="Running $OPTION_TEST_NAME"
+    #
+    # Running the test script itself.
+    #
+    printVerbose "Running '$OPTION_TEST_NAME'..."
+    save_slog_file
+    printVerbose "timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
+        --print-commands --reset-config --server=$(hostname) \
+        \>\>$logfile 2\>\>$logfile"
 
-            timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
-                --print-commands \
-                --reset-config \
-                --server=$(hostname) \
-                $OPTION_KEEP_NODES \
-                >>"$logfile" 2>>"$logfile" &
+    pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
-            test_pid=$!
-            printVerbose "Test script PID is ${test_pid}."
+    timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
+        --print-commands \
+        --reset-config \
+        --server=$(hostname) \
+        $OPTION_KEEP_NODES \
+        >>"$logfile" 2>>"$logfile" &
 
-            #
-            # Starting a watcher that keeps uploading the output...
-            #
-            upload_result_file \
-                --functional-test \
-                --pid "$test_pid" \
-                "RUNNING"
-            
-            watcher_pid=$!
-            printVerbose "Watcher PID is ${watcher_pid}."
-            save_slog_file
+    test_pid=$!
+    printVerbose "Test script PID is ${test_pid}."
 
-            #
-            # Waiting for the test to be ended.
-            #
-            printVerbose "Waiting until the test script ends..."
-            wait "$test_pid" 2>> $LOGFILE
-            return_code=$?
+    #
+    # Starting a watcher that keeps uploading the output...
+    #
+    upload_result_file \
+        --functional-test \
+        --pid "$test_pid" \
+        "RUNNING"
 
-            printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
+    watcher_pid=$!
+    printVerbose "Watcher PID is ${watcher_pid}."
+    save_slog_file
 
-            printVerbose "Waiting for test watcher to end..."
-            wait "$watcher_pid" 2>> $LOGFILE
+    #
+    # Waiting for the test to be ended.
+    #
+    printVerbose "Waiting until the test script ends..."
+    wait "$test_pid" 2>> $LOGFILE
+    return_code=$?
 
-            changedir "${PROJECT_CC_WORKER_DIR}/tests"
+    printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
 
-            ft_test_ended \
-                "$return_code" \
-                "$backend_pid" \
-                >>ft_full.log 2>>ft_full.log
-            
-            #
-            # Cleaning up after.
-            #
-            if [ "$backend_pid" != "" ]; then
-                printVerbose "Stopping the ft_full backend."
-                sudo kill $backend_pid
-                sleep 3
-                sudo kill -9 $backend_pid
-                sleep 3
-                sudo pkill ft_full
-                sleep 3
-                sudo pkill -9 ft_full
-                #sudo rm -rvf /tmp/cmon*
-                #sudo rm -rvf /tmp/BACKUP-*
-            fi
+    printVerbose "Waiting for test watcher to end..."
+    wait "$watcher_pid" 2>> $LOGFILE
 
-            if [ $return_code -eq 0 ]; then
-                upload_result_file \
-                    --functional-test \
-                    "SUCCESS"
-            else
-                upload_result_file \
-                    --functional-test \
-                    "FAILURE"
-            fi
-            ;;
+    changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
-        ft_*)
-            changedir "${PROJECT_CC_WORKER_DIR}/tests"
+    ft_test_ended \
+        "$return_code" \
+        "$backend_pid" \
+        >>${PROJECT_DATA_ROOT}/log/cmon.log \
+        2>>${PROJECT_DATA_ROOT}/log/cmon.log
 
-            if [ -f "Vagrantfile" ]; then
-                vagrant destroy -f
-                rm -f "Vagrantfile"
-            fi
+    #
+    # Cleaning up after.
+    #
+    if [ "$backend_pid" != "" ]; then
+        printVerbose "Stopping the cmon backend."
+        sudo kill $backend_pid
+        sleep 3
+        sudo kill -9 $backend_pid
+        sleep 3
+        sudo pkill cmon
+        sleep 3
+        sudo pkill -9 cmon
+    fi
 
-            rm -f test_ssh_key.pub*
-            rm -fr ft_full.log 
+    if [ $return_code -eq 0 ]; then
+        upload_result_file \
+            --functional-test \
+            "SUCCESS"
+    else
+        upload_result_file \
+            --functional-test \
+            "FAILURE"
+    fi
 
-            printVerbose "Running ${OPTION_TEST_NAME}."
+    printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
+    save_slog_file
+}
 
-            if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
-                printVerbose "Program $OPTION_TEST_NAME was not found."
+#
+# DEPRECATED, not maintained, buggy
+#
+function run_cc_ft_test()
+{
+    local return_code
+    local logfile
 
-                return 1
-            fi
+    logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
 
-            pip-host-control --testing --status="Running $OPTION_TEST_NAME"
-            printVerbose "Running $OPTION_TEST_NAME."
-            ./$OPTION_TEST_NAME/$OPTION_TEST_NAME \
-                --template=headless \
-                $VENDOR_OPTION \
-                $VERSION_OPTION \
-                $OS_OPTION >>"$logfile" 2>>"$logfile" &
+    #
+    # Notifying the user about a test is starting.
+    #
+    printVerbose "Preparing to run $OPTION_TEST_NAME."
+    save_slog_file
 
-            test_pid=$!
-            
-            upload_result_file \
-                --functional-test \
-                --pid "$test_pid" \
-                "RUNNING"
+    #
+    # Running the actual test.
+    #
+    changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
-            watcher_pid=$!
-            wait "$test_pid"
-            return_code=$?
+    if [ -f "Vagrantfile" ]; then
+        vagrant destroy -f
+        rm -f "Vagrantfile"
+    fi
 
-            printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
-            
-            ft_test_ended \
-                "$return_code" \
-                "" # \ >>ft_full.log 2>>ft_full.log
+    rm -f test_ssh_key.pub*
+    rm ${PROJECT_DATA_ROOT}/log/cmon.log
 
-            if [ $return_code -eq 0 ]; then
-                upload_result_file \
-                    --functional-test \
-                    "SUCCESS"
-            else
-                upload_result_file \
-                    --functional-test \
-                    "FAILURE"
-            fi
-            ;;
+    printVerbose "Running ${OPTION_TEST_NAME}."
 
-        ut_s9s*)
-            #
-            # This is under development.
-            #
-            changedir "${PROJECT_S9S_WORKER_DIR}/tests"
+    if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
+        printVerbose "Program $OPTION_TEST_NAME was not found."
 
-            upload_result_file \
-                --unit-test \
-                "RUNNING"
+        return 1
+    fi
 
-            #
-            # Running the test.
-            #
-            printVerbose "Running $OPTION_TEST_NAME."
-            printVerbose "$OPTION_TEST_NAME/$OPTION_TEST_NAME >>$logfile 2>>$logfile"
+    pip-host-control --testing --status="Running $OPTION_TEST_NAME"
+    printVerbose "Running $OPTION_TEST_NAME."
+    ./$OPTION_TEST_NAME/$OPTION_TEST_NAME \
+        --template=headless \
+        $VENDOR_OPTION \
+        $VERSION_OPTION \
+        $OS_OPTION >>"$logfile" 2>>"$logfile" &
 
-            if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
-                printVerbose "File $OPTION_TEST_NAME/$OPTION_TEST_NAME not found in ${PWD}."
-                
-                upload_result_file \
-                    --unit-test \
-                    "FAILURE"
+    test_pid=$!
 
-                return 1
-            fi
+    upload_result_file \
+        --functional-test \
+        --pid "$test_pid" \
+        "RUNNING"
 
-            printVerbose "Running $OPTION_TEST_NAME."
+    watcher_pid=$!
+    wait "$test_pid"
+    return_code=$?
 
-            pip-host-control --testing --status="Running $OPTION_TEST_NAME"
+    printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
 
-            $OPTION_TEST_NAME/$OPTION_TEST_NAME --color >>$logfile 2>>$logfile
-            return_code=$?
+    ft_test_ended \
+        "$return_code" \
+        "" \
+        >> ${PROJECT_DATA_ROOT}/log/cmon.log \
+        2>> ${PROJECT_DATA_ROOT}/log/cmon.log
 
-            printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
-            if [ $return_code -eq 0 ]; then
-                upload_result_file \
-                    --unit-test \
-                    "SUCCESS"
-            else
-                upload_result_file \
-                    --unit-test \
-                    "FAILURE"
-            fi
-            ;;
+    if [ $return_code -eq 0 ]; then
+        upload_result_file \
+            --functional-test \
+            "SUCCESS"
+    else
+        upload_result_file \
+            --functional-test \
+            "FAILURE"
+    fi
 
-        *)
-            printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
-    esac
+    printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
+    save_slog_file
+}
+
+#
+# Running s9s unit tests by pip-cmon-test was mark by Laszlo as:
+# "This is under development."
+#
+function run_s9s_ut_test()
+{
+    local return_code
+    local logfile
+
+    logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
+
+    #
+    # Notifying the user about a test is starting.
+    #
+    printVerbose "Preparing to run $OPTION_TEST_NAME."
+    save_slog_file
+
+    #
+    # Running the actual test.
+    #
+    changedir "${PROJECT_S9S_WORKER_DIR}/tests"
+
+    upload_result_file \
+        --unit-test \
+        "RUNNING"
+
+    #
+    # Running the test.
+    #
+    printVerbose "Running $OPTION_TEST_NAME."
+    printVerbose "$OPTION_TEST_NAME/$OPTION_TEST_NAME >>$logfile 2>>$logfile"
+
+    if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
+        printVerbose "File $OPTION_TEST_NAME/$OPTION_TEST_NAME not found in ${PWD}."
+
+        upload_result_file \
+            --unit-test \
+            "FAILURE"
+
+        return 1
+    fi
+
+    printVerbose "Running $OPTION_TEST_NAME."
+
+    pip-host-control --testing --status="Running $OPTION_TEST_NAME"
+
+    $OPTION_TEST_NAME/$OPTION_TEST_NAME --color >>$logfile 2>>$logfile
+    return_code=$?
+
+    printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
+    if [ $return_code -eq 0 ]; then
+        upload_result_file \
+            --unit-test \
+            "SUCCESS"
+    else
+        upload_result_file \
+            --unit-test \
+            "FAILURE"
+    fi
 
     printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
     save_slog_file
@@ -1158,7 +1196,7 @@ function install_packages_on_test_server()
 #
 function main()
 {
-    local retcode
+    local retcode=0
 
     printVerbose "Starting main()."
     printVerbose "Preparing test ($MYNAME ver. $VERSION)."
@@ -1173,7 +1211,7 @@ function main()
         printError "Directory '${PROJECT_CC_WORKER_DIR}' does not exist."
         return 6
     fi
-    
+
     execs rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
     execs rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
 
@@ -1187,38 +1225,44 @@ function main()
         fi
     fi
 
-    #
-    # Compile clustercontrol
-    #
-
-    compile_clustercontrol
-    retcode=$?
-    if [ "$retcode" -ne 0 ]; then
-        generate_test_result_info \
-            --test-state "FAILURE" \
-            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
-        save_slog_file
-        return "$retcode"
-    fi
-
-    #
-    # Compile and install s9s tools
-    #
-
-    compile_s9s_tools
-    retcode="$?"
-    if [ "$retcode" -ne 0 ]; then
-        generate_test_result_info \
-            --test-state "FAILURE" \
-            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
-        save_slog_file
-        return "$retcode"
-    fi
+    enable_core_file_generation
 
     #
     # Running the test.
     #
-    run_test
+    case "$OPTION_TEST_NAME" in
+        ft_*.sh)
+            compile_clustercontrol "usecache"
+            retcode=$?
+            if [ "$retcode" -eq 0 ]; then
+                compile_s9s_tools "usecache"
+                retcode="$?"
+                if [ "$retcode" -eq 0 ]; then
+                    run_s9s_ft_test
+                fi
+            fi
+            ;;
+        ft_*)
+            run_cc_ft_test
+            ;;
+        ut_s9s*)
+            compile_s9s_tools "dontusecache"
+            retcode="$?"
+            if [ "$retcode" -eq 0 ]; then
+                run_s9s_ut_test
+            fi
+            ;;
+        *)
+            printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
+    esac
+
+    if [ "$retcode" -ne 0 ]; then
+        generate_test_result_info \
+            --test-state "FAILURE" \
+            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
+        save_slog_file
+        return "$retcode"
+    fi
 
     printVerbose "Finished with tests, idle."
 
