@@ -201,8 +201,8 @@ function testCreateCluster()
         --cdt-path   "/" \
         --type       "MYSQLCLUSTER" \
         --state      "STARTED" \
-        --config     "/tmp/cmon_1.cnf" \
-        --log        "/etc/cmon.d/cmon_1.log"
+        --config     "/etc/cmon.d/cmon_1.cnf" \
+        --log        "/var/log/cmon_1.log"
 
     end_verbatim
 }

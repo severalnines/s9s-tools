@@ -15,7 +15,7 @@ cd $MYDIR
 source ./include.sh
 source ./include_ldap.sh
 
-OPTION_LDAP_CONFIG_FILE="/tmp/cmon-ldap.cnf"
+OPTION_LDAP_CONFIG_FILE="/etc/cmon-ldap.cnf"
 
 #
 # Prints usage information and exits.

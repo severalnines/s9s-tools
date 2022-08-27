@@ -29,7 +29,7 @@
       },
       {
         "name": "config_file_path",
-        "current_value": "/tmp/cmon_1.cnf",
+        "current_value": "/etc/cmon.d/cmon_1.cnf",
         "default_value": null,
         "description": "The config file path. This configuration value is read-only.",
         "keys": [
@@ -40,7 +40,7 @@
       },
       {
         "name": "logfile",
-        "current_value": "/etc/cmon.d/cmon_1.log",
+        "current_value": "/var/log/cmon_1.log",
         "default_value": null,
         "description": "The log file absolute path.",
         "keys": [ "logfile"  ],

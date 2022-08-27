@@ -202,8 +202,8 @@ function testCreateCluster()
         --cdt-path   "/" \
         --type       "REPLICATION" \
         --state      "STARTED" \
-        --config     "/tmp/cmon_1.cnf" \
-        --log        "/etc/cmon.d/cmon_1.log"
+        --config     "/etc/cmon.d/cmon_1.cnf" \
+        --log        "/var/log/cmon_1.log"
 
     check_replication_state \
         --cluster-name   "$CLUSTER_NAME" \

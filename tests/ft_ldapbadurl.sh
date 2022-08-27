@@ -11,7 +11,7 @@ CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
-OPTION_LDAP_CONFIG_FILE="/tmp/cmon-ldap.cnf"
+OPTION_LDAP_CONFIG_FILE="/etc/cmon-ldap.cnf"
 
 
 cd $MYDIR
