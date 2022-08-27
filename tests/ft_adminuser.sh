@@ -11,7 +11,7 @@ CLUSTER_ID=""
 PIP_CONTAINER_CREATE=$(which "pip-container-create")
 CONTAINER_SERVER=""
 
-export S9S_SYSTEM_CONFIG="/tmp/cmon_etc/s9s.conf"
+export S9S_SYSTEM_CONFIG="/etc/s9s.conf"
 export S9S_USER_CONFIG="$HOME/.s9s/$MYBASENAME.conf"
 
 cd $MYDIR

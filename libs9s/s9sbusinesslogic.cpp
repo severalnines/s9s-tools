@@ -2662,8 +2662,8 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
             controller = "127.0.0.1";
 
         // this one is used by unit/functional tests
-        if (S9sFile("/tmp/cmon_test/usermgmt.fifo").exists())
-            fifos << "/tmp/cmon_test/usermgmt.fifo";
+        if (S9sFile("/var/lib/cmon/usermgmt.fifo").exists())
+            fifos << "/var/lib/cmon/usermgmt.fifo";
 
         // and in real cmon daemon
         fifos << "/var/lib/cmon/usermgmt.fifo";

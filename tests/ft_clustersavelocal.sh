@@ -241,7 +241,7 @@ EOF
 
     wait_for_cluster_started "$CLUSTER_NAME"
 
-    config_file="/tmp/cmon_1.cnf"
+    config_file="/etc/cmon.d/cmon_1.cnf"
     end_verbatim
 
     #print_subtitle "Cluster Config in $config_file"
@@ -453,7 +453,7 @@ function testRestoreCluster()
     #
     # Checking the configuration file.
     #
-    config_file="/tmp/cmon_2.cnf"
+    config_file="/etc/cmon.d/cmon_2.cnf"
     print_subtitle "Cluster Config in $config_file"
 
     begin_verbatim
