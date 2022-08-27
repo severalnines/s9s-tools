@@ -190,7 +190,7 @@ function checkController()
         exit 1
     fi
     
-    expected="^-  *logfile  */tmp/cmon_1.log *$"
+    expected="^-  *logfile  */etc/cmon.d/cmon_1.log *$"
     if ! echo "$lines" | grep --quiet "$expected"; then
         failure "Expected line not found: '$expected'"
         mys9s node --list-config --nodes=$controller_ip

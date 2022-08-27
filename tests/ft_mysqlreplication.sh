@@ -245,7 +245,7 @@ function testCreateCluster()
         --type       "REPLICATION" \
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
-        --log        "/tmp/cmon_1.log"
+        --log        "/etc/cmon.d/cmon_1.log"
 
     echo "  FIRST_ADDED_NODE: '$FIRST_ADDED_NODE'"
     echo " SECOND_ADDED_NODE: '$SECOND_ADDED_NODE'"

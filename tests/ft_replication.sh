@@ -203,7 +203,7 @@ function testCreateCluster()
         --type       "REPLICATION" \
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
-        --log        "/tmp/cmon_1.log"
+        --log        "/etc/cmon.d/cmon_1.log"
 
     check_replication_state \
         --cluster-name   "$CLUSTER_NAME" \

@@ -217,7 +217,7 @@ EOF
         --type       "POSTGRESQL_SINGLE" \
         --state      "STARTED" \
         --config     "/tmp/cmon_1.cnf" \
-        --log        "/tmp/cmon_1.log"
+        --log        "/etc/cmon.d/cmon_1.log"
 
     #
     # Adding a tag to the cluster and checking if the tag is indeed added.

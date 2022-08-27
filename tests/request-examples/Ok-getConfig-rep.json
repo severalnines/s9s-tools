@@ -40,7 +40,7 @@
       },
       {
         "name": "logfile",
-        "current_value": "/tmp/cmon_1.log",
+        "current_value": "/etc/cmon.d/cmon_1.log",
         "default_value": null,
         "description": "The log file absolute path.",
         "keys": [ "logfile"  ],

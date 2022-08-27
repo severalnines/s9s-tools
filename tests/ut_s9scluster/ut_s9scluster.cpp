@@ -118,7 +118,7 @@ static const char *clusterJson1 =
 "        'hoststatus': 'CmonHostOnline',\n"
 "        'ip': '192.168.1.127',\n"
 "        'lastseen': 1496744133,\n"
-"        'logfile': '/tmp/cmon_1.log',\n"
+"        'logfile': '/etc/cmon.d/cmon_1.log',\n"
 "        'maintenance_mode_active': false,\n"
 "        'message': 'Up and running',\n"
 "        'nodetype': 'controller',\n"
@@ -296,7 +296,7 @@ static const char *clusterJson1 =
 "        'class_name': 'CmonJobStatistics',\n"
 "        'cluster_id': 1\n"
 "    },\n"
-"    'log_file': '/tmp/cmon_1.log',\n"
+"    'log_file': '/etc/cmon.d/cmon_1.log',\n"
 "    'maintenance_mode_active': false,\n"
 "    'managed': true,\n"
 "    'node_auto_recovery': true,\n"
@@ -376,7 +376,7 @@ UtS9sCluster::testAssign()
     S9S_COMPARE(theCluster.clusterType(),  "POSTGRESQL_SINGLE");
     S9S_COMPARE(theCluster.state(),        "STARTED");
     S9S_COMPARE(theCluster.configFile(),   "/tmp/cmon_1.cnf");
-    S9S_COMPARE(theCluster.logFile(),      "/tmp/cmon_1.log");
+    S9S_COMPARE(theCluster.logFile(),      "/etc/cmon.d/cmon_1.log");
     S9S_COMPARE(theCluster.vendorAndVersion(),  "postgres 9.6");
     S9S_COMPARE(theCluster.statusText(),   "All nodes are operational.");
     
@@ -427,7 +427,7 @@ UtS9sCluster::testToString()
     S9S_COMPARE(theString, "STARTED POSTGRESQL_SINGLE");
     
     theString = theCluster.toString(false, "%C %L");
-    S9S_COMPARE(theString, "/tmp/cmon_1.cnf /tmp/cmon_1.log");
+    S9S_COMPARE(theString, "/tmp/cmon_1.cnf /etc/cmon.d/cmon_1.log");
     
     theString = theCluster.toString(false, "%V");
     S9S_COMPARE(theString, "postgres 9.6");
