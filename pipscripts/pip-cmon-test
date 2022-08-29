@@ -365,9 +365,7 @@ function compile_clustercontrol()
     fi
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
 
-    generate_test_result_info \
-        --test-state "PREPARING" \
-        > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
+    generate_test_result_file --test-state "PREPARING"
 
     # Check the CC binary cache
 
@@ -649,46 +647,17 @@ function ft_test_ended()
     fi
 }
 
-function save_report_file_ascii()
-{
-    local report_file=$(report_file_name)
-    local tmp_file="/var/tmp/$report_file"
-
-    cat <<EOF >>$tmp_file
-    <html>
-      <h1>Test results for '$1'</h1>
-      <p>This test created no report. Try to check the programs output for
-      details. The web interface shows the output when clicked on the test's
-      name.</p>
-    </html>
-EOF
-
-    move_to_results "$tmp_file" "$report_file"
-}
-
 #
 # $2: the state, "FAILURE", "RUNNING" or "SUCCESS"
 #
-function upload_result_file()
+function collect_test_log_files()
 {
     local test_state
-    local unit_test_option
-    local functional_test_option
     local pid_to_watch
     local counter
 
     while true; do
         case "$1" in
-            --unit-test)
-                shift
-                unit_test_option="--unit-test"
-                ;;
-
-            --functional-test)
-                shift
-                functional_test_option="--functional-test"
-                ;;
-
             --pid)
                 shift
                 pid_to_watch="$1"
@@ -710,16 +679,25 @@ function upload_result_file()
     counter=0
 
     while true; do
-        save_report_file_ascii
+        local report_file=$(report_file_name)
+        local tmp_file="/var/tmp/$report_file"
 
-        generate_test_result_info \
-            $unit_test_option \
-            $functional_test_option \
-            --test-state "$test_state" \
-            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
+        cat <<EOF >>$tmp_file
+        <html>
+            <h1>Test results for '$1'</h1>
+            <p>
+            This test created no report. Try to check the programs output
+            for details. The web interface shows the output when clicked on
+            the test's name.
+            </p>
+        </html>
+EOF
 
-        if [ -z "$unit_test_option" -a \
-            -f ${PROJECT_DATA_ROOT}/log/cmon.log ]; then
+        move_to_results "$tmp_file" "$report_file"
+
+        generate_test_result_file --test-state "$test_state"
+
+        if [ -f ${PROJECT_DATA_ROOT}/log/cmon.log ]; then
             save_to_results \
                 ${PROJECT_DATA_ROOT}/log/cmon.log \
                 "$(daemon_log_file_name)"
@@ -754,25 +732,14 @@ function elapsedTimeString()
         "$((T/3600%24))" "$((T/60%60))" "$((T%60))"
 }
 
-function generate_test_result_info()
+function generate_test_result_file()
 {
     local git_has_local_changes="no"
     local elapsed_time
-    local is_unit_test="true"
     local test_state
 
     while true; do
         case "$1" in
-            --unit-test)
-                shift
-                is_unit_test="true"
-                ;;
-
-            --functional-test)
-                shift
-                is_unit_test="false"
-                ;;
-
             --test-state)
                 shift
                 test_state="$1"
@@ -793,7 +760,7 @@ function generate_test_result_info()
     elapsed_time="$(date +%s)"
     let elapsed_time-="$START_EPOCH_TIME"
 
-    cat <<EOF
+    cat > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)" <<EOF
 test_server="$(hostname)"
 testname="$OPTION_TEST_NAME"
 githash="$GIT_HASH"
@@ -806,7 +773,6 @@ user="$USER"
 elapsed_time="$elapsed_time"
 elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
 test_start_epoch="$START_EPOCH_TIME"
-is_unit_test="$is_unit_test"
 EOF
 }
 
@@ -936,10 +902,7 @@ function run_s9s_ft_test()
     #
     # Starting a watcher that keeps uploading the output...
     #
-    upload_result_file \
-        --functional-test \
-        --pid "$test_pid" \
-        "RUNNING"
+    collect_test_log_files --pid "$test_pid" "RUNNING"
 
     watcher_pid=$!
     printVerbose "Watcher PID is ${watcher_pid}."
@@ -980,13 +943,9 @@ function run_s9s_ft_test()
     fi
 
     if [ $return_code -eq 0 ]; then
-        upload_result_file \
-            --functional-test \
-            "SUCCESS"
+        collect_test_log_files "SUCCESS"
     else
-        upload_result_file \
-            --functional-test \
-            "FAILURE"
+        collect_test_log_files "FAILURE"
     fi
 
     printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
@@ -1038,10 +997,7 @@ function run_cc_ft_test()
 
     test_pid=$!
 
-    upload_result_file \
-        --functional-test \
-        --pid "$test_pid" \
-        "RUNNING"
+    collect_test_log_files --pid "$test_pid" "RUNNING"
 
     watcher_pid=$!
     wait "$test_pid"
@@ -1056,13 +1012,9 @@ function run_cc_ft_test()
         2>> ${PROJECT_DATA_ROOT}/log/cmon.log
 
     if [ $return_code -eq 0 ]; then
-        upload_result_file \
-            --functional-test \
-            "SUCCESS"
+        collect_test_log_files "SUCCESS"
     else
-        upload_result_file \
-            --functional-test \
-            "FAILURE"
+        collect_test_log_files "FAILURE"
     fi
 
     printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
@@ -1091,9 +1043,7 @@ function run_s9s_ut_test()
     #
     changedir "${PROJECT_S9S_WORKER_DIR}/tests"
 
-    upload_result_file \
-        --unit-test \
-        "RUNNING"
+    collect_test_log_files "RUNNING"
 
     #
     # Running the test.
@@ -1104,9 +1054,7 @@ function run_s9s_ut_test()
     if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
         printVerbose "File $OPTION_TEST_NAME/$OPTION_TEST_NAME not found in ${PWD}."
 
-        upload_result_file \
-            --unit-test \
-            "FAILURE"
+        collect_test_log_files "FAILURE"
 
         return 1
     fi
@@ -1120,13 +1068,9 @@ function run_s9s_ut_test()
 
     printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
     if [ $return_code -eq 0 ]; then
-        upload_result_file \
-            --unit-test \
-            "SUCCESS"
+        collect_test_log_files "SUCCESS"
     else
-        upload_result_file \
-            --unit-test \
-            "FAILURE"
+        collect_test_log_files "FAILURE"
     fi
 
     printVerbose "Finished running '$OPTION_TEST_NAME' ($return_code)."
@@ -1205,9 +1149,7 @@ function main()
     esac
 
     if [ "$retcode" -ne 0 ]; then
-        generate_test_result_info \
-            --test-state "FAILURE" \
-            > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)"
+        generate_test_result_file --test-state "FAILURE"
         save_slog_file
         return "$retcode"
     fi
