@@ -3,11 +3,14 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m $MYDIR)
-VERBOSE=""
+#VERBOSE=""
+VERBOSE="true"
+VERBOSE_OPTION="--verbose"
 LOGFILE="$HOME/$MYNAME.log"
 EXITCODE=0
 COMMAND_LINE_OPTIONS="$0 $*"
 
+GIT_REPO_NAME=""
 GIT_HASH=""
 GIT_BRANCH=""
 GIT_COMMIT_DATE=""
@@ -228,7 +231,7 @@ function changedir()
 #
 function result_file_name_base()
 {
-    echo "${OPTION_TEST_NAME}-${GIT_BRANCH}-${GIT_HASH}"
+    echo "${OPTION_TEST_NAME}-${GIT_REPO_NAME}-${GIT_BRANCH}-${GIT_HASH}"
 }
 
 #
@@ -272,11 +275,15 @@ function save_slog_file()
 #
 # This expects to be in the source directory.
 #
-function prepare_source()
+function pull_source()
 {
     local current_branch
     local requested_branch
     local requested_commit
+
+    if [ "$NO_GIT_PULL" ]; then
+        return 0
+    fi
 
     while [ -n "$1" ]; do
         case "$1" in
@@ -296,48 +303,56 @@ function prepare_source()
         esac
     done
 
-    if [ -z "$NO_GIT_PULL" ]; then
-        #
-        # Checking the branch.
-        #
-        current_branch=$(exec git rev-parse --abbrev-ref HEAD)
-        printVerbose "Current branch is '$current_branch'."
+    #
+    # Checking the branch.
+    #
+    current_branch=$(exec git rev-parse --abbrev-ref HEAD)
+    printVerbose "Current branch is '$current_branch'."
 
-        if [ -z "$requested_branch" ]; then
-            printVerbose "Requested branch is not set, using 'master'."
-            requested_branch="master"
-        else
-            printVerbose "Requested branch is '$requested_branch'."
-        fi
-
-        execs git fetch --all
-
-        # always reset any local changes first, then go to master
-        execs git reset --hard
-
-        execs git checkout master
-
-        if [ "$requested_branch" != "master" ]; then
-            # first delete any local branch with the same name
-            # (as the remote branch might be overwritten from stratch)
-            execs git branch -d $requested_branch
-
-            # and lets check out the branch now
-            # (it will be re-constructed from remote)
-            execs git checkout $requested_branch
-        fi
-
-        execs git pull
-
-        if [ ! -z "$requested_commit" ]; then
-            execs git checkout $requested_commit
-        fi
-
-        # Files are left everywhere... :(
-        if [ -d "./tests/configs/tls" ]; then
-            execs rm -rvf "./tests/configs/tls"
-        fi
+    if [ -z "$requested_branch" ]; then
+        printVerbose "Requested branch is not set, using 'master'."
+        requested_branch="master"
+    else
+        printVerbose "Requested branch is '$requested_branch'."
     fi
+
+    execs git fetch --all
+
+    # always reset any local changes first, then go to master
+    execs git reset --hard
+
+    execs git checkout master
+
+    if [ "$requested_branch" != "master" ]; then
+        # first delete any local branch with the same name
+        # (as the remote branch might be overwritten from stratch)
+        execs git branch -d $requested_branch
+
+        # and lets check out the branch now
+        # (it will be re-constructed from remote)
+        execs git checkout $requested_branch
+    fi
+
+    execs git pull
+
+    if [ ! -z "$requested_commit" ]; then
+        execs git checkout $requested_commit
+    fi
+
+    # Files are left everywhere... :(
+    if [ -d "./tests/configs/tls" ]; then
+        execs rm -rvf "./tests/configs/tls"
+    fi
+}
+
+function detect_repo_commit()
+{
+    GIT_HASH=$(git log -n 1 --pretty=format:"%H")
+    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$GIT_BRANCH" = "HEAD" ]; then
+        GIT_BRANCH="$OPTION_GIT_BRANCH"
+    fi
+    GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
 }
 
 function compile_clustercontrol()
@@ -350,21 +365,6 @@ function compile_clustercontrol()
         return 0
     fi
 
-    #
-    # git pull, checkout the source
-    #
-
-    prepare_source \
-        --requested-branch  "$OPTION_GIT_BRANCH" \
-        --requested-commit  "$OPTION_GIT_COMMIT"
-
-    GIT_HASH=$(git log -n 1 --pretty=format:"%H")
-    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$GIT_BRANCH" = "HEAD" ]; then
-        GIT_BRANCH="$OPTION_GIT_BRANCH"
-    fi
-    GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
-
     generate_test_result_file "PREPARING"
 
     # Check the CC binary cache
@@ -372,7 +372,7 @@ function compile_clustercontrol()
     if [ "$usecache" = "usecache" ]; then
         printVerbose "GIT_HASH: $GIT_HASH"
         if [ "$GIT_HASH" != "" ]; then
-            repodir="$HOME/cc_bin_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
+            repodir="$HOME/${GIT_REPO_NAME}_bin_repo/$GIT_BRANCH-$GIT_HASH"
             ccdir="${PROJECT_CC_WORKER_DIR}"
 
             if [ -d "$repodir" ]; then
@@ -389,6 +389,7 @@ function compile_clustercontrol()
     pip-host-control --testing --status="Compiling CC for $OPTION_TEST_NAME"
 
     # autogen
+
     execs rm -f autogen.log
     exec ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
     retcode=$?
@@ -420,7 +421,7 @@ function compile_clustercontrol()
     # cache created binaries (cmon, ft_full)
 
     if [ "$usecache" = "usecache" ]; then
-        repodir="$HOME/cc_bin_repo/$OPTION_GIT_BRANCH-$GIT_HASH"
+        repodir="$HOME/${GIT_REPO_NAME}_bin_repo/$GIT_BRANCH-$GIT_HASH"
         ccdir="${PROJECT_CC_WORKER_DIR}"
 
         execs mkdir -p "$repodir"
@@ -459,9 +460,6 @@ function compile_s9s_tools()
 
     pip-host-control --testing --status="Compiling s9s for $OPTION_TEST_NAME"
 
-    prepare_source \
-        --requested-branch  master
-
     # Check the s9s binary cache
 
     if [ "$usecache" = "usecache" ]; then
@@ -469,7 +467,7 @@ function compile_s9s_tools()
         printVerbose "S9S_GIT_HASH: $S9S_GIT_HASH"
         S9S_GIT_BRANCH=master
         if [ "$S9S_GIT_HASH" != "" ]; then
-            repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
+            repodir="$HOME/${GIT_REPO_NAME}_bin_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
             s9sdir="${PROJECT_S9S_WORKER_DIR}"
             printVerbose "repodir: $repodir"
 
@@ -518,7 +516,7 @@ function compile_s9s_tools()
     # cache s9s
 
     if [ "$usecache" = "usecache" ]; then
-        repodir="$HOME/s9s_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
+        repodir="$HOME/${GIT_REPO_NAME}_bin_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
         s9sdir="${PROJECT_S9S_WORKER_DIR}"
 
         execs mkdir -p "$repodir"
@@ -750,6 +748,7 @@ function generate_test_result_file()
     cat > "${PROJECT_TEST_REPORT_DIR}/$(result_file_name)" <<EOF
 test_server="$(hostname)"
 testname="$OPTION_TEST_NAME"
+gitreponame="$GIT_REPO_NAME"
 githash="$GIT_HASH"
 gitbranch="$GIT_BRANCH"
 gitcommitdate="$GIT_COMMIT_DATE"
@@ -1050,7 +1049,7 @@ function run_s9s_ut_test()
 
     pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
-    $OPTION_TEST_NAME/$OPTION_TEST_NAME --color >>$logfile 2>>$logfile
+    $OPTION_TEST_NAME/$OPTION_TEST_NAME --color --verbose >>$logfile 2>>$logfile
     return_code=$?
 
     printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
@@ -1112,10 +1111,18 @@ function main()
     #
     case "$OPTION_TEST_NAME" in
         ft_*.sh)
+            GIT_REPO_NAME="cmon"
+            changedir "${PROJECT_CC_WORKER_DIR}"
+            pull_source \
+                --requested-branch  "$OPTION_GIT_BRANCH" \
+                --requested-commit  "$OPTION_GIT_COMMIT"
+            detect_repo_commit
             compile_clustercontrol "usecache"
             retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
             install_clustercontrol
             retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
+            changedir "${PROJECT_S9S_WORKER_DIR}"
+            pull_source --requested-branch  master
             compile_s9s_tools "usecache"
             retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
             install_s9s_tools
@@ -1127,9 +1134,14 @@ function main()
             run_cc_ft_test
             ;;
         ut_*)
+            GIT_REPO_NAME="s9stools"
+            changedir "${PROJECT_S9S_WORKER_DIR}"
+            pull_source --requested-branch  master
+            detect_repo_commit
             compile_s9s_tools "dontusecache"
             retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
             run_s9s_ut_test
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
             ;;
         *)
             printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
