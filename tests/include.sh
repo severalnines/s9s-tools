@@ -2142,7 +2142,7 @@ function emit_s9s_configuration_file()
     local hostname="localhost"
     local cmon_port="$OPTION_CMON_PORT"
 
-    [ -z "$cmon_port" ] && cmon_port="9556"
+    [ -z "$cmon_port" ] && cmon_port="9501"
     
 
     while [ -n "$1" ]; do
@@ -2344,7 +2344,7 @@ function grant_user()
     local last
     local cmon_port="$OPTION_CMON_PORT"
 
-    [ -z "$cmon_port" ] && cmon_port="9556"
+    [ -z "$cmon_port" ] && cmon_port="9501"
 
     print_title "Creating the First User"
     cat <<EOF | paragraph

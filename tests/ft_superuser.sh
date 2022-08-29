@@ -136,7 +136,7 @@ function testBoostrap()
         --generate-key \
         --group="admins" \
         --new-password="admin" \
-        --controller="https://localhost:9556" \
+        --controller="https://localhost:9501" \
         --email-address=${TEST_EMAIL} \
         --first-name="$first" \
         --last-name="$last" \
