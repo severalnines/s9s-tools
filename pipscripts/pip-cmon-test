@@ -3,7 +3,6 @@
 MYNAME=$(basename $0)
 MYDIR=$(dirname $0)
 MYDIR=$(readlink -m $MYDIR)
-VERSION="0.0.7"
 VERBOSE=""
 LOGFILE="$HOME/$MYNAME.log"
 EXITCODE=0
@@ -16,17 +15,9 @@ START_EPOCH_TIME="$(date +%s)"
 
 NO_GIT_PULL=""
 OPTION_NO_COMPILE=""
-OS_OPTION=""
 OPTION_KEEP_NODES=""
-DO_CLEAN=""
-
-SHUT_DOWN_AFTER=""
 
 OPTION_TEST_NAME=""
-# May be empty would be better for vendor
-VENDOR_OPTION=""
-VERSION_OPTION=""
-OPTION_USER="$USER"
 OPTION_GIT_BRANCH=""
 OPTION_GIT_COMMIT=""
 
@@ -62,26 +53,19 @@ Usage:
   --verbose               Print more messages.
   --log-file=FILE         Store all the messages in the given file too.
 
-  --user=USERNAME         The name of the user requested the test.
-
   --pid                   Print the PID of the test script if it is running.
 
   --no-git-pull           Do not execute 'git pull' before the test.
   --no-compile            Do not compile the source, use as it is.
   --keep-nodes            Pass --keep-nodes to tests not to destroy containers.
-  --shut-down-after       Shut down the test server after the test.
   --git-branch=BRANCH     The git branch to test.
   --git-commit=HASH       The git commit to test.
 
   --s9s                   Test the s9s project.
   --test=NAME             The name of the test to run.
 
-  --sqlversion=VERSION    The version to test.
-  --vendor=VENDOR         The vendor name to test.
-  --os=OS                 The name of the OS to test.
-
 EXAMPLE:
-  $MYNAME --server=blade01 --os=debian8 --vendor=mariadb --sqlversion=5.6
+  $MYNAME --server=blade01
 
 EOF
 
@@ -91,10 +75,10 @@ EOF
 ARGS=$(\
     getopt \
         -o hvj: \
-        -l "help,verbose,version,log-file:,user:,server:,\
+        -l "help,verbose,version,log-file:,server:,\
 pid,\
-test:,unit-tests,functional-tests,os:,vendor:,sqlversion:,s9s,\
-no-git-pull,no-compile,keep-nodes,shut-down-after,wait,git-branch:,git-commit:" \
+test:,unit-tests,functional-tests,os:,s9s,\
+no-git-pull,no-compile,keep-nodes,wait,git-branch:,git-commit:" \
         -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -131,33 +115,9 @@ while true; do
             OPTION_KEEP_NODES="--keep-nodes"
             ;;
 
-        --user)
-            shift
-            OPTION_USER="$1"
-            shift
-            ;;
-
         --test)
             shift
             OPTION_TEST_NAME="$1"
-            shift
-            ;;
-
-        --os)
-            shift
-            OS_OPTION="--os=$1"
-            shift
-            ;;
-
-        --vendor)
-            shift
-            VENDOR_OPTION="--vendor=$1"
-            shift
-            ;;
-
-        --sqlversion)
-            shift
-            VERSION_OPTION="--provider-version=$1"
             shift
             ;;
 
@@ -169,11 +129,6 @@ while true; do
         --no-compile)
             shift
             OPTION_NO_COMPILE="true"
-            ;;
-
-        --shut-down-after)
-            shift
-            SHUT_DOWN_AFTER="true"
             ;;
 
         --wait)
@@ -382,10 +337,6 @@ function prepare_source()
         if [ -d "./tests/configs/tls" ]; then
             execs rm -rvf "./tests/configs/tls"
         fi
-    fi
-
-    if [ "$DO_CLEAN" ]; then
-        execs git clean -dfx
     fi
 }
 
@@ -851,7 +802,7 @@ gitcommitdate="$GIT_COMMIT_DATE"
 githaslocalchanges="$git_has_local_changes"
 state="$test_state"
 report_file="$(report_file_name)"
-user="$OPTION_USER"
+user="$USER"
 elapsed_time="$elapsed_time"
 elapsed_time_string="$(elapsedTimeString $START_EPOCH_TIME)"
 test_start_epoch="$START_EPOCH_TIME"
@@ -1083,9 +1034,7 @@ function run_cc_ft_test()
     printVerbose "Running $OPTION_TEST_NAME."
     ./$OPTION_TEST_NAME/$OPTION_TEST_NAME \
         --template=headless \
-        $VENDOR_OPTION \
-        $VERSION_OPTION \
-        $OS_OPTION >>"$logfile" 2>>"$logfile" &
+        >>"$logfile" 2>>"$logfile" &
 
     test_pid=$!
 
@@ -1210,7 +1159,6 @@ function main()
     local retcode=0
 
     printVerbose "Starting main()."
-    printVerbose "Preparing test ($MYNAME ver. $VERSION)."
     pip-host-control --testing --status="Prepare host for $OPTION_TEST_NAME"
 
     install_packages_on_test_server
@@ -1225,16 +1173,6 @@ function main()
 
     execs rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
     execs rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
-
-    #
-    # If the user removes this file we cancel the shutdown request, otherwise we
-    # will shut down the server at the end of the test.
-    #
-    if [ "$SHUT_DOWN_AFTER" ]; then
-        if [ -z "$DRY" ]; then
-            execs touch ~/cmontest_will_shut_down
-        fi
-    fi
 
     enable_core_file_generation
 
@@ -1275,15 +1213,6 @@ function main()
     fi
 
     printVerbose "Finished with tests, idle."
-
-    #
-    # If the "shutdown after the test" is requested and the user did not delete
-    # the shutdown file we will now shut down the computer.
-    #
-    if [ "$SHUT_DOWN_AFTER" -a -f ~/cmontest_will_shut_down ]; then
-        execs rm -f ~/cmontest_will_shut_down
-        pip-host-control --shutdown
-    fi
 }
 
 #checkOtherInstances
