@@ -11,8 +11,7 @@ COMMAND_LINE_OPTIONS="$0 $*"
 
 GIT_HASH=""
 GIT_BRANCH=""
-GIT_AUTHOR=""
-GIT_SUBJECT=""
+GIT_COMMIT_DATE=""
 START_EPOCH_TIME="$(date +%s)"
 
 NO_GIT_PULL=""
@@ -414,8 +413,6 @@ function compile_clustercontrol()
         GIT_BRANCH="$OPTION_GIT_BRANCH"
     fi
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
-    GIT_AUTHOR=$(git log -n 1 --pretty=format:"%aE")
-    GIT_SUBJECT=$(git log -n 1 --pretty=format:"%s")
 
     generate_test_result_info \
         --test-state "PREPARING" \
@@ -471,14 +468,6 @@ function compile_clustercontrol()
         return $retcode
     fi
 
-    # make install
-
-    exec sudo make install >> make.log
-    retcode=$?
-    if [ "$retcode" -gt 1 ]; then
-        return $retcode
-    fi
-
     # cache created binaries (cmon, ft_full)
 
     if [ "$usecache" = "usecache" ]; then
@@ -490,6 +479,21 @@ function compile_clustercontrol()
         execs cp $ccdir/tests/ft_full/ft_full $repodir/
         execs cp $ccdir/src/cmon $repodir/
     fi
+
+    return 0
+}
+
+function install_clustercontrol()
+{
+    changedir "${PROJECT_CC_WORKER_DIR}"
+
+    # make install
+
+    exec sudo make install >> make.log
+    retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
+
+    tests/scripts/create_cmon_db.sh
+    retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
 
     return 0
 }
@@ -562,14 +566,6 @@ function compile_s9s_tools()
     fi
     execs cd ..
 
-    # make install
-
-    exec sudo make install >> make.log
-    retcode=$?
-    if [ "$retcode" -gt 1 ]; then
-        return $retcode
-    fi
-
     # cache s9s
 
     if [ "$usecache" = "usecache" ]; then
@@ -583,6 +579,18 @@ function compile_s9s_tools()
     fi
 
     return "$retcode"
+}
+
+function install_s9s_tools()
+{
+    changedir "${PROJECT_S9S_WORKER_DIR}"
+
+    # make install
+
+    exec sudo make install >> make.log
+    retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
+
+    return 0
 }
 
 #
@@ -1236,24 +1244,23 @@ function main()
     case "$OPTION_TEST_NAME" in
         ft_*.sh)
             compile_clustercontrol "usecache"
-            retcode=$?
-            if [ "$retcode" -eq 0 ]; then
-                compile_s9s_tools "usecache"
-                retcode="$?"
-                if [ "$retcode" -eq 0 ]; then
-                    run_s9s_ft_test
-                fi
-            fi
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
+            install_clustercontrol
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
+            compile_s9s_tools "usecache"
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
+            install_s9s_tools
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
+            run_s9s_ft_test
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
             ;;
         ft_*)
             run_cc_ft_test
             ;;
         ut_s9s*)
             compile_s9s_tools "dontusecache"
-            retcode="$?"
-            if [ "$retcode" -eq 0 ]; then
-                run_s9s_ut_test
-            fi
+            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
+            run_s9s_ut_test
             ;;
         *)
             printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
