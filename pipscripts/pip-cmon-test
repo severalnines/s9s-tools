@@ -365,7 +365,7 @@ function compile_clustercontrol()
     fi
     GIT_COMMIT_DATE=$(git show -s --format=%ci $GIT_HASH)
 
-    generate_test_result_file --test-state "PREPARING"
+    generate_test_result_file "PREPARING"
 
     # Check the CC binary cache
 
@@ -695,7 +695,7 @@ EOF
 
         move_to_results "$tmp_file" "$report_file"
 
-        generate_test_result_file --test-state "$test_state"
+        generate_test_result_file "$test_state"
 
         if [ -f ${PROJECT_DATA_ROOT}/log/cmon.log ]; then
             save_to_results \
@@ -736,20 +736,7 @@ function generate_test_result_file()
 {
     local git_has_local_changes="no"
     local elapsed_time
-    local test_state
-
-    while true; do
-        case "$1" in
-            --test-state)
-                shift
-                test_state="$1"
-                shift
-                ;;
-
-            *)
-                break
-        esac
-    done
+    local test_state="$1"
 
     git_has_local_changes="no"
 
@@ -1139,7 +1126,7 @@ function main()
         ft_*)
             run_cc_ft_test
             ;;
-        ut_s9s*)
+        ut_*)
             compile_s9s_tools "dontusecache"
             retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
             run_s9s_ut_test
@@ -1149,7 +1136,7 @@ function main()
     esac
 
     if [ "$retcode" -ne 0 ]; then
-        generate_test_result_file --test-state "FAILURE"
+        generate_test_result_file "FAILURE"
         save_slog_file
         return "$retcode"
     fi
