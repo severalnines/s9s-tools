@@ -186,14 +186,12 @@ function run_test()
     echo "nohup pip-cmon-test "\
         "$VERBOSE_OPTION "\
         "--test=$testname "\
-        "--user=$user "\
         "--git-branch=$gitbranch"\
         "--git-commit=$githash"
 
     nohup pip-cmon-test \
         $VERBOSE_OPTION \
         --test="$testname" \
-        --user="$user" \
         --git-branch="$gitbranch" \
         --git-commit="$githash" > ${pipcmontestlog} 2> ${pipcmontestlog}
 
