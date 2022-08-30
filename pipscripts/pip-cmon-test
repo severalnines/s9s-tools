@@ -861,7 +861,7 @@ function run_s9s_ft_test()
             --group=admins \
             "${PROJECT_OWNER}"
         exec sudo s9s user \
-            --cmon-user csjpeter \
+            --cmon-user="${PROJECT_OWNER}" \
             --email-address="${S9S_TEST_EMAIL}" \
             --change-password \
             --new-password="${PROJECT_OWNER_CC_PASSWORD}"
@@ -869,7 +869,7 @@ function run_s9s_ft_test()
         # Specifying special password for user 'system'.
         # Old test scripts are relying on it.
         exec sudo s9s user \
-            --cmon-user csjpeter \
+            --cmon-user="${PROJECT_OWNER}" \
             --password="${PROJECT_OWNER_CC_PASSWORD}" \
             --change-password \
             --generate-key \
