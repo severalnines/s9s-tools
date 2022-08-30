@@ -871,6 +871,7 @@ function run_s9s_ft_test()
         exec sudo s9s user \
             --cmon-user csjpeter \
             --password="${PROJECT_OWNER_CC_PASSWORD}" \
+            --change-password \
             --generate-key \
             --new-password=secret \
             system
