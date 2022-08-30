@@ -834,6 +834,9 @@ function run_s9s_ft_test()
         execs sudo rm -rvf /var/log/cmon*
         execs sudo rm -rvf /var/lib/cmon*
         execs sudo rm -rvf /etc/cmon.d/*
+        execs sudo rm -rvf /root/.s9s/s9s.conf
+        execs sudo rm -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
+        execs sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
 
         printVerbose "$(prompt) sudo /usr/sbin/cmon -d"
         sudo /usr/sbin/cmon \
@@ -850,6 +853,27 @@ function run_s9s_ft_test()
 
             sleep 3
         done
+
+        # Creating initial user the way we expect our customers to do so
+        exec sudo s9s user \
+            --controller=https://localhost:9501 \
+            --create --generate-key \
+            --group=admins \
+            "${PROJECT_OWNER}"
+        exec sudo s9s user \
+            --cmon-user csjpeter \
+            --email-address="${S9S_TEST_EMAIL}" \
+            --change-password \
+            --new-password="${PROJECT_OWNER_CC_PASSWORD}"
+
+        # Specifying special password for user 'system'.
+        # Old test scripts are relying on it.
+        exec sudo s9s user \
+            --cmon-user csjpeter \
+            --password="${PROJECT_OWNER_CC_PASSWORD}" \
+            --generate-key \
+            --new-password=secret \
+            system
     else
         printVerbose "cmon is already running"
         printVerbose "Backend PID is ${backend_pid}."
