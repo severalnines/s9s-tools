@@ -1107,6 +1107,47 @@ function install_packages_on_test_server()
     fi
 }
 
+function main_case()
+{
+    case "$OPTION_TEST_NAME" in
+        ft_*.sh)
+            GIT_REPO_NAME="cmon"
+            changedir "${PROJECT_CC_WORKER_DIR}"
+            pull_source \
+                --requested-branch  "$OPTION_GIT_BRANCH" \
+                --requested-commit  "$OPTION_GIT_COMMIT"
+            detect_repo_commit
+            compile_clustercontrol "usecache"
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            install_clustercontrol
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            changedir "${PROJECT_S9S_WORKER_DIR}"
+            pull_source --requested-branch  master
+            compile_s9s_tools "usecache"
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            install_s9s_tools
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            run_s9s_ft_test
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            ;;
+        ft_*)
+            run_cc_ft_test
+            ;;
+        ut_*)
+            GIT_REPO_NAME="s9stools"
+            changedir "${PROJECT_S9S_WORKER_DIR}"
+            pull_source --requested-branch  master
+            detect_repo_commit
+            compile_s9s_tools "dontusecache"
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            run_s9s_ut_test
+            retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+            ;;
+        *)
+            printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
+    esac
+}
+
 #
 function main()
 {
@@ -1130,46 +1171,7 @@ function main()
 
     enable_core_file_generation
 
-    #
-    # Running the test.
-    #
-    case "$OPTION_TEST_NAME" in
-        ft_*.sh)
-            GIT_REPO_NAME="cmon"
-            changedir "${PROJECT_CC_WORKER_DIR}"
-            pull_source \
-                --requested-branch  "$OPTION_GIT_BRANCH" \
-                --requested-commit  "$OPTION_GIT_COMMIT"
-            detect_repo_commit
-            compile_clustercontrol "usecache"
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            install_clustercontrol
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            changedir "${PROJECT_S9S_WORKER_DIR}"
-            pull_source --requested-branch  master
-            compile_s9s_tools "usecache"
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            install_s9s_tools
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            run_s9s_ft_test
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            ;;
-        ft_*)
-            run_cc_ft_test
-            ;;
-        ut_*)
-            GIT_REPO_NAME="s9stools"
-            changedir "${PROJECT_S9S_WORKER_DIR}"
-            pull_source --requested-branch  master
-            detect_repo_commit
-            compile_s9s_tools "dontusecache"
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            run_s9s_ut_test
-            retcode=$?; if [ "$retcode" -ne 0 ]; then break; fi
-            ;;
-        *)
-            printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
-    esac
+    main_case
 
     if [ "$retcode" -ne 0 ]; then
         generate_test_result_file "FAILURE"
