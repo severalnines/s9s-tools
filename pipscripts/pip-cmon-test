@@ -1146,6 +1146,8 @@ function main_case()
         *)
             printVerbose "Unhandled test name '${OPTION_TEST_NAME}'."
     esac
+
+    return 0
 }
 
 #
