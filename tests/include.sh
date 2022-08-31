@@ -690,6 +690,21 @@ function isVerbose
 }
 
 #
+# Prints an error message to the standard error. The text will not mixed up with
+# the data that is printed to the standard output.
+#
+function printError()
+{
+    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
+
+    echo -e "$*" >&2
+
+    if [ "$LOGFILE" ]; then
+        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
+    fi
+}
+
+#
 # Prints the message passed as command line options if the test is executet in
 # verbose mode (the --verbose command line option was provided).
 #
@@ -1368,21 +1383,6 @@ function checkMessage()
 
     failure "Text '$message' missing from output"
     return 1
-}
-
-#
-# Prints an error message to the standard error. The text will not mixed up with
-# the data that is printed to the standard output.
-#
-function printError()
-{
-    local datestring=$(date "+%Y-%m-%d %H:%M:%S")
-
-    echo -e "$*" >&2
-
-    if [ "$LOGFILE" ]; then
-        echo -e "$datestring ERROR $MYNAME($$) $*" >>"$LOGFILE"
-    fi
 }
 
 
@@ -2360,13 +2360,21 @@ function grant_user()
   user account can be used without password. 
 EOF
 
-    printVerbose "Waiting for cmon to create /var/lib/cmon/usermgmt.fifo"
+    print_subtitle "Waiting for cmon to create /var/lib/cmon/usermgmt.fifo"
+
     for delay in $(seq 1 100); do
         if sudo [ -e "/var/lib/cmon/usermgmt.fifo" ]; then
-            return 1
+            echo "Found /var/lib/cmon/usermgmt.fifo"
+            break;
         fi
         sleep 3
+        if [ "$delay" = "100" ]; then
+            failure "Failed to find /var/lib/cmon/usermgmt.fifo needed for initial user creation."
+            break;
+        fi
     done
+
+    print_subtitle "Create user ${PROJECT_OWNER}"
 
     begin_verbatim
 
@@ -2451,6 +2459,7 @@ EOF
     #
     #
     print_subtitle "The $HOME/.s9s/s9s.conf"
+
     cat <<EOF | paragraph
   The creation of the initial user changes the configuration file. The s9s
   program automatically puts the username into the configuration file so that
