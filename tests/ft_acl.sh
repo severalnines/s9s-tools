@@ -236,7 +236,7 @@ function testMkdir()
     mys9s tree --cmon-user=supervisor --list --long
     lines=$(s9s tree --cmon-user=supervisor --list --long)
     
-    expected="^drwxrwxrwx     - $PROJECT_OWNER  users  home$"
+    expected="^drwxrwxrwx     - $PROJECT_OWNER  admins home$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
     else
