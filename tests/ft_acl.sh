@@ -91,11 +91,11 @@ done
 
 function testCreateSupervisorUser()
 {
-    print_title "Creating a User"
-
-    begin_verbatim
+    grant_user
 
     print_title "Creating a Superuser"
+
+    begin_verbatim
     mys9s user \
         --create \
         --cmon-user="system" \
