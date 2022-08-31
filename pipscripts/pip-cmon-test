@@ -462,8 +462,35 @@ function install_clustercontrol()
     exec sudo make install >> make.log
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
-    exec ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh
+    exec ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh >> $LOGFILE
     retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
+
+    CC_IP=$(host $(hostname) | cut -d' ' -f 4)
+
+    sudo cat > /etc/cmon.cnf << EOF
+#
+# clustercontrol-controller configuration file
+# Copyright 2016 severalnines.com
+#
+
+## CMON database config - mysql_password is for the 'cmon' user
+mysql_port=3306
+mysql_hostname=127.0.0.1
+mysql_password=pwd
+
+## hostname is the hostname of the current host
+hostname=${CC_IP}
+
+## The default logfile
+logfile=/var/log/cmon.log
+
+## For possible access restriction
+# rpc_key = DEADBEEF01234567ABCDEF
+#
+controller_id=6d7aa76c-ba79-44a1-863a-1262049a4dbe
+
+rpc_key=0a7c043fb43a13fcb953e9689ff177eb4ee6aadd
+EOF
 
     return 0
 }
