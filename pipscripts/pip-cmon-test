@@ -835,7 +835,7 @@ function run_s9s_ft_test()
         execs sudo rm -rvf /var/lib/cmon*
         execs sudo rm -rvf /etc/cmon.d/*
         execs sudo rm -rvf /root/.s9s/s9s.conf
-        execs sudo rm -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
+        execs sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
         execs sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
 
         printVerbose "$(prompt) sudo /usr/sbin/cmon -d"
