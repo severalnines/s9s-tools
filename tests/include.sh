@@ -2413,6 +2413,10 @@ EOF
             --add-acl \
             --acl="user:$USER:r-x"
             $file
+        ret=$?
+        if [ $ret -ne 0 ]; then
+            failure "Failed to add acl using $file"
+        fi
     done
 
     # Adding a tag to the user and checking if the tag is indeed added.
@@ -2422,7 +2426,7 @@ EOF
     if s9s user --stat $USER | grep -q testUser; then
         success "  o User $USER has the tag 'testUser' set, OK."
     else
-        warning "  o User $USER has no tag 'testUser' set."
+        failure "  o User $USER has no tag 'testUser' set."
     fi
 
     #
