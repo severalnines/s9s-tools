@@ -1068,8 +1068,7 @@ function get_log_message_id()
         --batch \
         --log-format="$log_format" \
         --cluster-id="$cluster_id" \
-        --cmon-user=system \
-        --password=secret)
+        )
 
     if [ -n "$job_command" ]; then
         lines=$(echo "$lines" | awk "\$3 == \"$job_command\" { print \$0 }")
@@ -1126,8 +1125,6 @@ function check_log_message()
             --list --long \
             --log-format="$format_string" \
             --message-id="$message_id" \
-            --cmon-user="system" \
-            --password="secret" \
             --cluster-id="$cluster_id"
 
         value=$(s9s log \
@@ -1136,8 +1133,6 @@ function check_log_message()
                 --batch \
                 --log-format="$format_string" \
                 --message-id="$message_id" \
-                --cmon-user="system" \
-                --password="secret" \
                 --cluster-id="$cluster_id")
 
         if [ "$value" == "$expected_value" ]; then
@@ -1730,18 +1725,11 @@ function wait_for_cluster_state()
     local state
     local waited=0
     local stayed=0
-    local user_option
     local password_option
     local controller_option
 
     while [ -n "$1" ]; do
         case "$1" in 
-            --system)
-                shift
-                user_option="--cmon-user=system"
-                password_option="--password=secret"
-                ;;
-
             --controller)
                 controller_option="--controller=$2"
                 shift 2
@@ -1775,7 +1763,6 @@ function wait_for_cluster_state()
         --batch \
         --cluster-format="%S" \
         --cluster-name="$clusterName" \
-        $user_option \
         $controller_option \
         $password_option"
 
@@ -1829,8 +1816,6 @@ function get_container_ip()
         --list \
         --long \
         --batch \
-        --cmon-user="system" \
-        --password="secret" \
         "$container_name" \
     | \
         awk '{print $6}'
@@ -2426,9 +2411,7 @@ EOF
     do
         mys9s tree \
             --add-acl \
-            --acl="user:$USER:r-x" \
-            --cmon-user="system" \
-            --password="secret" \
+            --acl="user:$USER:r-x"
             $file
     done
 
@@ -3351,12 +3334,10 @@ function check_container_server()
 
     #mys9s tree \
     #    --cat \
-    #    --cmon-user=system \
-    #    --password=secret \
     #    $file
 
     IFS=$'\n'
-    for line in $(s9s tree --cat --batch --cmon-user=system --password=secret $file)
+    for line in $(s9s tree --cat --batch $file)
     do
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print $3}')
@@ -3609,14 +3590,10 @@ EOF
     if false; then
         mys9s tree \
             --cat \
-            --cmon-user=system \
-            --password=secret \
             /.runtime/jobs/job_manager
     
         mys9s tree \
             --cat \
-            --cmon-user=system \
-            --password=secret \
             /.runtime/jobs/host_manager
     fi
 
