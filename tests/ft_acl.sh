@@ -89,30 +89,11 @@ while true; do
     esac
 done
 
-function testCreateUsers()
+function testCreateSupervisorUser()
 {
     print_title "Creating a User"
 
     begin_verbatim
-    mys9s user \
-        --create \
-        --cmon-user="system" \
-        --password="secret" \
-        --group="users" \
-        --create-group \
-        --email-address=${TEST_EMAIL} \
-        --first-name="Laszlo" \
-        --last-name="Pere"   \
-        --generate-key \
-        --new-password="$PROJECT_OWNER" \
-        "$PROJECT_OWNER"
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
-    else
-        success "  o The exit code is 0, OK."
-    fi
 
     print_title "Creating a Superuser"
     mys9s user \
@@ -397,7 +378,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
-    runFunctionalTest testCreateUsers
+    runFunctionalTest testCreateSupervisorUser
     runFunctionalTest checkTree01
     runFunctionalTest checkTree02
     runFunctionalTest testMkdir

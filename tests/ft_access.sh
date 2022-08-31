@@ -141,30 +141,7 @@ function user_should_not_see_the_cluster()
 
 function testCreateUser()
 {
-    print_title "Creating a User"
-    cat <<EOF
-Creating a user with superuser privileges (member of the 'admins' group) that 
-will perform most of the steps in these tests.
-
-EOF
-
-    begin_verbatim
-    mys9s user \
-        --create \
-        --cmon-user="system" \
-        --password="secret" \
-        --group="admins" \
-        --create-group \
-        --email-address=${TEST_EMAIL} \
-        --first-name="Laszlo" \
-        --last-name="Pere"   \
-        --generate-key \
-        --new-password="$PROJECT_OWNER" \
-        "$PROJECT_OWNER"
-
-    check_exit_code_no_job $?
-
-    end_verbatim
+    grant_user
 }
 
 

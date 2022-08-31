@@ -15,8 +15,6 @@ function createUserSisko()
 
     mys9s user \
         --create \
-        --cmon-user=system \
-        --password=secret \
         --title="Captain" \
         --first-name="Benjamin" \
         --last-name="Sisko"   \

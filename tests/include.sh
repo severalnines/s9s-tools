@@ -95,9 +95,9 @@ export CMON_CONTAINER_NAMES=""
 
 #export S9S_DEBUG_PRINT_REQUEST="true"
 
-if [ -x ../s9s/s9s ]; then
-    S9S="../s9s/s9s"
-fi
+#if [ -x ../s9s/s9s ]; then
+#    S9S="../s9s/s9s"
+#fi
 
 #
 # Prints the arguments but only if the output does not go to the standard
@@ -2360,25 +2360,33 @@ function grant_user()
   user account can be used without password. 
 EOF
 
+    printVerbose "Waiting for cmon to create /var/lib/cmon/usermgmt.fifo"
+    for delay in $(seq 1 100); do
+        if sudo [ -e "/var/lib/cmon/usermgmt.fifo" ]; then
+            return 1
+        fi
+        sleep 3
+    done
+
     begin_verbatim
 
     first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 
-    mys9s user \
+    # Creating initial user the way we expect our customers to do so
+    sudo mys9s user \
         --create \
-        --group="testgroup" \
-        --create-group \
+        --group="admins" \
         --generate-key \
         --controller="https://localhost:$cmon_port" \
-        --new-password="p" \
-        --email-address=${EMAIL} \
+        --new-password="${PROJECT_OWNER_CC_PASSWORD}" \
+        --email-address="${S9S_TEST_EMAIL}" \
         --first-name="$first" \
         --last-name="$last" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch \
-        "$USER"
+        "${PROJECT_OWNER}"
 
     exitCode=$?
     if [ "$exitCode" -ne 0 ]; then
@@ -2430,10 +2438,10 @@ EOF
     # create a container because this way the user will be able to log in with
     # the SSH key without password.
     #
+        #--batch \
+        #--password="p" \
     mys9s user \
         --add-key \
-        --batch \
-        --password="p" \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --public-key-name="The_SSH_key"
 
@@ -2451,6 +2459,22 @@ EOF
 EOF
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
+
+    print_subtitle "Prepare system user for test scripts"
+
+    printVerbose "Unfortunatelly many tests are using the built in system user and are expecting a hard coded special password set for it."
+
+    begin_verbatim
+    # Specifying special password for user 'system'.
+    # Old test scripts are relying on it.
+    exec sudo s9s user \
+        --cmon-user="${PROJECT_OWNER}" \
+        --password="${PROJECT_OWNER_CC_PASSWORD}" \
+        --change-password \
+        --generate-key \
+        --new-password=secret \
+        system
+    end_verbatim
 }
 
 function get_user_group()

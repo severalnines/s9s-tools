@@ -119,38 +119,15 @@ function testCreateUser()
     local old_ifs="$IFS"
     local columns_found=0
 
+    grant_user
+
     #
     #
     #
-    print_title "Creating a Normal User"
+    print_title "Some verification on the users"
 
     begin_verbatim
-    mys9s user \
-        --create \
-        --cmon-user="system" \
-        --password="secret" \
-        --group="users" \
-        --create-group \
-        --email-address=${TEST_EMAIL} \
-        --first-name="Laszlo" \
-        --last-name="Pere"   \
-        --generate-key \
-        --new-password="$PROJECT_OWNER" \
-        "$PROJECT_OWNER"
 
-    check_exit_code_no_job $?
-
-    # An extra key for the SSH login to the container.
-    mys9s user \
-        --add-key \
-        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-        --public-key-name="The SSH key"
-
-    check_exit_code_no_job $?
-
-    #
-    #
-    #
     mys9s tree --list --long
     IFS=$'\n'
     for line in $(s9s tree --list --long --batch); do

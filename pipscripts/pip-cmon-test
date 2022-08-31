@@ -797,6 +797,36 @@ function enable_core_file_generation()
     exec sudo ulimit -a | tee -a $LOGFILE
 }
 
+function stop_or_kill_cmon()
+{
+    local backend_pid=$1
+
+    printVerbose "Stopping the cmon backend."
+
+    if [ "$backend_pid" != "" ]; then
+        sudo kill $backend_pid
+        sleep 3
+    fi
+
+    backend_pid=$(pidof cmon)
+    if [ "$backend_pid" != "" ]; then
+        sudo kill -9 $backend_pid
+        sleep 3
+    fi
+
+    backend_pid=$(pidof cmon)
+    if [ "$backend_pid" != "" ]; then
+        sudo pkill cmon
+        sleep 3
+    fi
+
+    backend_pid=$(pidof cmon)
+    if [ "$backend_pid" != "" ]; then
+        sudo pkill -9 cmon
+        sleep 3
+    fi
+}
+
 function run_s9s_ft_test()
 {
     local return_code
@@ -804,15 +834,9 @@ function run_s9s_ft_test()
 
     logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
 
-    #
-    # Notifying the user about a test is starting.
-    #
     printVerbose "Preparing to run $OPTION_TEST_NAME."
     save_slog_file
 
-    #
-    # Running the actual test.
-    #
     export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
     changedir "${PROJECT_CC_WORKER_DIR}"
 
@@ -822,65 +846,44 @@ function run_s9s_ft_test()
         return 1
     fi
 
-    printVerbose "Running 'cmon'..."
+    #
+    # Cleaning up before.
+    #
 
     backend_pid=$(pidof cmon)
-    if [ "" = "$backend_pid" ]; then
-        execs rm -fr ${PROJECT_DATA_ROOT}/log/cmon.log
-
-        # Cleaning up before.
-        execs sudo rm -rvf /tmp/cmon*
-        execs sudo rm -rvf /tmp/BACKUP-*
-        execs sudo rm -rvf /var/log/cmon*
-        execs sudo rm -rvf /var/lib/cmon*
-        execs sudo rm -rvf /etc/cmon.d/*
-        execs sudo rm -rvf /root/.s9s/s9s.conf
-        execs sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
-        execs sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
-
-        printVerbose "$(prompt) sudo /usr/sbin/cmon -d"
-        sudo /usr/sbin/cmon \
-            >>${PROJECT_DATA_ROOT}/log/cmon.log \
-            2>>${PROJECT_DATA_ROOT}/log/cmon.log &
-        backend_pid=$!
+    if [ "" != "$backend_pid" ]; then
+        printVerbose "Cmon is already running."
         printVerbose "Backend PID is ${backend_pid}."
-        printVerbose "Waiting for cmon to create /var/lib/cmon/usermgmt.fifo"
-
-        for delay in $(seq 1 100); do
-            if sudo [ -e "/var/lib/cmon/usermgmt.fifo" ]; then
-                break
-            fi
-
-            sleep 3
-        done
-
-        # Creating initial user the way we expect our customers to do so
-        exec sudo s9s user \
-            --controller=https://localhost:9501 \
-            --create --generate-key \
-            --group=admins \
-            "${PROJECT_OWNER}"
-        exec sudo s9s user \
-            --cmon-user="${PROJECT_OWNER}" \
-            --email-address="${S9S_TEST_EMAIL}" \
-            --change-password \
-            --new-password="${PROJECT_OWNER_CC_PASSWORD}"
-
-        # Specifying special password for user 'system'.
-        # Old test scripts are relying on it.
-        exec sudo s9s user \
-            --cmon-user="${PROJECT_OWNER}" \
-            --password="${PROJECT_OWNER_CC_PASSWORD}" \
-            --change-password \
-            --generate-key \
-            --new-password=secret \
-            system
-    else
-        printVerbose "cmon is already running"
-        printVerbose "Backend PID is ${backend_pid}."
-        printVerbose "PID won't be stored, so cmon won't be stopped."
-        backend_pid=""
+        printVerbose "Now we will kill and start it again."
+        stop_or_kill_cmon "$backend_pid"
     fi
+
+    execs sudo rm -fr ${PROJECT_DATA_ROOT}/log/cmon.log
+    execs sudo rm -rvf /tmp/cmon*
+    execs sudo rm -rvf /tmp/BACKUP-*
+    execs sudo rm -rvf /var/log/cmon*
+    execs sudo rm -rvf /var/lib/cmon*
+    execs sudo rm -rvf /etc/cmon.d/*
+    execs sudo rm -rvf /root/.s9s/s9s.conf
+    execs sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
+    execs sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
+
+    #
+    # Start cmon
+    #
+
+    printVerbose "Running 'cmon'..."
+
+    printVerbose "$(prompt) sudo /usr/sbin/cmon -d"
+    sudo /usr/sbin/cmon \
+        >>${PROJECT_DATA_ROOT}/log/cmon.log \
+        2>>${PROJECT_DATA_ROOT}/log/cmon.log &
+    backend_pid=$!
+    printVerbose "Backend PID is ${backend_pid}."
+
+    #
+    # Running the test script itself.
+    #
 
     changedir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
 
@@ -889,9 +892,6 @@ function run_s9s_ft_test()
         return 1
     fi
 
-    #
-    # Running the test script itself.
-    #
     printVerbose "Running '$OPTION_TEST_NAME'..."
     save_slog_file
     printVerbose "timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
@@ -911,8 +911,9 @@ function run_s9s_ft_test()
     printVerbose "Test script PID is ${test_pid}."
 
     #
-    # Starting a watcher that keeps uploading the output...
+    # Starting a watcher that keeps collecting the output...
     #
+
     collect_test_log_files --pid "$test_pid" "RUNNING"
 
     watcher_pid=$!
@@ -922,6 +923,7 @@ function run_s9s_ft_test()
     #
     # Waiting for the test to be ended.
     #
+
     printVerbose "Waiting until the test script ends..."
     wait "$test_pid" 2>> $LOGFILE
     return_code=$?
@@ -942,16 +944,8 @@ function run_s9s_ft_test()
     #
     # Cleaning up after.
     #
-    if [ "$backend_pid" != "" ]; then
-        printVerbose "Stopping the cmon backend."
-        sudo kill $backend_pid
-        sleep 3
-        sudo kill -9 $backend_pid
-        sleep 3
-        sudo pkill cmon
-        sleep 3
-        sudo pkill -9 cmon
-    fi
+
+    stop_or_kill_cmon "$backend_pid"
 
     if [ $return_code -eq 0 ]; then
         collect_test_log_files "SUCCESS"

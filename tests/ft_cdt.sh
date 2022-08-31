@@ -117,42 +117,7 @@ function index_table()
 
 function testCreateUser()
 {
-    local exitCode
-
-    print_title "Creating a Superuser"
-    begin_verbatim
-
-    mys9s user \
-        --create \
-        --cmon-user="system" \
-        --password="secret" \
-        --group="admins" \
-        --email-address=${TEST_EMAIL} \
-        --first-name="Laszlo" \
-        --last-name="Pere"   \
-        --generate-key \
-        --new-password="$PROJECT_OWNER" \
-        "$PROJECT_OWNER"
-
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while creating user through RPC"
-        exit 1
-    fi
-
-    # An extra key for the SSH login to the container.
-    mys9s user \
-        --add-key \
-        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-        --public-key-name="The SSH key"
-    
-    exitCode=$?
-    if [ "$exitCode" -ne 0 ]; then
-        failure "The exit code is ${exitCode} while registering key"
-        exit 1
-    fi
-
-    end_verbatim
+    return grant_user
 }
 
 function testRootFolder()
