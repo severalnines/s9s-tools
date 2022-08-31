@@ -549,14 +549,6 @@ EOF
 
     rm -rf /tmp/BACKUP*
 
-    if [ -d "$MYDIR/../pipscripts" ]; then
-        echo "Installing the 'pipscripts' script set."
-        echo "Entering directory pipscripts..."
-        pushd "$MYDIR/../pipscripts" >/dev/null
-        sudo make install 
-        popd >/dev/null
-    fi
-
     if [ -f "$HOME/.s9s/s9s.state" ]; then
         echo "Removing '$HOME/.s9s/s9s.state'."
         rm -f $HOME/.s9s/s9s.state
