@@ -2411,7 +2411,7 @@ EOF
     do
         mys9s tree \
             --add-acl \
-            --acl="user:$USER:r-x"
+            --acl="user:$USER:r-x" \
             $file
         ret=$?
         if [ $ret -ne 0 ]; then
