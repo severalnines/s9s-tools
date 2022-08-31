@@ -2382,8 +2382,8 @@ EOF
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 
     # Creating initial user the way we expect our customers to do so
-    OLDS9S="$S9S"
-    S9S="sudo $OLDS9S"
+    #OLDS9S="$S9S"
+    #S9S="sudo $OLDS9S"
     mys9s user \
         --create \
         --group="admins" \
@@ -2399,7 +2399,7 @@ EOF
         "${PROJECT_OWNER}"
 
     exitCode=$?
-    S9S="$OLDS9S"
+    #S9S="$OLDS9S"
 
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while granting user."
