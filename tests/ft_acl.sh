@@ -89,10 +89,13 @@ while true; do
     esac
 done
 
-function testCreateSupervisorUser()
+function testCreateUser()
 {
     grant_user
+}
 
+function testCreateSupervisorUser()
+{
     print_title "Creating a Superuser"
 
     begin_verbatim
@@ -378,6 +381,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateUser
     runFunctionalTest testCreateSupervisorUser
     runFunctionalTest checkTree01
     runFunctionalTest checkTree02
