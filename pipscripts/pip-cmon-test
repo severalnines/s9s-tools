@@ -870,8 +870,7 @@ function run_s9s_ft_test()
 
     printVerbose "Running 'cmon'..."
 
-    printVerbose "$(prompt) sudo /usr/sbin/cmon -d"
-    sudo /usr/sbin/cmon 2>&1 | tee -a $logfile
+    exec sudo /usr/sbin/cmon
     #backend_pid=$!
     sleep 3
     backend_pid=$(pidof cmon)
