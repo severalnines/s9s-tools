@@ -2382,8 +2382,6 @@ EOF
     last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 
     # Creating initial user the way we expect our customers to do so
-    #OLDS9S="$S9S"
-    #S9S="sudo $OLDS9S"
     mys9s user \
         --create \
         --group="admins" \
@@ -2399,7 +2397,6 @@ EOF
         "${PROJECT_OWNER}"
 
     exitCode=$?
-    #S9S="$OLDS9S"
 
     if [ "$exitCode" -ne 0 ]; then
         failure "Exit code is not 0 while granting user."
@@ -2475,12 +2472,12 @@ EOF
 
     print_subtitle "Prepare system user for test scripts"
 
-    printVerbose "Unfortunatelly many tests are using the built in system user and are expecting a hard coded special password set for it."
+    echo "Unfortunatelly many tests are using the built in system user and are expecting a hard coded special password set for it."
 
     begin_verbatim
     # Specifying special password for user 'system'.
     # Old test scripts are relying on it.
-    exec sudo s9s user \
+    mys9s user \
         --cmon-user="${PROJECT_OWNER}" \
         --password="${PROJECT_OWNER_CC_PASSWORD}" \
         --change-password \
