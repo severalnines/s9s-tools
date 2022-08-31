@@ -442,7 +442,7 @@ function install_clustercontrol()
     exec sudo make install >> make.log
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
-    ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh
+    exec ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh
     retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
 
     return 0
