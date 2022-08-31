@@ -388,6 +388,11 @@ function compile_clustercontrol()
 
     pip-host-control --testing --status="Compiling CC for $OPTION_TEST_NAME"
 
+    # clean previous object, make and other compilation files
+
+    exec make clean
+    exec make distclean
+
     # autogen
 
     execs rm -f autogen.log
@@ -397,7 +402,22 @@ function compile_clustercontrol()
         return "$retcode"
     fi
 
-    # make
+    # clean previous object, make and other compilation files
+    # This is in case the previous Makefiles were incomplete and
+    # real clean can work only after running autogen.sh
+
+    exec make clean
+    exec make distclean
+
+    # Autogen again to have the new Makefiles
+
+    exec ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
+    retcode=$?
+    if [ $retcode -ne 0 ]; then
+        return "$retcode"
+    fi
+
+    # Lets make the new build
 
     execs rm -f make.log
     exec make -j10 >> make.log
@@ -482,7 +502,28 @@ function compile_s9s_tools()
         fi
     fi
 
+    # clean old object, Makefile and other produced files
+
+    exec make clean
+    exec make distclean
+
     # autogen
+
+    execs rm -f autogen.log
+    exec ./autogen.sh $prefix_option >> autogen.log
+    retcode=$?
+    if [ $retcode -ne 0 ]; then
+        return "$retcode"
+    fi
+
+    # clean old object, Makefile and other produced files
+    # This is in case the Makefiles were broken end the first make clean
+    # were not complete.
+
+    exec make clean
+    exec make distclean
+
+    # autogen again to have the new Makefiles
 
     execs rm -f autogen.log
     exec ./autogen.sh $prefix_option >> autogen.log
