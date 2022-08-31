@@ -847,7 +847,7 @@ function run_s9s_ft_test()
         printVerbose "Waiting for cmon to create /var/lib/cmon/usermgmt.fifo"
 
         for delay in $(seq 1 100); do
-            if [ -e "/var/lib/cmon/usermgmt.fifo" ]; then
+            if sudo [ -e "/var/lib/cmon/usermgmt.fifo" ]; then
                 break
             fi
 
