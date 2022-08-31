@@ -629,9 +629,7 @@ function ft_test_ended()
         #move_to_results "/tmp/$(log_core_file_name)" "$(log_core_file_name)"
         move_to_results "$core_file" "$(log_core_file_name)"
 
-        move_to_results \
-                        "${PROJECT_DATA_ROOT}/log/cmon.log" \
-                        "$(log_bin_file_name)"
+        move_to_results "/var/log/cmon.log" "$(log_bin_file_name)"
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         printVerbose "Saving backtrace"
@@ -695,10 +693,8 @@ EOF
 
         generate_test_result_file "$test_state"
 
-        if [ -f ${PROJECT_DATA_ROOT}/log/cmon.log ]; then
-            save_to_results \
-                ${PROJECT_DATA_ROOT}/log/cmon.log \
-                "$(daemon_log_file_name)"
+        if [ -f /var/log/cmon.log ]; then
+            save_to_results /var/log/cmon.log "$(daemon_log_file_name)"
         fi
 
         if [ -z "$pid_to_watch" ]; then
@@ -858,7 +854,7 @@ function run_s9s_ft_test()
         stop_or_kill_cmon "$backend_pid"
     fi
 
-    execs sudo rm -fr ${PROJECT_DATA_ROOT}/log/cmon.log
+    execs sudo rm -fvr /var/log/cmon.log
     execs sudo rm -rvf /tmp/cmon*
     execs sudo rm -rvf /tmp/BACKUP-*
     execs sudo rm -rvf /var/log/cmon*
@@ -875,10 +871,10 @@ function run_s9s_ft_test()
     printVerbose "Running 'cmon'..."
 
     printVerbose "$(prompt) sudo /usr/sbin/cmon -d"
-    sudo /usr/sbin/cmon \
-        >>${PROJECT_DATA_ROOT}/log/cmon.log \
-        2>>${PROJECT_DATA_ROOT}/log/cmon.log &
-    backend_pid=$!
+    sudo /usr/sbin/cmon 2>&1 | tee -a $logfile
+    #backend_pid=$!
+    sleep 3
+    backend_pid=$(pidof cmon)
     printVerbose "Backend PID is ${backend_pid}."
 
     #
@@ -937,9 +933,7 @@ function run_s9s_ft_test()
 
     ft_test_ended \
         "$return_code" \
-        "$backend_pid" \
-        >>${PROJECT_DATA_ROOT}/log/cmon.log \
-        2>>${PROJECT_DATA_ROOT}/log/cmon.log
+        "$backend_pid"
 
     #
     # Cleaning up after.
@@ -984,7 +978,6 @@ function run_cc_ft_test()
     fi
 
     rm -f test_ssh_key.pub*
-    rm ${PROJECT_DATA_ROOT}/log/cmon.log
 
     printVerbose "Running ${OPTION_TEST_NAME}."
 
@@ -1012,9 +1005,7 @@ function run_cc_ft_test()
 
     ft_test_ended \
         "$return_code" \
-        "" \
-        >> ${PROJECT_DATA_ROOT}/log/cmon.log \
-        2>> ${PROJECT_DATA_ROOT}/log/cmon.log
+        ""
 
     if [ $return_code -eq 0 ]; then
         collect_test_log_files "SUCCESS"
