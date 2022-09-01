@@ -429,10 +429,10 @@ function compile_clustercontrol()
 
     # make tests
 
-    changedir tests
+    changedir "${PROJECT_CC_WORKER_DIR}/tests"
     run make -j10 >> make.log
     retcode=$?
-    changedir ..
+    changedir "${PROJECT_CC_WORKER_DIR}"
     if [ "$retcode" -ne 0 ]; then
         return $retcode
     fi
@@ -570,15 +570,15 @@ function compile_s9s_tools()
 
     # make tests
 
-    changedir tests
+    changedir "${PROJECT_S9S_WORKER_DIR}/tests"
     run make -j10 >> make.log
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         #tail -n 50 "make.log" >>$LOGFILE
-        changedir ..
+        changedir "${PROJECT_S9S_WORKER_DIR}"
         return $retcode
     fi
-    changedir ..
+    changedir "${PROJECT_S9S_WORKER_DIR}"
 
     # cache s9s
 
