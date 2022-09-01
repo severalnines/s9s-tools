@@ -1,8 +1,10 @@
 
-if [ -f "$MYDIR/load_config.sh" ]; then
-    source $MYDIR/load_config.sh
+source /etc/s9s-cmon-test/project.conf
+
+if [ -f "${PROJECT_S9S_TESTORIGIN_DIR}/load_config.sh" ]; then
+    source ${PROJECT_S9S_TESTORIGIN_DIR}/load_config.sh
 else
-    echo "File $MYDIR/load_config.sh was not found." >&2
+    echo "File ${PROJECT_S9S_TESTORIGIN_DIR}/load_config.sh was not found." >&2
     exit 5
 fi
 
