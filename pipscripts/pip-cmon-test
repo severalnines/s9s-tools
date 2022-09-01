@@ -182,13 +182,13 @@ function prompt()
 
 
 # Execute arguments as shell command in silent mode (stdout to null)
-function execs()
+function run_silent()
 {
     local cmd="$1"
     shift
 
     printVerbose "$(prompt) $cmd $*"
-    $cmd $* > /dev/null 2>> $LOGFILE
+    $cmd $* > /dev/null 2>> tee -a $LOGFILE
     retcode=$?
     if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
         if [ $retcode -gt 1 ]; then
@@ -201,13 +201,13 @@ function execs()
 }
 
 # Execute arguments as shell command
-function exec()
+function run()
 {
     local cmd="$1"
     shift
 
     printVerbose "$(prompt) $cmd $*"
-    $cmd $* 2>> $LOGFILE
+    $cmd $* 2>&1 | tee -a $LOGFILE
     retcode=$?
     if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
         if [ $retcode -gt 1 ]; then
@@ -222,7 +222,7 @@ function exec()
 function changedir()
 {
     local dir=$1
-    execs cd "$dir"
+    run_silent cd "$dir"
     return $?
 }
 
@@ -306,7 +306,7 @@ function pull_source()
     #
     # Checking the branch.
     #
-    current_branch=$(exec git rev-parse --abbrev-ref HEAD)
+    current_branch=$(run git rev-parse --abbrev-ref HEAD)
     printVerbose "Current branch is '$current_branch'."
 
     if [ -z "$requested_branch" ]; then
@@ -316,32 +316,32 @@ function pull_source()
         printVerbose "Requested branch is '$requested_branch'."
     fi
 
-    execs git fetch --all
+    run_silent git fetch --all
 
     # always reset any local changes first, then go to master
-    execs git reset --hard
+    run_silent git reset --hard
 
-    execs git checkout master
+    run_silent git checkout master
 
     if [ "$requested_branch" != "master" ]; then
         # first delete any local branch with the same name
         # (as the remote branch might be overwritten from stratch)
-        execs git branch -d $requested_branch
+        run_silent git branch -d $requested_branch
 
         # and lets check out the branch now
         # (it will be re-constructed from remote)
-        execs git checkout $requested_branch
+        run_silent git checkout $requested_branch
     fi
 
-    execs git pull
+    run_silent git pull
 
     if [ ! -z "$requested_commit" ]; then
-        execs git checkout $requested_commit
+        run_silent git checkout $requested_commit
     fi
 
     # Files are left everywhere... :(
     if [ -d "./tests/configs/tls" ]; then
-        execs rm -rvf "./tests/configs/tls"
+        run_silent rm -rvf "./tests/configs/tls"
     fi
 }
 
@@ -377,8 +377,8 @@ function compile_clustercontrol()
 
             if [ -d "$repodir" ]; then
                 printVerbose "Using previously compiled binaries from $repodir"
-                execs cp $repodir/ft_full $ccdir/tests/ft_full/
-                execs cp $repodir/cmon $ccdir/src/
+                run_silent cp $repodir/ft_full $ccdir/tests/ft_full/
+                run_silent cp $repodir/cmon $ccdir/src/
                 return 0
             fi
         fi
@@ -390,13 +390,13 @@ function compile_clustercontrol()
 
     # clean previous object, make and other compilation files
 
-    exec make clean
-    exec make distclean
+    run_silent make clean
+    run_silent make distclean
 
     # autogen
 
-    execs rm -f autogen.log
-    exec ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
+    run_silent rm -f autogen.log
+    run ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -406,12 +406,12 @@ function compile_clustercontrol()
     # This is in case the previous Makefiles were incomplete and
     # real clean can work only after running autogen.sh
 
-    exec make clean
-    exec make distclean
+    run_silent make clean
+    run_silent make distclean
 
     # Autogen again to have the new Makefiles
 
-    exec ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
+    run ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -419,21 +419,21 @@ function compile_clustercontrol()
 
     # Lets make the new build
 
-    execs rm -f make.log
-    exec make -j10 >> make.log
+    run_silent rm -f make.log
+    run make -j10 >> make.log
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        #exec tail -n 50 "$PWD/make.log" >>$LOGFILE
+        #run tail -n 50 "$PWD/make.log" >>$LOGFILE
         return $retcode
     fi
 
     # make tests
 
-    execs cd tests
-    exec make -j10 >> make.log
+    run_silent cd tests
+    run make -j10 >> make.log
     retcode=$?
     printVerbose "$(prompt) cd .."
-    execs cd ..
+    run_silent cd ..
     if [ "$retcode" -ne 0 ]; then
         return $retcode
     fi
@@ -444,10 +444,10 @@ function compile_clustercontrol()
         repodir="$HOME/${GIT_REPO_NAME}_bin_repo/$GIT_BRANCH-$GIT_HASH"
         ccdir="${PROJECT_CC_WORKER_DIR}"
 
-        execs mkdir -p "$repodir"
+        run_silent mkdir -p "$repodir"
         printVerbose "Saving created binaries to $repodir"
-        execs cp $ccdir/tests/ft_full/ft_full $repodir/
-        execs cp $ccdir/src/cmon $repodir/
+        run_silent cp $ccdir/tests/ft_full/ft_full $repodir/
+        run_silent cp $ccdir/src/cmon $repodir/
     fi
 
     return 0
@@ -459,10 +459,10 @@ function install_clustercontrol()
 
     # make install
 
-    exec sudo make install >> make.log
+    run sudo make install >> make.log
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
-    exec ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh >> $LOGFILE
+    run ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh >> $LOGFILE
     retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
 
     CC_IP=$(host $(hostname) | cut -d' ' -f 4)
@@ -520,10 +520,10 @@ function compile_s9s_tools()
 
             if [ -d "$repodir" ]; then
                 printVerbose "Using previously compiled s9s"
-                execs cp $repodir/s9s $s9sdir/s9s/
-                execs cp $repodir/libs9s.so $s9sdir/libs9s/
-                execs /usr/bin/install -c $repodir/libs9s.so "/usr/lib"
-                execs /usr/bin/install -c $repodir/s9s "/usr/bin"
+                run_silent cp $repodir/s9s $s9sdir/s9s/
+                run_silent cp $repodir/libs9s.so $s9sdir/libs9s/
+                run_silent /usr/bin/install -c $repodir/libs9s.so "/usr/lib"
+                run_silent /usr/bin/install -c $repodir/s9s "/usr/bin"
                 return 0
             fi
         fi
@@ -531,13 +531,13 @@ function compile_s9s_tools()
 
     # clean old object, Makefile and other produced files
 
-    exec make clean
-    exec make distclean
+    run_silent make clean
+    run_silent make distclean
 
     # autogen
 
-    execs rm -f autogen.log
-    exec ./autogen.sh $prefix_option >> autogen.log
+    run_silent rm -f autogen.log
+    run ./autogen.sh $prefix_option >> autogen.log
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -547,13 +547,13 @@ function compile_s9s_tools()
     # This is in case the Makefiles were broken end the first make clean
     # were not complete.
 
-    exec make clean
-    exec make distclean
+    run_silent make clean
+    run_silent make distclean
 
     # autogen again to have the new Makefiles
 
-    execs rm -f autogen.log
-    exec ./autogen.sh $prefix_option >> autogen.log
+    run_silent rm -f autogen.log
+    run ./autogen.sh $prefix_option >> autogen.log
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -561,8 +561,8 @@ function compile_s9s_tools()
 
     # make
 
-    execs rm -f make.log
-    exec make -j10 >> make.log
+    run_silent rm -f make.log
+    run make -j10 >> make.log
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         #tail -n 50 "make.log" >>$LOGFILE
@@ -571,15 +571,15 @@ function compile_s9s_tools()
 
     # make tests
 
-    execs cd tests
-    exec make -j10 >> make.log
+    run_silent cd tests
+    run make -j10 >> make.log
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         #tail -n 50 "make.log" >>$LOGFILE
-        execs cd ..
+        run_silent cd ..
         return $retcode
     fi
-    execs cd ..
+    run_silent cd ..
 
     # cache s9s
 
@@ -587,10 +587,10 @@ function compile_s9s_tools()
         repodir="$HOME/${GIT_REPO_NAME}_bin_repo/$S9S_GIT_BRANCH-$S9S_GIT_HASH"
         s9sdir="${PROJECT_S9S_WORKER_DIR}"
 
-        execs mkdir -p "$repodir"
+        run_silent mkdir -p "$repodir"
         printVerbose "Saving s9s to cache"
-        execs cp $s9sdir/s9s/s9s $repodir/
-        execs cp $s9sdir/libs9s/libs9s.so $repodir/
+        run_silent cp $s9sdir/s9s/s9s $repodir/
+        run_silent cp $s9sdir/libs9s/libs9s.so $repodir/
     fi
 
     return "$retcode"
@@ -602,7 +602,7 @@ function install_s9s_tools()
 
     # make install
 
-    exec sudo make install >> make.log
+    run sudo make install >> make.log
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
     return 0
@@ -678,19 +678,19 @@ function ft_test_ended()
 
     if [ -z "$(which gdb)" ]; then
         printVerbose "Installing gdb."
-        execs sudo apt-get -y --force-yes install gdb
+        run_silent sudo apt-get -y --force-yes install gdb
     fi
 
     if [ -e "$core_file" ]; then
         printVerbose "Saving backtrace after crash"
-        exec sudo gdb \
+        run sudo gdb \
             -batch \
             -ex "thread apply all back" \
             -ex "quit" \
             cmon "$core_file" \
             >>$LOGFILE
 
-        execs sudo mkdir -p "$HOME/tmp"
+        run_silent sudo mkdir -p "$HOME/tmp"
 
         #sudo mv "$core_file" "/tmp/$(log_core_file_name)"
         #sudo chown $USER:$USER "/tmp/$(log_core_file_name)"
@@ -701,7 +701,7 @@ function ft_test_ended()
 
     elif [ -n "$backend_pid" -a "$exit_code" -ne 0 ]; then
         printVerbose "Saving backtrace"
-        exec sudo gdb \
+        run sudo gdb \
             -p $backend_pid -batch \
             -ex "thread apply all back" \
             -ex "quit" \
@@ -831,7 +831,7 @@ function enable_core_file_generation()
     printVerbose "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern >> /dev/null 2>> $LOGFILE
     retcode=$?
-    exec sudo cat /proc/sys/kernel/core_pattern | tee -a $LOGFILE
+    run sudo cat /proc/sys/kernel/core_pattern | tee -a $LOGFILE
     if [ $retcode -ne 0 ]; then
         printVerbose "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
@@ -850,15 +850,15 @@ function enable_core_file_generation()
         rm -f "$core_file"
     done
 
-    exec ulimit -c unlimited | tee -a $LOGFILE
+    run ulimit -c unlimited | tee -a $LOGFILE
 
     sudo sysctl -p /etc/sysctl.conf
     printVerbose "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     printVerbose "User limits :"
-    exec ulimit -a | tee -a $LOGFILE
+    run ulimit -a | tee -a $LOGFILE
     printVerbose "User limits with sudo:"
-    exec sudo ulimit -c unlimited | tee -a $LOGFILE
-    exec sudo ulimit -a | tee -a $LOGFILE
+    run sudo ulimit -c unlimited | tee -a $LOGFILE
+    run sudo ulimit -a | tee -a $LOGFILE
 }
 
 function stop_or_kill_cmon()
@@ -922,15 +922,15 @@ function run_s9s_ft_test()
         stop_or_kill_cmon "$backend_pid"
     fi
 
-    execs sudo rm -fvr /var/log/cmon.log
-    execs sudo rm -rvf /tmp/cmon*
-    execs sudo rm -rvf /tmp/BACKUP-*
-    execs sudo rm -rvf /var/log/cmon*
-    execs sudo rm -rvf /var/lib/cmon*
-    execs sudo rm -rvf /etc/cmon.d/*
-    execs sudo rm -rvf /root/.s9s/s9s.conf
-    execs sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
-    execs sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
+    run_silent sudo rm -fvr /var/log/cmon.log
+    run_silent sudo rm -rvf /tmp/cmon*
+    run_silent sudo rm -rvf /tmp/BACKUP-*
+    run_silent sudo rm -rvf /var/log/cmon*
+    run_silent sudo rm -rvf /var/lib/cmon*
+    run_silent sudo rm -rvf /etc/cmon.d/*
+    run_silent sudo rm -rvf /root/.s9s/s9s.conf
+    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
+    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
 
     #
     # Start cmon
@@ -938,7 +938,7 @@ function run_s9s_ft_test()
 
     printVerbose "Running 'cmon'..."
 
-    exec sudo /usr/sbin/cmon
+    run sudo /usr/sbin/cmon
     #backend_pid=$!
     sleep 3
     backend_pid=$(pidof cmon)
@@ -1221,8 +1221,8 @@ function main()
         return 6
     fi
 
-    execs rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
-    execs rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
+    run_silent rm -f "${PROJECT_CC_WORKER_DIR}/*.log"
+    run_silent rm -f "${PROJECT_CC_WORKER_DIR}/tests/*.log"
 
     enable_core_file_generation
 
