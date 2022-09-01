@@ -1,10 +1,10 @@
 
 source /etc/s9s-cmon-test/project.conf
 
-if [ -f "${PROJECT_S9S_TESTORIGIN_DIR}/load_config.sh" ]; then
-    source ${PROJECT_S9S_TESTORIGIN_DIR}/load_config.sh
+if [ -f "${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh" ]; then
+    source ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh
 else
-    echo "File ${PROJECT_S9S_TESTORIGIN_DIR}/load_config.sh was not found." >&2
+    echo "File ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh was not found." >&2
     exit 5
 fi
 
