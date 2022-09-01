@@ -222,7 +222,7 @@ function run()
 function changedir()
 {
     local dir=$1
-    run_silent cd "$dir"
+    run cd "$dir"
     return $?
 }
 
@@ -429,11 +429,10 @@ function compile_clustercontrol()
 
     # make tests
 
-    run_silent cd tests
+    changedir tests
     run make -j10 >> make.log
     retcode=$?
-    printVerbose "$(prompt) cd .."
-    run_silent cd ..
+    changedir ..
     if [ "$retcode" -ne 0 ]; then
         return $retcode
     fi
@@ -571,15 +570,15 @@ function compile_s9s_tools()
 
     # make tests
 
-    run_silent cd tests
+    changedir tests
     run make -j10 >> make.log
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
         #tail -n 50 "make.log" >>$LOGFILE
-        run_silent cd ..
+        changedir ..
         return $retcode
     fi
-    run_silent cd ..
+    changedir ..
 
     # cache s9s
 
