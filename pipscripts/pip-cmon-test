@@ -188,7 +188,7 @@ function run_silent()
     shift
 
     printVerbose "$(prompt) $cmd $*"
-    $cmd $* > /dev/null 2>> tee -a $LOGFILE
+    $cmd $* > /dev/null 2>&1 | tee -a $LOGFILE
     retcode=$?
     if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
         if [ $retcode -gt 1 ]; then
@@ -221,9 +221,19 @@ function run()
 
 function changedir()
 {
-    local dir=$1
-    run cd "$dir"
-    return $?
+    printVerbose "$(prompt) cd $*"
+    err=$(cd $* > /dev/null 2>&1)
+    retcode=$?
+    if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
+        if [ $retcode -gt 1 ]; then
+            printVerbose "$err"
+            printVerbose "Exit code: $retcode"
+        fi
+    elif [ $retcode -ne 0 ]; then
+        printVerbose "$err"
+        printVerbose "Exit code: $retcode"
+    fi
+    return $retcode
 }
 
 #
