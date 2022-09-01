@@ -466,13 +466,13 @@ function install_clustercontrol()
     run_silent sudo make install
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
-    run ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh >> $LOGFILE
+    run ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh
     retcode=$?; if [ "$retcode" -ne 0 ]; then return $retcode; fi
 
     CC_IP=$(host $(hostname) | cut -d' ' -f 4)
 
     printVerbose "Creating /etc/cmon.cnf file"
-    cat <<EOF | sudo tee /etc/cmon.cnf 
+    cat <<EOF | sudo tee /etc/cmon.cnf >> $LOGFILE 
 #
 # clustercontrol-controller configuration file
 # Copyright 2016 severalnines.com
@@ -687,8 +687,7 @@ function ft_test_ended()
             -batch \
             -ex "thread apply all back" \
             -ex "quit" \
-            cmon "$core_file" \
-            >>$LOGFILE
+            cmon "$core_file"
 
         run_silent sudo mkdir -p "$HOME/tmp"
 
@@ -704,8 +703,8 @@ function ft_test_ended()
         run sudo gdb \
             -p $backend_pid -batch \
             -ex "thread apply all back" \
-            -ex "quit" \
-            >>$LOGFILE
+            -ex "quit"
+
     else
         printVerbose "No backtrace is necessary. No crash, no error on exit."
     fi
@@ -831,7 +830,7 @@ function enable_core_file_generation()
     printVerbose "Enabling core file creation."
     echo "core" | sudo tee /proc/sys/kernel/core_pattern >> /dev/null 2>> $LOGFILE
     retcode=$?
-    run sudo cat /proc/sys/kernel/core_pattern | tee -a $LOGFILE
+    run sudo cat /proc/sys/kernel/core_pattern
     if [ $retcode -ne 0 ]; then
         printVerbose "Failed: echo 'core' | sudo tee /proc/sys/kernel/core_pattern"
     fi
@@ -850,15 +849,15 @@ function enable_core_file_generation()
         rm -f "$core_file"
     done
 
-    run ulimit -c unlimited | tee -a $LOGFILE
+    run ulimit -c unlimited
 
     sudo sysctl -p /etc/sysctl.conf
     printVerbose "Core pattern: $(sudo cat /proc/sys/kernel/core_pattern)"
     printVerbose "User limits :"
-    run ulimit -a | tee -a $LOGFILE
+    run ulimit -a
     printVerbose "User limits with sudo:"
-    run sudo ulimit -c unlimited | tee -a $LOGFILE
-    run sudo ulimit -a | tee -a $LOGFILE
+    run sudo ulimit -c unlimited
+    run sudo ulimit -a
 }
 
 function stop_or_kill_cmon()
