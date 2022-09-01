@@ -224,14 +224,12 @@ function changedir()
     printVerbose "$(prompt) cd $*"
     err=$(cd $* > /dev/null 2>&1)
     retcode=$?
-    if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
-        if [ $retcode -gt 1 ]; then
-            printVerbose "$err"
-            printVerbose "Exit code: $retcode"
-        fi
-    elif [ $retcode -ne 0 ]; then
+    if [ $retcode -ne 0 ]; then
         printVerbose "$err"
         printVerbose "Exit code: $retcode"
+    else
+        cd $*
+        retcode=$?
     fi
     return $retcode
 }
@@ -947,8 +945,8 @@ function run_s9s_ft_test()
 
     printVerbose "Running 'cmon'..."
 
-    run sudo /usr/sbin/cmon
-    #backend_pid=$!
+    run sudo /usr/sbin/cmon &
+    backend_pid=$!
     sleep 3
     backend_pid=$(pidof cmon)
     printVerbose "Backend PID is ${backend_pid}."
