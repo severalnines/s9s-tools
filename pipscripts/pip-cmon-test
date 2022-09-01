@@ -939,8 +939,9 @@ function run_s9s_ft_test()
 
     run sudo /usr/sbin/cmon &
     backend_pid=$!
-    sleep 3
-    backend_pid=$(pidof cmon)
+    # Sleep a lot, so we make sure that cmon can initialize itself
+    sleep 15
+    #backend_pid=$(pidof cmon)
     printVerbose "Backend PID is ${backend_pid}."
 
     #
