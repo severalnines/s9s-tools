@@ -1,5 +1,10 @@
 
-source /etc/s9s-cmon-test/project.conf
+if [ -f "$MYDIR/load_config.sh" ]; then
+    source $MYDIR/load_config.sh
+else
+    echo "File $MYDIR/load_config.sh was not found." >&2
+    exit 5
+fi
 
 export S9S=$(which s9s)
 export FAILED="no"
