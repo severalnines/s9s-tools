@@ -403,8 +403,7 @@ function compile_clustercontrol()
 
     # autogen
 
-    run_silent rm -f autogen.log
-    run ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
+    run_silent ./autogen.sh --with-no-optimization $prefix_option
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -419,7 +418,7 @@ function compile_clustercontrol()
 
     # Autogen again to have the new Makefiles
 
-    run ./autogen.sh --with-no-optimization $prefix_option >> autogen.log
+    run_silent ./autogen.sh --with-no-optimization $prefix_option
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -427,18 +426,16 @@ function compile_clustercontrol()
 
     # Lets make the new build
 
-    run_silent rm -f make.log
-    run make -j10 >> make.log
+    run_silent make -j10
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        #run tail -n 50 "$PWD/make.log" >>$LOGFILE
         return $retcode
     fi
 
     # make tests
 
     changedir "${PROJECT_CC_WORKER_DIR}/tests"
-    run make -j10 >> make.log
+    run_silent make -j10
     retcode=$?
     changedir "${PROJECT_CC_WORKER_DIR}"
     if [ "$retcode" -ne 0 ]; then
@@ -466,7 +463,7 @@ function install_clustercontrol()
 
     # make install
 
-    run sudo make install >> make.log
+    run_silent sudo make install
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
     run ${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/create_cmon_db.sh >> $LOGFILE
@@ -543,8 +540,7 @@ function compile_s9s_tools()
 
     # autogen
 
-    run_silent rm -f autogen.log
-    run ./autogen.sh $prefix_option >> autogen.log
+    run_silent ./autogen.sh $prefix_option
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -559,8 +555,7 @@ function compile_s9s_tools()
 
     # autogen again to have the new Makefiles
 
-    run_silent rm -f autogen.log
-    run ./autogen.sh $prefix_option >> autogen.log
+    run_silent ./autogen.sh $prefix_option
     retcode=$?
     if [ $retcode -ne 0 ]; then
         return "$retcode"
@@ -568,21 +563,18 @@ function compile_s9s_tools()
 
     # make
 
-    run_silent rm -f make.log
-    run make -j10 >> make.log
+    run_silent make -j10
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        #tail -n 50 "make.log" >>$LOGFILE
         return $retcode
     fi
 
     # make tests
 
     changedir "${PROJECT_S9S_WORKER_DIR}/tests"
-    run make -j10 >> make.log
+    run_silent make -j10
     retcode=$?
     if [ "$retcode" -ne 0 ]; then
-        #tail -n 50 "make.log" >>$LOGFILE
         changedir "${PROJECT_S9S_WORKER_DIR}"
         return $retcode
     fi
@@ -609,7 +601,7 @@ function install_s9s_tools()
 
     # make install
 
-    run_silent sudo make install >> make.log
+    run_silent sudo make install
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
     return 0
