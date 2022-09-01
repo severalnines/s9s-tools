@@ -471,7 +471,8 @@ function install_clustercontrol()
 
     CC_IP=$(host $(hostname) | cut -d' ' -f 4)
 
-    sudo cat > /etc/cmon.cnf << EOF
+    printVerbose "Creating /etc/cmon.cnf file"
+    cat > sudo tee /etc/cmon.cnf << EOF
 #
 # clustercontrol-controller configuration file
 # Copyright 2016 severalnines.com
