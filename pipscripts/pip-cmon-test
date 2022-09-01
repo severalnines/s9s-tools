@@ -188,7 +188,7 @@ function run_silent()
     shift
 
     printVerbose "$(prompt) $cmd $*"
-    $cmd $* > /dev/null 2>&1 | tee -a $LOGFILE
+    $cmd $* 2>&1 >/dev/null | tee -a $LOGFILE
     retcode=$?
     if [ "$cmd" == "git" -o "$cmd" == "rm" ]; then
         if [ $retcode -gt 1 ]; then
@@ -609,7 +609,7 @@ function install_s9s_tools()
 
     # make install
 
-    run sudo make install >> make.log
+    run_silent sudo make install >> make.log
     retcode=$?; if [ "$retcode" -gt 1 ]; then return $retcode; fi
 
     return 0
