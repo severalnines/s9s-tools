@@ -150,6 +150,8 @@ function run_test()
     local retcode
     local counter
 
+    echo " --------------------------------------"
+    echo "Current date: $(date "+%Y-%m-%d %H:%M")"
     echo "Loading '$config_file'..."
     source "$config_file"
 
@@ -168,7 +170,6 @@ function run_test()
 
     LAST_USER_NAME="$user"
 
-    echo " --------------------------------------"
     echo "           server: $server"
     echo "         testname: $testname"
     echo "            state: $state"
@@ -189,7 +190,7 @@ function run_test()
         "$VERBOSE_OPTION "\
         "--test=$testname "\
         "--git-branch=$gitbranch"\
-        "--git-commit=$githash"
+        "--git-commit=$githash" \> ${pipcmontestlog}
 
     nohup pip-cmon-test \
         $VERBOSE_OPTION \
