@@ -122,6 +122,8 @@ function pull_local_testorigin_source()
 
     if [ "${PROJECT_AUTO_PULL_TESTORIGIN}" = "true" ]; then
 
+        echo ""
+
         echo "Pulling in ${server}:${PROJECT_CC_TESTORIGIN_DIR}"
 
         changedir "${PROJECT_CC_TESTORIGIN_DIR}"
@@ -350,6 +352,7 @@ function delegate_test()
     local project=""
     local retcode
 
+    echo " --------------------------------------"
     echo "Loading '$config_file'..."
     source "$config_file"
 
@@ -367,7 +370,6 @@ function delegate_test()
 
     #logbasename="$PROJECT_TEST_REPORT_DIR/${testname}-${gitbranch}-${githash}"
 
-    echo " --------------------------------------"
     echo "      idle_server: $idle_server"
     echo "         testname: $testname"
     echo "            state: $state"
