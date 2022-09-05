@@ -173,6 +173,11 @@ if [ -z "$CONTAINER_SERVER" ]; then
     exit 6
 fi
 
+function testCreateUser()
+{
+    grant_user
+}
+
 #
 #
 #
@@ -444,6 +449,7 @@ if [ "$OPTION_INSTALL" ]; then
             runFunctionalTest "$testName"
         done
     else
+        runFunctionalTest testCreateUser
         runFunctionalTest registerServer
         runFunctionalTest createMasterCluster
         runFunctionalTest testBinaryLog
@@ -456,6 +462,7 @@ elif [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateUser
     runFunctionalTest registerServer
     runFunctionalTest createMasterCluster
     runFunctionalTest testBinaryLog
