@@ -979,10 +979,11 @@ function run_s9s_ft_test()
     # Starting a watcher that keeps collecting the output...
     #
 
-    collect_test_log_files --pid "$test_pid" "RUNNING"
+    #collect_test_log_files --pid "$test_pid" "RUNNING"
+    collect_test_log_files "RUNNING"
 
-    watcher_pid=$!
-    printVerbose "Watcher PID is ${watcher_pid}."
+    #watcher_pid=$!
+    #printVerbose "Watcher PID is ${watcher_pid}."
     save_slog_file
 
     #
@@ -995,8 +996,10 @@ function run_s9s_ft_test()
 
     printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
 
-    printVerbose "Waiting for test watcher to end..."
-    wait "$watcher_pid" 2>> $LOGFILE
+    collect_test_log_files "RUNNING"
+
+    #printVerbose "Waiting for test watcher to end..."
+    #wait "$watcher_pid" 2>> $LOGFILE
 
     changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
@@ -1064,9 +1067,10 @@ function run_cc_ft_test()
 
     test_pid=$!
 
-    collect_test_log_files --pid "$test_pid" "RUNNING"
+    #collect_test_log_files --pid "$test_pid" "RUNNING"
+    collect_test_log_files "RUNNING"
 
-    watcher_pid=$!
+    #watcher_pid=$!
     wait "$test_pid"
     return_code=$?
 
