@@ -2371,11 +2371,96 @@ EOF
         fi
     done
 
-    print_subtitle "Create user ${S9STEST_USER}"
+    #
+    # Creating initial admin user the way we expect our customers to do so
+    #
+
+    print_subtitle "Create user ${S9STEST_ADMIN_USER}"
 
     begin_verbatim
 
+    mys9s user \
+        --create \
+        --group="admins" \
+        --controller="https://localhost:$cmon_port" \
+        --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --email-address="${S9S_TEST_EMAIL}" \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE \
+        --batch \
+        "${S9STEST_ADMIN_USER}"
+
+    exitCode=$?
+
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting user."
+    else 
+        success "  o Return code is 0, ok."
+    fi
+
+    mys9s user --stat "${S9STEST_ADMIN_USER}"
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        sleep 5
+        mys9s user --stat "${S9STEST_ADMIN_USER}"
+        ret=$?
+    fi
+    if [ $ret -eq 0 ]; then
+        success "  o Could stat the user ${S9STEST_ADMIN_USER}, OK."
+    else
+        failure "Exit code is $ret (not 0) when stat-ing the new user ${S9STEST_ADMIN_USER}."
+        end_verbatim
+        return 0
+    fi
+
+    for file in \
+        "/.runtime/jobs/jobExecutor" \
+        "/.runtime/jobs/jobExecutorCreateCluster" \
+        "/.runtime/jobs/jobExecutorDeleteOldJobs"
+    do
+        mys9s tree \
+            --add-acl \
+            --acl="user:${S9STEST_ADMIN_USER}:r-x" \
+            $file
+        ret=$?
+        if [ $ret -ne 0 ]; then
+            failure "Failed to add acl using $file"
+        fi
+    done
+
+    # Adding a tag to the user and checking if the tag is indeed added.
+    mys9s tree --add-tag --tag="testUser" /${S9STEST_ADMIN_USER}
+    mys9s user --stat ${S9STEST_ADMIN_USER}
+
+    if s9s user --stat ${S9STEST_ADMIN_USER} | grep -q testUser; then
+        success "  o User ${S9STEST_ADMIN_USER} has the tag 'testUser' set, OK."
+    else
+        failure "  o User ${S9STEST_ADMIN_USER} has no tag 'testUser' set."
+    fi
+
+    #
+    # Adding the user's default SSH public key. This will come handy when we
+    # create a container because this way the user will be able to log in with
+    # the SSH key without password.
+    #
+        #--batch \
+        #--password="p" \
+    mys9s user \
+        --add-key \
+        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+        --public-key-name="The_SSH_key"
+
+    end_verbatim
+
+    #
     # Creating initial normal user the way we expect our customers to do so
+    #
+
+    print_subtitle "Create user ${S9STEST_USER}"
+
+    begin_verbatim
 
     mys9s user \
         --create \
@@ -2453,9 +2538,6 @@ EOF
 
     end_verbatim
 
-    #
-    #
-    #
     print_subtitle "The $HOME/.s9s/s9s.conf"
 
     cat <<EOF | paragraph
@@ -2467,37 +2549,9 @@ EOF
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
 
-
-    # Creating initial admin user the way we expect our customers to do so
-
-    print_subtitle "Create user ${S9STEST_ADMIN_USER}"
-
-    begin_verbatim
-
-    mys9s user \
-        --create \
-        --group="admins" \
-        --controller="https://localhost:$cmon_port" \
-        --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
-        --email-address="${S9S_TEST_EMAIL}" \
-        --first-name="Firstname" \
-        --last-name="Lastname" \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE \
-        --batch \
-        "${S9STEST_ADMIN_USER}"
-
-    exitCode=$?
-
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting user."
-    else 
-        success "  o Return code is 0, ok."
-    fi
-
-    end_verbatim
-
+    #
     # Update system user's password for legacy reasons
+    #
 
     print_subtitle "Prepare system user for test scripts"
 
