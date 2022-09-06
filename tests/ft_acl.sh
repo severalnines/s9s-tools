@@ -159,17 +159,17 @@ function checkTree01()
 #    lines=$(s9s tree --cmon-user=supervisor --list --long groups/users)
 #    mys9s tree --cmon-user=supervisor --list --long groups/users
 #
-#    expected="^urwxr--r--     - $PROJECT_OWNER  admins $PROJECT_OWNER -> /$PROJECT_OWNER$"
+#    expected="^urwxr--r--     - ${S9STEST_USER}  admins ${S9STEST_USER} -> /${S9STEST_USER}$"
 #    if ! find_line "$lines" "$expected"; then
 #        failure "Expected line not found: '$expected'"
 #    else
 #        success "  o Expected line '$expected' found, OK."
 #    fi
     
-    # wait few secs until recently created user '$PROJECT_OWNER' is visible on tree
+    # wait few secs until recently created user '${S9STEST_USER}' is visible on tree
     for i in $(seq 1 4); do
         lines=$(s9s tree --cmon-user=supervisor --list --long)
-        if find_line "$lines" "$PROJECT_OWNER"; then
+        if find_line "$lines" "${S9STEST_USER}"; then
             break
         fi
         sleep 5
@@ -178,7 +178,7 @@ function checkTree01()
     lines=$(s9s tree --cmon-user=supervisor --list --long)
     mys9s tree --cmon-user=supervisor --list --long
 
-    expected="^urwxr--r--     - $PROJECT_OWNER  admins $PROJECT_OWNER$"
+    expected="^urwxr--r--     - supervisor  admins  supervisor$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
     else
@@ -200,11 +200,11 @@ function checkTree02()
         success "  o User 'supervisor' ha access to '/', OK."
     fi
 
-    mys9s tree --access --privileges="rwx" --cmon-user="$PROJECT_OWNER" /
+    mys9s tree --access --privileges="rwx" --cmon-user="${S9STEST_USER}" /
     if [ $? -ne 0 ]; then
-        failure "User '$PROJECT_OWNER' ha no access to '/'"
+        failure "User '${S9STEST_USER}' ha no access to '/'"
     else
-        success "  o User '$PROJECT_OWNER' ha access to '/', OK."
+        success "  o User '${S9STEST_USER}' ha access to '/', OK."
     fi
 
     end_verbatim
@@ -236,7 +236,7 @@ function testMkdir()
     mys9s tree --cmon-user=supervisor --list --long
     lines=$(s9s tree --cmon-user=supervisor --list --long)
     
-    expected="^drwxrwxrwx     - $PROJECT_OWNER  admins home$"
+    expected="^drwxrwxrwx     - ${S9STEST_USER}  users  home$"
     if ! find_line "$lines" "$expected"; then
         failure "Expected line not found: '$expected'"
     else

@@ -142,7 +142,7 @@ function testUser()
 
     mys9s user --whoami
     myself=$(s9s user --whoami)
-    if [ "$myself" != "${PROJECT_OWNER}" ]; then
+    if [ "$myself" != "${S9STEST_USER}" ]; then
         failure "Failed to log in with public key ($myself)"
     else
         printVerbose "   myself : '$myself'"

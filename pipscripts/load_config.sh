@@ -127,7 +127,19 @@ PROJECT_SCRIPT_ROOT=${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/test_ui
 if [ "${PROJECT_OWNER}" = "" ]; then
     PROJECT_OWNER="$USER"
 fi
-if [ "${PROJECT_OWNER_CC_PASSWORD}" = "" ]; then
-    PROJECT_OWNER_CC_PASSWORD="pwd"
+
+if [ "${}" = "" ]; then
+    S9STEST_ADMIN_USER="admin_${PROJECT_OWNER}"
 fi
+if [ "${}" = "" ]; then
+    S9STEST_ADMIN_USER_PASSWORD="adminpwd"
+fi
+if [ "${}" = "" ]; then
+    S9STEST_USER="${PROJECT_OWNER}"
+fi
+if [ "${}" = "" ]; then
+    S9STEST_USER_PASSWORD="pwd"
+fi
+
+
 

@@ -2362,23 +2362,22 @@ EOF
 
     begin_verbatim
 
-    first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
-    last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
 
-    # Creating initial user the way we expect our customers to do so
+    # Creating initial admin user the way we expect our customers to do so
+    first=$(getent passwd ${S9STEST_ADMIN_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
+    last=$(getent passwd ${S9STEST_ADMIN_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
     mys9s user \
         --create \
         --group="admins" \
-        --generate-key \
         --controller="https://localhost:$cmon_port" \
-        --new-password="${PROJECT_OWNER_CC_PASSWORD}" \
+        --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --email-address="${S9S_TEST_EMAIL}" \
         --first-name="$first" \
         --last-name="$last" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch \
-        "${PROJECT_OWNER}"
+        "${S9STEST_ADMIN_USER}"
 
     exitCode=$?
 
@@ -2388,17 +2387,44 @@ EOF
         success "  o Return code is 0, ok."
     fi
 
-    mys9s user --stat "$USER"
+    # Creating initial normal user the way we expect our customers to do so
+
+    first=$(getent passwd ${S9STEST_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
+    last=$(getent passwd ${S9STEST_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+    mys9s user \
+        --create \
+        --group="users" \
+        --generate-key \
+        --controller="https://localhost:$cmon_port" \
+        --new-password="${S9STEST_USER_PASSWORD}" \
+        --email-address="${S9S_TEST_EMAIL}" \
+        --first-name="$first" \
+        --last-name="$last" \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE \
+        --batch \
+        "${S9STEST_USER}"
+
+    exitCode=$?
+
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting user."
+    else 
+        success "  o Return code is 0, ok."
+    fi
+
+
+    mys9s user --stat "${S9STEST_USER}"
     ret=$?
     if [ $ret -ne 0 ]; then
         sleep 5
-        mys9s user --stat "$USER"
+        mys9s user --stat "${S9STEST_USER}"
         ret=$?
     fi
     if [ $ret -eq 0 ]; then
-        success "  o Could stat the user $USER, OK."
+        success "  o Could stat the user ${S9STEST_USER}, OK."
     else
-        failure "Exit code is $ret (not 0) when stat-ing the new user $USER."
+        failure "Exit code is $ret (not 0) when stat-ing the new user ${S9STEST_USER}."
         end_verbatim
         return 0
     fi
@@ -2410,7 +2436,7 @@ EOF
     do
         mys9s tree \
             --add-acl \
-            --acl="user:$USER:r-x" \
+            --acl="user:${S9STEST_USER}:r-x" \
             $file
         ret=$?
         if [ $ret -ne 0 ]; then
@@ -2419,13 +2445,13 @@ EOF
     done
 
     # Adding a tag to the user and checking if the tag is indeed added.
-    mys9s tree --add-tag --tag="testUser" /$USER
-    mys9s user --stat $USER
+    mys9s tree --add-tag --tag="testUser" /${S9STEST_USER}
+    mys9s user --stat ${S9STEST_USER}
 
-    if s9s user --stat $USER | grep -q testUser; then
-        success "  o User $USER has the tag 'testUser' set, OK."
+    if s9s user --stat ${S9STEST_USER} | grep -q testUser; then
+        success "  o User ${S9STEST_USER} has the tag 'testUser' set, OK."
     else
-        failure "  o User $USER has no tag 'testUser' set."
+        failure "  o User ${S9STEST_USER} has no tag 'testUser' set."
     fi
 
     #
@@ -2464,8 +2490,8 @@ EOF
     # Specifying special password for user 'system'.
     # Old test scripts are relying on it.
     mys9s user \
-        --cmon-user="${PROJECT_OWNER}" \
-        --password="${PROJECT_OWNER_CC_PASSWORD}" \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --change-password \
         --generate-key \
         --new-password=secret \

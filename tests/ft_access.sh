@@ -210,8 +210,8 @@ EOF
 
     check_cluster \
         --cluster         "$CLUSTER_NAME" \
-        --owner           "$PROJECT_OWNER" \
-        --group           "admins" \
+        --owner           "$S9STEST_USER" \
+        --group           "users" \
         --cdt-path        "/"
 
     end_verbatim
@@ -384,7 +384,7 @@ function testChOwn()
     s9s tree \
         --chown \
         --recursive \
-        --owner=$PROJECT_OWNER:admins \
+        --owner=${S9STEST_ADMIN_USER}:admins \
         "/$CLUSTER_NAME"
 
     check_exit_code_no_job $?
