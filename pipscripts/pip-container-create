@@ -666,9 +666,9 @@ function create_container()
     #
     # On centos 7 we also need : lxc-attach -n centos -- yum install sudo
     printVerbose "Adding '$OWNER' to sudoers."
-    echo "" | sudo tee -a "/var/lib/lxc/$new_name/rootfs/etc/sudoers"
+    echo "" | sudo tee -a "/var/lib/lxc/$new_name/rootfs/etc/sudoers" > /dev/null
     echo "${OWNER} ALL=(ALL) NOPASSWD:ALL" | \
-        sudo tee -a "/var/lib/lxc/$new_name/rootfs/etc/sudoers"
+        sudo tee -a "/var/lib/lxc/$new_name/rootfs/etc/sudoers" > /dev/null
 
     #
     # Installing some packages.
