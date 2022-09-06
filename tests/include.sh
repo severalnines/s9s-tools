@@ -2364,16 +2364,14 @@ EOF
 
 
     # Creating initial admin user the way we expect our customers to do so
-    first=$(getent passwd ${S9STEST_ADMIN_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
-    last=$(getent passwd ${S9STEST_ADMIN_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
     mys9s user \
         --create \
         --group="admins" \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --email-address="${S9S_TEST_EMAIL}" \
-        --first-name="$first" \
-        --last-name="$last" \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch \
@@ -2389,8 +2387,6 @@ EOF
 
     # Creating initial normal user the way we expect our customers to do so
 
-    first=$(getent passwd ${S9STEST_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
-    last=$(getent passwd ${S9STEST_USER} | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
     mys9s user \
         --create \
         --group="users" \
@@ -2398,8 +2394,8 @@ EOF
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_USER_PASSWORD}" \
         --email-address="${S9S_TEST_EMAIL}" \
-        --first-name="$first" \
-        --last-name="$last" \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch \
