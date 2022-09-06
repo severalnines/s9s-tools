@@ -119,9 +119,6 @@ function testConfig()
 
 function testCreateUser()
 {
-    local old_ifs="$IFS"
-    local columns_found=0
-
     grant_user
 }
 
@@ -156,8 +153,6 @@ function testUser()
 # Running the requested tests.
 #
 startTests
-reset_config --do-not-create
-create_s9s_config
 
 if [ "$1" ]; then
     for testName in $*; do

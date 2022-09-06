@@ -1963,8 +1963,6 @@ function deleteContainers()
 # Running the requested tests.
 #
 startTests
-reset_config
-grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     if [ "$*" ]; then

@@ -2144,11 +2144,6 @@ function emit_s9s_configuration_file()
 
     while [ -n "$1" ]; do
         case "$1" in
-            --do-not-create)
-                # No need to do anything with this option here. If we are here
-                # we create the configuration anyway.
-                ;;
-
             --controller)
                 hostname="$2"
                 shift 2
@@ -2172,7 +2167,6 @@ function emit_s9s_configuration_file()
 [global]
 controller    = https://$hostname:$cmon_port
 os_user       = ${USER}
-#cmon_user     = ${S9STEST_USER}
 
 [network]
 client_connection_timeout = 30
@@ -2194,14 +2188,6 @@ EOF
 }
 
 #
-# Just for backward compatibility.
-#
-function reset_config()
-{
-    create_s9s_config $*
-}
-
-#
 # Creates an s9s configuration file that holds the information about the
 # controller. This is crutial for every tests.
 # 
@@ -2210,12 +2196,13 @@ function reset_config()
 # S9S_USER_CONFIG variable is empty the ~/.s9s/s9s.conf path will be used (that
 # is the default for the s9s program too).
 #
-function create_s9s_config()
+function reset_config()
 {
     local config_dir
     local config_file
     local do_not_create
     local options=$*
+    local silent="false"
 
     if [ -z "$S9S_USER_CONFIG" ]; then
         config_dir="$HOME/.s9s"
@@ -2242,6 +2229,11 @@ function create_s9s_config()
                 shift 2
                 ;;
 
+            --silent)
+                silent="true"
+                shift 1
+                ;;
+
             *)
                 break
         esac
@@ -2251,10 +2243,12 @@ function create_s9s_config()
         return 0
     fi
    
-    if [ -z "$do_not_create" ]; then
-        print_title "Writing s9s Configuration $config_file"
-    else
-        print_title "Deleting s9s Configuration"
+    if [ "$silent" != "true" ]; then
+        if [ -z "$do_not_create" ]; then
+            print_title "Writing s9s Configuration $config_file"
+        else
+            print_title "Deleting s9s Configuration"
+        fi
     fi
 
     if [ -z "$do_not_create" ]; then
@@ -2262,14 +2256,34 @@ function create_s9s_config()
             mkdir "$config_dir"
         fi
 
+        # backup previous config file
+        mv $config_file ${config_file}.bak.$(date +%Y%m%d%H%M)
+
         emit_s9s_configuration_file $options >$config_file
 
         # This goes to the standard output.
-        emit_s9s_configuration_file $options | print_ini_file
+        if [ "$silent" != "true" ]; then
+            emit_s9s_configuration_file $options | print_ini_file
+        fi
+    fi
+}
+
+function show_s9s_config()
+{
+    local config_dir
+    local config_file
+
+    if [ -z "$S9S_USER_CONFIG" ]; then
+        config_dir="$HOME/.s9s"
+        config_file="$config_dir/s9s.conf"
+    else
+        config_file="$S9S_USER_CONFIG"
+        config_dir="$(dirname "$config_file")"
     fi
 
-    # FIXME: This should not be here:
-    sudo rm -f $HOME/pip-container-create.log 2>/dev/null
+    #print_title "S9s Configuration $config_file"
+
+    cat "$config_file" | print_ini_file
 }
 
 #
@@ -2380,6 +2394,8 @@ EOF
 
     begin_verbatim
 
+    reset_config --silent
+
     mys9s user \
         --create \
         --group="admins" \
@@ -2439,7 +2455,7 @@ EOF
 
     begin_verbatim
 
-    reset_config
+    reset_config --silent
 
     mys9s user \
         --create \
@@ -2532,7 +2548,7 @@ EOF
 
 EOF
 
-    cat $HOME/.s9s/s9s.conf | print_ini_file
+    show_s9s_config
 
     #
     # Update system user's password for legacy reasons
