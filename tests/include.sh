@@ -2371,36 +2371,6 @@ EOF
         fi
     done
 
-    print_subtitle "Create user ${S9STEST_ADMIN_USER}"
-
-    begin_verbatim
-
-
-    # Creating initial admin user the way we expect our customers to do so
-    mys9s user \
-        --create \
-        --group="admins" \
-        --controller="https://localhost:$cmon_port" \
-        --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
-        --email-address="${S9S_TEST_EMAIL}" \
-        --first-name="Firstname" \
-        --last-name="Lastname" \
-        $OPTION_PRINT_JSON \
-        $OPTION_VERBOSE \
-        --batch \
-        "${S9STEST_ADMIN_USER}"
-
-    exitCode=$?
-
-    if [ "$exitCode" -ne 0 ]; then
-        failure "Exit code is not 0 while granting user."
-    else 
-        success "  o Return code is 0, ok."
-    fi
-
-    end_verbatim
-
-
     print_subtitle "Create user ${S9STEST_USER}"
 
     begin_verbatim
@@ -2496,6 +2466,38 @@ EOF
 EOF
 
     cat $HOME/.s9s/s9s.conf | print_ini_file
+
+
+    # Creating initial admin user the way we expect our customers to do so
+
+    print_subtitle "Create user ${S9STEST_ADMIN_USER}"
+
+    begin_verbatim
+
+    mys9s user \
+        --create \
+        --group="admins" \
+        --controller="https://localhost:$cmon_port" \
+        --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --email-address="${S9S_TEST_EMAIL}" \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE \
+        --batch \
+        "${S9STEST_ADMIN_USER}"
+
+    exitCode=$?
+
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting user."
+    else 
+        success "  o Return code is 0, ok."
+    fi
+
+    end_verbatim
+
+    # Update system user's password for legacy reasons
 
     print_subtitle "Prepare system user for test scripts"
 
