@@ -2153,10 +2153,6 @@ function emit_s9s_configuration_file()
                 cmon_port="$2"
                 shift 2
                 ;;
-
-            *)
-                failure "emit_s9s_configuration_file: Unknown option '$1'."
-                return 1;
         esac
     done
 
@@ -2201,7 +2197,7 @@ function reset_config()
     local config_dir
     local config_file
     local do_not_create
-    local options=$*
+    local options=""
     local silent="false"
 
     if [ -z "$S9S_USER_CONFIG" ]; then
@@ -2220,12 +2216,12 @@ function reset_config()
                 ;;
 
             --controller)
-                # No need to do anything with this option here.
+                options="$options --controller $2"
                 shift 2
                 ;;
 
             --port)
-                # No need to do anything with this option here.
+                options="$options --port $2"
                 shift 2
                 ;;
 
