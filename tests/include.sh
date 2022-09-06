@@ -2382,6 +2382,7 @@ EOF
     mys9s user \
         --create \
         --group="admins" \
+        --generate-key \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --email-address="${S9S_TEST_EMAIL}" \
@@ -2465,7 +2466,6 @@ EOF
     mys9s user \
         --create \
         --group="users" \
-        --generate-key \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_USER_PASSWORD}" \
         --email-address="${S9S_TEST_EMAIL}" \
