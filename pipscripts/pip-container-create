@@ -646,7 +646,7 @@ function create_container()
     printVerbose \
         "/home/$OWNER/.ssh -> /var/lib/lxc/$new_name/rootfs/home/$OWNER"
 
-    cp -r \
+    sudo cp -r \
         "/home/$OWNER/.ssh" \
         "/var/lib/lxc/$new_name/rootfs/home/$OWNER/.ssh"
 
