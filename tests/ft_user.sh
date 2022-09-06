@@ -225,8 +225,8 @@ function testStat()
         return 1
     fi
     
-    if ! echo "$lines" | grep -q "Owner: ${PROJECT_OWNER}/admins"; then
-        failure "Owner is not '${PROJECT_OWNER}/admin' in --stat."
+    if ! echo "$lines" | grep -q "Owner: ${S9STEST_USER}/admins"; then
+        failure "Owner is not '${S9STEST_USER}/admin' in --stat."
         return 1
     fi
 
@@ -1086,7 +1086,7 @@ EOF
         --group=admins \
         --cmon-user=system \
         --password=secret \
-        ${PROJECT_OWNER}
+        ${S9STEST_USER}
 
     check_exit_code_no_job $?
 
@@ -1637,7 +1637,7 @@ EOF
     
     check_group \
         --group-name   "tmpgroup" \
-        --owner-name   "${PROJECT_OWNER}"    \
+        --owner-name   "${S9STEST_USER}"    \
         --group-owner  "admins"
     
     check_log_messages \

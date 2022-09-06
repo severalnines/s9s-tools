@@ -62,8 +62,8 @@ done
 function testUploadData()
 {
     local sql_host=$1
-    local db_name="${PROJECT_OWNER}1_$$"
-    local user_name="${PROJECT_OWNER}1_$$"
+    local db_name="${S9STEST_USER}1_$$"
+    local user_name="${S9STEST_USER}1_$$"
     local password="p"
     local reply
     local count=0
@@ -117,7 +117,7 @@ function testUploadData()
     # Here we upload some tables. This part needs test data...
     #
     for file in \
-        /home/${PROJECT_OWNER}/Desktop/stuff/databases/*.sql.gz \
+        /home/${S9STEST_USER}/Desktop/stuff/databases/*.sql.gz \
         /home/domain_names_ngtlds_diff_whois/*/*/*.sql.gz \
         ; do
         if [ ! -f "$file" ]; then

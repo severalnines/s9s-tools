@@ -120,9 +120,9 @@ function testMoveUser()
     print_title "The user moves itself in CDT"
     begin_verbatim
 
-    TEST_PATH="/home/${PROJECT_OWNER}"
+    TEST_PATH="/home/${S9STEST_USER}"
     mys9s tree --mkdir "$TEST_PATH"
-    mys9s tree --move /${PROJECT_OWNER} "$TEST_PATH"
+    mys9s tree --move /${S9STEST_USER} "$TEST_PATH"
 
     check_exit_code $?
 
@@ -142,7 +142,7 @@ function testRegisterServer()
     begin_verbatim
     mys9s server \
         --register \
-        --cmon-user=${PROJECT_OWNER} \
+        --cmon-user=${S9STEST_USER} \
         --servers="lxc://$CONTAINER_SERVER"
 
     check_exit_code $?
@@ -155,7 +155,7 @@ function testRegisterServer()
     OWNER=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $3}')
     GROUP=$(s9s tree --list /$rootPath/$CONTAINER_SERVER --batch --long | head -n1 | awk '{print $4}')
 
-    if [ "$OWNER" != "$PROJECT_OWNER" ]; then
+    if [ "$OWNER" != "$S9STEST_USER" ]; then
         s9s tree --list /$CONTAINER_SERVER 
         failure "The owner is '$OWNER' should be '$USER'."
     else
@@ -267,7 +267,7 @@ function testCreateCluster()
             $CLUSTER_NAME)
                 success "  o Cluster $CLUSTER_NAME found, OK."
 
-                if [ "$owner" != "${PROJECT_OWNER}" ]; then
+                if [ "$owner" != "${S9STEST_USER}" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o The owner is $owner, OK."

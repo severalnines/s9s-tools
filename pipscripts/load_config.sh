@@ -128,18 +128,3 @@ if [ "${PROJECT_OWNER}" = "" ]; then
     PROJECT_OWNER="$USER"
 fi
 
-if [ "${}" = "" ]; then
-    S9STEST_ADMIN_USER="admin_${PROJECT_OWNER}"
-fi
-if [ "${}" = "" ]; then
-    S9STEST_ADMIN_USER_PASSWORD="adminpwd"
-fi
-if [ "${}" = "" ]; then
-    S9STEST_USER="${PROJECT_OWNER}"
-fi
-if [ "${}" = "" ]; then
-    S9STEST_USER_PASSWORD="pwd"
-fi
-
-
-

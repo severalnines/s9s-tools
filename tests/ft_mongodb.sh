@@ -301,7 +301,7 @@ EOF
         --port       "27017" \
         --config     "/etc/mongod.conf" \
         --no-maint
-        #--owner      "$PROJECT_OWNER" \
+        #--owner      "$S9STEST_USER" \
         #--group      "testgroup" \
         #--cdt-path   "/$CLUSTER_NAME" \
         #--status     "CmonHostOnline" \
@@ -356,7 +356,7 @@ EOF
         --port       "27017" \
         --config     "/etc/mongod.conf" \
         --no-maint
-        #--owner      "$PROJECT_OWNER" \
+        #--owner      "$S9STEST_USER" \
         #--group      "testgroup" \
         #--cdt-path   "/$CLUSTER_NAME" \
         #--status     "CmonHostOnline" \

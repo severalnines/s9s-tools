@@ -1,12 +1,25 @@
 
-source /etc/s9s-cmon-test/project.conf
+source /etc/s9s-cmon-test/s9stest.conf
 
-if [ -f "${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh" ]; then
-    source ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh
-else
-    echo "File ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh was not found." >&2
-    exit 5
+if [ "${S9STEST_ADMIN_USER}" = "" ]; then
+    S9STEST_ADMIN_USER="admin_${USER}"
 fi
+if [ "${S9STEST_ADMIN_USER_PASSWORD}" = "" ]; then
+    S9STEST_ADMIN_USER_PASSWORD="adminpwd"
+fi
+if [ "${S9STEST_USER}" = "" ]; then
+    S9STEST_USER="${USER}"
+fi
+if [ "${S9STEST_USER_PASSWORD}" = "" ]; then
+    S9STEST_USER_PASSWORD="pwd"
+fi
+if [ "${S9STEST_KEEP_NODE_CONTAINERS}" = "" ]; then
+    S9STEST_KEEP_NODE_CONTAINERS="false"
+fi
+
+# For backward compatibility only:
+PROJECT_OWNER="${S9STEST_USER}"
+
 
 export S9S=$(which s9s)
 export FAILED="no"
@@ -15,7 +28,7 @@ export TEST_NAME=""
 export DONT_PRINT_TEST_MESSAGES=""
 export PRINT_COMMANDS=""
 export PRINT_PIP_COMMANDS=""
-export OPTION_KEEP_NODES="${PROJECT_KEEP_NODE_CONTAINERS}"
+export OPTION_KEEP_NODES="${S9STEST_KEEP_NODE_CONTAINERS}"
 export TEST_EMAIL="laszlo@severalnines.com"
 export CONTAINER_LIST_FILE="/tmp/${MYNAME}.containers"
 
@@ -2056,7 +2069,7 @@ EOF
     printVerbose "WHOAMI : $(whoami)"
     printVerbose "  USER : ${USER}"
     printVerbose "   PWD : ${PWD}"
-    ip=$(sudo ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-create \
+    ip=$(pip-container-create \
         $os_vendor_option \
         $os_release_option \
         $template_option \
@@ -2158,7 +2171,7 @@ function emit_s9s_configuration_file()
 #
 [global]
 controller    = https://$hostname:$cmon_port
-os_user       = $PROJECT_OWNER
+os_user       = ${S9STEST_USER}
 
 [network]
 client_connection_timeout = 30
@@ -2358,7 +2371,7 @@ EOF
         fi
     done
 
-    print_subtitle "Create user ${PROJECT_OWNER}"
+    print_subtitle "Create user ${S9STEST_ADMIN_USER}"
 
     begin_verbatim
 
@@ -2385,6 +2398,13 @@ EOF
         success "  o Return code is 0, ok."
     fi
 
+    end_verbatim
+
+
+    print_subtitle "Create user ${S9STEST_USER}"
+
+    begin_verbatim
+
     # Creating initial normal user the way we expect our customers to do so
 
     mys9s user \
@@ -2408,7 +2428,6 @@ EOF
     else 
         success "  o Return code is 0, ok."
     fi
-
 
     mys9s user --stat "${S9STEST_USER}"
     ret=$?
@@ -3660,7 +3679,7 @@ EOF
         begin_verbatim
         echo " containers : $all_created_ip"
 
-        sudo ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-destroy \
+        pip-container-destroy \
             "$all_created_ip" \
             >/dev/null 2>/dev/null
         

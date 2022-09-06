@@ -233,7 +233,7 @@ EOF
     # Checking the controller, the node and the cluster.
     #
     check_controller \
-        --owner      "$PROJECT_OWNER" \
+        --owner      "$S9STEST_USER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline"
@@ -243,7 +243,7 @@ EOF
         --ip-address "$FIRST_ADDED_NODE" \
         --port       "8089" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "$PROJECT_OWNER" \
+        --owner      "$S9STEST_USER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -251,7 +251,7 @@ EOF
 
     check_cluster \
         --cluster    "$CLUSTER_NAME" \
-        --owner      "$PROJECT_OWNER" \
+        --owner      "$S9STEST_USER" \
         --group      "testgroup" \
         --cdt-path   "/" \
         --type       "POSTGRESQL_SINGLE" \
@@ -311,7 +311,7 @@ EOF
         --message-id    "$message_id" \
         "#{$prefix/class_name}"                         "CmonJobInstance"  \
         "#{$prefix/group_name}"                         "testgroup"  \
-        "#{$prefix/user_name}"                          "$PROJECT_OWNER"  \
+        "#{$prefix/user_name}"                          "$S9STEST_USER"  \
         "#{$prefix/status}"                             "RUNNING"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
@@ -340,7 +340,7 @@ EOF
         --message-id    "$message_id" \
         "#{$prefix/class_name}"                         "CmonJobInstance"  \
         "#{$prefix/group_name}"                         "testgroup"  \
-        "#{$prefix/user_name}"                          "$PROJECT_OWNER"  \
+        "#{$prefix/user_name}"                          "$S9STEST_USER"  \
         "#{$prefix/status}"                             "FINISHED"  \
         "#{$prefix/rpc_version}"                        "2.0"  \
         "#{$prefix/cluster_id}"                         "0" \
@@ -417,7 +417,7 @@ EOF
         --ip-address "$LAST_ADDED_NODE" \
         --port       "5432" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "$PROJECT_OWNER" \
+        --owner      "$S9STEST_USER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -461,7 +461,7 @@ EOF
         --ip-address "$nodeIp" \
         --port       "5432" \
         --config     "/etc/postgresql/$PROVIDER_VERSION/main/postgresql.conf" \
-        --owner      "$PROJECT_OWNER" \
+        --owner      "$S9STEST_USER" \
         --group      "testgroup" \
         --cdt-path   "/$CLUSTER_NAME" \
         --status     "CmonHostOnline" \
@@ -811,7 +811,7 @@ function testCreateDatabase()
     mys9s account \
         --create \
         --cluster-id=$CLUSTER_ID \
-        --account="$PROJECT_OWNER:password" \
+        --account="$S9STEST_USER:password" \
         --privileges="testcreatedatabase.*:INSERT,UPDATE"
     
     check_exit_code_no_job $?
@@ -819,7 +819,7 @@ function testCreateDatabase()
     check_postgresql_account \
         --hostname           "$FIRST_ADDED_NODE" \
         --port               "8089" \
-        --account-name       "$PROJECT_OWNER" \
+        --account-name       "$S9STEST_USER" \
         --account-password   "password" 
     
     #
@@ -829,7 +829,7 @@ function testCreateDatabase()
     mys9s account \
         --grant \
         --cluster-id=$CLUSTER_ID \
-        --account="$PROJECT_OWNER" \
+        --account="$S9STEST_USER" \
         --privileges="testcreatedatabase.*:DELETE" \
         --batch 
     
