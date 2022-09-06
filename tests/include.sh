@@ -2171,7 +2171,8 @@ function emit_s9s_configuration_file()
 #
 [global]
 controller    = https://$hostname:$cmon_port
-os_user       = ${S9STEST_USER}
+os_user       = ${USER}
+#cmon_user     = ${S9STEST_USER}
 
 [network]
 client_connection_timeout = 30
@@ -2416,31 +2417,6 @@ EOF
         return 0
     fi
 
-    for file in \
-        "/.runtime/jobs/jobExecutor" \
-        "/.runtime/jobs/jobExecutorCreateCluster" \
-        "/.runtime/jobs/jobExecutorDeleteOldJobs"
-    do
-        mys9s tree \
-            --add-acl \
-            --acl="user:${S9STEST_ADMIN_USER}:r-x" \
-            $file
-        ret=$?
-        if [ $ret -ne 0 ]; then
-            failure "Failed to add acl using $file"
-        fi
-    done
-
-    # Adding a tag to the user and checking if the tag is indeed added.
-    mys9s tree --add-tag --tag="testUser" /${S9STEST_ADMIN_USER}
-    mys9s user --stat ${S9STEST_ADMIN_USER}
-
-    if s9s user --stat ${S9STEST_ADMIN_USER} | grep -q testUser; then
-        success "  o User ${S9STEST_ADMIN_USER} has the tag 'testUser' set, OK."
-    else
-        failure "  o User ${S9STEST_ADMIN_USER} has no tag 'testUser' set."
-    fi
-
     #
     # Adding the user's default SSH public key. This will come handy when we
     # create a container because this way the user will be able to log in with
@@ -2463,8 +2439,12 @@ EOF
 
     begin_verbatim
 
+    reset_config
+
     mys9s user \
         --create \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --group="users" \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_USER_PASSWORD}" \
@@ -2505,6 +2485,8 @@ EOF
         "/.runtime/jobs/jobExecutorDeleteOldJobs"
     do
         mys9s tree \
+            --cmon-user="${S9STEST_ADMIN_USER}" \
+            --password="${S9STEST_ADMIN_USER_PASSWORD}" \
             --add-acl \
             --acl="user:${S9STEST_USER}:r-x" \
             $file
@@ -2532,6 +2514,8 @@ EOF
         #--batch \
         #--password="p" \
     mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --add-key \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
         --public-key-name="The_SSH_key"
