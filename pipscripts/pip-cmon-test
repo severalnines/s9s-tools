@@ -1026,9 +1026,10 @@ function run_s9s_ft_test()
     fi
     error_report_file=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}')
     if [ "${error_report_file}" != "" ]; then
-        run_silent sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${error_report_file}
-        run_silent mv -f ${error_report_file} $(error_report_file_name)
-        printVerbose "Generated error report $(error_report_file_name)"
+        err_report_file="$(error_report_file_name)"
+        run_silent sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${err_report_file}
+        run_silent mv -f "${error_report_file}" "${err_report_file}"
+        printVerbose "Generated error report ${err_report_file}"
     else
         printVerbose "Failed to generate error report or to find report file."
     fi
