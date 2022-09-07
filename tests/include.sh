@@ -765,6 +765,14 @@ function warning()
     echo -e "${XTERM_COLOR_YELLOW}$1${TERM_NORMAL}"
 }
 
+#
+# Prints a message.
+#
+function message()
+{
+    echo -e "${XTERM_COLOR_BLUE}$1${TERM_NORMAL}"
+}
+
 function CHECK_PROGRAM_INSTALLED()
 {
     local program="$1"

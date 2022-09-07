@@ -3,8 +3,6 @@ MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
-VERBOSE="true"
-OPTION_VERBOSE="--verbose"
 VERSION="0.0.3"
 LOG_OPTION="--wait"
 
@@ -121,7 +119,7 @@ function testCreateSupervisorUser()
     fi
 
     # FIXME is this a bug in cmon ?
-    printVerbose "Lets wait a minute for user entry in cdt tree."
+    message "  o Lets wait a minute for user entry to certainly appear in cdt tree."
     sleep 60
 
     end_verbatim
