@@ -1021,13 +1021,13 @@ function run_s9s_ft_test()
     #
 
     CID=$(s9s cluster --list --long | head -n 2 | tail -n 1 | awk '{print $1}')
-    if [ "$CID" = "" ]; then
+    if [ "$CID" = "" -o "$CID" = "0" ]; then
         CID="1"
     fi
-    error_report_file=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}')
+    error_report_file=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}' | ansi2txt)
     if [ "${error_report_file}" != "" ]; then
+        run_silent sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${error_report_file}
         err_report_file="$(error_report_file_name)"
-        run_silent sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${err_report_file}
         run_silent mv -f "${error_report_file}" "${err_report_file}"
         printVerbose "Generated error report ${err_report_file}"
     else
