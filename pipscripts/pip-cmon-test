@@ -1024,7 +1024,8 @@ function run_s9s_ft_test()
     if [ "$CID" = "" -o "$CID" = "0" ]; then
         CID="1"
     fi
-    error_report_file=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}' | ansi2txt)
+    error_report_file_dirty=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}')
+    error_report_file=$(echo "${error_report_file_dirty}" | ansi2txt)
     if [ "${error_report_file}" != "" ]; then
         run_silent sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${error_report_file}
         err_report_file="$(error_report_file_name)"
