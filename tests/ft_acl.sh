@@ -3,6 +3,8 @@ MYNAME=$(basename $0)
 MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 VERBOSE=""
+VERBOSE="true"
+OPTION_VERBOSE="--verbose"
 VERSION="0.0.3"
 LOG_OPTION="--wait"
 
