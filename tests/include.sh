@@ -2445,9 +2445,12 @@ EOF
         #--batch \
         #--password="p" \
     mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --add-key \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-        --public-key-name="The_SSH_key"
+        --public-key-name="The_SSH_key" \
+        "${S9STEST_ADMIN_USER}"
 
     end_verbatim
 
@@ -2539,7 +2542,8 @@ EOF
         --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --add-key \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-        --public-key-name="The_SSH_key"
+        --public-key-name="The_SSH_key" \
+        "${S9STEST_USER}"
 
     end_verbatim
 

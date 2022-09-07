@@ -188,8 +188,8 @@ EOF
     # Creating a Galera cluster.
     #
     mys9s cluster \
-        --cmon-user="${S9STEST_USER}" \
-        --password="${S9STEST_USER_PASSWORD}" \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --create \
         --cluster-type=galera \
         --nodes="$nodes" \

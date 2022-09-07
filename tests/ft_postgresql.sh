@@ -7,7 +7,7 @@ VERBOSE=""
 VERSION="0.0.4"
 
 LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+DEBUG_OPTION=""
 
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 

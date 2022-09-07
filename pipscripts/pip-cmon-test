@@ -643,6 +643,11 @@ function daemon_log_file_name()
     echo "$(result_file_name_base).dlog"
 }
 
+function error_report_file_name()
+{
+    echo "$(result_file_name_base).error_report.tar.gz"
+}
+
 function ft_test_ended()
 {
     local exit_code="$1"
@@ -1010,6 +1015,22 @@ function run_s9s_ft_test()
     ft_test_ended \
         "$return_code" \
         "$backend_pid"
+
+    #
+    # Lets collect error report
+    #
+
+    CID=$(s9s cluster --list --long | head -n 2 | tail -n 1 | awk '{print $1}')
+    if [ "$CID" = "" ]; then
+        CID="1"
+    fi
+    error_report_file=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}')
+    if [ "${error_report_file}" != "" ]; then
+        sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${error_report_file}
+        mv ${error_report_file} ${error_report_file_name}
+    else
+        printVerbose "Failed to generate error report or to find report file."
+    fi
 
     #
     # Cleaning up after.

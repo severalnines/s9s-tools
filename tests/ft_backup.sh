@@ -6,7 +6,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
 LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+DEBUG_OPTION=""
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -92,7 +92,6 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
-            DEBUG_OPTION="--debug"
             ;;
 
         --server)
