@@ -232,6 +232,8 @@ EOF
     begin_verbatim
     mys9s user \
         --create \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --group=users \
         --new-password=secret \
         --email-address=${TEST_EMAIL} \
@@ -254,7 +256,7 @@ EOF
     #
     #
     #
-    print_title "Adding Group ACL Entry"
+    print_subtitle "Adding Group ACL Entry"
     cat <<EOF
 We add an ACL entry to the cluster for the group 'users', then we check that the
 user previously created can see the cluster because of this ACL entry.
@@ -272,7 +274,7 @@ EOF
     #
     #
     #
-    print_title "Removing Group ACL Entry"
+    print_subtitle "Removing Group ACL Entry"
     cat <<EOF
 We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.
@@ -288,7 +290,7 @@ EOF
     #
     #
     #
-    print_title "Adding User ACL Entry"
+    print_subtitle "Adding User ACL Entry"
     cat <<EOF
 We add an ACL entry to the cluster for the user '$TEST_USER_NAME', then we check that the
 user previously created can see the cluster because of this ACL entry.
@@ -304,7 +306,7 @@ EOF
     #
     #
     #
-    print_title "Removing User ACL Entry"
+    print_subtitle "Removing User ACL Entry"
     cat <<EOF
 We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.

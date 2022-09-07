@@ -118,7 +118,8 @@ function testCreateSupervisorUser()
         success "  o The exit code is 0, OK."
     fi
 
-    printVerbose "Lets wait a minute, so cdt tree shall have the new user entry."
+    # FIXME is this a bug in cmon ?
+    printVerbose "Lets wait a minute for user entry in cdt tree."
     sleep 60
 
     end_verbatim
