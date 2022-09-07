@@ -118,6 +118,9 @@ function testCreateSupervisorUser()
         success "  o The exit code is 0, OK."
     fi
 
+    printVerbose "Lets wait a minute, so cdt tree shall have the new user entry."
+    sleep 60
+
     end_verbatim
 }
 
