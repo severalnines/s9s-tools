@@ -1675,6 +1675,15 @@ EOF
     end_verbatim
 }
 
+#
+# For this to work install the below.
+# Postfix should be set up for local only and the hostname should be
+# the same that is in /etc/hostname
+#   sudo apt-get install postfix
+#   sudo apt-get install mailutils
+# After these /var/mail/${PROJCT_OWNER} file should contain the mails
+#
+
 function checkPasswordReset()
 {
     local retCode
@@ -1688,6 +1697,12 @@ function checkPasswordReset()
 EOF
     
     begin_verbatim
+
+
+    mailFile="/var/mail/${PROJECT_OWNER}"
+    sudo truncate --size=0 "$mailFile"
+
+
     rm -rf "/tmp/cmon/emails/outgoing/"
     mys9s user --password-reset --cmon-user admin 
 
@@ -1701,12 +1716,11 @@ EOF
     #
     # Sending the password reset mail.
     #
-    mys9s user --password-reset --cmon-user system
+    mys9s user --password-reset --cmon-user ${S9STEST_USER}
     retCode=$?
     
-    mailFile="/tmp/cmon/emails/outgoing/system@mynewdomain.com/email_0000.json";
     if [ -f "$mailFile" ]; then
-        cat $mailFile | jq .
+        cat $mailFile | grep "\-\-token"
     fi
 
     if [ $retCode -eq 0 ]; then
@@ -1722,24 +1736,20 @@ EOF
     fi
         
 
-    token=$(cat $mailFile | \
-        jq .elements[0].values | \
-        jq '.["@PASSWORD_RESET_TOKEN@"]')
+    token=$(cat $mailFile | grep "\-\-token" | awk '{print $1}' | cut -d'=' -f2)
     if [ -n "$token" ]; then
         success "  o The token is '$token', ok"
     else
         failure "Token not found."
     fi
-    
-    recipient=$(cat $mailFile | \
-        jq .elements[0].values | \
-        jq '.["@RECIPIENT@"]')
+   
+    recipient=$(cat $mailFile | grep "^To: " | cut -d' ' -f2)
     if [ -n "$recipient" ]; then
         success "  o The recpient found ('$recipient'), ok"
-        if [ "$recipient" == '"system@mynewdomain.com"' ]; then
+        if [ "$recipient" == "${S9STEST_USER_MAIL}" ]; then
             success "  o Recipient is correct, ok."
         else
-            failure "Recipient should be \"system@mynewdomain.com\"."
+            failure "Recipient should be \"${S9STEST_USER_MAIL}\"."
         fi
     else
         failure "Recipient not found."
@@ -1752,17 +1762,17 @@ EOF
 
     mys9s user \
         --password-reset \
-        --cmon-user=system \
+        --cmon-user=${S9STEST_USER} \
         --token=$token \
         --new-password="newpassword"
 
     check_exit_code_no_job $?
 
-    mys9s user --whoami --cmon-user="system" --password="newpassword"
+    mys9s user --whoami --cmon-user="${S9STEST_USER}" --password="newpassword"
     check_exit_code_no_job $?
     
     check_log_messages \
-        --cmon-user    "system" \
+        --cmon-user    "${S9STEST_USER}" \
         --password     "newpassword" \
         "Created password reset token" \
         "Password reset token is validated"
@@ -1787,27 +1797,27 @@ if [ "$1" ]; then
     mys9s user --list --long
 else
     runFunctionalTest testPing
-    #runFunctionalTest testUser
-    #runFunctionalTest testUserManager
-    #runFunctionalTest testStat
-    #runFunctionalTest testTree
-    #runFunctionalTest testCmonGroup
-    #runFunctionalTest testSetUser
-    #runFunctionalTest testSetOtherUser
-    #runFunctionalTest testCreateOutsider
-    #runFunctionalTest testSystemUsers
-    #runFunctionalTest testFailNoGroup
-    #runFunctionalTest testFailWrongPassword
-    #runFunctionalTest testCreateUsers
-    #runFunctionalTest testChangePassword
-    #runFunctionalTest testPrivateKey
-    #runFunctionalTest testSetGroup
-    #runFunctionalTest testAcl
-    #runFunctionalTest testAddToGroup
-    #runFunctionalTest checkExtendedPrivileges
-    #runFunctionalTest testUserSelfAdmin
-    #runFunctionalTest testWeirdChar
-    #runFunctionalTest testDeleteGroup
+    runFunctionalTest testUser
+    runFunctionalTest testUserManager
+    runFunctionalTest testStat
+    runFunctionalTest testTree
+    runFunctionalTest testCmonGroup
+    runFunctionalTest testSetUser
+    runFunctionalTest testSetOtherUser
+    runFunctionalTest testCreateOutsider
+    runFunctionalTest testSystemUsers
+    runFunctionalTest testFailNoGroup
+    runFunctionalTest testFailWrongPassword
+    runFunctionalTest testCreateUsers
+    runFunctionalTest testChangePassword
+    runFunctionalTest testPrivateKey
+    runFunctionalTest testSetGroup
+    runFunctionalTest testAcl
+    runFunctionalTest testAddToGroup
+    runFunctionalTest checkExtendedPrivileges
+    runFunctionalTest testUserSelfAdmin
+    runFunctionalTest testWeirdChar
+    runFunctionalTest testDeleteGroup
     runFunctionalTest checkPasswordReset
 fi
 
