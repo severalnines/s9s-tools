@@ -1155,7 +1155,7 @@ function run_s9s_ut_test()
     printVerbose "Running $OPTION_TEST_NAME."
     printVerbose "$OPTION_TEST_NAME/$OPTION_TEST_NAME >>$logfile 2>>$logfile"
 
-    if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
+    if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME --verbose" ]; then
         printVerbose "File $OPTION_TEST_NAME/$OPTION_TEST_NAME not found in ${PWD}."
 
         collect_test_log_files "FAILURE"
