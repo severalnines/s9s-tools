@@ -1114,6 +1114,10 @@ user object.
 EOF
 
     begin_verbatim
+
+    message "  o sometimes cmon is slow to update cdt tree, lets give it a minute"
+    sleep 60
+
     mys9s tree --add-acl --acl="user:${S9STEST_USER}:rwx" /sisko
     check_exit_code_no_job $?
 
