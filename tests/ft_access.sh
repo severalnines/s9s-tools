@@ -376,6 +376,8 @@ EOF
 
     begin_verbatim
     mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --remove-from-group \
         --group=admins \
         "$TEST_USER_NAME"
@@ -432,7 +434,11 @@ function testDeleteUser()
     #
     # Deleting the user, printing the tree.
     #
-    mys9s user --delete "$TEST_USER_NAME"
+    mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --delete "$TEST_USER_NAME"
+
     check_exit_code_no_job $?
 
     mys9s tree --list --long --recursive --all 
