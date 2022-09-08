@@ -1732,6 +1732,7 @@ EOF
     if [ -f "$mailFile" ]; then
         success "  o The mail is found, ok."
         message "  o Token line is $(sudo cat $mailFile | grep "token")"
+        cat "$mailFile"
     else
         failure "The mail is not found in '$mailFile'."
     fi
