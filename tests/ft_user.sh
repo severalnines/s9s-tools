@@ -1731,13 +1731,13 @@ EOF
 
     if [ -f "$mailFile" ]; then
         success "  o The mail is found, ok."
-        message "  o Token line is $(sudo cat $mailFile | grep "token")"
-        sudo cat "$mailFile"
+        message "  o Token line is $(sudo cat $mailFile | grep "\-\-token")"
+        sudo cat "$mailFile" > /dev/null
     else
         failure "The mail is not found in '$mailFile'."
     fi
 
-    token=$(sudo cat $mailFile | grep "token" | awk '{print $1}' | cut -d'=' -f2)
+    token=$(sudo cat $mailFile | grep "\-\-token" | awk '{print $1}' | cut -d'=' -f2)
     if [ -n "$token" ]; then
         success "  o The token is '$token', ok"
     else
