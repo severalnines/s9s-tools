@@ -1709,7 +1709,7 @@ function testStats()
     print_title "Checking CDT Path of Objects"
 
     begin_verbatim
-    mys9s user --stat "$USER"
+    mys9s user --stat "$S9STEST_USER"
     
     mys9s server --stat
     mys9s server --list --long
@@ -1725,7 +1725,7 @@ function testStats()
 #
 function testAclChroot()
 {
-    clusterPath="/home/$USER/galera_001"
+    clusterPath="/home/$S9STEST_USER/galera_001"
     print_title "Checking getAcl replies"
 
     begin_verbatim

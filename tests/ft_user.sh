@@ -133,7 +133,7 @@ function index_table()
 #
 function testUser()
 {
-    local userName="$USER"
+    local userName="$S9STEST_USER"
     local myself
 
     #
@@ -170,7 +170,7 @@ EOF
 
 function testUserManager()
 {
-    local userName="$USER"
+    local userName="$S9STEST_USER"
     print_title "Giving the Right to Create Users"
     cat <<EOF | paragraph
 Giving the user '$userName' the right to create other users.
@@ -193,7 +193,7 @@ EOF
 #
 function testStat()
 {
-    local userName="$USER"
+    local userName="$S9STEST_USER"
     local lines
 
     #
@@ -785,8 +785,8 @@ EOF
     # After creating all these users the logged in user should still be me.
     #
     myself=$(s9s user --whoami)
-    if [ "$myself" != "$USER" ]; then
-        failure "The logged in user should be '$USER' instead of '$myself'."
+    if [ "$myself" != "$S9STEST_USER" ]; then
+        failure "The logged in user should be '$S9STEST_USER' instead of '$myself'."
         return 1
     fi
 
@@ -1066,7 +1066,7 @@ function testPrivateKey()
 #
 function testSetGroup()
 {
-    local user_name="$USER"
+    local user_name="$S9STEST_USER"
     local group_name="admins"
     local actual_group_name
 
@@ -1098,7 +1098,7 @@ EOF
     fi
 
     mys9s user --list --long
-    mys9s user --stat "$USER"
+    mys9s user --stat "$S9STEST_USER"
     end_verbatim
 }
 
@@ -1114,7 +1114,7 @@ user object.
 EOF
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:${USER}:rwx" /sisko
+    mys9s tree --add-acl --acl="user:${S9STEST_USER}:rwx" /sisko
     check_exit_code_no_job $?
 
     acl=$(s9s tree --list --long sisko --batch | awk '{print $1}')

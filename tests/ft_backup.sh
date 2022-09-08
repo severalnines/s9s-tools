@@ -333,8 +333,8 @@ function testCreateBackup01()
     fi
 
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
-    if [ "$value" != "$USER" ]; then
-        failure "The owner of the backup should be '$USER'."
+    if [ "$value" != "$S9STEST_USER" ]; then
+        failure "The owner of the backup should be '$S9STEST_USER'."
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')

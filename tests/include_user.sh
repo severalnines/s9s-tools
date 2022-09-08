@@ -42,8 +42,8 @@ function createUserSisko()
     fi
 
     myself=$(s9s user --whoami)
-    if [ "$myself" != "$USER" ]; then
-        failure "Whoami returns $myself instead of $USER."
+    if [ "$myself" != "$S9STEST_USER" ]; then
+        failure "Whoami returns $myself instead of $S9STEST_USER."
     else
         success "  o Whoami returns $myself, OK."
     fi

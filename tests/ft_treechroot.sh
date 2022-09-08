@@ -135,7 +135,7 @@ function testMoveUser()
 #
 function testRegisterServer()
 {
-    local rootPath="/home/$USER"
+    local rootPath="/home/$S9STEST_USER"
 
     print_title "Registering a Server in Chroot"
 
@@ -157,7 +157,7 @@ function testRegisterServer()
 
     if [ "$OWNER" != "$S9STEST_USER" ]; then
         s9s tree --list /$CONTAINER_SERVER 
-        failure "The owner is '$OWNER' should be '$USER'."
+        failure "The owner is '$OWNER' should be '$S9STEST_USER'."
     else
         success "  o The owner is $OWNER, OK."
     fi
@@ -255,7 +255,7 @@ function testCreateCluster()
     # Checking the cluster in the tree.
     #
     IFS=$'\n'
-    for line in $(s9s tree --list --long --batch /home/$USER); do
+    for line in $(s9s tree --list --long --batch /home/$S9STEST_USER); do
         echo "  checking line: $line"
         line=$(echo "$line" | sed 's/1, 0/   -/g')
         name=$(echo "$line" | awk '{print $5}')
