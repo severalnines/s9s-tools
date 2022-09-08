@@ -895,6 +895,23 @@ function stop_or_kill_cmon()
     fi
 }
 
+function cleanup_test_host()
+{
+    run_silent sudo rm -fvr /var/log/cmon.log
+    run_silent sudo rm -rvf /tmp/cmon*
+    run_silent sudo rm -rvf /tmp/BACKUP-*
+    run_silent sudo rm -rvf /var/log/cmon*
+    run_silent sudo rm -rvf /var/lib/cmon*
+    run_silent sudo rm -rvf /etc/cmon.d/*.cnf
+    run_silent sudo rm -rvf /root/.s9s/s9s.conf
+    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
+    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
+
+    # FIXME Why rm -rvf /etc/cmon.d/*.cnf is not working
+    # and why below is working?:
+    for file in $(sudo ls /etc/cmon.d/ -1); do sudo rm -fr "/etc/cmon.d/$file"; done
+}
+
 function run_s9s_ft_test()
 {
     local return_code
@@ -926,19 +943,7 @@ function run_s9s_ft_test()
         stop_or_kill_cmon "$backend_pid"
     fi
 
-    run_silent sudo rm -fvr /var/log/cmon.log
-    run_silent sudo rm -rvf /tmp/cmon*
-    run_silent sudo rm -rvf /tmp/BACKUP-*
-    run_silent sudo rm -rvf /var/log/cmon*
-    run_silent sudo rm -rvf /var/lib/cmon*
-    run_silent sudo rm -rvf /etc/cmon.d/*.cnf
-    run_silent sudo rm -rvf /root/.s9s/s9s.conf
-    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
-    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
-
-    # FIXME Why rm -rvf /etc/cmon.d/*.cnf is not working
-    # and why below is working?:
-    for file in $(sudo ls /etc/cmon.d/ -1); do sudo rm -fr "/etc/cmon.d/$file"; done
+    cleanup_test_host
 
     #
     # Start cmon
@@ -1060,6 +1065,8 @@ function run_cc_ft_test()
     local logfile
 
     logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
+
+    cleanup_test_host
 
     #
     # Notifying the user about a test is starting.
