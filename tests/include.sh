@@ -796,11 +796,6 @@ function check_exit_code()
     local do_not_exit
     local exitCode
     local jobId
-    local password_option=""
-
-    if [ -n "$CMON_USER_PASSWORD" ]; then
-        password_option="--password='$CMON_USER_PASSWORD'"
-    fi
 
     #
     # Command line options.
@@ -827,7 +822,10 @@ function check_exit_code()
         failure "The exit code is ${exitCode}"
 
         jobId=$(\
-            s9s job --list --batch $password_option | \
+            s9s job \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
+                --list --batch | \
             grep FAIL | \
             tail -n1 | \
             awk '{print $1}')
@@ -837,7 +835,8 @@ function check_exit_code()
             echo "job messages of the failed job. Here it is:"
             mys9s job \
                 --log \
-                $password_option \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
                 --debug \
                 --job-id="$jobId"
         fi
@@ -1747,7 +1746,6 @@ function wait_for_cluster_state()
     local state
     local waited=0
     local stayed=0
-    local password_option
     local controller_option
 
     while [ -n "$1" ]; do
@@ -1781,12 +1779,13 @@ function wait_for_cluster_state()
     fi
 
     stateCmd="s9s cluster \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --list \
         --batch \
         --cluster-format="%S" \
         --cluster-name="$clusterName" \
-        $controller_option \
-        $password_option"
+        $controller_option"
 
     while true; do
         state=$($stateCmd)
@@ -2301,18 +2300,14 @@ function find_cluster_id()
     local name="$1"
     local retval
     local nTry=0
-    local password_option=""
-    
-    if [ -n "$CMON_USER_PASSWORD" ]; then
-        password_option="--password='$CMON_USER_PASSWORD'"
-    fi
 
     while true; do
         retval=$($S9S cluster \
             --list \
             --long \
             --batch \
-            $password_option \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
             --cluster-name="$name")
 
         retval=$(echo "$retval" | awk '{print $1}')
