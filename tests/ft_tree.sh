@@ -250,14 +250,14 @@ function testLicenseUpload()
     cat <<EOF
   This test will try to upload a license to the controller. Both valid and
   invalid attempts are tested. Here is an example how we do that:
-
+<pre>
     echo "\$license" | \\
         s9s tree \\
             --save \\
             --cmon-user=system \\
             --password=secret \\
             "/.runtime/cmon_license"
-
+</pre>
 EOF
 
     begin_verbatim
@@ -337,9 +337,9 @@ EOF
 
     retCode=$?
     if [ $retCode -eq 0 ]; then
-        success "  o Superuser can read the license file, ok."
+        success "  o Superuser can upload the license file, ok."
     else
-        failure "Superuser should be able to read the license."
+        failure "Superuser should be able to upload the license."
     fi
    
     #
