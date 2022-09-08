@@ -1731,12 +1731,12 @@ EOF
 
     if [ -f "$mailFile" ]; then
         success "  o The mail is found, ok."
-        message "  o Token line is $(sudo cat $mailFile | grep 'token')"
+        message "  o Token line is $(sudo cat $mailFile | grep "token")"
     else
         failure "The mail is not found in '$mailFile'."
     fi
 
-    token=$(sudo cat $mailFile | grep "\-\-token" | awk '{print $1}' | cut -d'=' -f2)
+    token=$(sudo cat $mailFile | grep "token" | awk '{print $1}' | cut -d'=' -f2)
     if [ -n "$token" ]; then
         success "  o The token is '$token', ok"
     else
@@ -1746,10 +1746,10 @@ EOF
     recipient=$(cat $mailFile | grep "^To: " | cut -d' ' -f2)
     if [ -n "$recipient" ]; then
         success "  o The recpient found ('$recipient'), ok"
-        if [ "$recipient" == "${S9STEST_USER_MAIL}" ]; then
+        if [ "$recipient" == "${S9STEST_USER_EMAIL}" ]; then
             success "  o Recipient is correct, ok."
         else
-            failure "Recipient should be \"${S9STEST_USER_MAIL}\"."
+            failure "Recipient should be \"${S9STEST_USER_EMAIL}\"."
         fi
     else
         failure "Recipient not found."
