@@ -2587,6 +2587,13 @@ EOF
 
     reset_config --silent
 
+    if [ "$s9stest_user_group" != "users" ]; then
+        mys9s group \
+            --cmon-user="${S9STEST_ADMIN_USER}" \
+            --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+            --create "$s9stest_user_group"
+    fi
+
     mys9s user \
         --create \
         --cmon-user="${S9STEST_ADMIN_USER}" \
