@@ -212,8 +212,8 @@ EOF
 
     check_cluster \
         --cluster         "$CLUSTER_NAME" \
-        --owner           "$S9STEST_USER" \
-        --group           "users" \
+        --owner           "$S9STEST_ADMIN_USER" \
+        --group           "admins" \
         --cdt-path        "/"
 
     end_verbatim
