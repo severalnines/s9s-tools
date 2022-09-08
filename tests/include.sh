@@ -8,7 +8,7 @@ if [ "${S9STEST_ADMIN_USER_PASSWORD}" = "" ]; then
     S9STEST_ADMIN_USER_PASSWORD="adminpwd"
 fi
 if [ "${S9STEST_ADMIN_USER_EMAIL}" = "" ]; then
-    S9STEST_ADMIN_USER_EMAIL = "${USER}@$(hostname)"
+    S9STEST_ADMIN_USER_EMAIL="${USER}@$(hostname)"
 fi
 if [ "${S9STEST_USER}" = "" ]; then
     S9STEST_USER="${USER}"
@@ -17,7 +17,7 @@ if [ "${S9STEST_USER_PASSWORD}" = "" ]; then
     S9STEST_USER_PASSWORD="pwd"
 fi
 if [ "${S9STEST_USER_EMAIL}" = "" ]; then
-    S9STEST_USER_EMAIL = "${USER}@$(hostname)"
+    S9STEST_USER_EMAIL="${USER}@$(hostname)"
 fi
 if [ "${S9STEST_KEEP_NODE_CONTAINERS}" = "" ]; then
     S9STEST_KEEP_NODE_CONTAINERS="false"
