@@ -901,7 +901,9 @@ function cleanup_test_host()
     run_silent sudo rm -f /tmp/cmon_1.log
     run_silent sudo rm -f /tmp/cmon_*.log
     run_silent sudo rm -f /tmp/BACKUP-*
+    run_silent sudo rm -fr /var/log/cmon
     run_silent sudo rm -f /var/log/cmon*
+    run_silent sudo rm -fr /var/lib/cmon
     run_silent sudo rm -f /var/lib/cmon*
     run_silent sudo rm -f /etc/cmon.d/*.cnf
     run_silent sudo rm -f /root/.s9s/s9s.conf
