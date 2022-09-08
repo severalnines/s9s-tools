@@ -163,7 +163,7 @@ function testCreateUser()
                     [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
                 elif [ "$S9STEST_ADMIN_USER" == "$name" ]; then
                     let columns_found+=1
-                    [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
+                    [ "$owner" != "$S9STEST_ADMIN_USER" ] && failure "Owner is '$owner'."
                 else
                     failure "Unexpected name '$name'."
                 fi
