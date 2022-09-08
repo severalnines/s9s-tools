@@ -1722,23 +1722,19 @@ EOF
     #
     mys9s user --password-reset --cmon-user ${S9STEST_USER}
     retCode=$?
-    
-    if [ -f "$mailFile" ]; then
-        cat $mailFile | grep "\-\-token"
-    fi
 
     if [ $retCode -eq 0 ]; then
         success "  o Password reset request is succeeded, ok."
     else
-        failure "Password reset failed."
+        failure "Password reset failed with exit code $retCode."
     fi
 
     if [ -f "$mailFile" ]; then
         success "  o The mail is found, ok."
+        message "  o Token line is $(cat $mailFile | grep 'token')"
     else
         failure "The mail is not found in '$mailFile'."
     fi
-        
 
     token=$(cat $mailFile | grep "\-\-token" | awk '{print $1}' | cut -d'=' -f2)
     if [ -n "$token" ]; then
