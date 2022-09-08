@@ -104,7 +104,7 @@ function testCreateSupervisorUser()
         --cmon-user="system" \
         --password="secret" \
         --group="admins" \
-        --email-address=${TEST_EMAIL} \
+        --email-address=${S9STEST_ADMIN_USER_EMAIL} \
         --first-name="Cmon" \
         --last-name="Administrator"   \
         --generate-key \

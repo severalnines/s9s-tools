@@ -236,7 +236,7 @@ EOF
         --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --group=users \
         --new-password=secret \
-        --email-address=${TEST_EMAIL} \
+        --email-address=${S9STEST_USER_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         "$TEST_USER_NAME"

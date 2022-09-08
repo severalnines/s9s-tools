@@ -7,11 +7,17 @@ fi
 if [ "${S9STEST_ADMIN_USER_PASSWORD}" = "" ]; then
     S9STEST_ADMIN_USER_PASSWORD="adminpwd"
 fi
+if [ "${S9STEST_ADMIN_USER_EMAIL}" = "" ]; then
+    S9STEST_ADMIN_USER_EMAIL = "${USER}@$(hostname)"
+fi
 if [ "${S9STEST_USER}" = "" ]; then
     S9STEST_USER="${USER}"
 fi
 if [ "${S9STEST_USER_PASSWORD}" = "" ]; then
     S9STEST_USER_PASSWORD="pwd"
+fi
+if [ "${S9STEST_USER_EMAIL}" = "" ]; then
+    S9STEST_USER_EMAIL = "${USER}@$(hostname)"
 fi
 if [ "${S9STEST_KEEP_NODE_CONTAINERS}" = "" ]; then
     S9STEST_KEEP_NODE_CONTAINERS="false"
@@ -29,7 +35,6 @@ export DONT_PRINT_TEST_MESSAGES=""
 export PRINT_COMMANDS=""
 export PRINT_PIP_COMMANDS=""
 export OPTION_KEEP_NODES="${S9STEST_KEEP_NODE_CONTAINERS}"
-export TEST_EMAIL="laszlo@severalnines.com"
 export CONTAINER_LIST_FILE="/tmp/${MYNAME}.containers"
 
 #
@@ -60,9 +65,6 @@ export POSTGRESQL_DEFAULT_PROVIDER_VERSION="10"
 #
 #export S9S_DEBUG_SAVE_REQUEST_EXAMPLES="request-examples"
 
-if [ "${S9S_TEST_EMAIL}" != "" ]; then
-	export TEST_EMAIL=${S9S_TEST_EMAIL}
-fi
 if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
 	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
 fi
@@ -2406,7 +2408,7 @@ EOF
         --generate-key \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
-        --email-address="${S9S_TEST_EMAIL}" \
+        --email-address="${S9STEST_ADMIN_USER_EMAIL}" \
         --first-name="Firstname" \
         --last-name="Lastname" \
         $OPTION_PRINT_JSON \
@@ -2472,7 +2474,7 @@ EOF
         --generate-key \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_USER_PASSWORD}" \
-        --email-address="${S9S_TEST_EMAIL}" \
+        --email-address="${S9STEST_USER_EMAIL}" \
         --first-name="Firstname" \
         --last-name="Lastname" \
         $OPTION_PRINT_JSON \

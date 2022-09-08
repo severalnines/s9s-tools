@@ -134,7 +134,7 @@ function testBoostrap()
         --group="admins" \
         --new-password="admin" \
         --controller="https://localhost:9501" \
-        --email-address=${TEST_EMAIL} \
+        --email-address=${S9STEST_ADMIN_USER_EMAIL} \
         --first-name="Firstname" \
         --last-name="Lastname" \
         $OPTION_PRINT_JSON \

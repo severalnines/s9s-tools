@@ -1787,27 +1787,27 @@ if [ "$1" ]; then
     mys9s user --list --long
 else
     runFunctionalTest testPing
-    runFunctionalTest testUser
-    runFunctionalTest testUserManager
-    runFunctionalTest testStat
-    runFunctionalTest testTree
-    runFunctionalTest testCmonGroup
-    runFunctionalTest testSetUser
-    runFunctionalTest testSetOtherUser
-    runFunctionalTest testCreateOutsider
-    runFunctionalTest testSystemUsers
-    runFunctionalTest testFailNoGroup
-    runFunctionalTest testFailWrongPassword
-    runFunctionalTest testCreateUsers
-    runFunctionalTest testChangePassword
-    runFunctionalTest testPrivateKey
-    runFunctionalTest testSetGroup
-    runFunctionalTest testAcl
-    runFunctionalTest testAddToGroup
-    runFunctionalTest checkExtendedPrivileges
-    runFunctionalTest testUserSelfAdmin
-    runFunctionalTest testWeirdChar
-    runFunctionalTest testDeleteGroup
+    #runFunctionalTest testUser
+    #runFunctionalTest testUserManager
+    #runFunctionalTest testStat
+    #runFunctionalTest testTree
+    #runFunctionalTest testCmonGroup
+    #runFunctionalTest testSetUser
+    #runFunctionalTest testSetOtherUser
+    #runFunctionalTest testCreateOutsider
+    #runFunctionalTest testSystemUsers
+    #runFunctionalTest testFailNoGroup
+    #runFunctionalTest testFailWrongPassword
+    #runFunctionalTest testCreateUsers
+    #runFunctionalTest testChangePassword
+    #runFunctionalTest testPrivateKey
+    #runFunctionalTest testSetGroup
+    #runFunctionalTest testAcl
+    #runFunctionalTest testAddToGroup
+    #runFunctionalTest checkExtendedPrivileges
+    #runFunctionalTest testUserSelfAdmin
+    #runFunctionalTest testWeirdChar
+    #runFunctionalTest testDeleteGroup
     runFunctionalTest checkPasswordReset
 fi
 
