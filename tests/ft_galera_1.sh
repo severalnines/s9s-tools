@@ -905,7 +905,7 @@ function testStart()
 startTests
 
 reset_config
-grant_user
+grant_user --group "testgroup"
 
 if [ "$OPTION_INSTALL" ]; then
     if [ -n "$1" ]; then

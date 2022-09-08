@@ -298,10 +298,10 @@ EOF
         --ip-address "$nodeIp" \
         --port       "27017" \
         --config     "/etc/mongod.conf" \
+        --owner      "$S9STEST_USER" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
         --no-maint
-        #--owner      "$S9STEST_USER" \
-        #--group      "testgroup" \
-        #--cdt-path   "/$CLUSTER_NAME" \
         #--status     "CmonHostOnline" \
 
     #
@@ -353,10 +353,10 @@ EOF
         --ip-address "$LAST_ADDED_NODE" \
         --port       "27017" \
         --config     "/etc/mongod.conf" \
+        --owner      "$S9STEST_USER" \
+        --group      "testgroup" \
+        --cdt-path   "/$CLUSTER_NAME" \
         --no-maint
-        #--owner      "$S9STEST_USER" \
-        #--group      "testgroup" \
-        #--cdt-path   "/$CLUSTER_NAME" \
         #--status     "CmonHostOnline" \
 
     end_verbatim
@@ -683,7 +683,7 @@ EOF
 #
 startTests
 reset_config
-grant_user
+grant_user --group "testgroup"
 
 if [ "$OPTION_INSTALL" ]; then
     runFunctionalTest createCluster

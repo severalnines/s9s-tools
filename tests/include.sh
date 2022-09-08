@@ -2463,8 +2463,21 @@ function grant_user()
     local first
     local last
     local cmon_port="$OPTION_CMON_PORT"
+    local s9stest_user_group="users"
 
     [ -z "$cmon_port" ] && cmon_port="9501"
+
+    while [ "$1" ]; do
+        case "$1" in 
+            --group)
+                s9stest_user_group="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+        esac
+    done
 
     print_title "Creating the First User"
     cat <<EOF | paragraph
@@ -2578,7 +2591,7 @@ EOF
         --create \
         --cmon-user="${S9STEST_ADMIN_USER}" \
         --password="${S9STEST_ADMIN_USER_PASSWORD}" \
-        --group="users" \
+        --group="$s9stest_user_group" \
         --generate-key \
         --controller="https://localhost:$cmon_port" \
         --new-password="${S9STEST_USER_PASSWORD}" \

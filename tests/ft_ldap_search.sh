@@ -389,7 +389,7 @@ EOF
 #
 runFunctionalTest startTests
 runFunctionalTest reset_config
-runFunctionalTest grant_user
+runFunctionalTest grant_user --group "testgroup"
 
 if [ "$1" ]; then
     for testName in $*; do

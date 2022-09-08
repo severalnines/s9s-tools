@@ -387,7 +387,7 @@ EOF
 #
 startTests
 reset_config
-grant_user
+grant_user --group "testgroup"
 
 if [ "$1" ]; then
     for testName in $*; do
