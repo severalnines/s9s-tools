@@ -1155,7 +1155,7 @@ function run_s9s_ut_test()
     printVerbose "Running $OPTION_TEST_NAME."
     printVerbose "$OPTION_TEST_NAME/$OPTION_TEST_NAME >>$logfile 2>>$logfile"
 
-    if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME --verbose" ]; then
+    if [ ! -f "$OPTION_TEST_NAME/$OPTION_TEST_NAME" ]; then
         printVerbose "File $OPTION_TEST_NAME/$OPTION_TEST_NAME not found in ${PWD}."
 
         collect_test_log_files "FAILURE"
@@ -1167,8 +1167,10 @@ function run_s9s_ut_test()
 
     pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
+    echo "<pre>" >>$logfile 2>>$logfile
     $OPTION_TEST_NAME/$OPTION_TEST_NAME --color --verbose >>$logfile 2>>$logfile
     return_code=$?
+    echo "</pre>" >>$logfile 2>>$logfile
 
     printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
     if [ $return_code -eq 0 ]; then
