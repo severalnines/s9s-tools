@@ -265,7 +265,10 @@ EOF
 
     begin_verbatim
     
-    mys9s tree --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_see_the_cluster
 
@@ -282,7 +285,10 @@ see the cluster at all.
 EOF
 
     begin_verbatim
-    mys9s tree --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
     end_verbatim
@@ -298,7 +304,10 @@ user previously created can see the cluster because of this ACL entry.
 EOF
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_see_the_cluster
     end_verbatim
@@ -314,7 +323,10 @@ see the cluster at all.
 EOF
     
     begin_verbatim
-    mys9s tree --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
     end_verbatim
@@ -334,6 +346,8 @@ EOF
 
     begin_verbatim
     mys9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --add-to-group \
         --group=admins \
         "$TEST_USER_NAME"
@@ -377,6 +391,8 @@ function testChOwn()
 
     begin_verbatim
     s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --chown \
         --recursive \
         --owner=$TEST_USER_NAME:users \
@@ -386,6 +402,8 @@ function testChOwn()
     user_should_see_the_cluster
 
     s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --chown \
         --recursive \
         --owner=${S9STEST_ADMIN_USER}:admins \
@@ -402,6 +420,8 @@ function testDeleteUser()
    
     begin_verbatim
     mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --chown \
         --recursive \
         --owner=$TEST_USER_NAME:users \
