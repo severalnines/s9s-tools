@@ -407,7 +407,7 @@ function delegate_test()
         CONF_HOST_USER=${USER}
     fi
     if [ "${CONF_HOST_DATA_ROOT}" = "" ]; then
-        echo "ERROR: No test data root is define for host ${idle_host}"
+        echo "ERROR: No test data root is defined for host ${idle_host}"
         return 1
     fi
 
@@ -507,6 +507,8 @@ function process_scheduled_tests()
     fi
 
     pull_local_testorigin_source
+
+    cleanup_containers
 
     for config_file in $(schedule_files); do
         echo "SCHEDULE file: $config_file"
