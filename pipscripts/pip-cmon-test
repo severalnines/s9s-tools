@@ -907,8 +907,10 @@ function cleanup_test_host()
     run_silent sudo rm -f /var/lib/cmon*
     run_silent sudo rm -f /etc/cmon.d/*.cnf
     run_silent sudo rm -f /root/.s9s/s9s.conf
-    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
-    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
+    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak
+    #.$(date +%Y%m%d%H%M)
+    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak
+    #.$(date +%Y%m%d%H%M)
 
     # FIXME Why rm -rvf /etc/cmon.d/*.cnf is not working
     # and why below is working?:
