@@ -24,8 +24,11 @@ function createUserSisko()
         --create-group \
         --batch \
         "sisko"
+    retcode=$?
     
-    check_exit_code_no_job $?
+    cat /tmp/LAST_COMMAND_OUTPUT
+
+    check_exit_code_no_job $retcode
 
     ls -lha "$config_dir"
 
