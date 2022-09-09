@@ -33,7 +33,6 @@ export TEST_SUITE_NAME=""
 export TEST_NAME=""
 export DONT_PRINT_TEST_MESSAGES=""
 export PRINT_COMMANDS=""
-export PRINT_PIP_COMMANDS=""
 export OPTION_KEEP_NODES="${S9STEST_KEEP_NODE_CONTAINERS}"
 export CONTAINER_LIST_FILE="/tmp/${MYNAME}.containers"
 
@@ -64,13 +63,6 @@ export POSTGRESQL_DEFAULT_PROVIDER_VERSION="10"
 # every request types).
 #
 #export S9S_DEBUG_SAVE_REQUEST_EXAMPLES="request-examples"
-
-if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
-	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
-fi
-if [ "${S9S_TEST_NETWORK}" = "" ]; then
-    export S9S_TEST_NETWORK="0.0.0.0/32"
-fi
 
 export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -144,9 +136,7 @@ function prompt_string
     local dirname=$(basename $PWD)
     local DATETIME=""
 
-    if [ "${S9S_TEST_DATETIME_PROMPT}" != "" ]; then
-        DATETIME="$(date +"%Y-%m-%dT%X") "
-    fi
+    #DATETIME="$(date +"%Y-%m-%dT%X") "
 
     echo "$DATETIME$USER@$HOSTNAME:$dirname\$"
 }
@@ -2171,8 +2161,7 @@ function create_node()
         echo "Creating container... $os_vendor$os_release" >&2
     fi
 
-    if [ "$PRINT_PIP_COMMANDS" ]; then
-        cat <<EOF >&2
+    cat <<EOF >&2
 pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
@@ -2180,7 +2169,6 @@ pip-container-create \\
             $verbose_option \\
             $container_name
 EOF
-    fi
 
     printVerbose "WHOAMI : $(whoami)"
     printVerbose "  USER : ${USER}"

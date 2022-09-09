@@ -24,6 +24,8 @@ LAST_ADDED_NODE=""
 INSTALL_START_TIME=""
 INSTALL_END_TIME=""
 
+ALLOW_HOST="0.0.0.0/32"
+
 cd $MYDIR
 source ./include.sh
 source ./shared_test_cases.sh
@@ -902,7 +904,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@$S9S_TEST_NETWORK" \
+        --account="$username:$password@$ALLOW_HOST" \
         --debug
 
     mys9s account --list --long
@@ -936,7 +938,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@$S9S_TEST_NETWORK" \
+        --account="$username:$password@$ALLOW_HOST" \
         --privileges="$privileges" \
         --debug
     
@@ -973,7 +975,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@$S9S_TEST_NETWORK" \
+        --account="$username:$password@$ALLOW_HOST" \
         --privileges="$privileges" \
         --debug
     
@@ -1011,7 +1013,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@$S9S_TEST_NETWORK" \
+        --account="$username:$password@$ALLOW_HOST" \
         --privileges="$privileges" \
         --debug
     
@@ -1055,7 +1057,7 @@ EOF
     mys9s cluster \
         --create-account \
         --cluster-id=$CLUSTER_ID \
-        --account="$username:$password@$S9S_TEST_NETWORK" \
+        --account="$username:$password@$ALLOW_HOST" \
         --privileges="$privileges" \
         --debug
     

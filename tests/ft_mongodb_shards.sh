@@ -41,14 +41,6 @@ source ./include_lxc.sh
 PROVIDER_VERSION=$MONGODB_DEFAULT_PROVIDER_VERSION
 
 
-# This requires tests not using 'nodeIp=$(create_node)' expression
-export PRINT_PIP_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
-
-if [ "${S9S_TEST_LOG_OPTION}" != "" ]; then
-    export LOG_OPTION="--log"
-    export DEBUG_OPTION="--debug"
-fi
-
 #
 # Prints usage information and exits.
 #
