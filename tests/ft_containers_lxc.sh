@@ -589,7 +589,7 @@ function createFail()
         --cloud="no_such_cloud" \
         $LOG_OPTION \
         $DEBUG_OPTION \
-        "node100"
+        "${MYBASENAME}_node100"
     
     exitCode=$?
 
@@ -612,7 +612,7 @@ function createFail()
         --subnet-id="no_such_subnet" \
         $LOG_OPTION \
         $DEBUG_OPTION \
-        "node101"
+        "${MYBASENAME}_node101"
     
     exitCode=$?
     if [ "$exitCode" == "0" ]; then
@@ -625,7 +625,7 @@ function createFail()
 
     # FIXME: well, this invalid subnet issue is only recognized after the
     # container was created.
-    #mys9s container --delete $LOG_OPTION "node101"
+    #mys9s container --delete $LOG_OPTION "${MYBASENAME}_node101"
 
     #
     # Creating a container with invalid image.
@@ -638,7 +638,7 @@ function createFail()
         --image="no_such_image" \
         $LOG_OPTION \
         $DEBUG_OPTION \
-        "node102"
+        "${MYBASENAME}_node102"
     
     exitCode=$?
 
