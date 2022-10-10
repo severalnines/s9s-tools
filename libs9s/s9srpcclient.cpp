@@ -8338,7 +8338,17 @@ S9sRpcClient::restoreBackup()
     bool            retval;
 
     // The job_data describing how the backup will be created.
-    jobData["backupid"]   = backupId;
+
+    if(!options->backupPath().empty())
+    {
+        jobData["backup_path"] = options->backupPath();
+        jobData["pitr_compatible"] = "false";
+    }
+    else
+        jobData["backupid"]   = backupId;
+    if(!backupMethod.empty())
+        jobData["backup_method"] = backupMethod;
+
     jobData["bootstrap"]  = true;
     jobData["backup_datadir_before_restore"] = options->backupDatadir();
 
@@ -8359,6 +8369,13 @@ S9sRpcClient::restoreBackup()
 
     if (!options->databases().empty())
         jobData["database"] = options->databases();
+
+
+    if(!options->backupSourceAddress().empty())
+        jobData["source_address"] = options->backupSourceAddress();
+
+    if (options->clusterDecryptionKey() > 0)
+        jobData["cluster_decryption_key"] = options->clusterDecryptionKey();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "restore_backup";

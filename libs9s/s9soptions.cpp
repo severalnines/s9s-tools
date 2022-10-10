@@ -117,8 +117,11 @@ enum S9sOptionType
     OptionDbClusterId,
     OptionBackupId,
     OptionBackupMethod,
+    OptionBackupPath,
+    OptionBackupSourceAddress,
     OptionBackupDirectory,
     OptionPitrStopTime,
+    OptionClusterDecryptionKey,
     OptionKeepTempDir,
     OptionTempDirPath,
     OptionSnapshotRepo,
@@ -3266,6 +3269,23 @@ S9sOptions::pitrStopTime() const
     return retval;
 }
 
+/**
+ * \returns The argument for the --cluster-decryption-key option.
+ */
+int
+S9sOptions::clusterDecryptionKey() const
+{
+    uint retval;
+
+    if (m_options.contains("cluster_decryption_key"))
+    {
+        retval = m_options.at("cluster_decryption_key").toInt();
+    }
+
+    return retval;
+}
+
+
 S9sString
 S9sOptions::subDirectory() const
 {
@@ -3360,6 +3380,43 @@ S9sOptions::backupMethod() const
 
     return retval;
 }
+
+/**
+ * \returns the value provided with --backup-path or the backup_path
+ *   configuration file value or the empty string if none of those are 
+ *   provided.
+ */
+S9sString
+S9sOptions::backupPath() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("backup_path"))
+    {
+        retval = m_options.at("backup_path").toString();
+    } else {
+        retval = m_userConfig.variableValue("backup_path");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("backup_path");
+    }
+
+    return retval;
+}
+
+/**
+ * \returns the value provided with --backup-source-address
+ *   or the empty string if not defined
+ */
+S9sString
+S9sOptions::backupSourceAddress() const
+{
+    S9sString  retval;
+    if (m_options.contains("backup_source_address"))
+        retval = m_options.at("backup_source_address").toString();
+    return retval;
+}
+
+
 
 /**
  * \returns the value received for the --databases command line option.
@@ -7421,8 +7478,10 @@ S9sOptions::readOptionsBackup(
         { "backup-directory", required_argument, 0, OptionBackupDirectory },
         { "backup-format",    required_argument, 0, OptionBackupFormat    }, 
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
+        { "backup-path",      required_argument, 0, OptionBackupPath      },
         { "backup-password",  required_argument, 0, OptionBackupPassword  },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
+        { "backup-source-address", required_argument, 0, OptionBackupSourceAddress},
         { "backup-user",      required_argument, 0, OptionBackupUser      },
         { "cloud-retention",  required_argument, 0, OptionCloudRetention  },
         { "databases",        required_argument, 0, OptionDatabases       },
@@ -7452,6 +7511,7 @@ S9sOptions::readOptionsBackup(
         { "no-install",       no_argument,       0, OptionNoInstall       },
         { "no-terminate",     no_argument,       0, OptionNoTerminate     },
         { "pitr-stop-time",   required_argument, 0, OptionPitrStopTime    },
+        { "cluster-decryption-key", required_argument, 0, OptionClusterDecryptionKey},
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -7728,6 +7788,17 @@ S9sOptions::readOptionsBackup(
                 m_options["backup_method"] = optarg;
                 break;
 
+            case OptionBackupPath:
+                // --backup-path=PATH
+                m_options["backup_path"] = optarg;
+                break;
+
+            case OptionBackupSourceAddress:
+                // --backup-source-address=192.168.1.12
+                m_options["backup_source_address"] = optarg;
+                break;
+
+
             case OptionBackupDirectory:
                 // --backup-directory=DIRECTORY
                 m_options["backup_directory"] = optarg;
@@ -7919,6 +7990,11 @@ S9sOptions::readOptionsBackup(
             case OptionPitrStopTime:
                 // --pitr-stop-time="2020-07-14T14:27:04"
                 m_options["pitr_stop_time"] = optarg;
+                break;
+
+            case OptionClusterDecryptionKey:
+                // --cluster-decryption-key=12
+                m_options["cluster_decryption_key"] = atoi(optarg);
                 break;
 
             case '?':

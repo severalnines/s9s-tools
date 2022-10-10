@@ -356,7 +356,10 @@ class S9sOptions
         S9sString s3region() const;
         S9sString storageHost() const;
         S9sString pitrStopTime() const;
+        int      clusterDecryptionKey() const;
         S9sString backupMethod() const;
+        S9sString backupPath() const;
+        S9sString backupSourceAddress() const;
         bool noCompression() const;
         bool pitrCompatible() const;
         bool usePigz() const;
