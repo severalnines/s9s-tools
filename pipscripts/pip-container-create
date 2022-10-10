@@ -215,7 +215,7 @@ function container_names()
     #
     while true; do
         node_name=$(printf "node%03d" "$number")
-        if [ ! -d "/var/lib/lxc/$node_name" ]; then
+        if sudo [ ! -d "/var/lib/lxc/$node_name" ]; then
             echo "$node_name"
             return 0
         fi
@@ -351,13 +351,13 @@ function install_package_in_container()
     local container_rootfs="$container_root/rootfs"
     local retval
 
-    if [ ! -d "$container_rootfs" ]; then
+    if sudo [ ! -d "$container_rootfs" ]; then
         printError "Container root '$container_rootfs' missing."
         printError "Can not install packages."
         return 1
     fi 
 
-    if [ -f "$container_rootfs/usr/bin/apt-get" ]; then
+    if sudo [ -f "$container_rootfs/usr/bin/apt-get" ]; then
         if [ -z "$APT_UPDATED" ]; then
             printVerbose "Updating apt package list."
             sudo lxc-attach -n "$container_name" -- \
@@ -402,7 +402,7 @@ function install_package_in_container()
                 cat /etc/network/interfaces \
                 >>"$LOGFILE" 2>>"$LOGFILE"
         fi
-    elif [ -f "$container_rootfs/usr/bin/yum" ]; then
+    elif sudo [ -f "$container_rootfs/usr/bin/yum" ]; then
         printVerbose "Installing package '$package_name' with yum."
         sudo lxc-attach -n "$container_name" -- \
             yum install -y "$package_name" \
@@ -454,7 +454,7 @@ function create_container()
     fi
 
     if [ -z "$parent_name" -a -z "$vendor_name" ]; then
-        if [ -d "/var/lib/lxc/ubuntu" ]; then
+        if sudo [ -d "/var/lib/lxc/ubuntu" ]; then
             printVerbose "Chose 'ubuntu' as template."
             parent_name="ubuntu"
         else
@@ -479,7 +479,7 @@ function create_container()
     fi
 
     if [ "$parent_name" ]; then
-        if [ ! -d "/var/lib/lxc/$parent_name" ]; then
+        if sudo [ ! -d "/var/lib/lxc/$parent_name" ]; then
             printError "Template container '$parent_name' does not exist."
             return 1
         fi
@@ -502,7 +502,7 @@ function create_container()
     #
     # Checking if the container already exists.
     #
-    if [ -d "/var/lib/lxc/$new_name" ]; then
+    if sudo [ -d "/var/lib/lxc/$new_name" ]; then
         printError "The container '$new_name' already exists."
         return 1
     fi
@@ -540,9 +540,9 @@ function create_container()
     container_root="/var/lib/lxc/$new_name"
     container_rootfs="$container_root/rootfs"
 
-    if [ ! -d "$container_root" ]; then
+    if sudo [ ! -d "$container_root" ]; then
         printError "Failed to create '$new_name' container."
-        if [ -f "$temp_file" ]; then
+        if sudo [ -f "$temp_file" ]; then
             cat "$temp_file" >&2
             rm -f "$temp_file"
         fi
@@ -582,7 +582,7 @@ function create_container()
         fi
     done
 
-    if [ -f "$temp_file" ]; then
+    if sudo [ -f "$temp_file" ]; then
         rm -f "$temp_file"
     fi
    
@@ -600,7 +600,7 @@ function create_container()
         fi
     fi
     
-    if [ ! -f "$container_rootfs/usr/sbin/sshd" ]; then
+    if sudo [ ! -f "$container_rootfs/usr/sbin/sshd" ]; then
         printVerbose "Container has no sshd, attempting to install."
         install_package_in_container "$new_name" "openssh-server"
 
@@ -646,7 +646,7 @@ function create_container()
     printVerbose \
         "/home/$OWNER/.ssh -> /var/lib/lxc/$new_name/rootfs/home/$OWNER"
 
-    cp -r \
+    sudo cp -r \
         "/home/$OWNER/.ssh" \
         "/var/lib/lxc/$new_name/rootfs/home/$OWNER/.ssh"
 
@@ -666,9 +666,9 @@ function create_container()
     #
     # On centos 7 we also need : lxc-attach -n centos -- yum install sudo
     printVerbose "Adding '$OWNER' to sudoers."
-    echo "" >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
-    echo "${OWNER} ALL=(ALL) NOPASSWD:ALL" \
-        >>"/var/lib/lxc/$new_name/rootfs/etc/sudoers"
+    echo "" | sudo tee -a "/var/lib/lxc/$new_name/rootfs/etc/sudoers" > /dev/null
+    echo "${OWNER} ALL=(ALL) NOPASSWD:ALL" | \
+        sudo tee -a "/var/lib/lxc/$new_name/rootfs/etc/sudoers" > /dev/null
 
     #
     # Installing some packages.

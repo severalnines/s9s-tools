@@ -6,7 +6,7 @@ STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
 
 LOG_OPTION="--log"
-DEBUG_OPTION="--debug"
+DEBUG_OPTION=""
 
 CLUSTER_NAME="${MYBASENAME}_$$"
 CLUSTER_ID=""
@@ -92,7 +92,6 @@ while true; do
         --log)
             shift
             LOG_OPTION="--log"
-            DEBUG_OPTION="--debug"
             ;;
 
         --server)
@@ -334,8 +333,8 @@ function testCreateBackup01()
     fi
 
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $7}')
-    if [ "$value" != "$USER" ]; then
-        failure "The owner of the backup should be '$USER'."
+    if [ "$value" != "$S9STEST_USER" ]; then
+        failure "The owner of the backup should be '$S9STEST_USER'."
     fi
     
     value=$(s9s backup --list --backup-id=1 --long --batch | awk '{print $3}')
@@ -346,10 +345,10 @@ function testCreateBackup01()
     # Checking the path.
     value=$(\
         s9s backup --list-files --full-path --backup-id=1 | \
-        grep '^/tmp/backup-001-0001/$PROJECT_OWNER/' | \
+        grep '^/tmp/backup-001-0001/$S9STEST_USER/' | \
         wc -l)
     if [ "$value" != 1 ]; then
-        failure "A file should be in '/tmp/backup-001-0001/$PROJECT_OWNER/'"
+        failure "A file should be in '/tmp/backup-001-0001/$S9STEST_USER/'"
         mys9s backup --list-files --full-path --backup-id=1
         mys9s backup --list-files --full-path 
     fi

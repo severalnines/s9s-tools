@@ -1,12 +1,31 @@
 
-source /etc/s9s-cmon-test/project.conf
+source /etc/s9s-cmon-test/s9stest.conf
 
-if [ -f "${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh" ]; then
-    source ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh
-else
-    echo "File ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/load_config.sh was not found." >&2
-    exit 5
+if [ "${S9STEST_ADMIN_USER}" = "" ]; then
+    S9STEST_ADMIN_USER="admin_${USER}"
 fi
+if [ "${S9STEST_ADMIN_USER_PASSWORD}" = "" ]; then
+    S9STEST_ADMIN_USER_PASSWORD="adminpwd"
+fi
+if [ "${S9STEST_ADMIN_USER_EMAIL}" = "" ]; then
+    S9STEST_ADMIN_USER_EMAIL="${USER}@$(hostname)"
+fi
+if [ "${S9STEST_USER}" = "" ]; then
+    S9STEST_USER="${USER}"
+fi
+if [ "${S9STEST_USER_PASSWORD}" = "" ]; then
+    S9STEST_USER_PASSWORD="pwd"
+fi
+if [ "${S9STEST_USER_EMAIL}" = "" ]; then
+    S9STEST_USER_EMAIL="${USER}@$(hostname)"
+fi
+if [ "${S9STEST_KEEP_NODE_CONTAINERS}" = "" ]; then
+    S9STEST_KEEP_NODE_CONTAINERS="false"
+fi
+
+# For backward compatibility only:
+PROJECT_OWNER="${S9STEST_USER}"
+
 
 export S9S=$(which s9s)
 export FAILED="no"
@@ -14,9 +33,7 @@ export TEST_SUITE_NAME=""
 export TEST_NAME=""
 export DONT_PRINT_TEST_MESSAGES=""
 export PRINT_COMMANDS=""
-export PRINT_PIP_COMMANDS=""
-export OPTION_KEEP_NODES="${PROJECT_KEEP_NODE_CONTAINERS}"
-export TEST_EMAIL="laszlo@severalnines.com"
+export OPTION_KEEP_NODES="${S9STEST_KEEP_NODE_CONTAINERS}"
 export CONTAINER_LIST_FILE="/tmp/${MYNAME}.containers"
 
 #
@@ -46,16 +63,6 @@ export POSTGRESQL_DEFAULT_PROVIDER_VERSION="10"
 # every request types).
 #
 #export S9S_DEBUG_SAVE_REQUEST_EXAMPLES="request-examples"
-
-if [ "${S9S_TEST_EMAIL}" != "" ]; then
-	export TEST_EMAIL=${S9S_TEST_EMAIL}
-fi
-if [ "${S9S_TEST_PRINT_COMMANDS}" != "" ]; then
-	export PRINT_COMMANDS=${S9S_TEST_PRINT_COMMANDS}
-fi
-if [ "${S9S_TEST_NETWORK}" = "" ]; then
-    export S9S_TEST_NETWORK="0.0.0.0/32"
-fi
 
 export SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
@@ -129,9 +136,7 @@ function prompt_string
     local dirname=$(basename $PWD)
     local DATETIME=""
 
-    if [ "${S9S_TEST_DATETIME_PROMPT}" != "" ]; then
-        DATETIME="$(date +"%Y-%m-%dT%X") "
-    fi
+    #DATETIME="$(date +"%Y-%m-%dT%X") "
 
     echo "$DATETIME$USER@$HOSTNAME:$dirname\$"
 }
@@ -752,6 +757,14 @@ function warning()
     echo -e "${XTERM_COLOR_YELLOW}$1${TERM_NORMAL}"
 }
 
+#
+# Prints a message.
+#
+function message()
+{
+    echo -e "${XTERM_COLOR_BLUE}$1${TERM_NORMAL}"
+}
+
 function CHECK_PROGRAM_INSTALLED()
 {
     local program="$1"
@@ -773,11 +786,6 @@ function check_exit_code()
     local do_not_exit
     local exitCode
     local jobId
-    local password_option=""
-
-    if [ -n "$CMON_USER_PASSWORD" ]; then
-        password_option="--password='$CMON_USER_PASSWORD'"
-    fi
 
     #
     # Command line options.
@@ -804,7 +812,10 @@ function check_exit_code()
         failure "The exit code is ${exitCode}"
 
         jobId=$(\
-            s9s job --list --batch $password_option | \
+            s9s job \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
+                --list --batch | \
             grep FAIL | \
             tail -n1 | \
             awk '{print $1}')
@@ -814,7 +825,8 @@ function check_exit_code()
             echo "job messages of the failed job. Here it is:"
             mys9s job \
                 --log \
-                $password_option \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
                 --debug \
                 --job-id="$jobId"
         fi
@@ -882,7 +894,10 @@ function check_job()
         esac
     done
 
-    state=$(s9s job --list --job-id=$job_id --batch | awk '{print $3}')
+    state=$(s9s job \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --job-id=$job_id --batch | awk '{print $3}')
     if [ "$state" == "$required_state" ]; then
         success "  o Job $job_id is $state, ok"
     else
@@ -985,6 +1000,8 @@ function print_log_messages()
     print_subtitle "Cmon Logs"
 
     s9s log \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --list \
         --long \
         --log-format="%02i %04I %18c %38B:%5L %-8S %M\n" \
@@ -994,7 +1011,10 @@ function print_log_messages()
         --debug 
 
     print_subtitle "Cmon Logs with Templates"
-    s9s log --list --long --log-format-file='templates/log/%c_${log_specifics/job_instance/job_spec/command};templates/log/%c'
+    s9s log \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --log-format-file='templates/log/%c_${log_specifics/job_instance/job_spec/command};templates/log/%c'
 }
 
 function print_log_message()
@@ -1002,6 +1022,8 @@ function print_log_message()
     local message_id="$1"
 
     s9s log --list \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --log-format='   ID: %I\nclass: %c\n  loc: %B:%L\n mess: %M\n job:\n${/log_specifics/job_instance}\n' \
         --message-id=$message_id
 }
@@ -1012,7 +1034,10 @@ function check_job_finished()
     local jobStatusLine
     local jobStatus
 
-    jobStatusLine=$(s9s job --batch --list | grep "$jobExpectedText" | tail -n 1)
+    jobStatusLine=$(s9s job \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --batch --list | grep "$jobExpectedText" | tail -n 1)
 
     printVerbose "$jobStatusLine"
 
@@ -1063,6 +1088,8 @@ function get_log_message_id()
     log_format+='\n'
 
     lines=$(s9s log \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --list \
         --batch \
         --log-format="$log_format" \
@@ -1121,12 +1148,16 @@ function check_log_message()
         fi
 
         mys9s log \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
             --list --long \
             --log-format="$format_string" \
             --message-id="$message_id" \
             --cluster-id="$cluster_id"
 
         value=$(s9s log \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
                 --list \
                 --long \
                 --batch \
@@ -1221,6 +1252,8 @@ function check_container()
     #
     container_ip=$(\
         s9s server \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
             --list-containers \
             --batch \
             --long  "$container_name" \
@@ -1228,13 +1261,19 @@ function check_container()
     
     if [ -z "$container_ip" -o "$container_ip" == "-" ]; then
         failure "The container was not created or got no IP."
-        s9s container --list --long
+        s9s container \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --long
     else
         success "  o Container $container_name has IP $container_ip, ok"
     fi
  
     owner=$(\
-        s9s container --list --long --batch "$container_name" | \
+        s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch "$container_name" | \
         awk '{print $4}')
 
     if [ "$owner" != "$expected_owner" ]; then
@@ -1249,49 +1288,70 @@ function check_container()
         success "  o SSH access granted for user '$USER' on $container_ip, ok."
     fi
 
-    group=$(s9s container --list --batch --container-format="%G\n" "$container_name")
+    group=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%G\n" "$container_name")
     if [ -n "$expected_group" -a "$group" != "$expected_group" ]; then
         failure "  o The group should be '$expected_group', not '$group'."
     else
         success "  o The group of the container is $group, ok"
     fi
 
-    path=$(s9s container --list --batch --container-format="%p\n" "$container_name")
+    path=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%p\n" "$container_name")
     if [ -n "$expected_path" -a "$path" != "$expected_path" ]; then
         failure "  o The path should be '$expected_path', not '$path'."
     else
         success "  o The path of the container is $path, ok"
     fi
     
-    acl=$(s9s container --list --batch --container-format="%l\n" "$container_name")
+    acl=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%l\n" "$container_name")
     if [ -n "$expected_acl" -a "$acl" != "$expected_acl" ]; then
         failure "  o The acl should be '$expected_acl', not '$acl'."
     else
         success "  o The acl of the container is '$acl', ok"
     fi
 
-    cloud=$(s9s container --list --batch --container-format="%c\n" "$container_name")
+    cloud=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%c\n" "$container_name")
     if [ -n "$expected_cloud" -a "$cloud" != "$expected_cloud" ]; then
         failure "  o The cloud should be '$expected_cloud', not '$cloud'."
     else
         success "  o The cloud of the container is $cloud, ok"
     fi
 
-    state=$(s9s container --list --batch --container-format="%S\n" "$container_name")
+    state=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%S\n" "$container_name")
     if [ -n "$expected_state" -a "$state" != "$expected_state" ]; then
         failure "  o The state should be '$expected_state', not '$state'."
     else
         success "  o The state of the container is $state, ok"
     fi
 
-    parent=$(s9s container --list --batch --container-format="%P\n" "$container_name")
+    parent=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%P\n" "$container_name")
     if [ -n "$expected_parent" -a "$parent" != "$expected_parent" ]; then
         failure "  o The parent should be '$expected_parent', not '$parent'."
     else
         success "  o The parent of the container is $parent, ok"
     fi
 
-    prot=$(s9s container --list --batch --container-format="%T\n" "$container_name")
+    prot=$(s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --container-format="%T\n" "$container_name")
     if [ -n "$expected_prot" -a "$prot" != "$expected_prot" ]; then
         failure "  o The prot should be '$expected_prot', not '$prot'."
     else
@@ -1384,21 +1444,30 @@ function cluster_state()
 {
     local clusterId="$1"
 
-    s9s cluster --list --cluster-id=$clusterId --cluster-format="%S"
+    s9s cluster \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --cluster-id=$clusterId --cluster-format="%S"
 }        
 
 function node_state()
 {
     local nodeName="$1"
         
-    s9s node --list --batch --long --node-format="%S\n" "$nodeName" | head -n1
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --long --node-format="%S\n" "$nodeName" | head -n1
 }
 
 function node_ip()
 {
     local nodeName="$1"
         
-    s9s node --list --batch --long --node-format="%A" "$nodeName"
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --batch --long --node-format="%A" "$nodeName"
 }
 
 function container_ip()
@@ -1420,9 +1489,15 @@ function container_ip()
 
 
     if [ -z "$is_private" ]; then
-        s9s container --list --batch --long --container-format="%A" "$1"
+        s9s container \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --long --container-format="%A" "$1"
     else
-        s9s container --list --batch --long --container-format="%a" "$1"
+        s9s container \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --long --container-format="%a" "$1"
     fi
 }
 
@@ -1479,14 +1554,20 @@ function wait_for_node_state()
 
 function haproxy_node_name()
 {
-    s9s node --list --long --batch |\
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch |\
         grep '^h' | \
         awk '{print $5 }'
 }
 
 function pgbouncer_node_name()
 {
-    s9s node --list --long --batch |\
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch |\
         grep '^b' | \
         awk '{print $5 }'
 }
@@ -1496,9 +1577,15 @@ function check_number_of_haproxy_nodes()
     local numberOfNodes
     local expected="$1"
 
-    mys9s node --list --long
+    mys9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long
 
-    numberOfNodes=$(s9s node --list --long --batch | grep '^h' | wc -l)
+    numberOfNodes=$(s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch | grep '^h' | wc -l)
     if [ "$numberOfNodes" -eq "$expected" ]; then
         success "o Number of HaProxy nodes is $numberOfNodes, ok."
     else
@@ -1511,7 +1598,10 @@ function check_number_of_haproxy_nodes()
 #
 function maxscale_node_name()
 {
-    s9s node --list --long --batch |\
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch |\
         grep '^x' | \
         awk '{print $5 }'
 }
@@ -1521,9 +1611,15 @@ function check_number_of_maxscale_nodes()
     local numberOfNodes
     local expected="$1"
 
-    mys9s node --list --long
+    mys9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long
 
-    numberOfNodes=$(s9s node --list --long --batch | grep '^x' | wc -l)
+    numberOfNodes=$(s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch | grep '^x' | wc -l)
     if [ "$numberOfNodes" -eq "$expected" ]; then
         success "o Number of MaxScale nodes is $numberOfNodes, ok."
     else
@@ -1533,7 +1629,10 @@ function check_number_of_maxscale_nodes()
 
 function proxysql_node_name()
 {
-    s9s node --list --long --batch |\
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch |\
         grep '^y' | \
         awk '{print $5 }'
 }
@@ -1543,9 +1642,15 @@ function check_number_of_proxysql_nodes()
     local numberOfNodes
     local expected="$1"
 
-    mys9s node --list --long
+    mys9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long
 
-    numberOfNodes=$(s9s node --list --long --batch | grep '^y' | wc -l)
+    numberOfNodes=$(s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch | grep '^y' | wc -l)
     if [ "$numberOfNodes" -eq "$expected" ]; then
         success "o Number of ProxySql nodes is $numberOfNodes, ok."
     else
@@ -1572,7 +1677,10 @@ function galera_node_name()
         esac
     done
 
-    s9s node --list --long --batch$cluster_id_option | \
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch$cluster_id_option | \
         grep '^g' | \
         head -n1  | \
         awk '{print $5 }'
@@ -1597,7 +1705,10 @@ function postgresql_node_name()
         esac
     done
 
-    s9s node --list --long --batch$cluster_id_option | \
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch$cluster_id_option | \
         grep '^p' | \
         head -n1  | \
         awk '{print $5 }'
@@ -1609,7 +1720,10 @@ function node_container_id()
 {
     local node_name="$1"
 
-    s9s node --list --node-format "%v\n" "$node_name"
+    s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --node-format "%v\n" "$node_name"
 }
 
 #
@@ -1653,7 +1767,10 @@ function check_container_ids()
     #
     # Checking the container ids.
     #
-    node_ips=$(s9s node --list --long --batch | grep "$filter" | awk '{ print $5 }')
+    node_ips=$(s9s node \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --long --batch | grep "$filter" | awk '{ print $5 }')
     for node_ip in $node_ips; do
         print_title "Checking Node $node_ip"
         begin_verbatim
@@ -1724,7 +1841,6 @@ function wait_for_cluster_state()
     local state
     local waited=0
     local stayed=0
-    local password_option
     local controller_option
 
     while [ -n "$1" ]; do
@@ -1758,12 +1874,13 @@ function wait_for_cluster_state()
     fi
 
     stateCmd="s9s cluster \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --list \
         --batch \
         --cluster-format="%S" \
         --cluster-name="$clusterName" \
-        $controller_option \
-        $password_option"
+        $controller_option"
 
     while true; do
         state=$($stateCmd)
@@ -1812,6 +1929,8 @@ function get_container_ip()
     local container_name="$1"
 
     s9s container \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --list \
         --long \
         --batch \
@@ -2042,8 +2161,7 @@ function create_node()
         echo "Creating container... $os_vendor$os_release" >&2
     fi
 
-    if [ "$PRINT_PIP_COMMANDS" ]; then
-        cat <<EOF >&2
+    cat <<EOF >&2
 pip-container-create \\
             $os_vendor_option \\
             $os_release_option \\
@@ -2051,12 +2169,11 @@ pip-container-create \\
             $verbose_option \\
             $container_name
 EOF
-    fi
 
     printVerbose "WHOAMI : $(whoami)"
     printVerbose "  USER : ${USER}"
     printVerbose "   PWD : ${PWD}"
-    ip=$(sudo ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-create \
+    ip=$(pip-container-create \
         $os_vendor_option \
         $os_release_option \
         $template_option \
@@ -2131,11 +2248,6 @@ function emit_s9s_configuration_file()
 
     while [ -n "$1" ]; do
         case "$1" in
-            --do-not-create)
-                # No need to do anything with this option here. If we are here
-                # we create the configuration anyway.
-                ;;
-
             --controller)
                 hostname="$2"
                 shift 2
@@ -2145,10 +2257,6 @@ function emit_s9s_configuration_file()
                 cmon_port="$2"
                 shift 2
                 ;;
-
-            *)
-                failure "emit_s9s_configuration_file: Unknown option '$1'."
-                return 1;
         esac
     done
 
@@ -2158,7 +2266,7 @@ function emit_s9s_configuration_file()
 #
 [global]
 controller    = https://$hostname:$cmon_port
-os_user       = $PROJECT_OWNER
+os_user       = ${USER}
 
 [network]
 client_connection_timeout = 30
@@ -2180,14 +2288,6 @@ EOF
 }
 
 #
-# Just for backward compatibility.
-#
-function reset_config()
-{
-    create_s9s_config $*
-}
-
-#
 # Creates an s9s configuration file that holds the information about the
 # controller. This is crutial for every tests.
 # 
@@ -2196,12 +2296,13 @@ function reset_config()
 # S9S_USER_CONFIG variable is empty the ~/.s9s/s9s.conf path will be used (that
 # is the default for the s9s program too).
 #
-function create_s9s_config()
+function reset_config()
 {
     local config_dir
     local config_file
     local do_not_create
-    local options=$*
+    local options=""
+    local silent="false"
 
     if [ -z "$S9S_USER_CONFIG" ]; then
         config_dir="$HOME/.s9s"
@@ -2219,13 +2320,18 @@ function create_s9s_config()
                 ;;
 
             --controller)
-                # No need to do anything with this option here.
+                options="$options --controller $2"
                 shift 2
                 ;;
 
             --port)
-                # No need to do anything with this option here.
+                options="$options --port $2"
                 shift 2
+                ;;
+
+            --silent)
+                silent="true"
+                shift 1
                 ;;
 
             *)
@@ -2237,10 +2343,12 @@ function create_s9s_config()
         return 0
     fi
    
-    if [ -z "$do_not_create" ]; then
-        print_title "Writing s9s Configuration $config_file"
-    else
-        print_title "Deleting s9s Configuration"
+    if [ "$silent" != "true" ]; then
+        if [ -z "$do_not_create" ]; then
+            print_title "Writing s9s Configuration $config_file"
+        else
+            print_title "Deleting s9s Configuration"
+        fi
     fi
 
     if [ -z "$do_not_create" ]; then
@@ -2248,14 +2356,34 @@ function create_s9s_config()
             mkdir "$config_dir"
         fi
 
+        # backup previous config file
+        mv $config_file ${config_file}.bak.$(date +%Y%m%d%H%M)
+
         emit_s9s_configuration_file $options >$config_file
 
         # This goes to the standard output.
-        emit_s9s_configuration_file $options | print_ini_file
+        if [ "$silent" != "true" ]; then
+            emit_s9s_configuration_file $options | print_ini_file
+        fi
+    fi
+}
+
+function show_s9s_config()
+{
+    local config_dir
+    local config_file
+
+    if [ -z "$S9S_USER_CONFIG" ]; then
+        config_dir="$HOME/.s9s"
+        config_file="$config_dir/s9s.conf"
+    else
+        config_file="$S9S_USER_CONFIG"
+        config_dir="$(dirname "$config_file")"
     fi
 
-    # FIXME: This should not be here:
-    sudo rm -f $HOME/pip-container-create.log 2>/dev/null
+    #print_title "S9s Configuration $config_file"
+
+    cat "$config_file" | print_ini_file
 }
 
 #
@@ -2267,18 +2395,14 @@ function find_cluster_id()
     local name="$1"
     local retval
     local nTry=0
-    local password_option=""
-    
-    if [ -n "$CMON_USER_PASSWORD" ]; then
-        password_option="--password='$CMON_USER_PASSWORD'"
-    fi
 
     while true; do
         retval=$($S9S cluster \
             --list \
             --long \
             --batch \
-            $password_option \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
             --cluster-name="$name")
 
         retval=$(echo "$retval" | awk '{print $1}')
@@ -2327,8 +2451,21 @@ function grant_user()
     local first
     local last
     local cmon_port="$OPTION_CMON_PORT"
+    local s9stest_user_group="users"
 
     [ -z "$cmon_port" ] && cmon_port="9501"
+
+    while [ "$1" ]; do
+        case "$1" in 
+            --group)
+                s9stest_user_group="$2"
+                shift 2
+                ;;
+
+            *)
+                break
+        esac
+    done
 
     print_title "Creating the First User"
     cat <<EOF | paragraph
@@ -2358,27 +2495,29 @@ EOF
         fi
     done
 
-    print_subtitle "Create user ${PROJECT_OWNER}"
+    #
+    # Creating initial admin user the way we expect our customers to do so
+    #
+
+    print_subtitle "Create user ${S9STEST_ADMIN_USER}"
 
     begin_verbatim
 
-    first=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 1)
-    last=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1 | cut -d ' ' -f 2)
+    reset_config --silent
 
-    # Creating initial user the way we expect our customers to do so
     mys9s user \
         --create \
         --group="admins" \
         --generate-key \
         --controller="https://localhost:$cmon_port" \
-        --new-password="${PROJECT_OWNER_CC_PASSWORD}" \
-        --email-address="${S9S_TEST_EMAIL}" \
-        --first-name="$first" \
-        --last-name="$last" \
+        --new-password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --email-address="${S9STEST_ADMIN_USER_EMAIL}" \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
         --batch \
-        "${PROJECT_OWNER}"
+        "${S9STEST_ADMIN_USER}"
 
     exitCode=$?
 
@@ -2388,44 +2527,25 @@ EOF
         success "  o Return code is 0, ok."
     fi
 
-    mys9s user --stat "$USER"
+    mys9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat "${S9STEST_ADMIN_USER}"
     ret=$?
     if [ $ret -ne 0 ]; then
         sleep 5
-        mys9s user --stat "$USER"
+        mys9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --stat "${S9STEST_ADMIN_USER}"
         ret=$?
     fi
     if [ $ret -eq 0 ]; then
-        success "  o Could stat the user $USER, OK."
+        success "  o Could stat the user ${S9STEST_ADMIN_USER}, OK."
     else
-        failure "Exit code is $ret (not 0) when stat-ing the new user $USER."
+        failure "Exit code is $ret (not 0) when stat-ing the new user ${S9STEST_ADMIN_USER}."
         end_verbatim
         return 0
-    fi
-
-    for file in \
-        "/.runtime/jobs/jobExecutor" \
-        "/.runtime/jobs/jobExecutorCreateCluster" \
-        "/.runtime/jobs/jobExecutorDeleteOldJobs"
-    do
-        mys9s tree \
-            --add-acl \
-            --acl="user:$USER:r-x" \
-            $file
-        ret=$?
-        if [ $ret -ne 0 ]; then
-            failure "Failed to add acl using $file"
-        fi
-    done
-
-    # Adding a tag to the user and checking if the tag is indeed added.
-    mys9s tree --add-tag --tag="testUser" /$USER
-    mys9s user --stat $USER
-
-    if s9s user --stat $USER | grep -q testUser; then
-        success "  o User $USER has the tag 'testUser' set, OK."
-    else
-        failure "  o User $USER has no tag 'testUser' set."
     fi
 
     #
@@ -2436,15 +2556,130 @@ EOF
         #--batch \
         #--password="p" \
     mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --add-key \
         --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
-        --public-key-name="The_SSH_key"
+        --public-key-name="The_SSH_key" \
+        "${S9STEST_ADMIN_USER}"
 
     end_verbatim
 
     #
+    # Creating initial normal user the way we expect our customers to do so
     #
+
+    print_subtitle "Create user ${S9STEST_USER}"
+
+    begin_verbatim
+
+    reset_config --silent
+
+    if [ "$s9stest_user_group" != "users" ]; then
+        mys9s group \
+            --cmon-user="${S9STEST_ADMIN_USER}" \
+            --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+            --create "$s9stest_user_group"
+    fi
+
+    mys9s user \
+        --create \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --group="$s9stest_user_group" \
+        --generate-key \
+        --controller="https://localhost:$cmon_port" \
+        --new-password="${S9STEST_USER_PASSWORD}" \
+        --email-address="${S9STEST_USER_EMAIL}" \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
+        $OPTION_PRINT_JSON \
+        $OPTION_VERBOSE \
+        --batch \
+        "${S9STEST_USER}"
+
+    exitCode=$?
+
+    if [ "$exitCode" -ne 0 ]; then
+        failure "Exit code is not 0 while granting user."
+    else 
+        success "  o Return code is 0, ok."
+    fi
+
+    mys9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat "${S9STEST_USER}"
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        sleep 5
+        mys9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --stat "${S9STEST_USER}"
+        ret=$?
+    fi
+    if [ $ret -eq 0 ]; then
+        success "  o Could stat the user ${S9STEST_USER}, OK."
+    else
+        failure "Exit code is $ret (not 0) when stat-ing the new user ${S9STEST_USER}."
+        end_verbatim
+        return 0
+    fi
+
+    for file in \
+        "/.runtime/jobs/jobExecutor" \
+        "/.runtime/jobs/jobExecutorCreateCluster" \
+        "/.runtime/jobs/jobExecutorDeleteOldJobs"
+    do
+        mys9s tree \
+            --cmon-user="${S9STEST_ADMIN_USER}" \
+            --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+            --add-acl \
+            --acl="user:${S9STEST_USER}:r-x" \
+            $file
+        ret=$?
+        if [ $ret -ne 0 ]; then
+            failure "Failed to add acl using $file"
+        fi
+    done
+
+    # Adding a tag to the user and checking if the tag is indeed added.
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --add-tag --tag="testUser" /${S9STEST_USER}
+    mys9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat ${S9STEST_USER}
+
+    if s9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat ${S9STEST_USER} | grep -q testUser; then
+        success "  o User ${S9STEST_USER} has the tag 'testUser' set, OK."
+    else
+        failure "  o User ${S9STEST_USER} has no tag 'testUser' set."
+    fi
+
     #
+    # Adding the user's default SSH public key. This will come handy when we
+    # create a container because this way the user will be able to log in with
+    # the SSH key without password.
+    #
+        #--batch \
+        #--password="p" \
+    mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --add-key \
+        --public-key-file="/home/$USER/.ssh/id_rsa.pub" \
+        --public-key-name="The_SSH_key" \
+        "${S9STEST_USER}"
+
+    end_verbatim
+
     print_subtitle "The $HOME/.s9s/s9s.conf"
 
     cat <<EOF | paragraph
@@ -2454,7 +2689,11 @@ EOF
 
 EOF
 
-    cat $HOME/.s9s/s9s.conf | print_ini_file
+    show_s9s_config
+
+    #
+    # Update system user's password for legacy reasons
+    #
 
     print_subtitle "Prepare system user for test scripts"
 
@@ -2464,8 +2703,8 @@ EOF
     # Specifying special password for user 'system'.
     # Old test scripts are relying on it.
     mys9s user \
-        --cmon-user="${PROJECT_OWNER}" \
-        --password="${PROJECT_OWNER_CC_PASSWORD}" \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --change-password \
         --generate-key \
         --new-password=secret \
@@ -2482,7 +2721,10 @@ function get_user_group()
         return 1
     fi
 
-    s9s user --list --user-format="%G" $user_name
+    s9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --user-format="%G" $user_name
 }
 
 function get_user_email()
@@ -2494,7 +2736,10 @@ function get_user_email()
         return 1
     fi
 
-    s9s user --list --user-format="%M" $user_name
+    s9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --user-format="%M" $user_name
 }
 
 function check_controller()
@@ -2534,7 +2779,10 @@ function check_controller()
 
     if [ -n "$owner" ]; then
         tmp=$(\
-            s9s node --list --node-format "%R %O\n" | \
+            s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --node-format "%R %O\n" | \
             grep "controller" | \
             awk '{print $2}')
 
@@ -2547,7 +2795,10 @@ function check_controller()
 
     if [ -n "$group" ]; then
         tmp=$(\
-            s9s node --list --node-format "%R %G\n" | \
+            s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --node-format "%R %G\n" | \
             grep "controller" | \
             awk '{print $2}')
 
@@ -2560,7 +2811,10 @@ function check_controller()
 
     if [ -n "$cdt_path" ]; then
         tmp=$(\
-            s9s node --list --node-format "%R %h\n" | \
+            s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --node-format "%R %h\n" | \
             grep "controller" | \
             awk '{print $2}')
 
@@ -2574,7 +2828,10 @@ function check_controller()
 
     if [ -n "$status" ]; then
         tmp=$(\
-            s9s node --list --node-format "%R %S\n" | \
+            s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --node-format "%R %S\n" | \
             grep "controller" | \
             awk '{print $2}')
 
@@ -2664,7 +2921,10 @@ function check_node()
     echo "Checking node '$hostname'..."
 
     if [ -n "$ipaddress" ]; then
-        tmp=$(s9s node --list --batch --node-format "%A\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%A\n" "$hostname")
 
         if [ "$tmp" == "$ipaddress" ]; then
             success "  o The IP of the node is $tmp, ok."
@@ -2674,7 +2934,10 @@ function check_node()
     fi
     
     if [ -n "$port" ]; then
-        tmp=$(s9s node --list --batch --node-format "%P\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%P\n" "$hostname")
 
         if [ "$tmp" == "$port" ]; then
             success "  o The port of the node is $tmp, ok."
@@ -2684,7 +2947,10 @@ function check_node()
     fi
 
     if [ -n "$owner" ]; then
-        tmp=$(s9s node --list --batch --node-format "%O\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%O\n" "$hostname")
 
         if [ "$tmp" == "$owner" ]; then
             success "  o The owner of the node is $tmp, ok."
@@ -2694,7 +2960,10 @@ function check_node()
     fi
 
     if [ -n "$group" ]; then
-        tmp=$(s9s node --list --batch --node-format "%G\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%G\n" "$hostname")
 
         if [ "$tmp" == "$group" ]; then
             success "  o The group of the node is $tmp, ok."
@@ -2704,7 +2973,10 @@ function check_node()
     fi
 
     if [ -n "$cdt_path" ]; then
-        tmp=$(s9s node --list --batch --node-format "%h\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%h\n" "$hostname")
 
         if [ "$tmp" == "$cdt_path" ]; then
             success "  o The CDT path of the node is $tmp, ok."
@@ -2715,7 +2987,10 @@ function check_node()
     fi
 
     if [ -n "$status" ]; then
-        tmp=$(s9s node --list --batch --node-format "%S\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%S\n" "$hostname")
 
         if [ "$tmp" == "$status" ]; then
             success "  o The status of the node is $tmp, ok."
@@ -2725,7 +3000,10 @@ function check_node()
     fi
     
     if [ -n "$config" ]; then
-        tmp=$(s9s node --list --batch --node-format "%C\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%C\n" "$hostname")
 
         if [ "$tmp" == "$config" ]; then
             success "  o The config file of the node is $tmp, ok."
@@ -2735,7 +3013,10 @@ function check_node()
     fi
     
     if [ -n "$config_basename" ]; then
-        tmp=$(s9s node --list --batch --node-format "%C\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%C\n" "$hostname")
         tmp=$(basename "$tmp")
 
         if [ "$tmp" == "$config_basename" ]; then
@@ -2746,7 +3027,10 @@ function check_node()
     fi
     
     if [ -n "$no_maintenance" ]; then
-        tmp=$(s9s node --list --batch --node-format "%a\n" "$hostname")
+        tmp=$(s9s node \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --node-format "%a\n" "$hostname")
 
         if [ "$tmp" == "-" ]; then
             success "  o The maintenance of the node is '$tmp', ok."
@@ -2824,7 +3108,10 @@ function check_cluster()
     fi
 
     if [ -n "$config_file" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%C\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%C\n" "$cluster_name")
 
         if [ "$tmp" == "$config_file" ]; then
             success "  o The config file of the cluster is $tmp, ok."
@@ -2834,7 +3121,10 @@ function check_cluster()
     fi
     
     if [ -n "$log_file" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%L\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%L\n" "$cluster_name")
 
         if [ "$tmp" == "$log_file" ]; then
             success "  o The log file of the cluster is $tmp, ok."
@@ -2844,7 +3134,10 @@ function check_cluster()
     fi
     
     if [ -n "$owner" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%O\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%O\n" "$cluster_name")
 
         if [ "$tmp" == "$owner" ]; then
             success "  o The owner of the cluster is $tmp, ok."
@@ -2854,7 +3147,10 @@ function check_cluster()
     fi
     
     if [ -n "$group" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%G\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%G\n" "$cluster_name")
 
         if [ "$tmp" == "$group" ]; then
             success "  o The group of the cluster is $tmp, ok."
@@ -2864,7 +3160,10 @@ function check_cluster()
     fi
     
     if [ -n "$cdt_path" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%P\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%P\n" "$cluster_name")
 
         if [ "$tmp" == "$cdt_path" ]; then
             success "  o The CDT path of the cluster is $tmp, ok."
@@ -2874,7 +3173,10 @@ function check_cluster()
     fi
     
     if [ -n "$cluster_type" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%T\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%T\n" "$cluster_name")
 
         if [ "$tmp" == "$cluster_type" ]; then
             success "  o The type of the cluster is $tmp, ok."
@@ -2884,7 +3186,10 @@ function check_cluster()
     fi
 
     if [ -n "$cluster_state" ]; then
-        tmp=$(s9s cluster --list --batch --cluster-format "%S\n" "$cluster_name")
+        tmp=$(s9s cluster \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-format "%S\n" "$cluster_name")
 
         if [ "$tmp" == "$cluster_state" ]; then
             success "  o The state of the cluster is $tmp, ok."
@@ -2932,13 +3237,22 @@ function check_replication_state()
         return 1
     fi
 
-    state=$(s9s replication --list --batch --link-format="%s\n" --slave=$slave)
+    state=$(s9s replication \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --link-format="%s\n" --slave=$slave)
     if [ "$state" == "$expected_state" ]; then
         success "  o Replication state on $slave is $state, ok."
     else
         failure "Replication state is '$state', should be '$expected_state'."
-        mys9s replication --list --long
-        mys9s replication --list --long --slave=$slave
+        mys9s replication \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --long
+        mys9s replication \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --long --slave=$slave
         return 1
     fi
 
@@ -2977,7 +3291,10 @@ function check_group()
         esac
     done
     
-    mys9s user --list-groups --long 
+    mys9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list-groups --long 
 
     if [ -n "$group" ]; then
         success "  o received group name '$group' to test, ok"
@@ -2987,7 +3304,10 @@ function check_group()
     fi
 
     if [ -n "$owner_name" ]; then
-        tmp=$(s9s user --list-groups --long --batch $group | awk '{print $2}')
+        tmp=$(s9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list-groups --long --batch $group | awk '{print $2}')
 
         if [ "$tmp" == "$owner_name" ]; then 
             success "  o owner of the group is $tmp, ok"
@@ -2997,7 +3317,10 @@ function check_group()
     fi
     
     if [ -n "$group_owner_name" ]; then
-        tmp=$(s9s user --list-groups --long --batch $group | awk '{print $3}')
+        tmp=$(s9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list-groups --long --batch $group | awk '{print $3}')
 
         if [ "$tmp" == "$group_owner_name" ]; then 
             success "  o owner of the group is $tmp, ok"
@@ -3137,7 +3460,10 @@ function check_user()
     fi
 
     if [ -n "$option_full_name" ]; then
-        tmp=$(s9s user --list --batch --user-format="%F\n" "$user_name" | tr ' ' '_')
+        tmp=$(s9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --user-format="%F\n" "$user_name" | tr ' ' '_')
         tmp=$(echo "$tmp" | tr '_' ' ')
         if [ "$tmp" != "$option_full_name" ]; then
             failure "The full name should be name $option_full_name, not $tmp."
@@ -3159,7 +3485,10 @@ function check_user()
     fi
 
     if [ -n "$option_dn" ]; then
-        tmp=$(s9s user --list --batch --user-format="%d\n" "$user_name")
+        tmp=$(s9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --user-format="%d\n" "$user_name")
         if [ "$tmp" != "$option_dn" ]; then
             failure "Distinguished name should be name $option_dn, not $tmp."
         else
@@ -3168,7 +3497,10 @@ function check_user()
     fi
 
     if [ -n "$option_origin" ]; then
-        tmp=$(s9s user --list --batch --user-format="%o\n" "$user_name")
+        tmp=$(s9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --user-format="%o\n" "$user_name")
         if [ "$tmp" != "$option_origin" ]; then
             failure "The origin should be '$option_origin' and not '$tmp'."
         else
@@ -3177,7 +3509,10 @@ function check_user()
     fi
     
     if [ -n "$option_cdt_path" ]; then
-        tmp=$(s9s user --list --batch --user-format="%P\n" "$user_name")
+        tmp=$(s9s user \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --user-format="%P\n" "$user_name")
         if [ "$tmp" != "$option_cdt_path" ]; then
             failure "The CDT path should be '$option_cdt_path' and not '$tmp'."
         else
@@ -3243,7 +3578,10 @@ function check_container_server()
     # Checking the class is very important.
     #
     class=$(\
-        s9s server --stat "$container_server" \
+        s9s server \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat "$container_server" \
         | grep "Class:" | awk '{print $2}')
 
     if [ -n "$expected_class_name" ]; then
@@ -3264,7 +3602,10 @@ function check_container_server()
     mys9s tree --cat $file
     
     IFS=$'\n'
-    for line in $(s9s tree --cat --batch $file)
+    for line in $(s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --cat --batch $file)
     do
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print substr($0, index($0,$3))}')
@@ -3340,7 +3681,10 @@ function check_container_server()
     #    $file
 
     IFS=$'\n'
-    for line in $(s9s tree --cat --batch $file)
+    for line in $(s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --cat --batch $file)
     do
         name=$(echo "$line" | awk '{print $1}')
         value=$(echo "$line" | awk '{print $3}')
@@ -3402,11 +3746,17 @@ function check_container_server()
     #
     # Checking the regions.
     #
-    mys9s server --list-regions $cloud_option
+    mys9s server \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list-regions $cloud_option
 
     n_names_found=0
     IFS=$'\n'
-    for line in $(s9s server --list-regions --batch $cloud_option)
+    for line in $(s9s server \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list-regions --batch $cloud_option)
     do
         #echo "Checking line $line"
         the_credentials=$(echo "$line" | awk '{print $1}')
@@ -3436,11 +3786,17 @@ function check_container_server()
     #
     # Checking the templates.
     #
-    mys9s server --list-templates --long $cloud_option
+    mys9s server \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list-templates --long $cloud_option
 
     n_names_found=0
     IFS=$'\n'
-    for line in $(s9s server --list-templates --batch --long $cloud_option)
+    for line in $(s9s server \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list-templates --batch --long $cloud_option)
     do
         echo "Checking line $line"
         line=$(echo "$line" | sed -e 's/Southeast Asia/Southeast_Asia/g')
@@ -3524,6 +3880,8 @@ function check_entry()
     #    $full_path
 
     line=$(s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --list --long --full-path --recursive --directory --batch --all \
         $full_path)
 
@@ -3592,10 +3950,14 @@ EOF
 
     if false; then
         mys9s tree \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
             --cat \
             /.runtime/jobs/job_manager
     
         mys9s tree \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
             --cat \
             /.runtime/jobs/host_manager
     fi
@@ -3638,7 +4000,7 @@ EOF
         begin_verbatim
         echo " containers : $all_created_ip"
 
-        sudo ${PROJECT_S9S_TESTORIGIN_DIR}/pipscripts/pip-container-destroy \
+        pip-container-destroy \
             "$all_created_ip" \
             >/dev/null 2>/dev/null
         
@@ -3901,13 +4263,19 @@ function check_mysql_account()
 
     if [ -n "$account_name" ]; then
         success "  o Test account is '$account_name', ok."
-        tmp=$(s9s account --list --batch --cluster-id=1 "$account_name")
+        tmp=$(s9s account \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --batch --cluster-id=1 "$account_name")
         if [ "$tmp" == "$account_name" ]; then
             success "  o Account $account_name found in the list, ok."
         else
             failure "Account $account_name was not found in the list."
             #failure "tmp = '$tmp'"
-            mys9s account --list --long
+            mys9s account \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
+                --list --long
         fi
     else
         failure "Account name required."
@@ -4041,13 +4409,19 @@ function check_postgresql_account()
     
     if [ -n "$account_name" ]; then
         success "  o Test account is '$account_name', ok."
-        tmp=$(s9s account --list --cluster-id=1 --batch "$account_name")
+        tmp=$(s9s account \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list --cluster-id=1 --batch "$account_name")
         if [ "$tmp" == "$account_name" ]; then
             success "  o Account $account_name found in the list, ok."
         else
             failure "Account $account_name was not found in the list."
             #failure "tmp = '$tmp'"
-            mys9s account --list --long
+            mys9s account \
+                --cmon-user=${S9STEST_ADMIN_USER} \
+                --password=${S9STEST_ADMIN_USER_PASSWORD} \
+                --list --long
         fi
     else
         failure "Account name required."
@@ -4252,9 +4626,15 @@ function check_job_statistics()
     done
 
     if [ -n "$check_metatype" ]; then
-        mys9s metatype --list-properties --type=CmonJobStatistics --long
+        mys9s metatype \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list-properties --type=CmonJobStatistics --long
 
-        tmp=$(s9s metatype --list-properties --type=CmonJobStatistics)
+        tmp=$(s9s metatype \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list-properties --type=CmonJobStatistics)
         n=0
         for name in $tmp; do
             case "$name" in
@@ -4276,17 +4656,29 @@ function check_job_statistics()
         fi
     fi
 
-    mys9s job --list
+    mys9s job \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list
 
     cat <<EOF
-    s9s cluster --list --cluster-id=$cluster_id --print-json | \\
+    s9s cluster \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --cluster-id=$cluster_id --print-json | \\
         jq .cluster.job_statistics
 EOF
 
-    s9s cluster --list --cluster-id=1 --print-json | \
+    s9s cluster \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --cluster-id=1 --print-json | \
         jq .cluster.job_statistics
 
-    lines=$(s9s cluster --list --cluster-id=1 --print-json | \
+    lines=$(s9s cluster \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --list --cluster-id=1 --print-json | \
         jq .cluster.job_statistics)
 
     if [ -n "$scheduled" ]; then
@@ -4351,9 +4743,15 @@ function check_alarm_statistics()
     done
 
     if [ -n "$check_metatype" ]; then
-        mys9s metatype --list-properties --type=CmonAlarmStatistics --long
+        mys9s metatype \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list-properties --type=CmonAlarmStatistics --long
 
-        tmp=$(s9s metatype --list-properties --type=CmonAlarmStatistics)
+        tmp=$(s9s metatype \
+            --cmon-user=${S9STEST_ADMIN_USER} \
+            --password=${S9STEST_ADMIN_USER_PASSWORD} \
+            --list-properties --type=CmonAlarmStatistics)
         n=0
         for name in $tmp; do
             case "$name" in
@@ -4375,8 +4773,14 @@ function check_alarm_statistics()
         fi
     fi
 
-    mys9s alarm --stat --cluster-id=$cluster_id --print-json
-    lines=$(s9s alarm --stat --cluster-id=$cluster_id --batch --print-json)
+    mys9s alarm \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat --cluster-id=$cluster_id --print-json
+    lines=$(s9s alarm \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --stat --cluster-id=$cluster_id --batch --print-json)
 
     tmp=$(echo "$lines" | jq .alarm_statistics[0].class_name)
     if [ "$tmp" == '"CmonAlarmStatistics"' ]; then

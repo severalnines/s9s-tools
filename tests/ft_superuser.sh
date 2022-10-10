@@ -93,9 +93,6 @@ if [ -z "$OPTION_RESET_CONFIG" ]; then
     exit 6
 fi
 
-first=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f1)
-last=$(getent passwd $USER | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2)  
-
 #
 # Here is how we can bootsrat the system by creating a user with superuser
 # privileges and a password.
@@ -137,12 +134,12 @@ function testBoostrap()
         --group="admins" \
         --new-password="admin" \
         --controller="https://localhost:9501" \
-        --email-address=${TEST_EMAIL} \
-        --first-name="$first" \
-        --last-name="$last" \
+        --email-address=${S9STEST_ADMIN_USER_EMAIL} \
+        --first-name="Firstname" \
+        --last-name="Lastname" \
         $OPTION_PRINT_JSON \
         $OPTION_VERBOSE \
-        "$USER"
+        "superuser"
 
     check_exit_code_no_job $?
     end_verbatim
@@ -176,7 +173,7 @@ function testAuth()
     mys9s user \
         --list \
         --long \
-        --cmon-user="$USER" \
+        --cmon-user="superuser" \
         --password="admin"
 
     check_exit_code_no_job $?

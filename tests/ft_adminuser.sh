@@ -117,6 +117,11 @@ function testConfig()
     sudo cat $S9S_SYSTEM_CONFIG | print_ini_file
 }
 
+function testCreateUser()
+{
+    grant_user
+}
+
 #
 # Checking that the current user (created in grant_user()) can log in and can
 # view its own public key.
@@ -134,7 +139,7 @@ function testUser()
 
     mys9s user --whoami
     myself=$(s9s user --whoami)
-    if [ "$myself" != "$userName" ]; then
+    if [ "$myself" != "${S9STEST_USER}" ]; then
         failure "Failed to log in with public key ($myself)"
     else
         printVerbose "   myself : '$myself'"
@@ -148,8 +153,6 @@ function testUser()
 # Running the requested tests.
 #
 startTests
-reset_config --do-not-create
-create_s9s_config
 
 if [ "$1" ]; then
     for testName in $*; do
@@ -157,6 +160,7 @@ if [ "$1" ]; then
     done
 else
     runFunctionalTest testConfig
+    runFunctionalTest testCreateUser
     runFunctionalTest testUser
 fi
 

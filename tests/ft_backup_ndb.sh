@@ -109,6 +109,11 @@ while true; do
     esac
 done
 
+function testCreateUser()
+{
+    grant_user
+}
+
 #
 # This test will allocate a few nodes and install a new cluster.
 #
@@ -341,12 +346,14 @@ reset_config
 grant_user
 
 if [ "$OPTION_INSTALL" ]; then
+    runFunctionalTest testCreateUser
     runFunctionalTest testCreateCluster
 elif [ "$1" ]; then
     for testName in $*; do
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateUser
     runFunctionalTest testCreateCluster
     runFunctionalTest testCreateAccount
     #runFunctionalTest testCreateDatabase

@@ -188,6 +188,8 @@ EOF
     # Creating a Galera cluster.
     #
     mys9s cluster \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --create \
         --cluster-type=galera \
         --nodes="$nodes" \
@@ -210,7 +212,7 @@ EOF
 
     check_cluster \
         --cluster         "$CLUSTER_NAME" \
-        --owner           "$PROJECT_OWNER" \
+        --owner           "$S9STEST_ADMIN_USER" \
         --group           "admins" \
         --cdt-path        "/"
 
@@ -230,9 +232,11 @@ EOF
     begin_verbatim
     mys9s user \
         --create \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --group=users \
         --new-password=secret \
-        --email-address=${TEST_EMAIL} \
+        --email-address=${S9STEST_USER_EMAIL} \
         --first-name="Laszlo" \
         --last-name="Pere"   \
         "$TEST_USER_NAME"
@@ -252,7 +256,7 @@ EOF
     #
     #
     #
-    print_title "Adding Group ACL Entry"
+    print_subtitle "Adding Group ACL Entry"
     cat <<EOF
 We add an ACL entry to the cluster for the group 'users', then we check that the
 user previously created can see the cluster because of this ACL entry.
@@ -261,7 +265,10 @@ EOF
 
     begin_verbatim
     
-    mys9s tree --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --add-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_see_the_cluster
 
@@ -270,7 +277,7 @@ EOF
     #
     #
     #
-    print_title "Removing Group ACL Entry"
+    print_subtitle "Removing Group ACL Entry"
     cat <<EOF
 We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.
@@ -278,7 +285,10 @@ see the cluster at all.
 EOF
 
     begin_verbatim
-    mys9s tree --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --remove-acl --acl="group:users:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
     end_verbatim
@@ -286,7 +296,7 @@ EOF
     #
     #
     #
-    print_title "Adding User ACL Entry"
+    print_subtitle "Adding User ACL Entry"
     cat <<EOF
 We add an ACL entry to the cluster for the user '$TEST_USER_NAME', then we check that the
 user previously created can see the cluster because of this ACL entry.
@@ -294,7 +304,10 @@ user previously created can see the cluster because of this ACL entry.
 EOF
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --add-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_see_the_cluster
     end_verbatim
@@ -302,7 +315,7 @@ EOF
     #
     #
     #
-    print_title "Removing User ACL Entry"
+    print_subtitle "Removing User ACL Entry"
     cat <<EOF
 We remove the ACL entry and then check the everything is back, the user do not
 see the cluster at all.
@@ -310,7 +323,10 @@ see the cluster at all.
 EOF
     
     begin_verbatim
-    mys9s tree --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
+    mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
+        --remove-acl --acl="user:$TEST_USER_NAME:rw-" "$CLUSTER_NAME"
     check_exit_code_no_job $?
     user_should_not_see_the_cluster
     end_verbatim
@@ -330,6 +346,8 @@ EOF
 
     begin_verbatim
     mys9s user \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --add-to-group \
         --group=admins \
         "$TEST_USER_NAME"
@@ -358,6 +376,8 @@ EOF
 
     begin_verbatim
     mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
         --remove-from-group \
         --group=admins \
         "$TEST_USER_NAME"
@@ -373,6 +393,8 @@ function testChOwn()
 
     begin_verbatim
     s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --chown \
         --recursive \
         --owner=$TEST_USER_NAME:users \
@@ -382,9 +404,11 @@ function testChOwn()
     user_should_see_the_cluster
 
     s9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --chown \
         --recursive \
-        --owner=$PROJECT_OWNER:admins \
+        --owner=${S9STEST_ADMIN_USER}:admins \
         "/$CLUSTER_NAME"
 
     check_exit_code_no_job $?
@@ -398,6 +422,8 @@ function testDeleteUser()
    
     begin_verbatim
     mys9s tree \
+        --cmon-user=${S9STEST_ADMIN_USER} \
+        --password=${S9STEST_ADMIN_USER_PASSWORD} \
         --chown \
         --recursive \
         --owner=$TEST_USER_NAME:users \
@@ -408,7 +434,11 @@ function testDeleteUser()
     #
     # Deleting the user, printing the tree.
     #
-    mys9s user --delete "$TEST_USER_NAME"
+    mys9s user \
+        --cmon-user="${S9STEST_ADMIN_USER}" \
+        --password="${S9STEST_ADMIN_USER_PASSWORD}" \
+        --delete "$TEST_USER_NAME"
+
     check_exit_code_no_job $?
 
     mys9s tree --list --long --recursive --all 

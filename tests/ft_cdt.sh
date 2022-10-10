@@ -117,7 +117,7 @@ function index_table()
 
 function testCreateUser()
 {
-    return grant_user
+    grant_user
 }
 
 function testRootFolder()

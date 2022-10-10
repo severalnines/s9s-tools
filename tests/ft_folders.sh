@@ -121,14 +121,14 @@ EOF
 
     check_exit_code_no_job $?
     check_entry \
-        --user         "$USER"      \
-        --group        "testgroup"  \
+        --user         "$S9STEST_USER"      \
+        --group        "users"  \
         --acl          "drwxrwxrwx" \
         "/home"
     
     check_entry \
-        --user         "$USER"      \
-        --group        "testgroup"  \
+        --user         "$S9STEST_USER"      \
+        --group        "users"  \
         --acl          "drwxrwxrwx" \
         "/home/$PROJECT_OWNER"
 
@@ -168,8 +168,8 @@ EOF
     check_exit_code_no_job $?
    
     check_entry \
-        --user         "$USER"      \
-        --group        "testgroup"  \
+        --user         "$S9STEST_USER"      \
+        --group        "users"  \
         --acl          "drwxrwxrwx" \
         "/$folder_name"
     
@@ -210,8 +210,8 @@ EOF
     check_exit_code_no_job $?
 
     check_entry \
-        --user         "$USER"      \
-        --group        "testgroup"  \
+        --user         "$S9STEST_USER"      \
+        --group        "users"  \
         --acl          "-rwxrwxrwx" \
         --size         "0"          \
         "$path"
@@ -224,8 +224,8 @@ EOF
     check_exit_code_no_job $?
     
     check_entry \
-        --user         "$USER"      \
-        --group        "testgroup"  \
+        --user         "$S9STEST_USER"      \
+        --group        "users"  \
         --acl          "-rwxrwxrwx" \
         --size         "29"         \
         "$new_path"

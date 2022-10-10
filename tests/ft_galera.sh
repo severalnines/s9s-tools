@@ -1,6 +1,6 @@
 #! /bin/bash
 MYNAME=$(basename $0)
-MYBASENAME="ftgalera" #$(basename $0 .sh)
+MYBASENAME=$(basename $0 .sh)
 MYDIR=$(dirname $0)
 STDOUT_FILE=ft_errors_stdout
 VERBOSE=""
@@ -906,7 +906,7 @@ function testStart()
 #
 startTests
 reset_config
-grant_user
+grant_user --group "testgroup"
 
 if [ "$OPTION_INSTALL" ]; then
     if [ -n "$1" ]; then

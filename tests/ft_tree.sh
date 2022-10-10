@@ -158,9 +158,12 @@ function testCreateUser()
                 ;;
 
             *)
-                if [ "$PROJECT_OWNER" == "$name" ]; then
+                if [ "$S9STEST_USER" == "$name" ]; then
                     let columns_found+=1
-                    [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+                    [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
+                elif [ "$S9STEST_ADMIN_USER" == "$name" ]; then
+                    let columns_found+=1
+                    [ "$owner" != "$S9STEST_ADMIN_USER" ] && failure "Owner is '$owner'."
                 else
                     failure "Unexpected name '$name'."
                 fi
@@ -191,7 +194,7 @@ EOF
         --cmon-user="system" \
         --password="secret" \
         --group="admins" \
-        --email-address=${TEST_EMAIL} \
+        --email-address=${S9STEST_ADMIN_USER_EMAIL} \
         --first-name="Cmon" \
         --last-name="Administrator"   \
         --generate-key \
@@ -247,14 +250,14 @@ function testLicenseUpload()
     cat <<EOF
   This test will try to upload a license to the controller. Both valid and
   invalid attempts are tested. Here is an example how we do that:
-
+<pre>
     echo "\$license" | \\
         s9s tree \\
             --save \\
             --cmon-user=system \\
             --password=secret \\
             "/.runtime/cmon_license"
-
+</pre>
 EOF
 
     begin_verbatim
@@ -334,9 +337,9 @@ EOF
 
     retCode=$?
     if [ $retCode -eq 0 ]; then
-        success "  o Superuser can read the license file, ok."
+        success "  o Superuser can upload the license file, ok."
     else
-        failure "Superuser should be able to read the license."
+        failure "Superuser should be able to upload the license."
     fi
    
     #
@@ -405,7 +408,7 @@ EOF
 
         case $name in 
             $CONTAINER_SERVER)
-                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+                [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 object_found="yes"
@@ -487,7 +490,7 @@ EOF
 
         case $name in 
             $container_name)
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is '$owner', ok"
@@ -583,7 +586,7 @@ EOF
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
 
-        if [ "$owner" != "$PROJECT_OWNER" ]; then
+        if [ "$owner" != "$S9STEST_USER" ]; then
             failure "Owner of '$name' is '$owner'."
         else
             success "  o owner of '$name' is '$owner', ok"
@@ -1040,7 +1043,7 @@ EOF
         case "$name" in 
             domain_names_diff)
                 success "  o database $name found, ok"
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is $owner, ok"
@@ -1063,7 +1066,7 @@ EOF
 
             domain_names_ngtlds_diff)
                 success "  o database $name found, ok"
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is $owner, ok"
@@ -1086,7 +1089,7 @@ EOF
 
             whois_records_delta)
                 success "  o database $name found, ok"
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner is '$owner'."
                 else
                     success "  o owner is $owner, ok"
@@ -1290,7 +1293,7 @@ EOF
     mys9s account \
         --create \
         --cluster-name="galera_001" \
-        --account="$PROJECT_OWNER:$PROJECT_OWNER" \
+        --account="$S9STEST_USER:$S9STEST_USER" \
         --privileges="*.*:ALL"
 
     check_exit_code_no_job $?
@@ -1504,7 +1507,7 @@ function _my_check()
         case "$name" in 
             /$CLUSTER_NAME)
                 echo ""
-                if [ "$owner" != "$PROJECT_OWNER" ]; then 
+                if [ "$owner" != "$S9STEST_USER" ]; then 
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1527,7 +1530,7 @@ function _my_check()
 
             /$CLUSTER_NAME/databases/domain_names_diff)
                 echo ""
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1550,7 +1553,7 @@ function _my_check()
 
             /$CONTAINER_SERVER)
                 echo ""
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1573,7 +1576,7 @@ function _my_check()
 
             /$CONTAINER_SERVER/containers)
                 echo ""
-                if [ "$owner" != "$PROJECT_OWNER" ]; then
+                if [ "$owner" != "$S9STEST_USER" ]; then
                     failure "Owner of $name is '$owner'."
                 else
                     success "  o Owner of $name is '$owner', OK."
@@ -1611,7 +1614,7 @@ function testMoveObjects()
     local owner
     local group
 
-    TEST_PATH="/home/$PROJECT_OWNER"
+    TEST_PATH="/home/$S9STEST_USER"
 
     #
     #
@@ -1631,7 +1634,7 @@ EOF
     mys9s tree --mkdir "$TEST_PATH"
     mys9s tree --move "/$CONTAINER_SERVER" "$TEST_PATH"
     mys9s tree --move "/$CLUSTER_NAME" "$TEST_PATH"
-    mys9s tree --move "/$PROJECT_OWNER" "$TEST_PATH"
+    mys9s tree --move "/$S9STEST_USER" "$TEST_PATH"
 
     mysleep 60
 
@@ -1661,29 +1664,29 @@ EOF
         owner=$(echo "$line" | awk '{print $3}')
         group=$(echo "$line" | awk '{print $4}')
         case "$name" in
-            /home/$PROJECT_OWNER/$PROJECT_OWNER)
-                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+            /home/$S9STEST_USER/$S9STEST_USER)
+                [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
                 [ "$group" != "admins" ] && failure "Group is '$group'."
                 [ "$mode"  != "urwxr--r--" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /home/$PROJECT_OWNER/$CLUSTER_NAME)
-                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+            /home/$S9STEST_USER/$CLUSTER_NAME)
+                [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "crwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /home/$PROJECT_OWNER/$CONTAINER_SERVER)
-                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+            /home/$S9STEST_USER/$CONTAINER_SERVER)
+                [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "srwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
                 ;;
 
-            /home/$PROJECT_OWNER/$CLUSTER_NAME/databases/domain_names_diff)
-                [ "$owner" != "$PROJECT_OWNER" ] && failure "Owner is '$owner'."
+            /home/$S9STEST_USER/$CLUSTER_NAME/databases/domain_names_diff)
+                [ "$owner" != "$S9STEST_USER" ] && failure "Owner is '$owner'."
                 [ "$group" != "users" ] && failure "Group is '$group'."
                 [ "$mode"  != "brwxrwx---" ] && failure "Mode is '$mode'." 
                 let n_object_found+=1
@@ -1706,7 +1709,7 @@ function testStats()
     print_title "Checking CDT Path of Objects"
 
     begin_verbatim
-    mys9s user --stat "$USER"
+    mys9s user --stat "$S9STEST_USER"
     
     mys9s server --stat
     mys9s server --list --long
@@ -1722,7 +1725,7 @@ function testStats()
 #
 function testAclChroot()
 {
-    clusterPath="/home/$USER/galera_001"
+    clusterPath="/home/$S9STEST_USER/galera_001"
     print_title "Checking getAcl replies"
 
     begin_verbatim
@@ -1746,9 +1749,9 @@ function testAclChroot()
 
     THE_NAME=$(s9s tree --get-acl --print-json $clusterPath | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json $clusterPath | jq .object_path)
-    if [ "$THE_PATH" != '"/home/$PROJECT_OWNER"' ]; then
+    if [ "$THE_PATH" != '"/home/$S9STEST_USER"' ]; then
         s9s tree --get-acl --print-json $clusterPath | jq .
-        failure "The path should be '/home/$PROJECT_OWNER' in getAcl reply, not '$THE_PATH'."
+        failure "The path should be '/home/$S9STEST_USER' in getAcl reply, not '$THE_PATH'."
     else
         success "  o path is '$THE_PATH', ok"
     fi
@@ -1762,9 +1765,9 @@ function testAclChroot()
 
     THE_NAME=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_name)
     THE_PATH=$(s9s tree --get-acl --print-json $clusterPath/databases | jq .object_path)
-    if [ "$THE_PATH" != '"/home/$PROJECT_OWNER/galera_001"' ]; then
+    if [ "$THE_PATH" != '"/home/$S9STEST_USER/galera_001"' ]; then
         s9s tree --get-acl --print-json $clusterPath/databases | jq .
-        failure "The path should be '/home/$PROJECT_OWNER/galera_001' in getAcl reply."
+        failure "The path should be '/home/$S9STEST_USER/galera_001' in getAcl reply."
     else
         success "  o path is '$THE_PATH', ok"
     fi
@@ -1784,7 +1787,7 @@ function testAclChroot()
 #
 function testCreateFolder()
 {
-    local folder_name="/home/$PROJECT_OWNER/tmp"
+    local folder_name="/home/$S9STEST_USER/tmp"
 
     print_title "Creating directory"
 
@@ -1802,12 +1805,12 @@ function testCreateFolder()
 #
 function testAddAcl()
 {
-    local folder_name="/home/$PROJECT_OWNER/tmp"
+    local folder_name="/home/$S9STEST_USER/tmp"
 
     print_title "Adding an ACL Entry"
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:$PROJECT_OWNER:rwx" $folder_name
+    mys9s tree --add-acl --acl="user:$S9STEST_USER:rwx" $folder_name
     check_exit_code_no_job $?
 
     mys9s tree --get-acl $folder_name
@@ -1816,7 +1819,7 @@ function testAddAcl()
 
 function testChangeOwner()
 {
-    local folder_name="/home/$PROJECT_OWNER/tmp"
+    local folder_name="/home/$S9STEST_USER/tmp"
 
     #
     # Changing the owner
@@ -1856,10 +1859,10 @@ function testTree()
     print_title "Printing and Checking Tree"
     
     begin_verbatim
-    mys9s tree --list /home/$PROJECT_OWNER
-    mys9s tree --list --long /home/$PROJECT_OWNER
+    mys9s tree --list /home/$S9STEST_USER
+    mys9s tree --list --long /home/$S9STEST_USER
 
-    for name in $(s9s tree --list /home/$PROJECT_OWNER); do
+    for name in $(s9s tree --list /home/$S9STEST_USER); do
         case "$name" in
             $CLUSTER_NAME)
                 let n_object_found+=1
@@ -1874,7 +1877,7 @@ function testTree()
                 ;;
 
             *)
-                if [ "$PROJECT_OWNER" == "$name" ]; then
+                if [ "$S9STEST_USER" == "$name" ]; then
                     let n_object_found+=1
                 fi
 
@@ -1963,8 +1966,6 @@ function deleteContainers()
 # Running the requested tests.
 #
 startTests
-reset_config
-grant_user
 
 if [ "$OPTION_INSTALL" ]; then
     if [ "$*" ]; then

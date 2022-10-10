@@ -127,7 +127,4 @@ PROJECT_SCRIPT_ROOT=${PROJECT_CC_TESTORIGIN_DIR}/tests/scripts/test_ui
 if [ "${PROJECT_OWNER}" = "" ]; then
     PROJECT_OWNER="$USER"
 fi
-if [ "${PROJECT_OWNER_CC_PASSWORD}" = "" ]; then
-    PROJECT_OWNER_CC_PASSWORD="pwd"
-fi
 

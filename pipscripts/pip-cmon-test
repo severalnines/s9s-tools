@@ -643,6 +643,11 @@ function daemon_log_file_name()
     echo "$(result_file_name_base).dlog"
 }
 
+function error_report_file_name()
+{
+    echo "$(result_file_name_base).error_report.tar.gz"
+}
+
 function ft_test_ended()
 {
     local exit_code="$1"
@@ -890,6 +895,30 @@ function stop_or_kill_cmon()
     fi
 }
 
+function cleanup_test_host()
+{
+    run_silent sudo rm -f /var/log/cmon.log
+    run_silent sudo rm -f /tmp/cmon_1.log
+    run_silent sudo rm -f /tmp/cmon_*.log
+    run_silent sudo rm -f /tmp/BACKUP-*
+    run_silent sudo rm -fr /var/log/cmon
+    run_silent sudo rm -f /var/log/cmon*
+    run_silent sudo rm -fr /var/lib/cmon
+    run_silent sudo rm -f /var/lib/cmon*
+    run_silent sudo rm -f /etc/cmon.d/*.cnf
+    run_silent sudo rm -f /root/.s9s/s9s.conf
+    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak
+    #.$(date +%Y%m%d%H%M)
+    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak
+    #.$(date +%Y%m%d%H%M)
+
+    # FIXME Why rm -rvf /etc/cmon.d/*.cnf is not working
+    # and why below is working?:
+    for file in $(sudo ls /etc/cmon.d/ -1); do
+        sudo rm -fr "/etc/cmon.d/$file";
+    done
+}
+
 function run_s9s_ft_test()
 {
     local return_code
@@ -921,15 +950,7 @@ function run_s9s_ft_test()
         stop_or_kill_cmon "$backend_pid"
     fi
 
-    run_silent sudo rm -fvr /var/log/cmon.log
-    run_silent sudo rm -rvf /tmp/cmon*
-    run_silent sudo rm -rvf /tmp/BACKUP-*
-    run_silent sudo rm -rvf /var/log/cmon*
-    run_silent sudo rm -rvf /var/lib/cmon*
-    run_silent sudo rm -rvf /etc/cmon.d/*
-    run_silent sudo rm -rvf /root/.s9s/s9s.conf
-    run_silent sudo mv -v /etc/s9s.conf /etc/s9s.conf.bak.$(date +%Y%m%d%H%M)
-    run_silent sudo mv -v /home/${USER}/.s9s/s9s.conf /home/${USER}/.s9s/s9s.conf.bak.$(date +%Y%m%d%H%M)
+    cleanup_test_host
 
     #
     # Start cmon
@@ -963,6 +984,8 @@ function run_s9s_ft_test()
 
     pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
+    changedir "${PROJECT_S9S_TESTORIGIN_DIR}/tests"
+
     timeout --kill-after=92m 90m ./$OPTION_TEST_NAME \
         --print-commands \
         --reset-config \
@@ -977,10 +1000,11 @@ function run_s9s_ft_test()
     # Starting a watcher that keeps collecting the output...
     #
 
-    collect_test_log_files --pid "$test_pid" "RUNNING"
+    #collect_test_log_files --pid "$test_pid" "RUNNING"
+    collect_test_log_files "RUNNING"
 
-    watcher_pid=$!
-    printVerbose "Watcher PID is ${watcher_pid}."
+    #watcher_pid=$!
+    #printVerbose "Watcher PID is ${watcher_pid}."
     save_slog_file
 
     #
@@ -993,14 +1017,35 @@ function run_s9s_ft_test()
 
     printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
 
-    printVerbose "Waiting for test watcher to end..."
-    wait "$watcher_pid" 2>> $LOGFILE
+    collect_test_log_files "RUNNING"
+
+    #printVerbose "Waiting for test watcher to end..."
+    #wait "$watcher_pid" 2>> $LOGFILE
 
     changedir "${PROJECT_CC_WORKER_DIR}/tests"
 
     ft_test_ended \
         "$return_code" \
         "$backend_pid"
+
+    #
+    # Lets collect error report
+    #
+
+    CID=$(s9s cluster --list --long | head -n 2 | tail -n 1 | awk '{print $1}')
+    if [ "$CID" = "" -o "$CID" = "0" ]; then
+        CID="1"
+    fi
+    error_report_file_dirty=$(sudo s9s_error_reporter -i ${CID} -d "$HOME" | grep "Please attach" | awk '{print $3}')
+    error_report_file=$(echo "${error_report_file_dirty}" | ansi2txt)
+    if [ "${error_report_file}" != "" ]; then
+        run_silent sudo chown ${PROJECT_OWNER}:${PROJECT_OWNER} ${error_report_file}
+        err_report_file="$(error_report_file_name)"
+        run_silent mv -f "${error_report_file}" "${PROJECT_TEST_REPORT_DIR}/${err_report_file}"
+        printVerbose "Generated error report ${err_report_file}"
+    else
+        printVerbose "Failed to generate error report or to find report file."
+    fi
 
     #
     # Cleaning up after.
@@ -1027,6 +1072,8 @@ function run_cc_ft_test()
     local logfile
 
     logfile="${PROJECT_TEST_REPORT_DIR}/$(log_file_name)"
+
+    cleanup_test_host
 
     #
     # Notifying the user about a test is starting.
@@ -1062,9 +1109,10 @@ function run_cc_ft_test()
 
     test_pid=$!
 
-    collect_test_log_files --pid "$test_pid" "RUNNING"
+    #collect_test_log_files --pid "$test_pid" "RUNNING"
+    collect_test_log_files "RUNNING"
 
-    watcher_pid=$!
+    #watcher_pid=$!
     wait "$test_pid"
     return_code=$?
 
@@ -1126,8 +1174,10 @@ function run_s9s_ut_test()
 
     pip-host-control --testing --status="Running $OPTION_TEST_NAME"
 
+    echo "<pre>" >>$logfile 2>>$logfile
     $OPTION_TEST_NAME/$OPTION_TEST_NAME --color --verbose >>$logfile 2>>$logfile
     return_code=$?
+    echo "</pre>" >>$logfile 2>>$logfile
 
     printVerbose "Finished ${OPTION_TEST_NAME} ($return_code)."
     if [ $return_code -eq 0 ]; then

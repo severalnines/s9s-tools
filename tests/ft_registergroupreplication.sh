@@ -97,6 +97,11 @@ done
 
 reset_config
 
+function testCreateUser()
+{
+    grant_user
+}
+
 
 #
 # This test will allocate a few nodes and install a new cluster.
@@ -214,6 +219,7 @@ if [ "$1" ]; then
         runFunctionalTest "$testName"
     done
 else
+    runFunctionalTest testCreateUser
     runFunctionalTest testCreateCluster
     runFunctionalTest testDrop
     runFunctionalTest testRegister

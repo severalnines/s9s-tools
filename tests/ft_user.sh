@@ -133,7 +133,7 @@ function index_table()
 #
 function testUser()
 {
-    local userName="$USER"
+    local userName="$S9STEST_USER"
     local myself
 
     #
@@ -170,7 +170,7 @@ EOF
 
 function testUserManager()
 {
-    local userName="$USER"
+    local userName="$S9STEST_USER"
     print_title "Giving the Right to Create Users"
     cat <<EOF | paragraph
 Giving the user '$userName' the right to create other users.
@@ -193,7 +193,7 @@ EOF
 #
 function testStat()
 {
-    local userName="$USER"
+    local userName="$S9STEST_USER"
     local lines
 
     #
@@ -225,8 +225,8 @@ function testStat()
         return 1
     fi
     
-    if ! echo "$lines" | grep -q "Owner: ${PROJECT_OWNER}/admins"; then
-        failure "Owner is not '${PROJECT_OWNER}/admin' in --stat."
+    if ! echo "$lines" | grep -q "Owner: ${S9STEST_USER}/admins"; then
+        failure "Owner is not '${S9STEST_USER}/admin' in --stat."
         return 1
     fi
 
@@ -785,8 +785,8 @@ EOF
     # After creating all these users the logged in user should still be me.
     #
     myself=$(s9s user --whoami)
-    if [ "$myself" != "$USER" ]; then
-        failure "The logged in user should be '$USER' instead of '$myself'."
+    if [ "$myself" != "$S9STEST_USER" ]; then
+        failure "The logged in user should be '$S9STEST_USER' instead of '$myself'."
         return 1
     fi
 
@@ -1066,7 +1066,7 @@ function testPrivateKey()
 #
 function testSetGroup()
 {
-    local user_name="$USER"
+    local user_name="$S9STEST_USER"
     local group_name="admins"
     local actual_group_name
 
@@ -1086,7 +1086,7 @@ EOF
         --group=admins \
         --cmon-user=system \
         --password=secret \
-        ${PROJECT_OWNER}
+        ${S9STEST_USER}
 
     check_exit_code_no_job $?
 
@@ -1098,7 +1098,7 @@ EOF
     fi
 
     mys9s user --list --long
-    mys9s user --stat "$USER"
+    mys9s user --stat "$S9STEST_USER"
     end_verbatim
 }
 
@@ -1114,7 +1114,11 @@ user object.
 EOF
 
     begin_verbatim
-    mys9s tree --add-acl --acl="user:${USER}:rwx" /sisko
+
+    message "  o sometimes cmon is slow to update cdt tree, lets give it a minute"
+    sleep 60
+
+    mys9s tree --add-acl --acl="user:${S9STEST_USER}:rwx" /sisko
     check_exit_code_no_job $?
 
     acl=$(s9s tree --list --long sisko --batch | awk '{print $1}')
@@ -1637,7 +1641,7 @@ EOF
     
     check_group \
         --group-name   "tmpgroup" \
-        --owner-name   "${PROJECT_OWNER}"    \
+        --owner-name   "${S9STEST_USER}"    \
         --group-owner  "admins"
     
     check_log_messages \
@@ -1675,6 +1679,15 @@ EOF
     end_verbatim
 }
 
+#
+# For this to work install the below.
+# Postfix should be set up for local only and the hostname should be
+# the same that is in /etc/hostname
+#   sudo apt-get install postfix
+#   sudo apt-get install mailutils
+# After these /var/mail/${PROJCT_OWNER} file should contain the mails
+#
+
 function checkPasswordReset()
 {
     local retCode
@@ -1688,6 +1701,12 @@ function checkPasswordReset()
 EOF
     
     begin_verbatim
+
+
+    mailFile="/var/mail/${PROJECT_OWNER}"
+    sudo truncate --size=0 "$mailFile"
+
+
     rm -rf "/tmp/cmon/emails/outgoing/"
     mys9s user --password-reset --cmon-user admin 
 
@@ -1701,45 +1720,37 @@ EOF
     #
     # Sending the password reset mail.
     #
-    mys9s user --password-reset --cmon-user system
+    mys9s user --password-reset --cmon-user ${S9STEST_USER}
     retCode=$?
-    
-    mailFile="/tmp/cmon/emails/outgoing/system@mynewdomain.com/email_0000.json";
-    if [ -f "$mailFile" ]; then
-        cat $mailFile | jq .
-    fi
 
     if [ $retCode -eq 0 ]; then
         success "  o Password reset request is succeeded, ok."
     else
-        failure "Password reset failed."
+        failure "Password reset failed with exit code $retCode."
     fi
 
     if [ -f "$mailFile" ]; then
         success "  o The mail is found, ok."
+        message "  o Token line is $(sudo cat $mailFile | grep "\-\-token")"
+        sudo cat "$mailFile" > /dev/null
     else
         failure "The mail is not found in '$mailFile'."
     fi
-        
 
-    token=$(cat $mailFile | \
-        jq .elements[0].values | \
-        jq '.["@PASSWORD_RESET_TOKEN@"]')
+    token=$(sudo cat $mailFile | grep "\-\-token" | awk '{print $1}' | cut -d'=' -f2)
     if [ -n "$token" ]; then
         success "  o The token is '$token', ok"
     else
         failure "Token not found."
     fi
-    
-    recipient=$(cat $mailFile | \
-        jq .elements[0].values | \
-        jq '.["@RECIPIENT@"]')
+   
+    recipient=$(cat $mailFile | grep "^To: " | cut -d' ' -f2)
     if [ -n "$recipient" ]; then
         success "  o The recpient found ('$recipient'), ok"
-        if [ "$recipient" == '"system@mynewdomain.com"' ]; then
+        if [ "$recipient" == "${S9STEST_USER_EMAIL}" ]; then
             success "  o Recipient is correct, ok."
         else
-            failure "Recipient should be \"system@mynewdomain.com\"."
+            failure "Recipient should be \"${S9STEST_USER_EMAIL}\"."
         fi
     else
         failure "Recipient not found."
@@ -1752,17 +1763,17 @@ EOF
 
     mys9s user \
         --password-reset \
-        --cmon-user=system \
+        --cmon-user=${S9STEST_USER} \
         --token=$token \
         --new-password="newpassword"
 
     check_exit_code_no_job $?
 
-    mys9s user --whoami --cmon-user="system" --password="newpassword"
+    mys9s user --whoami --cmon-user="${S9STEST_USER}" --password="newpassword"
     check_exit_code_no_job $?
     
     check_log_messages \
-        --cmon-user    "system" \
+        --cmon-user    "${S9STEST_USER}" \
         --password     "newpassword" \
         "Created password reset token" \
         "Password reset token is validated"
