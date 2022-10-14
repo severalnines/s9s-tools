@@ -6610,6 +6610,9 @@ S9sRpcClient::stageSlave()
 
     if (options->hasSynchronous())
         jobData["synchronous"] = options->isSynchronous();
+
+    if (options->hasFailStopSlave())
+        jobData["fail_stop_slave"] = "true";
      
     // The jobspec describing the command.
     jobSpec["command"]    = "stage_replication_slave";

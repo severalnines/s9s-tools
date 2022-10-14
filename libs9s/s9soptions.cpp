@@ -63,6 +63,7 @@ enum S9sOptionType
     OptionNoHeader,
     OptionNodes,
     OptionSlave,
+    OptionFailStopSlave,
     OptionMaster,
     OptionServers,
     OptionContainers,
@@ -4591,6 +4592,16 @@ S9sOptions::hasSynchronous() const
 {
     return m_options.contains("synchronous");
 }
+
+/**
+ * \returns if CLI has the --fail-stop-slave command line option
+ */
+bool
+S9sOptions::hasFailStopSlave() const
+{
+    return m_options.contains("fail_stop_slave");
+}
+
 
 /**
  * \returns the value of the --semi-sync=BOOL command line option
@@ -9383,6 +9394,7 @@ S9sOptions::readOptionsReplication(
         { "replication-master",required_argument, 0, OptionMaster         },
         { "replication-slave",required_argument, 0, OptionSlave           },
         { "slave",            required_argument, 0, OptionSlave           },
+        { "fail-stop-slave",  no_argument,       0, OptionFailStopSlave   },
 
         { 0, 0, 0, 0 }
     };
@@ -9621,6 +9633,11 @@ S9sOptions::readOptionsReplication(
                 // --slave=STRING
                 if (!setSlave(optarg))
                     return false;
+                break;
+
+            case OptionFailStopSlave:
+                // --fail-stop-slave
+                m_options["fail_stop_slave"] = true;
                 break;
 
             case '?':

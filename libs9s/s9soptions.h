@@ -510,6 +510,7 @@ class S9sOptions
         bool isStageRequested() const;
         bool isSynchronous() const;
         bool hasSynchronous() const;
+        bool hasFailStopSlave() const;
         bool isSemiSync() const;
         bool hasSemiSync() const;
         bool isToggleSyncRequested() const;
