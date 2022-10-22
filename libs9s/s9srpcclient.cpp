@@ -10499,14 +10499,17 @@ S9sRpcClient::executeRequest(
     {
         S9sString      hostName;
         int            port = 0;
+        S9sString      role;
 
         retval = doExecuteRequest(uri, request);
             
         if (retval && m_priv->m_reply.isRedirect())
             m_priv->rememberRedirect();
 
-        if (retval && m_priv->m_reply.isRedirect())
+        if (!retval || !m_priv->m_reply.isRedirect())
         {
+            break;
+        } else {
             S9sVariantMap        controllers;
             S9sVariantMap        controller;
             S9sVector<S9sString> keys;
@@ -10535,11 +10538,19 @@ S9sRpcClient::executeRequest(
                 controller = controllers[key].toVariantMap();
                 hostName   = controller["hostname"].toString();
                 port       = controller["port"].toInt();
+                role       = controller["role"].toString();
 
                 if (m_priv->m_hostName == hostName &&
                         m_priv->m_port == port)
                 {
                     PRINT_VERBOSE("We just tried this %s.", STR(key));
+                    continue;
+                }
+
+                if (role != "leader")
+                {
+                    PRINT_VERBOSE("Controller %s is not leader, skip it.",
+                            STR(key));
                     continue;
                 }
 
@@ -10569,8 +10580,6 @@ S9sRpcClient::executeRequest(
                 PRINT_VERBOSE("Too many redirects (%d), aborting.", nTry);
                 break;
             }
-        } else {
-            break;
         }
     }
 
