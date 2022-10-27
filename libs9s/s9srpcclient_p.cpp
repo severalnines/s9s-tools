@@ -334,6 +334,8 @@ S9sRpcClientPrivate::write(
     if (0 < retval)
     {
         PRINT_LOG("Data written to server:\n%.*s", data, length);
+    } else {
+        PRINT_LOG("Data write retval is %ld", retval);
     }
 
     return retval;
@@ -377,6 +379,8 @@ S9sRpcClientPrivate::read(
     if (0 < retval)
     {
         PRINT_LOG("Data read from server:\n%.*s", buffer, retval);
+    } else {
+        PRINT_LOG("Data read retval is %ld", retval);
     }
 
     return retval;
