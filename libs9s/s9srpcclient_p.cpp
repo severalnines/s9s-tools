@@ -333,7 +333,7 @@ S9sRpcClientPrivate::write(
 
     if (0 < retval)
     {
-        PRINT_LOG("Data written to server:\n%.*s", length, retval);
+        PRINT_LOG("Data written to server:\n%.*s", data, length);
     }
 
     return retval;
