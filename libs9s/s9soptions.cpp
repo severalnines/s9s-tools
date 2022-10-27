@@ -13257,6 +13257,13 @@ S9sOptions::readOptionsCluster(
                 m_options["storage_host"] = optarg;
                 break;
 
+            // main options
+
+            case OptionLogFile:
+                // --log-file=FILE
+                m_options["log_file"] = optarg;
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
