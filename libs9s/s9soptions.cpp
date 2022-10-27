@@ -3276,7 +3276,7 @@ S9sOptions::pitrStopTime() const
 int
 S9sOptions::clusterDecryptionKey() const
 {
-    uint retval;
+    uint retval = 0;
 
     if (m_options.contains("cluster_decryption_key"))
     {
