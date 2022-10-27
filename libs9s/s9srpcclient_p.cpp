@@ -316,7 +316,7 @@ S9sRpcClientPrivate::write(
 {
     ssize_t retval = -1;
 
-    PRINT_LOG("Writing to server.");
+    //PRINT_LOG("Writing to server.");
 
     if (m_ssl)
     {
@@ -325,17 +325,17 @@ S9sRpcClientPrivate::write(
     }
 
     do {
-        PRINT_LOG("::write(%d, %p, %lu)", m_socketFd, data, length);
+        //PRINT_LOG("::write(%d, %p, %lu)", m_socketFd, data, length);
         retval = ::write(m_socketFd, data, length);
     } while (retval == -1 && errno == EINTR);
 
-    PRINT_LOG("Written %zd bytes to server.", retval);
+    //PRINT_LOG("Written %zd bytes to server.", retval);
 
     if (0 < retval)
     {
-        PRINT_LOG("Data written to server:\n%.*s", length, data);
+        //PRINT_LOG("Data written to server:\n%.*s", length, data);
     } else {
-        PRINT_LOG("Data write retval is %ld", retval);
+        //PRINT_LOG("Data write retval is %ld", retval);
     }
 
     return retval;
@@ -352,10 +352,10 @@ S9sRpcClientPrivate::read(
     ssize_t retval = -1;
     int     loopCount = 0;
 
-    PRINT_LOG("Reading from server.");
+    //PRINT_LOG("Reading from server.");
     if (m_ssl)
     {
-        PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
+        //PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
         do {
             retval = SSL_read(m_ssl, buffer, bufSize);
 
@@ -365,7 +365,7 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EAGAIN);
     } else {
         do {
-            PRINT_LOG("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
+            //PRINT_LOG("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
             retval = ::read(m_socketFd, buffer, bufSize);
 
             loopCount += 1;
@@ -374,13 +374,13 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EINTR);
     }
 
-    PRINT_LOG("Received %zd bytes from server.", retval);
+    //PRINT_LOG("Received %zd bytes from server.", retval);
 
     if (0 < retval)
     {
-        PRINT_LOG("Data read from server:\n%.*s", retval, buffer);
+        //PRINT_LOG("Data read from server:\n%.*s", retval, buffer);
     } else {
-        PRINT_LOG("Data read retval is %ld", retval);
+        //PRINT_LOG("Data read retval is %ld", retval);
     }
 
     return retval;
