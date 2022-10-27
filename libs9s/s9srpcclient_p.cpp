@@ -316,12 +316,25 @@ S9sRpcClientPrivate::write(
 {
     ssize_t retval = -1;
 
+    PRINT_LOG("Writing to server.");
+
     if (m_ssl)
+    {
+        PRINT_LOG("calling SSL_write(%p, %p, %lu)", m_ssl, data, length);
         return SSL_write(m_ssl, data, length);
+    }
 
     do {
+        PRINT_LOG("::write(%d, %p, %lu)", m_socketFd, data, length);
         retval = ::write(m_socketFd, data, length);
     } while (retval == -1 && errno == EINTR);
+
+    PRINT_LOG("Written %zd bytes to server.", retval);
+
+    if (0 < retval)
+    {
+        PRINT_LOG("Data written to server:\n%.*s", length, retval);
+    }
 
     return retval;
 }
@@ -337,10 +350,10 @@ S9sRpcClientPrivate::read(
     ssize_t retval = -1;
     int     loopCount = 0;
 
-    //PRINT_LOG("Reading from server.");
+    PRINT_LOG("Reading from server.");
     if (m_ssl)
     {
-        //PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
+        PRINT_LOG("calling SSL_read(%p, %p, %lu)", m_ssl, buffer, bufSize);
         do {
             retval = SSL_read(m_ssl, buffer, bufSize);
 
@@ -350,7 +363,7 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EAGAIN);
     } else {
         do {
-            //PRINT_LOG("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
+            PRINT_LOG("::read(%d, %p, %lu)", m_socketFd, buffer, bufSize);
             retval = ::read(m_socketFd, buffer, bufSize);
 
             loopCount += 1;
@@ -359,7 +372,13 @@ S9sRpcClientPrivate::read(
         } while (retval == -1 && errno == EINTR);
     }
 
-    //PRINT_LOG("Received %zd bytes from server.", retval);
+    PRINT_LOG("Received %zd bytes from server.", retval);
+
+    if (0 < retval)
+    {
+        PRINT_LOG("Data read from server:\n%.*s", buffer, retval);
+    }
+
     return retval;
 }
 
