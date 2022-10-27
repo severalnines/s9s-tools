@@ -12376,6 +12376,7 @@ S9sOptions::readOptionsCluster(
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "force",            no_argument,       0, OptionForce           },
         { "extended",         no_argument,       0, OptionExtended        },
+        { "log-file",         required_argument, 0, OptionLogFile         },
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
