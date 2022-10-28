@@ -276,6 +276,7 @@ enum S9sOptionType
     OptionRmdir,
     OptionMkfile,
     OptionSave,
+    OptionCreateSnapshot,
     OptionEnableCmonHa,
     OptionAcl,
     OptionOwner,
@@ -14984,6 +14985,7 @@ S9sOptions::readOptionsController(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
+        { "create-snapshot",  no_argument,       0, OptionCreateSnapshot  },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
@@ -15136,6 +15138,11 @@ S9sOptions::readOptionsController(
             case OptionDeleteSnaphotRepository:
                 // --delete-snapshot-repository
                 m_options["delete_snapshot_repository"] = true;
+                break;
+
+            case OptionCreateSnapshot:
+                // --create-snapshot
+                m_options["create_snapshot"] = true;
                 break;
 
             case OptionEnableCmonHa:
