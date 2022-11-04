@@ -182,6 +182,7 @@ function _s9s()
                 opts+="--wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--properties= --use-internal-repos "
+                opts+="--keep-firewall "
                 opts+="--vendor= --provider-version= --os-user= "
                 opts+="--cluster-type= --db-admin= --db-admin-passwd= "
                 opts+="--account= --with-database --db-name= "

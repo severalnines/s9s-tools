@@ -3878,7 +3878,7 @@ S9sRpcClient::createNdbCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
-    jobData["disable_firewall"] = true;
+    jobData["disable_firewall"] = !options->keepFirewall();
     
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
@@ -4858,7 +4858,7 @@ S9sRpcClient::addNode(
         jobData["enable_uninstall"] = true;
     }
         
-    jobData["disable_firewall"] = true;
+    jobData["disable_firewall"] = !options->keepFirewall();
     jobData["disable_selinux"]  = true;
    
     // The jobspec describing the command.
@@ -4941,7 +4941,7 @@ S9sRpcClient::addReplicationSlave(
         jobData["port"]         = slave.port();
 
     jobData["install_software"] = !options->noInstall();
-    jobData["disable_firewall"] = true;
+    jobData["disable_firewall"] = !options->keepFirewall();
     jobData["disable_selinux"]  = true;
    
     // The jobspec describing the command.
@@ -5557,7 +5557,7 @@ S9sRpcClient::addMongoNode(
     } //else the caller method is buggy
 
     jobData["install_software"] = !options->noInstall();
-    jobData["disable_firewall"] = true;
+    jobData["disable_firewall"] = !options->keepFirewall();
     jobData["disable_selinux"]  = true;
 
     // The jobspec describing the command.
@@ -5644,7 +5644,7 @@ S9sRpcClient::addElasticNode(
     #endif
 
     jobData["install_software"] = !options->noInstall();
-    jobData["disable_firewall"] = true;
+    jobData["disable_firewall"] = !options->keepFirewall();
     jobData["disable_selinux"]  = true;
 
     // The jobspec describing the command.
@@ -7099,7 +7099,7 @@ S9sRpcClient::createServer()
     
     jobData["server"]           = serverMap;
     jobData["install_software"] = !options->noInstall();
-    jobData["disable_firewall"] = true;
+    jobData["disable_firewall"] = !options->keepFirewall();
     jobData["disable_selinux"]  = true;
     
     if (options->hasTimeout())
@@ -8297,7 +8297,7 @@ S9sRpcClient::verifyBackup()
 
     jobData["backupid"]            = options->backupId();
     jobData["server_address"]      = options->testServer();
-    jobData["disable_firewall"]    = true;
+    jobData["disable_firewall"]    = !options->keepFirewall();
     jobData["disable_selinux"]     = true;
     jobData["install_software"]    = !options->noInstall();
     jobData["terminate_db_server"] = !options->noTerminate();
@@ -10088,7 +10088,7 @@ S9sRpcClient::composeBackupJob()
     {
         S9sVariantMap tmpMap;
 
-        tmpMap["disable_firewall"] = true;
+        tmpMap["disable_firewall"] = !options->keepFirewall();
         tmpMap["disable_selinux"]  = true;
         tmpMap["install_software"] = !options->noInstall();
         tmpMap["server_address"]   = options->testServer();

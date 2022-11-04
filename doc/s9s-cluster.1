@@ -760,6 +760,15 @@ This option can also be set in the s9s configuration file using the
 \fBuse_internal_repos\fP keyword (check s9s.conf(5) for further details).
 
 .TP
+.BI \-\^\-keep\-firewall
+When not specified the CLI will pass disable firewall option to create cluster
+and node addition operations. To keep your firewall settings you may pass this
+option.
+
+This option can also be set in the s9s configuration file using the 
+\fBkeep_firewall\fP keyword (check s9s.conf(5) for further details).
+
+.TP
 .BI --volumes= LIST
 When a new container is created this command line option can be used to pass a
 list of volumes that will be created for the container. 

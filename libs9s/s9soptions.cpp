@@ -338,6 +338,7 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionKeepFirewall,
     OptionWithSsl,
     OptionWithoutSsl,
     
@@ -3026,6 +3027,26 @@ S9sOptions::useInternalRepos() const
         {
             retval = m_systemConfig.variableValue(
                     "use_internal_repos").toBoolean();
+        }
+    }
+
+    return retval;
+}
+
+bool
+S9sOptions::keepFirewall() const
+{
+    bool retval = false;
+
+    if (m_options.contains("keep_firewall"))
+    {
+        retval = m_options.at("keep_firewall").toBoolean();
+    } else {
+        retval = m_userConfig.variableValue("keep_firewall").toBoolean();
+        if (!retval)
+        {
+            retval = m_systemConfig.variableValue(
+                    "keep_firewall").toBoolean();
         }
     }
 
@@ -6575,6 +6596,7 @@ S9sOptions::printHelpCluster()
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
@@ -12495,6 +12517,7 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers          },
         { "subnet-id",        required_argument, 0, OptionSubnetId         },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+        { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
         { "template",         required_argument, 0, OptionTemplate         },
@@ -13159,6 +13182,11 @@ S9sOptions::readOptionsCluster(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionKeepFirewall:
+                // --keep-firewall
+                m_options["keep_firewall"] = true;
                 break;
 
             case OptionWithSsl:
