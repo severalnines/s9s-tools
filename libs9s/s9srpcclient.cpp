@@ -3242,6 +3242,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3315,6 +3316,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3581,6 +3583,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3729,6 +3732,7 @@ S9sRpcClient::createGroupReplication(
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
     jobData["mysql_password"]   = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4028,6 +4032,7 @@ S9sRpcClient::createPostgreSql(
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
@@ -4220,6 +4225,7 @@ S9sRpcClient::createRedisSentinel(
     jobData["version"]          = version;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->noInstall())
     {
@@ -4294,6 +4300,7 @@ S9sRpcClient::createElasticsearch(
     jobData["version"]          = version;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->noInstall())
     {
@@ -4369,6 +4376,7 @@ S9sRpcClient::createMsSqlSingle(
     jobData["version"]          = version;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     if (options->noInstall())
     {
@@ -4449,7 +4457,8 @@ S9sRpcClient::createMongoCluster(
 
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
-    
+    jobData["disable_firewall"] = !options->keepFirewall();
+
     if (options->noInstall())
     {
         jobData["install_software"] = false;
