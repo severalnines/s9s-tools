@@ -278,6 +278,7 @@ enum S9sOptionType
     OptionRmdir,
     OptionMkfile,
     OptionSave,
+    OptionCreateSnapshot,
     OptionEnableCmonHa,
     OptionAcl,
     OptionOwner,
@@ -340,6 +341,7 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionKeepFirewall,
     OptionWithSsl,
     OptionWithoutSsl,
     
@@ -3035,6 +3037,26 @@ S9sOptions::useInternalRepos() const
 }
 
 bool
+S9sOptions::keepFirewall() const
+{
+    bool retval = false;
+
+    if (m_options.contains("keep_firewall"))
+    {
+        retval = m_options.at("keep_firewall").toBoolean();
+    } else {
+        retval = m_userConfig.variableValue("keep_firewall").toBoolean();
+        if (!retval)
+        {
+            retval = m_systemConfig.variableValue(
+                    "keep_firewall").toBoolean();
+        }
+    }
+
+    return retval;
+}
+
+bool
 S9sOptions::uninstall() const
 {
     bool retval = false;
@@ -3278,7 +3300,7 @@ S9sOptions::pitrStopTime() const
 int
 S9sOptions::clusterDecryptionKey() const
 {
-    uint retval;
+    uint retval = 0;
 
     if (m_options.contains("cluster_decryption_key"))
     {
@@ -6599,6 +6621,7 @@ S9sOptions::printHelpCluster()
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
@@ -12406,6 +12429,7 @@ S9sOptions::readOptionsCluster(
         { "config-file",      required_argument, 0, OptionConfigFile      },
         { "force",            no_argument,       0, OptionForce           },
         { "extended",         no_argument,       0, OptionExtended        },
+        { "log-file",         required_argument, 0, OptionLogFile         },
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -12526,6 +12550,7 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers          },
         { "subnet-id",        required_argument, 0, OptionSubnetId         },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+        { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
         { "template",         required_argument, 0, OptionTemplate         },
@@ -13202,6 +13227,11 @@ S9sOptions::readOptionsCluster(
                 m_options["use_internal_repos"] = true;
                 break;
 
+            case OptionKeepFirewall:
+                // --keep-firewall
+                m_options["keep_firewall"] = true;
+                break;
+
             case OptionWithSsl:
                 // --with-ssl
                 m_options["with_ssl"] = true;
@@ -13297,6 +13327,13 @@ S9sOptions::readOptionsCluster(
             case OptionStorageHost:
                 // --storage-host=NAME
                 m_options["storage_host"] = optarg;
+                break;
+
+            // main options
+
+            case OptionLogFile:
+                // --log-file=FILE
+                m_options["log_file"] = optarg;
                 break;
 
             case '?':
@@ -14990,6 +15027,7 @@ S9sOptions::readOptionsController(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
+        { "create-snapshot",  no_argument,       0, OptionCreateSnapshot  },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
@@ -15142,6 +15180,11 @@ S9sOptions::readOptionsController(
             case OptionDeleteSnaphotRepository:
                 // --delete-snapshot-repository
                 m_options["delete_snapshot_repository"] = true;
+                break;
+
+            case OptionCreateSnapshot:
+                // --create-snapshot
+                m_options["create_snapshot"] = true;
                 break;
 
             case OptionEnableCmonHa:

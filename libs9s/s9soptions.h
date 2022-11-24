@@ -337,6 +337,7 @@ class S9sOptions
         bool extended() const;
 
         bool useInternalRepos() const;
+        bool keepFirewall() const;
 
         bool uninstall() const;
 

@@ -316,12 +316,27 @@ S9sRpcClientPrivate::write(
 {
     ssize_t retval = -1;
 
+    //PRINT_LOG("Writing to server.");
+
     if (m_ssl)
+    {
+        PRINT_LOG("calling SSL_write(%p, %p, %lu)", m_ssl, data, length);
         return SSL_write(m_ssl, data, length);
+    }
 
     do {
+        //PRINT_LOG("::write(%d, %p, %lu)", m_socketFd, data, length);
         retval = ::write(m_socketFd, data, length);
     } while (retval == -1 && errno == EINTR);
+
+    //PRINT_LOG("Written %zd bytes to server.", retval);
+
+    if (0 < retval)
+    {
+        //PRINT_LOG("Data written to server:\n%.*s", length, data);
+    } else {
+        //PRINT_LOG("Data write retval is %ld", retval);
+    }
 
     return retval;
 }
@@ -360,6 +375,14 @@ S9sRpcClientPrivate::read(
     }
 
     //PRINT_LOG("Received %zd bytes from server.", retval);
+
+    if (0 < retval)
+    {
+        //PRINT_LOG("Data read from server:\n%.*s", retval, buffer);
+    } else {
+        //PRINT_LOG("Data read retval is %ld", retval);
+    }
+
     return retval;
 }
 
