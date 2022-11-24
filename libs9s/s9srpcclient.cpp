@@ -2907,6 +2907,93 @@ S9sRpcClient::deployAgents(
     return retval;
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::deployCmonAgents(
+        const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    jobSpec["command"]    = "deploy_cmonagents";
+    jobData["cluster_id"] = clusterId;
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Deploy Query monitor Agents";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::uninstallCmonAgents(const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    jobSpec["command"]    = "uninstall_cmonagents";
+    jobData["cluster_id"] = clusterId;
+    // if any host specifically to removed set here
+    if(hosts.size() > 0)
+    {
+        if(hosts.size() == 1)
+        {
+            S9sVariant var = nodesField(hosts);
+            S9sVariantList list = var.toVariantList();
+            S9sVariantMap map = list[0].toVariantMap();
+            jobData["hostname"] = map["hostname"];
+        }
+        else
+        {
+            PRINT_ERROR("Incorrect nodes argument. Only one host on --nodes"
+            "To uninstall on all nodes do not use --nodes");
+            return false;
+        }
+    }
+    jobSpec["job_data"]   = jobData;
+
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Uninstall Query monitor Agent/s";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * \returns true if the operation was successful, a reply is received from the

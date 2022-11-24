@@ -359,6 +359,8 @@ class S9sRpcClient
         bool createReport(const int clusterId);
 
         bool deployAgents(const int clusterId);
+        bool deployCmonAgents(const int clusterId);
+        bool uninstallCmonAgents(const int clusterId);
 
         bool createLocalRepository(
                 const int          clusterId,

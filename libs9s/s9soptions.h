@@ -554,6 +554,8 @@ class S9sOptions
         bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
         bool isDeployAgentsRequested() const;
+        bool isDeployCmonAgentsRequested() const;
+        bool isUninstallCmonAgentsRequested() const;
         bool isAddNodeRequested() const;
         bool isReinstallNodeRequested() const;
         bool isReconfigureNodeRequested() const;

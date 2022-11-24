@@ -244,6 +244,8 @@ enum S9sOptionType
     OptionCreateReport,
     OptionMaskPasswords,
     OptionDeployAgents,
+    OptionDeployCmonAgents,
+    OptionUninstallCmonAgents,
     OptionLimit,
     OptionOffset,
     OptionRegister,
@@ -5061,6 +5063,28 @@ S9sOptions::isDeployAgentsRequested() const
 {
     return getBool("deploy_agents");
 }
+
+/**
+ * \returns true if the --deploy-cmonagents command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isDeployCmonAgentsRequested() const
+{
+    return getBool("deploy_cmonagents");
+}
+
+/**
+ * \returns true if the --uninstall-cmonagents command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isUninstallCmonAgentsRequested() const
+{
+    return getBool("uninstall_cmonagents");
+}
+
+
 
 /**
  * \returns true if the add node operation was requested using the "--add-node"
@@ -10230,6 +10254,12 @@ S9sOptions::checkOptionsCluster()
     if (isUsr1Requested())
         countOptions++;
 
+    if (isDeployCmonAgentsRequested())
+        countOptions++;
+
+    if (isUninstallCmonAgentsRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -12396,6 +12426,8 @@ S9sOptions::readOptionsCluster(
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "demote-node",      no_argument,       0, OptionDemoteNode      },
         { "deploy-agents",    no_argument,       0, OptionDeployAgents    },
+        { "deploy-cmonagents",no_argument,       0, OptionDeployCmonAgents},
+        { "uninstall-cmonagents",no_argument,    0, OptionUninstallCmonAgents},
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
@@ -12651,6 +12683,16 @@ S9sOptions::readOptionsCluster(
             case OptionDeployAgents:
                 // --deploy-agents
                 m_options["deploy_agents"] = true;
+                break;
+            
+            case OptionDeployCmonAgents:
+                // --deploy-cmonagents
+                m_options["deploy_cmonagents"] = true;
+                break;
+
+            case OptionUninstallCmonAgents:
+                // --uninstalll-cmonagents
+                m_options["uninstall_cmonagents"] = true;
                 break;
 
             case OptionAddNode:

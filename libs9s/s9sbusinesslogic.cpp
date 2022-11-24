@@ -188,6 +188,15 @@ S9sBusinessLogic::execute()
         {
             success = client.deployAgents(clusterId);
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDeployCmonAgentsRequested())
+        {
+            success = client.deployCmonAgents(clusterId);
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isUninstallCmonAgentsRequested())
+        {
+            success = client.uninstallCmonAgents(clusterId);
+            maybeJobRegistered(client, clusterId, success);
+ 
         } else if (options->isAddNodeRequested())
         {
             success = client.createNode();
