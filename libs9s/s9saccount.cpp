@@ -404,7 +404,10 @@ enum ParseState
     HostName,
     HostNameStart,
     SingleQuoteHostName,
+    PasswordStart,
     Password,
+    SingleQuotePassword,
+    PasswordEnd
 };
 
 bool 
@@ -447,7 +450,7 @@ S9sAccount::parseStringRep(
                 } else if (c == ':')
                 {
                     n++;
-                    state = Password;
+                    state = PasswordStart;
                 } else if (c == '@')
                 {
                     n++;
@@ -455,6 +458,52 @@ S9sAccount::parseStringRep(
                 } else {
                     userName += cDecoded;
                     n++;
+                }
+                break;
+
+            case SingleQuoteUserName:
+                if (c == '\0')
+                {
+                    setError("Single quote (') expected.");
+                    return false;
+                } else if (c == '\'')
+                {
+                    n++;
+                    state = UserNameEnd;
+                } else {
+                    userName += cDecoded;
+                    n++;
+                }
+                break;
+
+            case UserNameEnd:
+                if (c == '\0')
+                {
+                    setUserName(userName);
+                    setHostAllow(hostName);
+                    setPassword(password);
+                    return true;
+                } else if (c == ':')
+                {
+                    n++;
+                    state = PasswordStart;
+                } else if (c == '@')
+                {
+                    n++;
+                    state = HostNameStart;
+                } else {
+                    setError("Invalid character at the end of the username.");
+                    return false;
+                }
+                break;
+
+            case PasswordStart:
+                if (c == '\'')
+                {
+                    state = SingleQuotePassword;
+                    ++n;
+                } else {
+                    state = Password;
                 }
                 break;
 
@@ -473,6 +522,38 @@ S9sAccount::parseStringRep(
                     ++n;
                     password += cDecoded;
                 } 
+                break;
+
+            case SingleQuotePassword:
+                if (c == '\0')
+                {
+                    setError("Single quote (') expected.");
+                    return false;
+                } else if (c == '\'')
+                {
+                    n++;
+                    state = PasswordEnd;
+                } else {
+                    password += cDecoded;
+                    n++;
+                }
+                break;
+
+            case PasswordEnd:
+                if (c == '\0')
+                {
+                    setUserName(userName);
+                    setHostAllow(hostName);
+                    setPassword(password);
+                    return true;
+                } else if (c == '@')
+                {
+                    n++;
+                    state = HostNameStart;
+                } else {
+                    setError("Invalid character at the end of the username.");
+                    return false;
+                }
                 break;
 
             case HostNameStart:
@@ -495,38 +576,6 @@ S9sAccount::parseStringRep(
                 } else {
                     hostName += cDecoded;
                     ++n;
-                }
-                break;
-
-            case SingleQuoteUserName:
-                if (c == '\0')
-                {
-                    setError("Single quote (') expected.");
-                    return false;
-                } else if (c == '\'')
-                {
-                    n++;
-                    state = UserNameEnd;
-                } else {
-                    userName += cDecoded;
-                    n++;
-                }
-                break;
-            
-            case UserNameEnd:
-                if (c == '\0')
-                {
-                    setUserName(userName);
-                    setHostAllow(hostName);
-                    setPassword(password);
-                    return true;
-                } else if (c == '@')
-                {
-                    n++;
-                    state = HostNameStart;
-                } else {
-                    setError("Invalid character at the end of the username.");
-                    return false;
                 }
                 break;
 
