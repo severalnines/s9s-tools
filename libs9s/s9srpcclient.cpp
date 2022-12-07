@@ -11024,7 +11024,10 @@ S9sRpcClient::saveRequestAndReply(
                 STR(directory), STR(status), STR(operation));
         file = S9sFile(fileName);
         content = reply.toJsonString(S9sFormatIndent);
-        file.writeTxtFile(content);
+        if (!file.writeTxtFile(content))
+        {
+            S9S_WARNING("ERROR: %s", STR(file.errorString()));
+        }
     }
 }
 
