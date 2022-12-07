@@ -10362,6 +10362,12 @@ S9sRpcClient::composeJobData(
     if (options->useInternalRepos())
         jobData["use_internal_repos"] = true;
 
+    if (options->createLocalRepo())
+        jobData["create_local_repository"] = true;
+
+    if (options->useLocalRepo())
+        jobData["local_repository"] = options->localRepoName();
+
     if (options->isGenerateKeyRequested())
         jobData["ssh_generate_key"] = true;
     

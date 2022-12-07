@@ -341,6 +341,8 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionCreateLocalRepo,
+    OptionLocalRepoName,
     OptionKeepFirewall,
     OptionWithSsl,
     OptionWithoutSsl,
@@ -3034,6 +3036,30 @@ S9sOptions::useInternalRepos() const
     }
 
     return retval;
+}
+
+bool
+S9sOptions::useLocalRepo() const
+{
+    return !localRepoName().empty();
+}
+
+bool
+S9sOptions::createLocalRepo() const
+{
+    if (m_options.contains("create_local_repository"))
+        return m_options.at("create_local_repository").toBoolean();
+
+    return false;
+}
+
+S9sString
+S9sOptions::localRepoName() const
+{
+    if (m_options.contains("local_repository"))
+        return m_options.at("local_repository").toString();
+
+    return S9sString();
 }
 
 bool
@@ -6621,6 +6647,8 @@ S9sOptions::printHelpCluster()
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --create-local-repository  Create local (APT/YUM) software repository during deploy.\n"
+"  --local-repository=NAME    Use a previously created local mirror for deploy.\n"
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
@@ -12550,6 +12578,9 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers          },
         { "subnet-id",        required_argument, 0, OptionSubnetId         },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+        { "create-local-repository", no_argument,0, OptionCreateLocalRepo },
+        { "local-repository", required_argument, 0, OptionLocalRepoName },
+
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
@@ -13225,6 +13256,16 @@ S9sOptions::readOptionsCluster(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionCreateLocalRepo:
+                // --create-local-repository
+                m_options["create_local_repository"] = true;
+                break;
+
+            case OptionLocalRepoName:
+                // --local-repository
+                m_options["local_repository"] = optarg;
                 break;
 
             case OptionKeepFirewall:
