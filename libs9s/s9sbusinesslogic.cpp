@@ -861,6 +861,24 @@ S9sBusinessLogic::execute()
             success = client.deleteJobInstance(options->jobId());
             client.printMessages("Deleted.", success);
             client.setExitStatus();
+        } else if (options->isEnableRequested())
+        {
+            success = client.enableJobInstance(options->jobId());
+            if (!success || !client.reply().isOk())
+            {
+                PRINT_ERROR("Failed to enable: %s", STR(client.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+                success = false;
+            }
+        } else if (options->isDisableRequested())
+        {
+            success = client.disableJobInstance(options->jobId());
+            if (!success || !client.reply().isOk())
+            {
+                PRINT_ERROR("Failed to disable: %s", STR(client.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+                success = false;
+            }
         } else if (options->isKillRequested())
         {
             success = client.killJobInstance(options->jobId());

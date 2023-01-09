@@ -190,7 +190,9 @@ class S9sRpcClient
         bool deleteJobInstance(const int jobId);
         bool killJobInstance(const int jobId);
         bool cloneJobInstance(const int jobId);
-        
+        bool enableJobInstance(const int jobId);
+        bool disableJobInstance(const int jobId);
+     
         /*
          * Backup related methods.
          */

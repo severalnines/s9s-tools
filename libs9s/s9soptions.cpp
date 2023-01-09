@@ -6324,6 +6324,8 @@ S9sOptions::printHelpJob()
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
+"  --disable                  Disable or pause a recurring/scheduled job instance.\n"
+"  --enable                   Enable/resume a recurring/scheduled job instance.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --cluster-name=NAME        Name of the cluster.\n"
@@ -10122,6 +10124,12 @@ S9sOptions::checkOptionsJob()
     if (isKillRequested())
         countOptions++;
     
+    if (isEnableRequested())
+        countOptions++;
+
+    if (isDisableRequested())
+        countOptions++;
+
     if (isFailRequested())
     {
         countOptions++;
@@ -13810,6 +13818,8 @@ S9sOptions::readOptionsJob(
         { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
         { "wait",             no_argument,       0,  5                    },
+        { "disable",          no_argument,       0, OptionDisable         },
+        { "enable",           no_argument,       0, OptionEnable          },
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -13936,7 +13946,17 @@ S9sOptions::readOptionsJob(
                 // --kill
                 m_options["kill"] = true;
                 break;
-            
+
+            case OptionEnable:
+                // --enable
+                m_options["enable"] = true;
+                break;
+
+            case OptionDisable:
+                // --disable
+                m_options["disable"] = true;
+                break;
+
             case OptionSuccess:
                 // --success
                 m_options["success"] = true;

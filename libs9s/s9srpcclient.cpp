@@ -339,6 +339,9 @@ S9sRpcClient::setExitStatus()
 S9sString 
 S9sRpcClient::errorString() const
 {
+    if (!reply().errorString().empty())
+        return reply().errorString();
+
     return m_priv->m_errorString;
 }
 
@@ -1579,6 +1582,61 @@ S9sRpcClient::killJobInstance(
     return retval;
 }
 
+/**
+ * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Deletes a job from the controller.
+ */
+bool
+S9sRpcClient::enableJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+    S9sVariantMap  jobMap;
+
+    jobMap["class_name"] = "CmonJobInstance";
+    jobMap["status"]     = "SCHEDULED";
+    jobMap["job_id"]     = jobId;
+
+    request["operation"] = "updateJobInstance";
+    request["job"]       = jobMap;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Deletes a job from the controller.
+ */
+bool
+S9sRpcClient::disableJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+    S9sVariantMap  jobMap;
+
+    jobMap["class_name"] = "CmonJobInstance";
+    jobMap["status"]     = "PAUSED";
+    jobMap["job_id"]     = jobId;
+
+    request["operation"] = "updateJobInstance";
+    request["job"]       = jobMap;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 /**
  * \param jobId the ID of the job
