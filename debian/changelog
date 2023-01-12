@@ -1,3 +1,16 @@
+s9s-tools (1.9.2023010901-release1) UNRELEASED; urgency=medium
+
+  * s9s job: scheduled jobs can be enabled/disabled (--enable/--disable)
+
+ -- David Kedves <kedazo@severalnines.com>  Mon, 09 Jan 2023 10:36:46 +0100
+
+s9s-tools (1.9.2022120701-release1) UNRELEASED; urgency=medium
+
+  * s9s cluster: added --create-local-repository, and
+    --local-repository=<reponame> options
+
+ -- David Kedves <kedazo@severalnines.com>  Wed, 07 Dec 2022 12:15:27 +0100
+
 s9s-tools (1.9.2022110415-release1) UNRELEASED; urgency=medium
 
   * s9s cluster: added --keep-firewall option

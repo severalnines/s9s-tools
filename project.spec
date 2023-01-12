@@ -54,6 +54,10 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Mon Jan  9 2023 Severalnines <support@severalnines.com> 1.9.2023010901
+- s9s job: scheduled jobs can be enabled/disabled (--enable/--disable)
+* Wed Dec  7 2022 Severalnines <support@severalnines.com> 1.9.2022120701
+- Implemented local repo options for cluster
 * Fri Nov  3 2022 Severalnines <support@severalnines.com> 1.9.2022110415
 - New build
 * Wed Oct 19 2022 Severalnines <support@severalnines.com> 1.9.2022101916

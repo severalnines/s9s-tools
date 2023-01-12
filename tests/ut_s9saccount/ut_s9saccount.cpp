@@ -150,6 +150,18 @@ UtS9sAccount::testParse05()
     S9S_COMPARE(account.password(),  "pwd");
     S9S_COMPARE(account.hostAllow(), "1.2.3.4");
 
+    success = account.parseStringRep("'pipas':pwd@1.2.3.4");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(),  "pipas");
+    S9S_COMPARE(account.password(),  "pwd");
+    S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+
+    success = account.parseStringRep("'pipas':'pw@d'@1.2.3.4");
+    S9S_VERIFY(success);
+    S9S_COMPARE(account.userName(),  "pipas");
+    S9S_COMPARE(account.password(),  "pw@d");
+    S9S_COMPARE(account.hostAllow(), "1.2.3.4");
+
     return true;
 }
 

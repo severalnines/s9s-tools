@@ -346,6 +346,9 @@ class S9sOptions
         bool extended() const;
 
         bool useInternalRepos() const;
+        bool useLocalRepo() const;
+        S9sString localRepoName() const;
+        bool createLocalRepo() const;
         bool keepFirewall() const;
 
         bool uninstall() const;

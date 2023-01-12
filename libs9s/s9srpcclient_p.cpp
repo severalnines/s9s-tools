@@ -157,6 +157,7 @@ S9sRpcClientPrivate::connect()
         close();
         success = false;
     } else {
+        memset(&server, 0, sizeof(struct sockaddr_in));
         /*
          * Connecting to the server. (TODO: IPv6)
          */

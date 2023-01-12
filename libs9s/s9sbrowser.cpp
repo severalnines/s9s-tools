@@ -28,7 +28,9 @@
 S9sBrowser::S9sBrowser() :
     S9sDisplayList(),
     m_path("/"),
-    m_isDebug(false)
+    m_isDebug(false),
+    m_nChars(0)
+
 {
     setHeaderHeight(2);
     setFooterHeight(3);

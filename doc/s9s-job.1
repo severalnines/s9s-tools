@@ -42,6 +42,31 @@ s9s job \\
     --job-id=3
 .fi
 
+.TP
+.B \-\-disable
+This command line option can be used to disable (pause) a scheduled or
+recurring job instance.
+
+.B EXAMPLE
+.nf
+s9s job \\
+    --disable \\
+    --job-id=102
+.fi
+
+
+.TP
+.B \-\-enable
+This command line option can be used to enable a disabled (scheduled or
+recurring) job instance.
+
+.B EXAMPLE
+.nf
+s9s job \\
+    --enable \\
+    --job-id=102
+.fi
+
 .TP 
 .B \-\^\-fail
 Create a job that does nothing and it fails. The \fB\-\^\-timeout\fP command

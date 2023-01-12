@@ -341,6 +341,8 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionCreateLocalRepo,
+    OptionLocalRepoName,
     OptionKeepFirewall,
     OptionWithSsl,
     OptionWithoutSsl,
@@ -3074,6 +3076,30 @@ S9sOptions::useInternalRepos() const
     }
 
     return retval;
+}
+
+bool
+S9sOptions::useLocalRepo() const
+{
+    return !localRepoName().empty();
+}
+
+bool
+S9sOptions::createLocalRepo() const
+{
+    if (m_options.contains("create_local_repository"))
+        return m_options.at("create_local_repository").toBoolean();
+
+    return false;
+}
+
+S9sString
+S9sOptions::localRepoName() const
+{
+    if (m_options.contains("local_repository"))
+        return m_options.at("local_repository").toString();
+
+    return S9sString();
 }
 
 bool
@@ -6338,6 +6364,8 @@ S9sOptions::printHelpJob()
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
+"  --disable                  Disable or pause a recurring/scheduled job instance.\n"
+"  --enable                   Enable/resume a recurring/scheduled job instance.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --cluster-name=NAME        Name of the cluster.\n"
@@ -6661,6 +6689,8 @@ S9sOptions::printHelpCluster()
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --create-local-repository  Create local (APT/YUM) software repository during deploy.\n"
+"  --local-repository=NAME    Use a previously created local mirror for deploy.\n"
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
@@ -10152,6 +10182,12 @@ S9sOptions::checkOptionsJob()
     if (isKillRequested())
         countOptions++;
     
+    if (isEnableRequested())
+        countOptions++;
+
+    if (isDisableRequested())
+        countOptions++;
+
     if (isFailRequested())
     {
         countOptions++;
@@ -12612,6 +12648,9 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers          },
         { "subnet-id",        required_argument, 0, OptionSubnetId         },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+        { "create-local-repository", no_argument,0, OptionCreateLocalRepo },
+        { "local-repository", required_argument, 0, OptionLocalRepoName },
+
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
@@ -13305,6 +13344,16 @@ S9sOptions::readOptionsCluster(
                 m_options["use_internal_repos"] = true;
                 break;
 
+            case OptionCreateLocalRepo:
+                // --create-local-repository
+                m_options["create_local_repository"] = true;
+                break;
+
+            case OptionLocalRepoName:
+                // --local-repository
+                m_options["local_repository"] = optarg;
+                break;
+
             case OptionKeepFirewall:
                 // --keep-firewall
                 m_options["keep_firewall"] = true;
@@ -13847,6 +13896,8 @@ S9sOptions::readOptionsJob(
         { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
         { "wait",             no_argument,       0,  5                    },
+        { "disable",          no_argument,       0, OptionDisable         },
+        { "enable",           no_argument,       0, OptionEnable          },
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -13973,7 +14024,17 @@ S9sOptions::readOptionsJob(
                 // --kill
                 m_options["kill"] = true;
                 break;
-            
+
+            case OptionEnable:
+                // --enable
+                m_options["enable"] = true;
+                break;
+
+            case OptionDisable:
+                // --disable
+                m_options["disable"] = true;
+                break;
+
             case OptionSuccess:
                 // --success
                 m_options["success"] = true;
