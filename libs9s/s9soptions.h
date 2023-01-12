@@ -127,6 +127,15 @@ class S9sOptions
         S9sVariantList nodes() const;
 
         bool hasProxySql() const;
+        bool hasAdminUser() const;
+        S9sVariant adminUser() {return m_options.at("admin_user");};
+        S9sVariant adminPassword() {return m_options.at("admin_password");};
+        bool hasAdminPassword() const;
+
+        bool hasMaxscaleMysqlUser() const;
+        S9sVariant maxscaleMysqlUser() {return m_options.at("maxscale_mysql_user");};
+        S9sVariant maxscaleMysqlPassword() {return m_options.at("maxscale_mysql_password");};
+        bool hasMaxscaleMysqlPassword() const;
 
         bool hasJobOptions() const;
 

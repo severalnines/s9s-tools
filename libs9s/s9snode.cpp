@@ -115,6 +115,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonRedisSentinelHost";
         else if (m_url.protocol().toLower() == "mssql")
             m_properties["class_name"] = "CmonMsSqlHost";
+        else if (m_url.protocol().toLower() == "elastic")
+            m_properties["class_name"] = "CmonElasticHost";
         else
             m_properties["protocol"] = m_url.protocol();
     }

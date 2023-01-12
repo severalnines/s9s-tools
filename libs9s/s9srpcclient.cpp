@@ -5572,6 +5572,26 @@ S9sRpcClient::addMaxScale(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setupMaxScale";
+    if(options->hasAdminUser())
+    {
+        if(!options->hasAdminPassword())
+        {
+            PRINT_ERROR("--admin-password is missing");
+            return false;
+        }
+        jobData["maxscale_admin_user"]   = options->adminUser();
+        jobData["maxscale_admin_password"]   = options->adminPassword();
+    }
+    if(options->hasMaxscaleMysqlUser())
+    {
+        if(!options->hasMaxscaleMysqlPassword())
+        {
+            PRINT_ERROR("--maxscale-mysql-password is missing");
+            return false;
+        }
+        jobData["maxscale_mysql_user"]   = options->maxscaleMysqlUser();
+        jobData["maxscale_mysql_password"]   = options->maxscaleMysqlPassword();
+    }
     jobData["nodes"]    = nodesField(maxScaleNodes);
 
     // The jobspec describing the command.

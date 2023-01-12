@@ -402,6 +402,8 @@ enum S9sOptionType
     OptionMonitorUser,
     OptionMonitorPassword,
     OptionDontImportAccounts,
+    OptionMaxscaleMysqlUser,
+    OptionMaxscaleMysqlPassword,
 
     OptionSslCertFile,
     OptionSslKeyFile,
@@ -1520,6 +1522,44 @@ S9sOptions::hasProxySql() const
 
     return false;
 }
+
+/**
+ * \returns True if the --admin-user option was specified
+ */
+bool 
+S9sOptions::hasAdminUser() const
+{
+    return m_options.contains("admin_user");
+}
+
+
+/**
+ * \returns True if the --admin-password option was specified
+ */
+bool 
+S9sOptions::hasAdminPassword() const
+{
+    return m_options.contains("admin_password");
+}
+
+/**
+ * \returns True if the --maxscale-mysql-user option was specified
+ */
+bool 
+S9sOptions::hasMaxscaleMysqlUser() const
+{
+    return m_options.contains("maxscale_mysql_user");
+}
+
+/**
+ * \returns True if the --maxscale-mysql-password option was specified
+ */
+bool 
+S9sOptions::hasMaxscaleMysqlPassword() const
+{
+    return m_options.contains("maxscale_mysql_password");
+}
+ 
 
 /**
  * \returns The argument of the comman line option --input-file if provided,
@@ -6633,12 +6673,14 @@ S9sOptions::printHelpCluster()
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "\n"
 "Load balancer related options\n"
-"  --admin-password=USERNAME  Admin password for ProxySql.\n"
-"  --admin-user=USERNAME      Admin user for ProxySql.\n"
+"  --admin-password=USERNAME  Admin password for ProxySql or Maxscale.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql or Maxscale.\n"
 "  --dont-import-accounts     Do not import users into loadbalancer.\n"
 "  --haproxy-config-template=FILENAME Config template for HaProxy install.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"  --maxscale-mysql-user=USERNAME mysql user for Maxscale.\n"
+"  --maxscale-mysql-password=PASSWD mysql user password for Maxscale.\n"
 "\n"
 "SSL related options (for create and enable-ssl)\n"
 "  --ssl-ca=STRING            The SSL CA file path on controller.\n"
@@ -7407,7 +7449,7 @@ S9sOptions::readOptionsNode(
                 break;
 
             /*
-             * Options for ProxySql.
+             * Options for ProxySql / Maxscale
              */
             case OptionAdminUser:
                 // --admin-user=USERNAME
@@ -7419,6 +7461,9 @@ S9sOptions::readOptionsNode(
                 m_options["admin_password"] = optarg;
                 break;
 
+            /*
+             * Options for ProxySql.
+             */
             case OptionMonitorUser:
                 // --monitor-user=STRING
                 m_options["monitor_user"] = optarg;
@@ -7427,6 +7472,19 @@ S9sOptions::readOptionsNode(
             case OptionMonitorPassword:
                 // --monitor-password=STRING
                 m_options["monitor_password"] = optarg;
+                break;
+
+            /*
+             * Options for Maxscale
+             */
+            case OptionMaxscaleMysqlUser:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_user"] = optarg;
+                break;
+
+            case OptionMaxscaleMysqlPassword:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_password"] = optarg;
                 break;
 
             case OptionDontImportAccounts:
@@ -12527,12 +12585,16 @@ S9sOptions::readOptionsCluster(
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
 
-        // Options for ProxySql.
+        // Options for ProxySql or Maxscale
         { "admin-user",       required_argument, 0, OptionAdminUser       },
         { "admin-password",   required_argument, 0, OptionAdminPassword   },
+        // Options for ProxySql
         { "monitor-user",     required_argument, 0, OptionMonitorUser     },
         { "monitor-password", required_argument, 0, OptionMonitorPassword },
         { "dont-import-accounts", no_argument,   0, OptionDontImportAccounts },
+        // Options for Maxscale
+        { "maxscale-mysql-user", required_argument, 0, OptionMaxscaleMysqlUser},
+        { "maxscale-mysql-password", required_argument, 0, OptionMaxscaleMysqlPassword},
 
        
         // Options for containers.
@@ -13120,7 +13182,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             /*
-             * Options for ProxySql.
+             * Options for ProxySql and Maxscale.
              */
             case OptionAdminUser:
                 // --admin-user=USERNAME
@@ -13132,6 +13194,9 @@ S9sOptions::readOptionsCluster(
                 m_options["admin_password"] = optarg;
                 break;
 
+            /*
+             * Options for ProxySql
+             */
             case OptionMonitorUser:
                 // --monitor-user=STRING
                 m_options["monitor_user"] = optarg;
@@ -13145,6 +13210,19 @@ S9sOptions::readOptionsCluster(
             case OptionDontImportAccounts:
                 // --dont-import-accounts
                 m_options["dont_import_accounts"] = true;
+                break;
+
+            /*
+             * Options for Maxscale
+             */
+            case OptionMaxscaleMysqlUser:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_user"] = optarg;
+                break;
+
+            case OptionMaxscaleMysqlPassword:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_password"] = optarg;
                 break;
 
             /*
