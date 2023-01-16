@@ -160,7 +160,7 @@ EOF
 install_s9s_commandline() {
     log_msg "=> Installing s9s-tools ..."
     if [[ $dist == "redhat" ]]; then
-        yum -y install s9s-tools
+        yum -y install s9s-tools || dnf -y install s9s-tools
     elif [[ $dist == "debian" ]]; then
         apt-get -y install s9s-tools
     elif [[ $dist == "suse" ]]; then
