@@ -53,6 +53,7 @@ do_release_file() {
             else
                 grep -q "VERSION=.*7." $file >/dev/null 2>/dev/null && distversion=7 && break
                 grep -q "VERSION=.*8." $file >/dev/null 2>/dev/null && distversion=8 && break
+                grep -q "VERSION=.*9." $file >/dev/null 2>/dev/null && distversion=8 && break
             fi
         fi
         if [[ $file =~ $regex_etc ]]; then
@@ -63,6 +64,7 @@ do_release_file() {
             if [[ $dist == "redhat" ]] || [[ $dist == "red" ]] || [[ $dist == "fedora" ]]; then
                 grep -q " 7." $file >/dev/null 2>/dev/null && distversion=7 && break
                 grep -q " 8." $file >/dev/null 2>/dev/null && distversion=8 && break
+                grep -q " 9." $file >/dev/null 2>/dev/null && distversion=8 && break
                 grep -q "21" $file >/dev/null 2>/dev/null && distversion=7 && break
             fi
         fi
