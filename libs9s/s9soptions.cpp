@@ -145,6 +145,10 @@ enum S9sOptionType
     OptionEmailAddress,
     OptionLastName,
     OptionUiConfig,
+    OptionPreferences,
+    OptionPreferencesToSet,
+    OptionGetPreferences,
+    OptionPreferencesToDelete,
     OptionTitle,
     OptionJobTitle,
     OptionStart,
@@ -4933,6 +4937,39 @@ S9sOptions::isPasswordResetRequested() const
     return getBool("password_reset");
 }
 
+/**
+ * \returns True if the --preferences & --preferences-to-set="..."
+ *          command line options are provided
+ */
+bool
+S9sOptions::setUserPreferencesRequested() const
+{
+    return (getBool("preferences") && !userPreferencesToSet().empty());
+}
+
+/**
+ * \returns True if the --get-preferences command line option
+ *               is provided at startup.
+ */
+bool
+S9sOptions::getUserPreferencesRequested() const
+{
+    return getBool("get_preferences");
+}
+
+/**
+ * \returns True if the --preferences & --preferences-to-delete="..."
+ *          command line options are provided.
+ */
+bool
+S9sOptions::deleteUserPreferencesRequested() const
+{
+    return (getBool("preferences") && !userPreferencesToDelete().empty());
+}
+
+/**
+ * \returns True if the --disable command line option was provided.
+ */
 bool
 S9sOptions::isDisableRequested() const
 {
@@ -6564,6 +6601,12 @@ S9sOptions::printHelpUser()
 "  --user-format=FORMAT       The format string used to print users.\n"
 "  --without-tags=LIST        Limit the list of printed users by tags.\n"
 "  --with-tags=LIST           Limit the list of printed users by tags.\n"
+"\n"
+"  --preferences              To add/set or delete UI preferencies for given user name.\n"
+"                             use it with --preferences-to-set or --preferences-to-delete options.\n"
+"  --preferences-to-set=LIST  list of 'PrefName PrefValue' pairs of UI preferencies to add/set for a user\n"
+"  --preferences-to-delete=LIST list of PrefNames of UI preferencies to delete for a user\n"
+"  --preferences-get          To get UI preferencies for given user name.\n"
 "\n");
 }
 
@@ -10670,6 +10713,15 @@ S9sOptions::checkOptionsUser()
     if (isPasswordResetRequested())
         countOptions++;
 
+    if (setUserPreferencesRequested())
+        countOptions++;
+
+    if (getUserPreferencesRequested())
+        countOptions++;
+
+    if (deleteUserPreferencesRequested())
+        countOptions++;
+
     if (isDisableRequested())
         countOptions++;
 
@@ -11163,6 +11215,10 @@ S9sOptions::readOptionsUser(
         { "create-group",     no_argument,       0, OptionCreateGroup     },
         { "email-address",    required_argument, 0, OptionEmailAddress    },
         { "ui-config",        required_argument, 0, OptionUiConfig        },
+        { "preferences",      no_argument,       0, OptionPreferences     },
+        { "preferences-to-set",   required_argument, 0, OptionPreferencesToSet   },
+        { "preferences-to-delete",required_argument, 0, OptionPreferencesToDelete},
+        { "get-preferences",  no_argument,       0, OptionGetPreferences  },
         { "first-name",       required_argument, 0, OptionFirstName       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "group",            required_argument, 0, OptionGroup           },
@@ -11367,6 +11423,26 @@ S9sOptions::readOptionsUser(
                 m_options["remove_from_group"] = true;
                 break;
 
+            case OptionPreferences:
+                // --preferences
+                m_options["preferences"] = true;
+                break;
+
+            case OptionPreferencesToSet:
+                // --preferences-to-set="PrefName1 PrefValue1 PrefName2 PrefValue2"
+                m_options["preferences_to_set"] = optarg;
+                break;
+
+            case OptionGetPreferences:
+                // --get-preferences
+                m_options["get_preferences"] = true;
+                break;
+
+            case OptionPreferencesToDelete:
+                // --preferences-to-delete="PrefName1 PrefName2"
+                m_options["preferences_to_delete"] = optarg;
+                break;
+
             /*
              * Other options.
              */
@@ -11410,7 +11486,6 @@ S9sOptions::readOptionsUser(
                 m_options["ui_config"] = optarg;
                 break;
 
-            
             case OptionUserFormat:
                 // --user-format=VALUE
                 m_options["user_format"] = optarg;
@@ -16314,6 +16389,23 @@ S9sOptions::uiConfig() const
     return getString("ui_config");
 }
 
+/**
+ * \returns The argument of the --preferences-to-set command line option.
+ */
+S9sString
+S9sOptions::userPreferencesToSet() const
+{
+    return getString("preferences_to_set");
+}
+
+/**
+ * \returns The argument of the --preferences-to-delete command line option.
+ */
+S9sString
+S9sOptions::userPreferencesToDelete() const
+{
+    return getString("preferences_to_delete");
+}
 
 bool 
 S9sOptions::getBool(

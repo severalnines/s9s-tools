@@ -324,6 +324,13 @@ class S9sRpcClient
         bool deleteGroup();
 
         /*
+         * Requests related to user preferences.
+         */
+        bool setUserPreferences();
+        bool getUserPreferences();
+        bool deleteUserPreferences();
+
+        /*
          *
          */
         bool getJobInstance(const int jobId);

@@ -445,6 +445,9 @@ class S9sOptions
         S9sString emailAddress() const;
         S9sString uiConfig() const;
 
+        S9sString userPreferencesToSet() const;
+        S9sString userPreferencesToDelete() const;
+
         bool isHelpRequested() const;
         bool isListRequested() const;
         bool isListQueriesRequested() const;
@@ -544,6 +547,9 @@ class S9sOptions
         bool isAddToGroupRequested() const;
         bool isRemoveFromGroupRequested() const;
         bool isPasswordResetRequested() const;
+        bool setUserPreferencesRequested() const;
+        bool getUserPreferencesRequested() const;
+        bool deleteUserPreferencesRequested() const;
         bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isPromoteSlaveRequested() const;

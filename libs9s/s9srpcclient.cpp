@@ -9279,6 +9279,111 @@ S9sRpcClient::deleteGroup()
 }
 
 /**
+ * Sends request to add/update user preference(s).
+ */
+bool
+S9sRpcClient::setUserPreferences()
+{
+    S9sVariantMap userMap;
+    userMap["class_name"] = "CmonUser";
+    S9sOptions *options  = S9sOptions::instance();
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"] = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    S9sVariantMap preferencesMap;
+    S9sString uiPreferencesIn = options->userPreferencesToSet();
+    S9sVariantList uiPreferencesDataList = uiPreferencesIn.split(" ");
+    for (std::size_t prefIdx = 0; prefIdx < uiPreferencesDataList.size(); prefIdx += 2)
+    {
+        uint valIdx = prefIdx+1;
+        if (valIdx >= uiPreferencesDataList.size())
+        {
+            PRINT_ERROR("A user preference '%s' without its value."
+                        "Format for preferences '--preferences-to-set=\"preference01 value01 preference02 value02\"'."
+                        , STR(uiPreferencesDataList[prefIdx].toString()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+        preferencesMap[uiPreferencesDataList[prefIdx].toString()] = uiPreferencesDataList[valIdx];
+    }
+
+    userMap["preferences"] = preferencesMap;
+    S9sVariantMap request;
+    request["operation"]   = "setUserPreferences";
+    request["user"]        = userMap;
+
+    S9sString uri = "/v2/users/";
+    return executeRequest(uri, request);
+}
+/**
+ * Sends request to get user preference(s).
+ */
+bool
+S9sRpcClient::getUserPreferences()
+{
+    S9sVariantMap userMap;
+    userMap["class_name"] = "CmonUser";
+    S9sOptions *options = S9sOptions::instance();
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"] = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    S9sVariantMap request;
+    request["operation"] = "getUserPreferences";
+    request["user"]      = userMap;
+    S9sString uri = "/v2/users/";
+    return executeRequest(uri, request);
+}
+/**
+ * Sends request to delete user preference(s).
+ */
+bool
+S9sRpcClient::deleteUserPreferences()
+{
+    S9sVariantMap userMap;
+    userMap["class_name"] = "CmonUser";
+    S9sOptions *options = S9sOptions::instance();
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"] = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    S9sString uiPreferencesIn = options->userPreferencesToDelete();
+    if (uiPreferencesIn.size() == 0)
+    {
+        PRINT_ERROR("At least one user preference name should be added to delete."
+                    "Format for preferences '--ui-preferences-delete=\"preferenceName01 preferenceName02 preferenceName03\"'.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    S9sVariantMap preferencesMap;
+    S9sVariantList uiPreferencesDataList = uiPreferencesIn.split(" ");
+    for (const auto &prefName : uiPreferencesDataList)
+    {
+        preferencesMap[prefName.toString()] = S9sString();
+    }
+
+    userMap["preferences"] = preferencesMap;
+    S9sVariantMap request;
+    request["operation"]   = "deleteUserPreferences";
+    request["user"]        = userMap;
+    S9sString uri = "/v2/users/";
+    return executeRequest(uri, request);
+}
+
+/**
  * \param user The user to be changed.
  * \param groupName The name of the group.
  * \param replacePrimaryGroup If true the primary group will be set, replaced by
