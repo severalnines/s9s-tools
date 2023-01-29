@@ -9295,21 +9295,21 @@ S9sRpcClient::setUserPreferences()
     }
 
     S9sVariantMap preferencesMap;
-    S9sString uiPreferencesIn = options->userPreferencesToSet();
-    S9sVariantList uiPreferencesDataList = uiPreferencesIn.split(" ");
-    for (std::size_t prefIdx = 0; prefIdx < uiPreferencesDataList.size(); prefIdx += 2)
+    S9sString preferencesIn = options->userPreferencesToSet();
+    S9sVariantList preferencesDataList = preferencesIn.split(";");
+    for (const auto &preference : preferencesDataList)
     {
-        uint valIdx = prefIdx+1;
-        if (valIdx >= uiPreferencesDataList.size())
+        S9sVariantList currPreferenceList = preference.toString().split("=");
+        if (currPreferenceList.size() != 2)
         {
-            PRINT_ERROR("A user preference '%s' without its value."
-                        "Format for preferences '--preferences-to-set=\"preference01 value01 preference02 value02\"'."
-                        , STR(uiPreferencesDataList[prefIdx].toString()));
+            PRINT_ERROR("A user preference '%s' input syntax is incompatible."
+                        "Format for preferences '--preferences-to-set=\"key1=value1;key2=value2\"'."
+                        , STR(preference.toString()));
 
             options->setExitStatus(S9sOptions::BadOptions);
             return false;
         }
-        preferencesMap[uiPreferencesDataList[prefIdx].toString()] = uiPreferencesDataList[valIdx];
+        preferencesMap[currPreferenceList[0].toString()] = currPreferenceList[1].toString();
     }
 
     userMap["preferences"] = preferencesMap;
@@ -9358,19 +9358,19 @@ S9sRpcClient::deleteUserPreferences()
         userMap["user_name"] = options->userName();
     }
 
-    S9sString uiPreferencesIn = options->userPreferencesToDelete();
-    if (uiPreferencesIn.size() == 0)
+    S9sString preferencesIn = options->userPreferencesToDelete();
+    if (preferencesIn.size() == 0)
     {
         PRINT_ERROR("At least one user preference name should be added to delete."
-                    "Format for preferences '--ui-preferences-delete=\"preferenceName01 preferenceName02 preferenceName03\"'.");
+                    "Format for preferences '--preferences-to-delete=\"key1;key2\"'.");
 
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
 
     S9sVariantMap preferencesMap;
-    S9sVariantList uiPreferencesDataList = uiPreferencesIn.split(" ");
-    for (const auto &prefName : uiPreferencesDataList)
+    S9sVariantList preferencesDataList = preferencesIn.split(";");
+    for (const auto &prefName : preferencesDataList)
     {
         preferencesMap[prefName.toString()] = S9sString();
     }
