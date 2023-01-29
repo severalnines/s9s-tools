@@ -621,7 +621,7 @@ UtS9sRpcClient::testGetDbGrowth()
     if (isVerbose())
         printDebug(payload);
 
-    S9S_COMPARE(payload.size(), 4);
+    S9S_COMPARE(payload.size(), 5);
     S9S_COMPARE(payload["operation"].toString(), "getdbgrowth");
     S9S_COMPARE(payload["cluster_id"].toInt(), 42);
 
