@@ -11431,7 +11431,7 @@ S9sOptions::readOptionsUser(
                 break;
 
             case OptionPreferencesToSet:
-                // --preferences-to-set="PrefName1 PrefValue1 PrefName2 PrefValue2"
+                // --preferences-to-set="key1=value1;key2=value2"
                 m_options["preferences_to_set"] = optarg;
                 break;
 
@@ -11441,7 +11441,7 @@ S9sOptions::readOptionsUser(
                 break;
 
             case OptionPreferencesToDelete:
-                // --preferences-to-delete="PrefName1 PrefName2"
+                // --preferences-to-delete="key1;key2"
                 m_options["preferences_to_delete"] = optarg;
                 break;
 
