@@ -91,6 +91,9 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testComposeBackupJob();
         bool testBackup();
         bool testBackupSchedule();
+        bool testSetUserPreferences();
+        bool testGetUserPreferences();
+        bool testDeleteUserPreferences();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

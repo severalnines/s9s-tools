@@ -1093,6 +1093,21 @@ S9sBusinessLogic::execute()
             success = client.resetPassword();
             client.printMessages("Ok.", success);
             client.setExitStatus();
+        } else if (options->setUserPreferencesRequested())
+        {
+            success = client.setUserPreferences();
+            client.printMessages(success ? "Ok." : "Failed.", success);
+            client.setExitStatus();
+        } else if (options->getUserPreferencesRequested())
+        {
+            success = client.getUserPreferences();
+            client.printMessages(success ? "Ok." : "Failed.", success);
+            client.setExitStatus();
+        } else if (options->deleteUserPreferencesRequested())
+        {
+            success = client.deleteUserPreferences();
+            client.printMessages(success ? "Ok." : "Failed.", success);
+            client.setExitStatus();
         } else {
             executeCreateUser(client);
         }
