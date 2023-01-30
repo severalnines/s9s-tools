@@ -323,7 +323,8 @@ s9s user --whoami
 
 .TP
 .B \-\^\-preferences
-To add/set/delete UI preferences for a given \fB\-\-cmon\-user\fR. Is used with the \fB\-\-preferences\-to\-set\fR or \fB\-\-preferences\-to\-delete\fR option.
+To add/set/delete the preferences for a given \fB\-\-cmon\-user\fR. For example the preferences for UI.
+Is used with other input option like \fB\-\-preferences\-to\-set\fR or \fB\-\-preferences\-to\-delete\fR options.
 
 .B EXAMPLES
 .nf
@@ -334,7 +335,7 @@ s9s user --cmon-user=s9s --password=***** --preferences --preferences-to-delete=
 
 .TP
 .B \-\^\-get\-preferences
-To get preferences for a given \fB\-\-cmon\-user\fR.
+To get the preferences for a given \fB\-\-cmon\-user\fR.
 
 .B EXAMPLE
 .nf
@@ -612,15 +613,15 @@ s9s user \\
 
 .TP
 .BI --preferences-to-set= LIST
-List of preferences to store/update to/in the cmon database for a given \fB\-\-cmon\-user\fR.
-Is used with \fB\-\-preferences\fR main property.
+List of a given \fB\-\-cmon\-user\fR's preferences to insert/update to/in the cmon database.
+Is used with \fB\-\-preferences\fR main option.
 The LIST consists of the key=value pairs separated by semicolon (;).
 Examples: see the \fB\-\-preferences\fR main option above.
 
 .TP
 .BI --preferences-to-delete= LIST
-List of preferences to delete from the cmon database for a given \fB\-\-cmon\-user\fR.
-Is used with \fB\-\-preferences\fR main property.
+List of a given \fB\-\-cmon\-user\fR's preferences to delete from the cmon database.
+Is used with \fB\-\-preferences\fR main option.
 The LIST consists of the keys separated by semicolon (;).
 Examples: see the \fB\-\-preferences\fR main option above.
 
