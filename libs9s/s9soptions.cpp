@@ -6602,11 +6602,13 @@ S9sOptions::printHelpUser()
 "  --without-tags=LIST        Limit the list of printed users by tags.\n"
 "  --with-tags=LIST           Limit the list of printed users by tags.\n"
 "\n"
-"  --preferences              To add/set or delete UI preferencies for given user name.\n"
-"                             use it with --preferences-to-set or --preferences-to-delete options.\n"
-"  --preferences-to-set=LIST  list of 'PrefName PrefValue' pairs of UI preferencies to add/set for a user\n"
-"  --preferences-to-delete=LIST list of PrefNames of UI preferencies to delete for a user\n"
-"  --preferences-get          To get UI preferencies for given user name.\n"
+"  --preferences              To add/set or delete preferences for a given user name.\n"
+"                             Is used with input options like --preferences-to-set or --preferences-to-delete.\n"
+"  --preferences-to-set=LIST  List of 'key=value' pairs separated by semicolon.\n"
+"                             The preferences to add/set for a given user name.\n"
+"  --preferences-to-delete=LIST List of keys separated by semicolon.\n"
+"                               The preferences to delete for a given user name.\n"
+"  --preferences-get          To get preferences for given user name.\n"
 "\n");
 }
 
