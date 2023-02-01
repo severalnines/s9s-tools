@@ -443,7 +443,6 @@ class S9sOptions
         S9sString testServer() const;
 
         S9sString emailAddress() const;
-        S9sString uiConfig() const;
 
         S9sString userPreferencesToSet() const;
         S9sString userPreferencesToDelete() const;

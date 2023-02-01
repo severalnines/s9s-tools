@@ -9632,9 +9632,6 @@ S9sRpcClient::setUser()
     if (!options->emailAddress().empty())
         properties["email_address"] = options->emailAddress();
 
-    if (!options->uiConfig().empty())
-        properties["ui_config"] = options->uiConfig();
-
     request["operation"]  = "setUser";
     request["user"]       = properties;
 
