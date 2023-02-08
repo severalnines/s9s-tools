@@ -132,19 +132,6 @@ S9sUser::emailAddress(
 }
 
 /**
- * \returns The ui configuration of the user.
- */
-S9sString
-S9sUser::uiConfig(
-        const S9sString &defaultValue) const
-{
-    if (m_properties.contains("ui_config"))
-        return m_properties.at("ui_config").toString();
-
-    return defaultValue;
-}
-
-/**
  * \returns The unique numerical ID of the user.
  */
 int
