@@ -4173,6 +4173,7 @@ S9sRpcClient::createPostgreSql(
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
+    jobData["vendor"]           = options->vendor();
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
