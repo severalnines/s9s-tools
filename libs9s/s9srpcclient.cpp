@@ -10595,7 +10595,7 @@ S9sRpcClient::executeRequest(
         int            port = 0;
         S9sString      role;
 
-        retval = doExecuteRequest(uri, request);
+        retval = doExecuteRequest(uri, request, redirect);
             
         if (retval && m_priv->m_reply.isRedirect())
             m_priv->rememberRedirect();
