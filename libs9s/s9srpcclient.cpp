@@ -1015,7 +1015,7 @@ S9sRpcClient::pingController()
     request["operation"]       = "ping";
     request["request_created"] = timeString;
 
-    retval = doExecuteRequest(uri, request);
+    retval = executeRequest(uri, request, S9s::DenyRedirect);
     return retval;
 }
 
@@ -10575,7 +10575,8 @@ S9sRpcClient::composeJobDataOneContainer() const
 bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
-        S9sVariantMap   &request)
+        S9sVariantMap   &request,
+        S9s::Redirect    redirect)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
@@ -10598,6 +10599,11 @@ S9sRpcClient::executeRequest(
             
         if (retval && m_priv->m_reply.isRedirect())
             m_priv->rememberRedirect();
+
+        if (!retval || redirect != S9s::AllowRedirect)
+        {
+            break;
+        }
 
         if (!retval || !m_priv->m_reply.isRedirect())
         {
@@ -10691,7 +10697,8 @@ S9sRpcClient::executeRequest(
 bool
 S9sRpcClient::doExecuteRequest(
         const S9sString     &uri,
-        S9sVariantMap       &request)
+        S9sVariantMap       &request,
+        S9s::Redirect        redirect)
 {
     S9sString    payload = request.toString();
     S9sOptions  *options = S9sOptions::instance();    
@@ -10718,7 +10725,7 @@ S9sRpcClient::doExecuteRequest(
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
-    if (!m_priv->connect())
+    if (!m_priv->connect(redirect))
     {
         PRINT_LOG("%s", STR(m_priv->m_errorString));
         PRINT_VERBOSE("Connection failed: %s", STR(m_priv->m_errorString));

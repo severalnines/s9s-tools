@@ -449,11 +449,13 @@ class S9sRpcClient
         
         virtual bool executeRequest(
                 const S9sString &uri,
-                S9sVariantMap   &request);
+                S9sVariantMap   &request,
+                S9s::Redirect    redirect = S9s::AllowRedirect);
 
         virtual bool doExecuteRequest(
-                const S9sString     &uri,
-                S9sVariantMap &request);
+                const S9sString &uri,
+                S9sVariantMap   &request,
+                S9s::Redirect    redirect = S9s::AllowRedirect);
 
         void setError(
                 const S9sString &errorString,
