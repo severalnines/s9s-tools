@@ -434,7 +434,7 @@ S9sRpcClient::authenticateWithPassword()
     request["user_name"]    = options->userName();
     request["password"]     = options->password();
     
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     m_priv->m_errorString = reply().errorString();
     if (!retval)
     {
@@ -504,7 +504,7 @@ S9sRpcClient::authenticateWithKey()
      */
     request["username"]     = options->userName();
 
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -537,7 +537,7 @@ S9sRpcClient::authenticateWithKey()
         serverVersion().startsWith("1.4.1"))
         request["operation"] = "response";
 
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -1533,7 +1533,7 @@ S9sRpcClient::getJobInstance(
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
 
-    return executeRequest(uri, request, false);
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1618,8 +1618,7 @@ bool
 S9sRpcClient::getJobLog(
         const int  jobId,
         const int  limit,
-        const int  offset,
-        const bool isImportant)
+        const int  offset)
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
@@ -1640,7 +1639,7 @@ S9sRpcClient::getJobLog(
     if (offset != 0)
         request["offset"] = offset;
 
-    retval = executeRequest(uri, request, isImportant);
+    retval = executeRequest(uri, request);
 
     return retval;
 
@@ -10576,8 +10575,7 @@ S9sRpcClient::composeJobDataOneContainer() const
 bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
-        S9sVariantMap   &request,
-        bool             important)
+        S9sVariantMap   &request)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
@@ -10588,8 +10586,7 @@ S9sRpcClient::executeRequest(
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
     
-    if (important)
-        printRequestForDebug(request);
+    //printRequestForDebug(request);
 
     while (true)
     {

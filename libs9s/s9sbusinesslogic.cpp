@@ -2372,7 +2372,7 @@ S9sBusinessLogic::waitForJobWithLog(
          * Requested at most 300 log messages. If we have more we will print
          * them later in the next round.
          */
-        success = client.getJobLog(jobId, 300, nLogsPrinted, false);
+        success = client.getJobLog(jobId, 300, nLogsPrinted);
         if (success)
         {
             reply     = client.reply();
