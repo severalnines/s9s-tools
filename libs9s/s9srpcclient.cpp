@@ -1015,7 +1015,7 @@ S9sRpcClient::pingController()
     request["operation"]       = "ping";
     request["request_created"] = timeString;
 
-    retval = executeRequest(uri, request);
+    retval = doExecuteRequest(uri, request);
     return retval;
 }
 
