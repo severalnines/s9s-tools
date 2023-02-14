@@ -92,7 +92,8 @@ S9sRpcClientPrivate::clearBuffer()
  * \returns whether it connected successfully
  */
 bool
-S9sRpcClientPrivate::connect()
+S9sRpcClientPrivate::connect(
+        S9s::Redirect        redirect)
 {
     struct hostent *hp;
     struct timeval timeout;
@@ -207,7 +208,7 @@ S9sRpcClientPrivate::connect()
      * If either the DNS lookup or the connect failed and we have an other
      * controller to connect we do a recursive call here.
      */
-    if (!success && tryNextHost())
+    if (!success && tryNextHost(redirect))
     {
         PRINT_VERBOSE("Failed, trying next host.");
         return connect();
@@ -671,8 +672,12 @@ S9sRpcClientPrivate::setConnectFailed(
 }
 
 bool
-S9sRpcClientPrivate::tryNextHost()
+S9sRpcClientPrivate::tryNextHost(
+        S9s::Redirect        redirect)
 {
+    if (redirect == S9s::DenyRedirect)
+        return false;
+
     if (m_servers.empty())
         loadRedirect();
 

@@ -437,7 +437,7 @@ S9sRpcClient::authenticateWithPassword()
     request["user_name"]    = options->userName();
     request["password"]     = options->password();
     
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     m_priv->m_errorString = reply().errorString();
     if (!retval)
     {
@@ -507,7 +507,7 @@ S9sRpcClient::authenticateWithKey()
      */
     request["username"]     = options->userName();
 
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -540,7 +540,7 @@ S9sRpcClient::authenticateWithKey()
         serverVersion().startsWith("1.4.1"))
         request["operation"] = "response";
 
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -1018,7 +1018,7 @@ S9sRpcClient::pingController()
     request["operation"]       = "ping";
     request["request_created"] = timeString;
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, S9s::DenyRedirect);
     return retval;
 }
 
@@ -1536,7 +1536,7 @@ S9sRpcClient::getJobInstance(
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
 
-    return executeRequest(uri, request, false);
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1676,8 +1676,7 @@ bool
 S9sRpcClient::getJobLog(
         const int  jobId,
         const int  limit,
-        const int  offset,
-        const bool isImportant)
+        const int  offset)
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
@@ -1698,7 +1697,7 @@ S9sRpcClient::getJobLog(
     if (offset != 0)
         request["offset"] = offset;
 
-    retval = executeRequest(uri, request, isImportant);
+    retval = executeRequest(uri, request);
 
     return retval;
 
@@ -10764,7 +10763,7 @@ bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
         S9sVariantMap   &request,
-        bool             important)
+        S9s::Redirect    redirect)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
@@ -10775,8 +10774,7 @@ S9sRpcClient::executeRequest(
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
     
-    if (important)
-        printRequestForDebug(request);
+    //printRequestForDebug(request);
 
     while (true)
     {
@@ -10784,10 +10782,15 @@ S9sRpcClient::executeRequest(
         int            port = 0;
         S9sString      role;
 
-        retval = doExecuteRequest(uri, request);
+        retval = doExecuteRequest(uri, request, redirect);
             
         if (retval && m_priv->m_reply.isRedirect())
             m_priv->rememberRedirect();
+
+        if (!retval || redirect != S9s::AllowRedirect)
+        {
+            break;
+        }
 
         if (!retval || !m_priv->m_reply.isRedirect())
         {
@@ -10881,7 +10884,8 @@ S9sRpcClient::executeRequest(
 bool
 S9sRpcClient::doExecuteRequest(
         const S9sString     &uri,
-        S9sVariantMap       &request)
+        S9sVariantMap       &request,
+        S9s::Redirect        redirect)
 {
     S9sString    payload = request.toString();
     S9sOptions  *options = S9sOptions::instance();    
@@ -10908,7 +10912,7 @@ S9sRpcClient::doExecuteRequest(
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
-    if (!m_priv->connect())
+    if (!m_priv->connect(redirect))
     {
         PRINT_LOG("%s", STR(m_priv->m_errorString));
         PRINT_VERBOSE("Connection failed: %s", STR(m_priv->m_errorString));

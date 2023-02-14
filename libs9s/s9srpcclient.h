@@ -338,8 +338,7 @@ class S9sRpcClient
         bool getJobLog(
                 const int  jobId,
                 const int  limit   = 0,
-                const int  offset  = 0,
-                const bool isImportant = true);
+                const int  offset  = 0);
 
         bool getLog();
         bool getLogStatistics();
@@ -457,16 +456,15 @@ class S9sRpcClient
         virtual S9sVariantMap composeBackupJob();
         virtual S9sVariantMap composeJobDataOneContainer() const;
         
-        virtual bool
-            executeRequest(
+        virtual bool executeRequest(
                 const S9sString &uri,
                 S9sVariantMap   &request,
-                bool             important = true);
+                S9s::Redirect    redirect = S9s::AllowRedirect);
 
-        virtual bool 
-            doExecuteRequest(
-                const S9sString     &uri,
-                S9sVariantMap &request);
+        virtual bool doExecuteRequest(
+                const S9sString &uri,
+                S9sVariantMap   &request,
+                S9s::Redirect    redirect = S9s::AllowRedirect);
 
         void setError(
                 const S9sString &errorString,
@@ -474,8 +472,7 @@ class S9sRpcClient
 
         void printRequestForDebug(S9sVariantMap &request);
 
-        void 
-            saveRequestAndReply(
+        void saveRequestAndReply(
                     const S9sVariantMap &request,
                     const S9sVariantMap &reply) const;
 

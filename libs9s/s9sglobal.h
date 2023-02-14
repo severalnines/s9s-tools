@@ -37,6 +37,12 @@ namespace S9s
         PublicDnsName,
         PrivateDnsName,
     };
+
+    enum Redirect
+    {
+        AllowRedirect = 0,
+        DenyRedirect
+    };
 };
 
 /**
