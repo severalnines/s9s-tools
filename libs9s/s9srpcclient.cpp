@@ -42,6 +42,12 @@
 #define READ_SIZE 10240
 //#define SEND_NODES
 
+namespace
+{
+    const S9sString AWS_CLOUD_PROVIDER = "aws";
+    const S9sString S3_CLOUD_SERVICE_PROVIDER  = "s3";
+}
+
 /**
  * Default constructor.
  */
@@ -10259,6 +10265,9 @@ S9sRpcClient::composeBackupJob()
     S9sString       snapshotLocation = options->snapshotLocation();
     S9sString       s3bucket         = options->s3bucket();
     S9sString       s3region         = options->s3region();
+    bool            onlyCloud        = options->onlyCloud();
+    S9sString       cloudStorageProv = options->cloudProvider();
+    int             backupRetention  = options->backupRetention();
     S9sString       storageHost      = options->storageHost();
     S9sString       databases        = options->databases();
     S9sNode         backupHost;
@@ -10266,6 +10275,7 @@ S9sRpcClient::composeBackupJob()
 
     S9sVariantMap   job          = composeJob();
     S9sVariantMap   jobData      = composeJobData();
+    S9sVariantMap   jobCloudData;
     S9sVariantMap   jobSpec;
    
     if (!backupMethod.empty())
@@ -10304,14 +10314,62 @@ S9sRpcClient::composeBackupJob()
     if (!snapshotLocation.empty())
         jobData["snapshot_location"] = snapshotLocation;
 
-    if (options->hasCredentialIdOption())
-        jobData["credential_id"] = options->credentialId();
-
-    if (!s3bucket.empty())
-        jobData["s3_bucket"] = s3bucket;
-
     if (!s3region.empty())
         jobData["s3_region"] = s3region;
+
+    if (onlyCloud)
+    {
+        jobData["only_cloud"] = true;
+        // checks with current available functionality
+        if(cloudStorageProv.empty() || cloudStorageProv != AWS_CLOUD_PROVIDER)
+        {
+            PRINT_ERROR("Only supported S3 buckets. Use: "
+            "--cloud-provider=aws --s3-bucket=<my-bucket> options");
+            return S9sVariantMap();
+        }
+        else
+        {
+            // Using existing parameter names for create backup job when uploading backup
+            // upload_backup_to_cloud command expects following arguments
+            if (options->hasCredentialIdOption())
+                jobCloudData["cloud_credentials_id"] = options->credentialId();
+            else
+            {
+                PRINT_ERROR("Need option --credential-id=<id-num> with --only-cloud");
+                return S9sVariantMap();
+            }
+
+            if (!s3bucket.empty())
+                jobCloudData["bucket"] = s3bucket;
+            else
+            {
+                PRINT_ERROR("Only supported S3 buckets. Use: "
+                "--cloud-provider=aws --s3-bucket=<my-bucket> options");
+                return S9sVariantMap();
+            }
+            // aws hardcoded properties (by now)
+            jobCloudData["auto_create_bucket"]  = true;
+            jobCloudData["cloud_provider"] = AWS_CLOUD_PROVIDER;
+            jobCloudData["cloud_service"]  = S3_CLOUD_SERVICE_PROVIDER;
+            jobCloudData["cloud_service"]  = S3_CLOUD_SERVICE_PROVIDER;
+            if(backupRetention != 0)
+                jobCloudData["backup_retention"] = backupRetention;
+        }
+        jobData["upload_backup_data_to_cloud_storage"] = jobCloudData;
+    }
+    else
+    {
+        if(backupRetention != 0)
+            jobData["backup_retention"] = backupRetention;
+
+        if (options->hasCredentialIdOption())
+            jobData["credential_id"] = options->credentialId();
+
+        if (!s3bucket.empty())
+            jobData["s3_bucket"] = s3bucket;
+
+    }
+    
 
     if (!storageHost.empty())
         jobData["storage_host"] = storageHost;
