@@ -10332,7 +10332,7 @@ S9sRpcClient::composeBackupJob()
             // Using existing parameter names for create backup job when uploading backup
             // upload_backup_to_cloud command expects following arguments
             if (options->hasCredentialIdOption())
-                jobCloudData["cloud_credentials_id"] = options->credentialId();
+                jobCloudData["cloud_storage_credentials_id"] = options->credentialId();
             else
             {
                 PRINT_ERROR("Need option --credential-id=<id-num> with --only-cloud");
@@ -10349,9 +10349,8 @@ S9sRpcClient::composeBackupJob()
             }
             // aws hardcoded properties (by now)
             jobCloudData["auto_create_bucket"]  = true;
-            jobCloudData["cloud_provider"] = AWS_CLOUD_PROVIDER;
-            jobCloudData["cloud_service"]  = S3_CLOUD_SERVICE_PROVIDER;
-            jobCloudData["cloud_service"]  = S3_CLOUD_SERVICE_PROVIDER;
+            jobCloudData["cloud_storage_provider"] = AWS_CLOUD_PROVIDER;
+            jobCloudData["cloud_storage_service"]  = S3_CLOUD_SERVICE_PROVIDER;
             if(backupRetention != 0)
                 jobCloudData["backup_retention"] = backupRetention;
         }
