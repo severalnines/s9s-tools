@@ -338,7 +338,8 @@ class S9sRpcClient
         bool getJobLog(
                 const int  jobId,
                 const int  limit   = 0,
-                const int  offset  = 0);
+                const int  offset  = 0,
+                const bool printRequest = true);
 
         bool getLog();
         bool getLogStatistics();
@@ -459,6 +460,7 @@ class S9sRpcClient
         virtual bool executeRequest(
                 const S9sString &uri,
                 S9sVariantMap   &request,
+                bool             printRequest = true,
                 S9s::Redirect    redirect = S9s::AllowRedirect);
 
         virtual bool doExecuteRequest(
@@ -470,7 +472,7 @@ class S9sRpcClient
                 const S9sString &errorString,
                 const S9sString &errorCode = "ConnectError");
 
-        void printRequestForDebug(S9sVariantMap &request);
+        void printRequestJson(S9sVariantMap &request);
 
         void saveRequestAndReply(
                     const S9sVariantMap &request,

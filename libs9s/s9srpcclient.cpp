@@ -443,7 +443,7 @@ S9sRpcClient::authenticateWithPassword()
     request["user_name"]    = options->userName();
     request["password"]     = options->password();
     
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     m_priv->m_errorString = reply().errorString();
     if (!retval)
     {
@@ -513,7 +513,7 @@ S9sRpcClient::authenticateWithKey()
      */
     request["username"]     = options->userName();
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -546,7 +546,7 @@ S9sRpcClient::authenticateWithKey()
         serverVersion().startsWith("1.4.1"))
         request["operation"] = "response";
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     m_priv->m_errorString = reply().errorString ();
     if (!retval)
     {
@@ -1519,7 +1519,7 @@ S9sRpcClient::getJobInstances(
     if (!options->withTags().empty())
         request["tags"] = options->withTags();
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     return retval;
 }
 
@@ -1682,7 +1682,8 @@ bool
 S9sRpcClient::getJobLog(
         const int  jobId,
         const int  limit,
-        const int  offset)
+        const int  offset,
+        const bool printRequest)
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
@@ -1703,7 +1704,7 @@ S9sRpcClient::getJobLog(
     if (offset != 0)
         request["offset"] = offset;
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, printRequest);
 
     return retval;
 
@@ -10820,6 +10821,7 @@ bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
         S9sVariantMap   &request,
+        bool             printRequest,
         S9s::Redirect    redirect)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
@@ -10831,7 +10833,8 @@ S9sRpcClient::executeRequest(
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
     
-    printRequestForDebug(request);
+    if (printRequest)
+        printRequestJson(request);
 
     while (true)
     {
@@ -11205,7 +11208,7 @@ S9sRpcClient::doExecuteRequest(
  * This method is made for printing out the RPC requests for debugging.
  */
 void
-S9sRpcClient::printRequestForDebug(
+S9sRpcClient::printRequestJson(
         S9sVariantMap &request)
 {
     S9sOptions     *options = S9sOptions::instance();
