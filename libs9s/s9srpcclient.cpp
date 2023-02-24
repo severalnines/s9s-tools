@@ -3628,6 +3628,12 @@ S9sRpcClient::registerHost()
         command = "pgbouncer";
         title   = "Register PgBouncer Node";
         registerAction = true;
+        if (options->hasAdminUser()
+                && options->hasAdminPassword())
+        {
+            jobData["admin_user"] = options->getString("admin_user");
+            jobData["admin_password"] = options->getString("admin_password");
+        }
     } else if (protocol == "pgbackrest")
     {
         command = "pgbackrest";
