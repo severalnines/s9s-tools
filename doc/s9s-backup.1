@@ -310,6 +310,25 @@ s9s backup \\
 .fi
 
 .TP
+.B \-\^\-only-cloud
+Creates a job to generate a backup streaming it directly to cloud, without intermediate files
+\fB\-\^\-only\-cloud\fP option has to be set to indicate direct streaming of backup to cloud container
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.209 \\
+    --only-cloud \\
+    --cloud-provider="aws" \\
+    --s3-bucket="my-aws-bucket-eu-west-1" \\
+    --credential-id=2 \\
+    --backup-method=xtrabackupfull \\
+    --wait
+.fi
+
+.TP
 .B \-\^\-create-snapshot-repository
 Creates a job to create a snapshot repository on elasticsearch cluster. When this main option is used the 
 \fB\-\^\-cluster\-id\fP option has to be used to identify the cluster, the 

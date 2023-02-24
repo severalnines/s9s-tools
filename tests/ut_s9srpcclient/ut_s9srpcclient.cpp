@@ -1822,6 +1822,7 @@ UtS9sRpcClient::testBackup()
     options->m_options["credential_id"]       = 1;
     options->m_options["s3_bucket"]           = "elastic-s3-test";
     options->m_options["s3_region"]           = "eu-west-3";
+    options->m_options["only_cloud"]          = true;
     options->m_options["snapshot_location"]   = "/home/vagrant/backups/es-snapshot-repositories";
     options->m_options["subdirectory"]        = "subdir1";
     options->m_options["backup_user"]         = "backupuser1";
@@ -1903,6 +1904,10 @@ UtS9sRpcClient::testBackup()
     S9S_COMPARE(
             jobData.valueByPath("s3_region"),
             "eu-west-3");
+
+    S9S_COMPARE(
+            jobData.valueByPath("only_cloud"),
+            true);
 
     S9S_COMPARE(
             jobData.valueByPath("snapshot_location"),

@@ -130,6 +130,8 @@ enum S9sOptionType
     OptionSnapshotLocation,
     OptionS3Bucket,
     OptionS3Region,
+    OptionOnlyCloud,
+    OptionCloudProvider,
     OptionStorageHost,
     OptionSubDirectory,
     OptionBackupEncryption,
@@ -3302,6 +3304,40 @@ S9sOptions::s3region() const
     return retval;
 }
 
+/**
+ * \returns The argument for the --only-cloud option
+ */
+bool
+S9sOptions::onlyCloud() const
+{
+    return m_options.contains("only_cloud");
+}
+
+bool
+S9sOptions::hasCloudProviderOption() const
+{
+    return m_options.contains("cloud_provider");
+}
+
+/**
+ * \returns The argument for the --cloud-provider option 
+ */
+S9sString
+S9sOptions::cloudProvider() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("cloud_provider"))
+    {
+        retval = m_options.at("cloud_provider").toString();
+    } else {
+        retval = m_userConfig.variableValue("cloud_provider");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("cloud_provider");
+    }
+
+    return retval;
+}
 
 
 /**
@@ -6507,6 +6543,8 @@ S9sOptions::printHelpBackup()
 "  --credential-id=ID         The required cloud credential ID to use on snapshot repository.\n"
 "  --s3-bucket=NAME           The name of the s3 bucket to use on the snapshot repository\n"
 "  --s3-region=STRING         The name of the region storing s3 bucket. (example: eu-west-3)\n"
+"  --only-cloud               Flag to indicate that backup will be directly streamed to cloud (no files generated)\n"
+"  --cloud-provider=STRING    Identifier of the cloud storage provider to be used\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -7694,6 +7732,8 @@ S9sOptions::readOptionsBackup(
         { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "s3-region",        required_argument, 0, OptionS3Region        },
+        { "only-cloud",       no_argument,       0, OptionOnlyCloud       },
+        { "cloud-provider",   required_argument, 0, OptionCloudProvider   },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
@@ -8131,6 +8171,18 @@ S9sOptions::readOptionsBackup(
                 // --s3-region=STRING
                 m_options["s3_region"] = optarg;
                 break;
+
+            case OptionOnlyCloud:
+                // --only-cloud
+                m_options["only_cloud"] = true;
+                break;
+
+            case OptionCloudProvider:
+                // --cloud-provider
+                m_options["cloud_provider"] = optarg;
+                break;
+
+
 
             case OptionSubDirectory:
                 // --subdirectory=PATTERN
