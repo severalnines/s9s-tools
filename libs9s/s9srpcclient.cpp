@@ -10831,7 +10831,7 @@ S9sRpcClient::executeRequest(
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
     
-    //printRequestForDebug(request);
+    printRequestForDebug(request);
 
     while (true)
     {
