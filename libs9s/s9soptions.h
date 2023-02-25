@@ -367,7 +367,7 @@ class S9sOptions
         S9sString s3bucket() const;
         bool      hasS3regionOption() const;
         S9sString s3region() const;
-        bool      onlyCloud() const;
+        bool      cloudOnly() const;
         bool      hasCloudProviderOption() const;
         S9sString cloudProvider() const;
         S9sString storageHost() const;
