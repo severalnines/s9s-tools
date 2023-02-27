@@ -3017,11 +3017,9 @@ S9sRpcClient::createCluster()
         success = createElasticsearch(
             hosts, osUserName, dbVersion);
  
-    } else if (options->clusterType() == "mssql_single")
-    {
-        success = createMsSqlSingle(
-            hosts, osUserName, dbVersion);
-    } else if (options->clusterType() == "mssql_ao_async")
+    } else if (options->clusterType() == "mssql_single" ||
+               options->clusterType() == "mssql_ao_async"||
+               options->clusterType() == "mssql_ao_sync")
     {
         success = createMsSqlSingle(
             hosts, osUserName, dbVersion);
