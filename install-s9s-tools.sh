@@ -53,6 +53,7 @@ do_release_file() {
             else
                 grep -q "VERSION=.*7." $file >/dev/null 2>/dev/null && distversion=7 && break
                 grep -q "VERSION=.*8." $file >/dev/null 2>/dev/null && distversion=8 && break
+                grep -q "VERSION=.*9." $file >/dev/null 2>/dev/null && distversion=9 && break
             fi
         fi
         if [[ $file =~ $regex_etc ]]; then
@@ -63,6 +64,7 @@ do_release_file() {
             if [[ $dist == "redhat" ]] || [[ $dist == "red" ]] || [[ $dist == "fedora" ]]; then
                 grep -q " 7." $file >/dev/null 2>/dev/null && distversion=7 && break
                 grep -q " 8." $file >/dev/null 2>/dev/null && distversion=8 && break
+                grep -q " 9." $file >/dev/null 2>/dev/null && distversion=9 && break
                 grep -q "21" $file >/dev/null 2>/dev/null && distversion=7 && break
             fi
         fi
@@ -107,9 +109,11 @@ add_s9s_commandline_yum() {
     if [[ -z $CENTOS ]]; then
         REPO="RHEL_7"
         [[ $distversion == "8" ]] && REPO="RHEL_8"
+        [[ $distversion == "9" ]] && REPO="RHEL_9"
     else
         REPO="CentOS_7"
         [[ $distversion == "8" ]] && REPO="CentOS_8"
+        [[ $distversion == "9" ]] && REPO="CentOS_9"
     fi
     # after dist upgrade or errors we must re-recreate this repo file
     grep -q ${REPO} $repo_source_file >/dev/null 2>/dev/null || rm -f $repo_source_file
@@ -160,7 +164,7 @@ EOF
 install_s9s_commandline() {
     log_msg "=> Installing s9s-tools ..."
     if [[ $dist == "redhat" ]]; then
-        yum -y install s9s-tools
+        yum -y install s9s-tools || dnf -y install s9s-tools
     elif [[ $dist == "debian" ]]; then
         apt-get -y install s9s-tools
     elif [[ $dist == "suse" ]]; then

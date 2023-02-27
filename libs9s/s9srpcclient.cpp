@@ -42,6 +42,12 @@
 #define READ_SIZE 10240
 //#define SEND_NODES
 
+namespace
+{
+    const S9sString AWS_CLOUD_PROVIDER = "aws";
+    const S9sString S3_CLOUD_SERVICE_PROVIDER  = "s3";
+}
+
 /**
  * Default constructor.
  */
@@ -339,6 +345,9 @@ S9sRpcClient::setExitStatus()
 S9sString 
 S9sRpcClient::errorString() const
 {
+    if (!reply().errorString().empty())
+        return reply().errorString();
+
     return m_priv->m_errorString;
 }
 
@@ -1015,7 +1024,7 @@ S9sRpcClient::pingController()
     request["operation"]       = "ping";
     request["request_created"] = timeString;
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, S9s::DenyRedirect);
     return retval;
 }
 
@@ -1510,7 +1519,7 @@ S9sRpcClient::getJobInstances(
     if (!options->withTags().empty())
         request["tags"] = options->withTags();
 
-    retval = executeRequest(uri, request);
+    retval = executeRequest(uri, request, false);
     return retval;
 }
 
@@ -1533,7 +1542,7 @@ S9sRpcClient::getJobInstance(
     request["operation"] = "getJobInstance";
     request["job_id"]    = jobId;
 
-    return executeRequest(uri, request, false);
+    return executeRequest(uri, request);
 }
 
 /**
@@ -1579,6 +1588,61 @@ S9sRpcClient::killJobInstance(
     return retval;
 }
 
+/**
+ * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Deletes a job from the controller.
+ */
+bool
+S9sRpcClient::enableJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+    S9sVariantMap  jobMap;
+
+    jobMap["class_name"] = "CmonJobInstance";
+    jobMap["status"]     = "SCHEDULED";
+    jobMap["job_id"]     = jobId;
+
+    request["operation"] = "updateJobInstance";
+    request["job"]       = jobMap;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param jobId the ID of the job
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ *
+ * Deletes a job from the controller.
+ */
+bool
+S9sRpcClient::disableJobInstance(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+    S9sVariantMap  jobMap;
+
+    jobMap["class_name"] = "CmonJobInstance";
+    jobMap["status"]     = "PAUSED";
+    jobMap["job_id"]     = jobId;
+
+    request["operation"] = "updateJobInstance";
+    request["job"]       = jobMap;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
 
 /**
  * \param jobId the ID of the job
@@ -1619,7 +1683,7 @@ S9sRpcClient::getJobLog(
         const int  jobId,
         const int  limit,
         const int  offset,
-        const bool isImportant)
+        const bool printRequest)
 {
     S9sOptions    *options   = S9sOptions::instance();
     S9sString      uri = "/v2/jobs/";
@@ -1640,7 +1704,7 @@ S9sRpcClient::getJobLog(
     if (offset != 0)
         request["offset"] = offset;
 
-    retval = executeRequest(uri, request, isImportant);
+    retval = executeRequest(uri, request, printRequest);
 
     return retval;
 
@@ -2907,6 +2971,93 @@ S9sRpcClient::deployAgents(
     return retval;
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::deployCmonAgents(
+        const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    jobSpec["command"]    = "deploy_cmonagents";
+    jobData["cluster_id"] = clusterId;
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Deploy Query monitor Agents";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::uninstallCmonAgents(const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  request;
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    jobSpec["command"]    = "uninstall_cmonagents";
+    jobData["cluster_id"] = clusterId;
+    // if any host specifically to removed set here
+    if(hosts.size() > 0)
+    {
+        if(hosts.size() == 1)
+        {
+            S9sVariant var = nodesField(hosts);
+            S9sVariantList list = var.toVariantList();
+            S9sVariantMap map = list[0].toVariantMap();
+            jobData["hostname"] = map["hostname"];
+        }
+        else
+        {
+            PRINT_ERROR("Incorrect nodes argument. Only one host on --nodes"
+            "To uninstall on all nodes do not use --nodes");
+            return false;
+        }
+    }
+    jobSpec["job_data"]   = jobData;
+
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Uninstall Query monitor Agent/s";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * \returns true if the operation was successful, a reply is received from the
@@ -4026,6 +4177,7 @@ S9sRpcClient::createPostgreSql(
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
+    jobData["vendor"]           = options->vendor();
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
@@ -5483,6 +5635,26 @@ S9sRpcClient::addMaxScale(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setupMaxScale";
+    if(options->hasAdminUser())
+    {
+        if(!options->hasAdminPassword())
+        {
+            PRINT_ERROR("--admin-password is missing");
+            return false;
+        }
+        jobData["maxscale_admin_user"]   = options->adminUser();
+        jobData["maxscale_admin_password"]   = options->adminPassword();
+    }
+    if(options->hasMaxscaleMysqlUser())
+    {
+        if(!options->hasMaxscaleMysqlPassword())
+        {
+            PRINT_ERROR("--maxscale-mysql-password is missing");
+            return false;
+        }
+        jobData["maxscale_mysql_user"]   = options->maxscaleMysqlUser();
+        jobData["maxscale_mysql_password"]   = options->maxscaleMysqlPassword();
+    }
     jobData["nodes"]    = nodesField(maxScaleNodes);
 
     // The jobspec describing the command.
@@ -9112,6 +9284,111 @@ S9sRpcClient::deleteGroup()
 }
 
 /**
+ * Sends request to add/update user preference(s).
+ */
+bool
+S9sRpcClient::setUserPreferences()
+{
+    S9sVariantMap userMap;
+    userMap["class_name"] = "CmonUser";
+    S9sOptions *options  = S9sOptions::instance();
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"] = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    S9sVariantMap preferencesMap;
+    S9sString preferencesIn = options->userPreferencesToSet();
+    S9sVariantList preferencesDataList = preferencesIn.split(";");
+    for (const auto &preference : preferencesDataList)
+    {
+        S9sVariantList currPreferenceList = preference.toString().split("=");
+        if (currPreferenceList.size() != 2)
+        {
+            PRINT_ERROR("A user preference '%s' input syntax is incompatible."
+                        "Format for preferences '--preferences-to-set=\"key1=value1;key2=value2\"'."
+                        , STR(preference.toString()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+        preferencesMap[currPreferenceList[0].toString()] = currPreferenceList[1].toString();
+    }
+
+    userMap["preferences"] = preferencesMap;
+    S9sVariantMap request;
+    request["operation"]   = "setUserPreferences";
+    request["user"]        = userMap;
+
+    S9sString uri = "/v2/users/";
+    return executeRequest(uri, request);
+}
+/**
+ * Sends request to get user preference(s).
+ */
+bool
+S9sRpcClient::getUserPreferences()
+{
+    S9sVariantMap userMap;
+    userMap["class_name"] = "CmonUser";
+    S9sOptions *options = S9sOptions::instance();
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"] = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    S9sVariantMap request;
+    request["operation"] = "getUserPreferences";
+    request["user"]      = userMap;
+    S9sString uri = "/v2/users/";
+    return executeRequest(uri, request);
+}
+/**
+ * Sends request to delete user preference(s).
+ */
+bool
+S9sRpcClient::deleteUserPreferences()
+{
+    S9sVariantMap userMap;
+    userMap["class_name"] = "CmonUser";
+    S9sOptions *options = S9sOptions::instance();
+    if (options->nExtraArguments() > 0)
+    {
+        userMap["user_name"] = options->extraArgument(0);
+    } else {
+        userMap["user_name"] = options->userName();
+    }
+
+    S9sString preferencesIn = options->userPreferencesToDelete();
+    if (preferencesIn.size() == 0)
+    {
+        PRINT_ERROR("At least one user preference name should be added to delete."
+                    "Format for preferences '--preferences-to-delete=\"key1;key2\"'.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    S9sVariantMap preferencesMap;
+    S9sVariantList preferencesDataList = preferencesIn.split(";");
+    for (const auto &prefName : preferencesDataList)
+    {
+        preferencesMap[prefName.toString()] = S9sString();
+    }
+
+    userMap["preferences"] = preferencesMap;
+    S9sVariantMap request;
+    request["operation"]   = "deleteUserPreferences";
+    request["user"]        = userMap;
+    S9sString uri = "/v2/users/";
+    return executeRequest(uri, request);
+}
+
+/**
  * \param user The user to be changed.
  * \param groupName The name of the group.
  * \param replacePrimaryGroup If true the primary group will be set, replaced by
@@ -9359,9 +9636,6 @@ S9sRpcClient::setUser()
     
     if (!options->emailAddress().empty())
         properties["email_address"] = options->emailAddress();
-
-    if (!options->uiConfig().empty())
-        properties["ui_config"] = options->uiConfig();
 
     request["operation"]  = "setUser";
     request["user"]       = properties;
@@ -9990,6 +10264,9 @@ S9sRpcClient::composeBackupJob()
     S9sString       snapshotLocation = options->snapshotLocation();
     S9sString       s3bucket         = options->s3bucket();
     S9sString       s3region         = options->s3region();
+    bool            cloudOnly        = options->cloudOnly();
+    S9sString       cloudStorageProv = options->cloudProvider();
+    int             backupRetention  = options->backupRetention();
     S9sString       storageHost      = options->storageHost();
     S9sString       databases        = options->databases();
     S9sNode         backupHost;
@@ -9997,6 +10274,7 @@ S9sRpcClient::composeBackupJob()
 
     S9sVariantMap   job          = composeJob();
     S9sVariantMap   jobData      = composeJobData();
+    S9sVariantMap   jobCloudData;
     S9sVariantMap   jobSpec;
    
     if (!backupMethod.empty())
@@ -10035,14 +10313,61 @@ S9sRpcClient::composeBackupJob()
     if (!snapshotLocation.empty())
         jobData["snapshot_location"] = snapshotLocation;
 
-    if (options->hasCredentialIdOption())
-        jobData["credential_id"] = options->credentialId();
-
-    if (!s3bucket.empty())
-        jobData["s3_bucket"] = s3bucket;
-
     if (!s3region.empty())
         jobData["s3_region"] = s3region;
+
+    if (cloudOnly)
+    {
+        jobData["cloud_only"] = true;
+        // checks with current available functionality
+        if(cloudStorageProv.empty() || cloudStorageProv != AWS_CLOUD_PROVIDER)
+        {
+            PRINT_ERROR("Only supported S3 buckets. Use: "
+            "--cloud-provider=aws --s3-bucket=<my-bucket> options");
+            return S9sVariantMap();
+        }
+        else
+        {
+            // Using existing parameter names for create backup job when uploading backup
+            // upload_backup_to_cloud command expects following arguments
+            if (options->hasCredentialIdOption())
+                jobCloudData["cloud_storage_credentials_id"] = options->credentialId();
+            else
+            {
+                PRINT_ERROR("Need option --credential-id=<id-num> with --cloud-only");
+                return S9sVariantMap();
+            }
+
+            if (!s3bucket.empty())
+                jobCloudData["bucket"] = s3bucket;
+            else
+            {
+                PRINT_ERROR("Only supported S3 buckets. Use: "
+                "--cloud-provider=aws --s3-bucket=<my-bucket> options");
+                return S9sVariantMap();
+            }
+            // aws hardcoded properties (by now)
+            jobCloudData["auto_create_bucket"]  = true;
+            jobCloudData["cloud_storage_provider"] = AWS_CLOUD_PROVIDER;
+            jobCloudData["cloud_storage_service"]  = S3_CLOUD_SERVICE_PROVIDER;
+            if(backupRetention != 0)
+                jobCloudData["backup_retention"] = backupRetention;
+        }
+        jobData["upload_backup_data_to_cloud_storage"] = jobCloudData;
+    }
+    else
+    {
+        if(backupRetention != 0)
+            jobData["backup_retention"] = backupRetention;
+
+        if (options->hasCredentialIdOption())
+            jobData["credential_id"] = options->credentialId();
+
+        if (!s3bucket.empty())
+            jobData["s3_bucket"] = s3bucket;
+
+    }
+    
 
     if (!storageHost.empty())
         jobData["storage_host"] = storageHost;
@@ -10273,6 +10598,12 @@ S9sRpcClient::composeJobData(
     if (options->useInternalRepos())
         jobData["use_internal_repos"] = true;
 
+    if (options->createLocalRepo())
+        jobData["create_local_repository"] = true;
+
+    if (options->useLocalRepo())
+        jobData["local_repository"] = options->localRepoName();
+
     if (options->isGenerateKeyRequested())
         jobData["ssh_generate_key"] = true;
     
@@ -10488,7 +10819,8 @@ bool
 S9sRpcClient::executeRequest(
         const S9sString &uri,
         S9sVariantMap   &request,
-        bool             important)
+        bool             printRequest,
+        S9s::Redirect    redirect)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
@@ -10499,8 +10831,8 @@ S9sRpcClient::executeRequest(
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
     
-    if (important)
-        printRequestForDebug(request);
+    if (printRequest)
+        printRequestJson(request);
 
     while (true)
     {
@@ -10508,10 +10840,15 @@ S9sRpcClient::executeRequest(
         int            port = 0;
         S9sString      role;
 
-        retval = doExecuteRequest(uri, request);
+        retval = doExecuteRequest(uri, request, redirect);
             
         if (retval && m_priv->m_reply.isRedirect())
             m_priv->rememberRedirect();
+
+        if (!retval || redirect != S9s::AllowRedirect)
+        {
+            break;
+        }
 
         if (!retval || !m_priv->m_reply.isRedirect())
         {
@@ -10605,7 +10942,8 @@ S9sRpcClient::executeRequest(
 bool
 S9sRpcClient::doExecuteRequest(
         const S9sString     &uri,
-        S9sVariantMap       &request)
+        S9sVariantMap       &request,
+        S9s::Redirect        redirect)
 {
     S9sString    payload = request.toString();
     S9sOptions  *options = S9sOptions::instance();    
@@ -10632,7 +10970,7 @@ S9sRpcClient::doExecuteRequest(
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
-    if (!m_priv->connect())
+    if (!m_priv->connect(redirect))
     {
         PRINT_LOG("%s", STR(m_priv->m_errorString));
         PRINT_VERBOSE("Connection failed: %s", STR(m_priv->m_errorString));
@@ -10868,7 +11206,7 @@ S9sRpcClient::doExecuteRequest(
  * This method is made for printing out the RPC requests for debugging.
  */
 void
-S9sRpcClient::printRequestForDebug(
+S9sRpcClient::printRequestJson(
         S9sVariantMap &request)
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -10929,7 +11267,10 @@ S9sRpcClient::saveRequestAndReply(
                 STR(directory), STR(status), STR(operation));
         file = S9sFile(fileName);
         content = reply.toJsonString(S9sFormatIndent);
-        file.writeTxtFile(content);
+        if (!file.writeTxtFile(content))
+        {
+            S9S_WARNING("ERROR: %s", STR(file.errorString()));
+        }
     }
 }
 

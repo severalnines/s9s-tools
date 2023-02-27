@@ -34,6 +34,7 @@ S9sEditor::S9sEditor() :
     S9sWidget(),
     m_readOnly(false),
     m_saveRequested(false),
+    m_nChars(0),
     m_objectSetTime(0),
     m_lineOffset(0),
     m_cursorX(0),

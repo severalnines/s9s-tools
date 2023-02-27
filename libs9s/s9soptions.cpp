@@ -130,6 +130,8 @@ enum S9sOptionType
     OptionSnapshotLocation,
     OptionS3Bucket,
     OptionS3Region,
+    OptionOnlyCloud,
+    OptionCloudProvider,
     OptionStorageHost,
     OptionSubDirectory,
     OptionBackupEncryption,
@@ -144,7 +146,10 @@ enum S9sOptionType
     OptionFirstName,
     OptionEmailAddress,
     OptionLastName,
-    OptionUiConfig,
+    OptionPreferences,
+    OptionPreferencesToSet,
+    OptionGetPreferences,
+    OptionPreferencesToDelete,
     OptionTitle,
     OptionJobTitle,
     OptionStart,
@@ -244,6 +249,8 @@ enum S9sOptionType
     OptionCreateReport,
     OptionMaskPasswords,
     OptionDeployAgents,
+    OptionDeployCmonAgents,
+    OptionUninstallCmonAgents,
     OptionLimit,
     OptionOffset,
     OptionRegister,
@@ -276,6 +283,7 @@ enum S9sOptionType
     OptionRmdir,
     OptionMkfile,
     OptionSave,
+    OptionCreateSnapshot,
     OptionEnableCmonHa,
     OptionAcl,
     OptionOwner,
@@ -338,6 +346,8 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionCreateLocalRepo,
+    OptionLocalRepoName,
     OptionKeepFirewall,
     OptionWithSsl,
     OptionWithoutSsl,
@@ -399,6 +409,8 @@ enum S9sOptionType
     OptionMonitorUser,
     OptionMonitorPassword,
     OptionDontImportAccounts,
+    OptionMaxscaleMysqlUser,
+    OptionMaxscaleMysqlPassword,
 
     OptionSslCertFile,
     OptionSslKeyFile,
@@ -1517,6 +1529,44 @@ S9sOptions::hasProxySql() const
 
     return false;
 }
+
+/**
+ * \returns True if the --admin-user option was specified
+ */
+bool 
+S9sOptions::hasAdminUser() const
+{
+    return m_options.contains("admin_user");
+}
+
+
+/**
+ * \returns True if the --admin-password option was specified
+ */
+bool 
+S9sOptions::hasAdminPassword() const
+{
+    return m_options.contains("admin_password");
+}
+
+/**
+ * \returns True if the --maxscale-mysql-user option was specified
+ */
+bool 
+S9sOptions::hasMaxscaleMysqlUser() const
+{
+    return m_options.contains("maxscale_mysql_user");
+}
+
+/**
+ * \returns True if the --maxscale-mysql-password option was specified
+ */
+bool 
+S9sOptions::hasMaxscaleMysqlPassword() const
+{
+    return m_options.contains("maxscale_mysql_password");
+}
+ 
 
 /**
  * \returns The argument of the comman line option --input-file if provided,
@@ -3034,6 +3084,30 @@ S9sOptions::useInternalRepos() const
 }
 
 bool
+S9sOptions::useLocalRepo() const
+{
+    return !localRepoName().empty();
+}
+
+bool
+S9sOptions::createLocalRepo() const
+{
+    if (m_options.contains("create_local_repository"))
+        return m_options.at("create_local_repository").toBoolean();
+
+    return false;
+}
+
+S9sString
+S9sOptions::localRepoName() const
+{
+    if (m_options.contains("local_repository"))
+        return m_options.at("local_repository").toString();
+
+    return S9sString();
+}
+
+bool
 S9sOptions::keepFirewall() const
 {
     bool retval = false;
@@ -3230,6 +3304,40 @@ S9sOptions::s3region() const
     return retval;
 }
 
+/**
+ * \returns The argument for the --cloud-only option
+ */
+bool
+S9sOptions::cloudOnly() const
+{
+    return m_options.contains("cloud_only");
+}
+
+bool
+S9sOptions::hasCloudProviderOption() const
+{
+    return m_options.contains("cloud_provider");
+}
+
+/**
+ * \returns The argument for the --cloud-provider option 
+ */
+S9sString
+S9sOptions::cloudProvider() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("cloud_provider"))
+    {
+        retval = m_options.at("cloud_provider").toString();
+    } else {
+        retval = m_userConfig.variableValue("cloud_provider");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("cloud_provider");
+    }
+
+    return retval;
+}
 
 
 /**
@@ -4864,6 +4972,39 @@ S9sOptions::isPasswordResetRequested() const
     return getBool("password_reset");
 }
 
+/**
+ * \returns True if the --preferences & --preferences-to-set="..."
+ *          command line options are provided
+ */
+bool
+S9sOptions::setUserPreferencesRequested() const
+{
+    return (getBool("preferences") && !userPreferencesToSet().empty());
+}
+
+/**
+ * \returns True if the --get-preferences command line option
+ *               is provided at startup.
+ */
+bool
+S9sOptions::getUserPreferencesRequested() const
+{
+    return getBool("get_preferences");
+}
+
+/**
+ * \returns True if the --preferences & --preferences-to-delete="..."
+ *          command line options are provided.
+ */
+bool
+S9sOptions::deleteUserPreferencesRequested() const
+{
+    return (getBool("preferences") && !userPreferencesToDelete().empty());
+}
+
+/**
+ * \returns True if the --disable command line option was provided.
+ */
 bool
 S9sOptions::isDisableRequested() const
 {
@@ -5082,6 +5223,28 @@ S9sOptions::isDeployAgentsRequested() const
 {
     return getBool("deploy_agents");
 }
+
+/**
+ * \returns true if the --deploy-cmonagents command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isDeployCmonAgentsRequested() const
+{
+    return getBool("deploy_cmonagents");
+}
+
+/**
+ * \returns true if the --uninstall-cmonagents command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isUninstallCmonAgentsRequested() const
+{
+    return getBool("uninstall_cmonagents");
+}
+
+
 
 /**
  * \returns true if the add node operation was requested using the "--add-node"
@@ -6273,6 +6436,8 @@ S9sOptions::printHelpJob()
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
+"  --disable                  Disable or pause a recurring/scheduled job instance.\n"
+"  --enable                   Enable/resume a recurring/scheduled job instance.\n"
 "\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --cluster-name=NAME        Name of the cluster.\n"
@@ -6378,6 +6543,8 @@ S9sOptions::printHelpBackup()
 "  --credential-id=ID         The required cloud credential ID to use on snapshot repository.\n"
 "  --s3-bucket=NAME           The name of the s3 bucket to use on the snapshot repository\n"
 "  --s3-region=STRING         The name of the region storing s3 bucket. (example: eu-west-3)\n"
+"  --cloud-only               Flag to indicate that backup will be directly streamed to cloud (no files generated)\n"
+"  --cloud-provider=STRING    Identifier of the cloud storage provider to be used\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -6471,6 +6638,14 @@ S9sOptions::printHelpUser()
 "  --user-format=FORMAT       The format string used to print users.\n"
 "  --without-tags=LIST        Limit the list of printed users by tags.\n"
 "  --with-tags=LIST           Limit the list of printed users by tags.\n"
+"\n"
+"  --preferences              To add/set or delete preferences for a given user name.\n"
+"                             Is used with input options like --preferences-to-set or --preferences-to-delete.\n"
+"  --preferences-to-set=LIST  List of 'key=value' pairs separated by semicolon.\n"
+"                             The preferences to add/set for a given user name.\n"
+"  --preferences-to-delete=LIST List of keys separated by semicolon.\n"
+"                               The preferences to delete for a given user name.\n"
+"  --preferences-get          To get preferences for given user name.\n"
 "\n");
 }
 
@@ -6596,6 +6771,8 @@ S9sOptions::printHelpCluster()
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --create-local-repository  Create local (APT/YUM) software repository during deploy.\n"
+"  --local-repository=NAME    Use a previously created local mirror for deploy.\n"
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
@@ -6608,12 +6785,14 @@ S9sOptions::printHelpCluster()
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "\n"
 "Load balancer related options\n"
-"  --admin-password=USERNAME  Admin password for ProxySql.\n"
-"  --admin-user=USERNAME      Admin user for ProxySql.\n"
+"  --admin-password=USERNAME  Admin password for ProxySql or Maxscale.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql or Maxscale.\n"
 "  --dont-import-accounts     Do not import users into loadbalancer.\n"
 "  --haproxy-config-template=FILENAME Config template for HaProxy install.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"  --maxscale-mysql-user=USERNAME mysql user for Maxscale.\n"
+"  --maxscale-mysql-password=PASSWD mysql user password for Maxscale.\n"
 "\n"
 "SSL related options (for create and enable-ssl)\n"
 "  --ssl-ca=STRING            The SSL CA file path on controller.\n"
@@ -7382,7 +7561,7 @@ S9sOptions::readOptionsNode(
                 break;
 
             /*
-             * Options for ProxySql.
+             * Options for ProxySql / Maxscale
              */
             case OptionAdminUser:
                 // --admin-user=USERNAME
@@ -7394,6 +7573,9 @@ S9sOptions::readOptionsNode(
                 m_options["admin_password"] = optarg;
                 break;
 
+            /*
+             * Options for ProxySql.
+             */
             case OptionMonitorUser:
                 // --monitor-user=STRING
                 m_options["monitor_user"] = optarg;
@@ -7402,6 +7584,19 @@ S9sOptions::readOptionsNode(
             case OptionMonitorPassword:
                 // --monitor-password=STRING
                 m_options["monitor_password"] = optarg;
+                break;
+
+            /*
+             * Options for Maxscale
+             */
+            case OptionMaxscaleMysqlUser:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_user"] = optarg;
+                break;
+
+            case OptionMaxscaleMysqlPassword:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_password"] = optarg;
                 break;
 
             case OptionDontImportAccounts:
@@ -7537,6 +7732,8 @@ S9sOptions::readOptionsBackup(
         { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "s3-region",        required_argument, 0, OptionS3Region        },
+        { "cloud-only",       no_argument,       0, OptionOnlyCloud       },
+        { "cloud-provider",   required_argument, 0, OptionCloudProvider   },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
         { "to-individual-files", no_argument,    0, OptionIndividualFiles },
@@ -7974,6 +8171,18 @@ S9sOptions::readOptionsBackup(
                 // --s3-region=STRING
                 m_options["s3_region"] = optarg;
                 break;
+
+            case OptionOnlyCloud:
+                // --cloud-only
+                m_options["cloud_only"] = true;
+                break;
+
+            case OptionCloudProvider:
+                // --cloud-provider
+                m_options["cloud_provider"] = optarg;
+                break;
+
+
 
             case OptionSubDirectory:
                 // --subdirectory=PATTERN
@@ -10069,6 +10278,12 @@ S9sOptions::checkOptionsJob()
     if (isKillRequested())
         countOptions++;
     
+    if (isEnableRequested())
+        countOptions++;
+
+    if (isDisableRequested())
+        countOptions++;
+
     if (isFailRequested())
     {
         countOptions++;
@@ -10250,6 +10465,12 @@ S9sOptions::checkOptionsCluster()
         countOptions++;
     
     if (isUsr1Requested())
+        countOptions++;
+
+    if (isDeployCmonAgentsRequested())
+        countOptions++;
+
+    if (isUninstallCmonAgentsRequested())
         countOptions++;
 
     if (countOptions > 1)
@@ -10543,6 +10764,15 @@ S9sOptions::checkOptionsUser()
         countOptions++;
     
     if (isPasswordResetRequested())
+        countOptions++;
+
+    if (setUserPreferencesRequested())
+        countOptions++;
+
+    if (getUserPreferencesRequested())
+        countOptions++;
+
+    if (deleteUserPreferencesRequested())
         countOptions++;
 
     if (isDisableRequested())
@@ -11037,7 +11267,10 @@ S9sOptions::readOptionsUser(
         // Options about the user.
         { "create-group",     no_argument,       0, OptionCreateGroup     },
         { "email-address",    required_argument, 0, OptionEmailAddress    },
-        { "ui-config",        required_argument, 0, OptionUiConfig        },
+        { "preferences",      no_argument,       0, OptionPreferences     },
+        { "preferences-to-set",   required_argument, 0, OptionPreferencesToSet   },
+        { "preferences-to-delete",required_argument, 0, OptionPreferencesToDelete},
+        { "get-preferences",  no_argument,       0, OptionGetPreferences  },
         { "first-name",       required_argument, 0, OptionFirstName       },
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "group",            required_argument, 0, OptionGroup           },
@@ -11242,6 +11475,26 @@ S9sOptions::readOptionsUser(
                 m_options["remove_from_group"] = true;
                 break;
 
+            case OptionPreferences:
+                // --preferences
+                m_options["preferences"] = true;
+                break;
+
+            case OptionPreferencesToSet:
+                // --preferences-to-set="key1=value1;key2=value2"
+                m_options["preferences_to_set"] = optarg;
+                break;
+
+            case OptionGetPreferences:
+                // --get-preferences
+                m_options["get_preferences"] = true;
+                break;
+
+            case OptionPreferencesToDelete:
+                // --preferences-to-delete="key1;key2"
+                m_options["preferences_to_delete"] = optarg;
+                break;
+
             /*
              * Other options.
              */
@@ -11280,12 +11533,6 @@ S9sOptions::readOptionsUser(
                 m_options["email_address"] = optarg;
                 break;
 
-            case OptionUiConfig:
-                // --ui-config="CONFIG-INFO-TO-SAVE"
-                m_options["ui_config"] = optarg;
-                break;
-
-            
             case OptionUserFormat:
                 // --user-format=VALUE
                 m_options["user_format"] = optarg;
@@ -12419,6 +12666,8 @@ S9sOptions::readOptionsCluster(
         { "delete-account",   no_argument,       0, OptionDeleteAccount   },
         { "demote-node",      no_argument,       0, OptionDemoteNode      },
         { "deploy-agents",    no_argument,       0, OptionDeployAgents    },
+        { "deploy-cmonagents",no_argument,       0, OptionDeployCmonAgents},
+        { "uninstall-cmonagents",no_argument,    0, OptionUninstallCmonAgents},
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
@@ -12494,12 +12743,16 @@ S9sOptions::readOptionsCluster(
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
 
-        // Options for ProxySql.
+        // Options for ProxySql or Maxscale
         { "admin-user",       required_argument, 0, OptionAdminUser       },
         { "admin-password",   required_argument, 0, OptionAdminPassword   },
+        // Options for ProxySql
         { "monitor-user",     required_argument, 0, OptionMonitorUser     },
         { "monitor-password", required_argument, 0, OptionMonitorPassword },
         { "dont-import-accounts", no_argument,   0, OptionDontImportAccounts },
+        // Options for Maxscale
+        { "maxscale-mysql-user", required_argument, 0, OptionMaxscaleMysqlUser},
+        { "maxscale-mysql-password", required_argument, 0, OptionMaxscaleMysqlPassword},
 
        
         // Options for containers.
@@ -12517,6 +12770,9 @@ S9sOptions::readOptionsCluster(
         { "servers",          required_argument, 0, OptionServers          },
         { "subnet-id",        required_argument, 0, OptionSubnetId         },
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+        { "create-local-repository", no_argument,0, OptionCreateLocalRepo },
+        { "local-repository", required_argument, 0, OptionLocalRepoName },
+
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
@@ -12675,6 +12931,16 @@ S9sOptions::readOptionsCluster(
             case OptionDeployAgents:
                 // --deploy-agents
                 m_options["deploy_agents"] = true;
+                break;
+            
+            case OptionDeployCmonAgents:
+                // --deploy-cmonagents
+                m_options["deploy_cmonagents"] = true;
+                break;
+
+            case OptionUninstallCmonAgents:
+                // --uninstalll-cmonagents
+                m_options["uninstall_cmonagents"] = true;
                 break;
 
             case OptionAddNode:
@@ -13077,7 +13343,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             /*
-             * Options for ProxySql.
+             * Options for ProxySql and Maxscale.
              */
             case OptionAdminUser:
                 // --admin-user=USERNAME
@@ -13089,6 +13355,9 @@ S9sOptions::readOptionsCluster(
                 m_options["admin_password"] = optarg;
                 break;
 
+            /*
+             * Options for ProxySql
+             */
             case OptionMonitorUser:
                 // --monitor-user=STRING
                 m_options["monitor_user"] = optarg;
@@ -13102,6 +13371,19 @@ S9sOptions::readOptionsCluster(
             case OptionDontImportAccounts:
                 // --dont-import-accounts
                 m_options["dont_import_accounts"] = true;
+                break;
+
+            /*
+             * Options for Maxscale
+             */
+            case OptionMaxscaleMysqlUser:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_user"] = optarg;
+                break;
+
+            case OptionMaxscaleMysqlPassword:
+                // --maxscale-mysql-user=USERNAME
+                m_options["maxscale_mysql_password"] = optarg;
                 break;
 
             /*
@@ -13182,6 +13464,16 @@ S9sOptions::readOptionsCluster(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionCreateLocalRepo:
+                // --create-local-repository
+                m_options["create_local_repository"] = true;
+                break;
+
+            case OptionLocalRepoName:
+                // --local-repository
+                m_options["local_repository"] = optarg;
                 break;
 
             case OptionKeepFirewall:
@@ -13726,6 +14018,8 @@ S9sOptions::readOptionsJob(
         { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
         { "wait",             no_argument,       0,  5                    },
+        { "disable",          no_argument,       0, OptionDisable         },
+        { "enable",           no_argument,       0, OptionEnable          },
 
         // Job Related Options
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -13852,7 +14146,17 @@ S9sOptions::readOptionsJob(
                 // --kill
                 m_options["kill"] = true;
                 break;
-            
+
+            case OptionEnable:
+                // --enable
+                m_options["enable"] = true;
+                break;
+
+            case OptionDisable:
+                // --disable
+                m_options["disable"] = true;
+                break;
+
             case OptionSuccess:
                 // --success
                 m_options["success"] = true;
@@ -14984,6 +15288,7 @@ S9sOptions::readOptionsController(
         { "timeout",          required_argument, 0, OptionTimeout         },
 
         // Main Option
+        { "create-snapshot",  no_argument,       0, OptionCreateSnapshot  },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
         { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
@@ -15136,6 +15441,11 @@ S9sOptions::readOptionsController(
             case OptionDeleteSnaphotRepository:
                 // --delete-snapshot-repository
                 m_options["delete_snapshot_repository"] = true;
+                break;
+
+            case OptionCreateSnapshot:
+                // --create-snapshot
+                m_options["create_snapshot"] = true;
                 break;
 
             case OptionEnableCmonHa:
@@ -16118,14 +16428,22 @@ S9sOptions::emailAddress() const
 }
 
 /**
- * \returns The argument of the --ui-config command line option.
+ * \returns The argument of the --preferences-to-set command line option.
  */
 S9sString
-S9sOptions::uiConfig() const
+S9sOptions::userPreferencesToSet() const
 {
-    return getString("ui_config");
+    return getString("preferences_to_set");
 }
 
+/**
+ * \returns The argument of the --preferences-to-delete command line option.
+ */
+S9sString
+S9sOptions::userPreferencesToDelete() const
+{
+    return getString("preferences_to_delete");
+}
 
 bool 
 S9sOptions::getBool(

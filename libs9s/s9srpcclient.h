@@ -190,7 +190,9 @@ class S9sRpcClient
         bool deleteJobInstance(const int jobId);
         bool killJobInstance(const int jobId);
         bool cloneJobInstance(const int jobId);
-        
+        bool enableJobInstance(const int jobId);
+        bool disableJobInstance(const int jobId);
+     
         /*
          * Backup related methods.
          */
@@ -322,6 +324,13 @@ class S9sRpcClient
         bool deleteGroup();
 
         /*
+         * Requests related to user preferences.
+         */
+        bool setUserPreferences();
+        bool getUserPreferences();
+        bool deleteUserPreferences();
+
+        /*
          *
          */
         bool getJobInstance(const int jobId);
@@ -330,7 +339,7 @@ class S9sRpcClient
                 const int  jobId,
                 const int  limit   = 0,
                 const int  offset  = 0,
-                const bool isImportant = true);
+                const bool printRequest = true);
 
         bool getLog();
         bool getLogStatistics();
@@ -359,6 +368,8 @@ class S9sRpcClient
         bool createReport(const int clusterId);
 
         bool deployAgents(const int clusterId);
+        bool deployCmonAgents(const int clusterId);
+        bool uninstallCmonAgents(const int clusterId);
 
         bool createLocalRepository(
                 const int          clusterId,
@@ -446,25 +457,24 @@ class S9sRpcClient
         virtual S9sVariantMap composeBackupJob();
         virtual S9sVariantMap composeJobDataOneContainer() const;
         
-        virtual bool
-            executeRequest(
+        virtual bool executeRequest(
                 const S9sString &uri,
                 S9sVariantMap   &request,
-                bool             important = true);
+                bool             printRequest = true,
+                S9s::Redirect    redirect = S9s::AllowRedirect);
 
-        virtual bool 
-            doExecuteRequest(
-                const S9sString     &uri,
-                S9sVariantMap &request);
+        virtual bool doExecuteRequest(
+                const S9sString &uri,
+                S9sVariantMap   &request,
+                S9s::Redirect    redirect = S9s::AllowRedirect);
 
         void setError(
                 const S9sString &errorString,
                 const S9sString &errorCode = "ConnectError");
 
-        void printRequestForDebug(S9sVariantMap &request);
+        void printRequestJson(S9sVariantMap &request);
 
-        void 
-            saveRequestAndReply(
+        void saveRequestAndReply(
                     const S9sVariantMap &request,
                     const S9sVariantMap &reply) const;
 

@@ -760,6 +760,16 @@ This option can also be set in the s9s configuration file using the
 \fBuse_internal_repos\fP keyword (check s9s.conf(5) for further details).
 
 .TP
+.BI \-\^\-create\-local\-repository
+Create a local software (APT/YUM) repository mirror when installing software packages.
+Using this command line option it is possible to deploy clusters and add nodes off-line,
+without a working internet connection. 
+
+.TP
+.BI \-\^\-local\-repository= NAME
+Use a local repository mirror created by ClusterControl for software deployment.
+
+.TP
 .BI \-\^\-keep\-firewall
 When not specified the CLI will pass disable firewall option to create cluster
 and node addition operations. To keep your firewall settings you may pass this
@@ -1112,6 +1122,15 @@ The password of the monitoring user of the load balancer.
 .TP
 .BI --monitor-user= USERNAME
 The username of the monitoring user of the load balancer.
+
+.TP
+.BI --maxscale-mysql-user= USERNAME
+The mysql username of the maxscale balancer.
+
+.TP
+.BI --maxscale-mysql-password= PASSWORD
+The password of the mysql user of the maxscale balancer.
+
 
 \"
 \"

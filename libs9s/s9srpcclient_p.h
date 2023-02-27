@@ -28,7 +28,7 @@ class S9sRpcClientPrivate
                 const S9sString  &hostName, 
                 const int         port);
 
-        bool tryNextHost();
+        bool tryNextHost(S9s::Redirect redirect);
 
         void printBuffer(const S9sString &title);
 
@@ -40,7 +40,7 @@ class S9sRpcClientPrivate
         void clearBuffer();
         void ensureHasBuffer(size_t size);
 
-        bool connect();
+        bool connect(S9s::Redirect redirect = S9s::AllowRedirect);
         void close();
         ssize_t write(const char *data, size_t length);
         ssize_t read(char *buffer, size_t bufSize);

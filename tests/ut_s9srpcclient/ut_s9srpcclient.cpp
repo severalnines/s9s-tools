@@ -150,6 +150,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testComposeBackupJob,    retval);
     PERFORM_TEST(testBackup,              retval);
     PERFORM_TEST(testBackupSchedule,      retval);
+    PERFORM_TEST(testSetUserPreferences,    retval);
+    PERFORM_TEST(testGetUserPreferences,    retval);
+    PERFORM_TEST(testDeleteUserPreferences, retval);
 
     return retval;
 }
@@ -621,7 +624,7 @@ UtS9sRpcClient::testGetDbGrowth()
     if (isVerbose())
         printDebug(payload);
 
-    S9S_COMPARE(payload.size(), 4);
+    S9S_COMPARE(payload.size(), 5);
     S9S_COMPARE(payload["operation"].toString(), "getdbgrowth");
     S9S_COMPARE(payload["cluster_id"].toInt(), 42);
 
@@ -1819,6 +1822,7 @@ UtS9sRpcClient::testBackup()
     options->m_options["credential_id"]       = 1;
     options->m_options["s3_bucket"]           = "elastic-s3-test";
     options->m_options["s3_region"]           = "eu-west-3";
+    options->m_options["cloud_only"]          = true;
     options->m_options["snapshot_location"]   = "/home/vagrant/backups/es-snapshot-repositories";
     options->m_options["subdirectory"]        = "subdir1";
     options->m_options["backup_user"]         = "backupuser1";
@@ -1900,6 +1904,10 @@ UtS9sRpcClient::testBackup()
     S9S_COMPARE(
             jobData.valueByPath("s3_region"),
             "eu-west-3");
+
+    S9S_COMPARE(
+            jobData.valueByPath("cloud_only"),
+            true);
 
     S9S_COMPARE(
             jobData.valueByPath("snapshot_location"),
@@ -2044,6 +2052,123 @@ UtS9sRpcClient::testBackupSchedule()
 
     if (isVerbose())
         printDebug(payload);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testSetUserPreferences()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->setNodes("node1:43");
+    options->m_options["cmon_user"]           = "s9s";
+    options->m_options["preferences_to_set"]  = "key1=value1;key2=value2;key3=value3;key4=value4;";
+    options->m_options["preferences"]  = true;
+
+    //====================================================
+
+    S9S_VERIFY(client.setUserPreferences());
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "setUserPreferences");
+    S9S_VERIFY(!payload["request_created"].toString().empty());
+    S9S_COMPARE(payload["request_id"].toInt(), 1);
+    S9S_COMPARE(payload["user"]["class_name"], "CmonUser");
+    S9S_COMPARE(payload["user"]["user_name"], "s9s");
+    S9S_COMPARE(payload["user"]["preferences"]["key1"], "value1");
+    S9S_COMPARE(payload["user"]["preferences"]["key2"], "value2");
+    S9S_COMPARE(payload["user"]["preferences"]["key3"], "value3");
+    S9S_COMPARE(payload["user"]["preferences"]["key4"], "value4");
+
+    //====================================================
+
+    options->m_options["preferences_to_set"]  = "key1=BIGVALUE1;key3=BIGVALUE3;";
+
+    S9S_VERIFY(client.setUserPreferences());
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "setUserPreferences");
+    S9S_VERIFY(!payload["request_created"].toString().empty());
+    S9S_COMPARE(payload["request_id"].toInt(), 2);
+    S9S_COMPARE(payload["user"]["class_name"], "CmonUser");
+    S9S_COMPARE(payload["user"]["user_name"], "s9s");
+    S9S_COMPARE(payload["user"]["preferences"]["key1"], "BIGVALUE1");
+    S9S_COMPARE(payload["user"]["preferences"]["key3"], "BIGVALUE3");
+
+    //====================================================
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetUserPreferences()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->setNodes("node1:43");
+    options->m_options["cmon_user"]           = "s9s";
+    options->m_options["get_preferences"]     = true;
+
+    //====================================================
+
+    S9S_VERIFY(client.getUserPreferences());
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getUserPreferences");
+    S9S_VERIFY(!payload["request_created"].toString().empty());
+    S9S_COMPARE(payload["request_id"].toInt(), 1);
+    S9S_COMPARE(payload["user"]["class_name"], "CmonUser");
+    S9S_COMPARE(payload["user"]["user_name"], "s9s");
+
+    //====================================================
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDeleteUserPreferences()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->setNodes("node1:43");
+    options->m_options["cmon_user"]             = "s9s";
+    options->m_options["preferences_to_delete"] = "key1;key3;key4;";
+    options->m_options["preferences"]           = true;
+
+    //====================================================
+
+    S9S_VERIFY(client.deleteUserPreferences());
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "deleteUserPreferences");
+    S9S_VERIFY(!payload["request_created"].toString().empty());
+    S9S_COMPARE(payload["request_id"].toInt(), 1);
+    S9S_COMPARE(payload["user"]["class_name"], "CmonUser");
+    S9S_COMPARE(payload["user"]["user_name"], "s9s");
+    S9S_COMPARE(payload["user"]["preferences"]["key1"], "");
+    S9S_COMPARE(payload["user"]["preferences"]["key2"], "");
+    S9S_COMPARE(payload["user"]["preferences"]["key4"], "");
+
+    //====================================================
 
     return true;
 }

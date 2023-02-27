@@ -127,6 +127,15 @@ class S9sOptions
         S9sVariantList nodes() const;
 
         bool hasProxySql() const;
+        bool hasAdminUser() const;
+        S9sVariant adminUser() {return m_options.at("admin_user");};
+        S9sVariant adminPassword() {return m_options.at("admin_password");};
+        bool hasAdminPassword() const;
+
+        bool hasMaxscaleMysqlUser() const;
+        S9sVariant maxscaleMysqlUser() {return m_options.at("maxscale_mysql_user");};
+        S9sVariant maxscaleMysqlPassword() {return m_options.at("maxscale_mysql_password");};
+        bool hasMaxscaleMysqlPassword() const;
 
         bool hasJobOptions() const;
 
@@ -337,6 +346,9 @@ class S9sOptions
         bool extended() const;
 
         bool useInternalRepos() const;
+        bool useLocalRepo() const;
+        S9sString localRepoName() const;
+        bool createLocalRepo() const;
         bool keepFirewall() const;
 
         bool uninstall() const;
@@ -355,6 +367,9 @@ class S9sOptions
         S9sString s3bucket() const;
         bool      hasS3regionOption() const;
         S9sString s3region() const;
+        bool      cloudOnly() const;
+        bool      hasCloudProviderOption() const;
+        S9sString cloudProvider() const;
         S9sString storageHost() const;
         S9sString pitrStopTime() const;
         int      clusterDecryptionKey() const;
@@ -431,7 +446,9 @@ class S9sOptions
         S9sString testServer() const;
 
         S9sString emailAddress() const;
-        S9sString uiConfig() const;
+
+        S9sString userPreferencesToSet() const;
+        S9sString userPreferencesToDelete() const;
 
         bool isHelpRequested() const;
         bool isListRequested() const;
@@ -532,6 +549,9 @@ class S9sOptions
         bool isAddToGroupRequested() const;
         bool isRemoveFromGroupRequested() const;
         bool isPasswordResetRequested() const;
+        bool setUserPreferencesRequested() const;
+        bool getUserPreferencesRequested() const;
+        bool deleteUserPreferencesRequested() const;
         bool isDisableRequested() const;
         bool isPingRequested() const;
         bool isPromoteSlaveRequested() const;
@@ -555,6 +575,8 @@ class S9sOptions
         bool isSetupAuditLoggingRequested() const;
         bool isCreateReportRequested() const;
         bool isDeployAgentsRequested() const;
+        bool isDeployCmonAgentsRequested() const;
+        bool isUninstallCmonAgentsRequested() const;
         bool isAddNodeRequested() const;
         bool isReinstallNodeRequested() const;
         bool isReconfigureNodeRequested() const;

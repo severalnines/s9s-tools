@@ -188,6 +188,15 @@ S9sBusinessLogic::execute()
         {
             success = client.deployAgents(clusterId);
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isDeployCmonAgentsRequested())
+        {
+            success = client.deployCmonAgents(clusterId);
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isUninstallCmonAgentsRequested())
+        {
+            success = client.uninstallCmonAgents(clusterId);
+            maybeJobRegistered(client, clusterId, success);
+ 
         } else if (options->isAddNodeRequested())
         {
             success = client.createNode();
@@ -852,6 +861,24 @@ S9sBusinessLogic::execute()
             success = client.deleteJobInstance(options->jobId());
             client.printMessages("Deleted.", success);
             client.setExitStatus();
+        } else if (options->isEnableRequested())
+        {
+            success = client.enableJobInstance(options->jobId());
+            if (!success || !client.reply().isOk())
+            {
+                PRINT_ERROR("Failed to enable: %s", STR(client.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+                success = false;
+            }
+        } else if (options->isDisableRequested())
+        {
+            success = client.disableJobInstance(options->jobId());
+            if (!success || !client.reply().isOk())
+            {
+                PRINT_ERROR("Failed to disable: %s", STR(client.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+                success = false;
+            }
         } else if (options->isKillRequested())
         {
             success = client.killJobInstance(options->jobId());
@@ -1065,6 +1092,21 @@ S9sBusinessLogic::execute()
         {
             success = client.resetPassword();
             client.printMessages("Ok.", success);
+            client.setExitStatus();
+        } else if (options->setUserPreferencesRequested())
+        {
+            success = client.setUserPreferences();
+            client.printMessages(success ? "Ok." : "Failed.", success);
+            client.setExitStatus();
+        } else if (options->getUserPreferencesRequested())
+        {
+            success = client.getUserPreferences();
+            client.printMessages(success ? "Ok." : "Failed.", success);
+            client.setExitStatus();
+        } else if (options->deleteUserPreferencesRequested())
+        {
+            success = client.deleteUserPreferences();
+            client.printMessages(success ? "Ok." : "Failed.", success);
             client.setExitStatus();
         } else {
             executeCreateUser(client);
