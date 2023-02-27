@@ -3305,12 +3305,12 @@ S9sOptions::s3region() const
 }
 
 /**
- * \returns The argument for the --only-cloud option
+ * \returns The argument for the --cloud-only option
  */
 bool
-S9sOptions::onlyCloud() const
+S9sOptions::cloudOnly() const
 {
-    return m_options.contains("only_cloud");
+    return m_options.contains("cloud_only");
 }
 
 bool
@@ -6543,7 +6543,7 @@ S9sOptions::printHelpBackup()
 "  --credential-id=ID         The required cloud credential ID to use on snapshot repository.\n"
 "  --s3-bucket=NAME           The name of the s3 bucket to use on the snapshot repository\n"
 "  --s3-region=STRING         The name of the region storing s3 bucket. (example: eu-west-3)\n"
-"  --only-cloud               Flag to indicate that backup will be directly streamed to cloud (no files generated)\n"
+"  --cloud-only               Flag to indicate that backup will be directly streamed to cloud (no files generated)\n"
 "  --cloud-provider=STRING    Identifier of the cloud storage provider to be used\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
@@ -7732,7 +7732,7 @@ S9sOptions::readOptionsBackup(
         { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "s3-region",        required_argument, 0, OptionS3Region        },
-        { "only-cloud",       no_argument,       0, OptionOnlyCloud       },
+        { "cloud-only",       no_argument,       0, OptionOnlyCloud       },
         { "cloud-provider",   required_argument, 0, OptionCloudProvider   },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
@@ -8173,8 +8173,8 @@ S9sOptions::readOptionsBackup(
                 break;
 
             case OptionOnlyCloud:
-                // --only-cloud
-                m_options["only_cloud"] = true;
+                // --cloud-only
+                m_options["cloud_only"] = true;
                 break;
 
             case OptionCloudProvider:

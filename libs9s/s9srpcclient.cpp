@@ -10266,7 +10266,7 @@ S9sRpcClient::composeBackupJob()
     S9sString       snapshotLocation = options->snapshotLocation();
     S9sString       s3bucket         = options->s3bucket();
     S9sString       s3region         = options->s3region();
-    bool            onlyCloud        = options->onlyCloud();
+    bool            cloudOnly        = options->cloudOnly();
     S9sString       cloudStorageProv = options->cloudProvider();
     int             backupRetention  = options->backupRetention();
     S9sString       storageHost      = options->storageHost();
@@ -10318,9 +10318,9 @@ S9sRpcClient::composeBackupJob()
     if (!s3region.empty())
         jobData["s3_region"] = s3region;
 
-    if (onlyCloud)
+    if (cloudOnly)
     {
-        jobData["only_cloud"] = true;
+        jobData["cloud_only"] = true;
         // checks with current available functionality
         if(cloudStorageProv.empty() || cloudStorageProv != AWS_CLOUD_PROVIDER)
         {
@@ -10336,7 +10336,7 @@ S9sRpcClient::composeBackupJob()
                 jobCloudData["cloud_storage_credentials_id"] = options->credentialId();
             else
             {
-                PRINT_ERROR("Need option --credential-id=<id-num> with --only-cloud");
+                PRINT_ERROR("Need option --credential-id=<id-num> with --cloud-only");
                 return S9sVariantMap();
             }
 
