@@ -3394,6 +3394,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3468,6 +3469,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3483,7 +3485,7 @@ S9sRpcClient::createMySqlSingleCluster(
         jobData["install_software"] = true;
         jobData["enable_uninstall"] = true;
     }
-    
+
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
@@ -3741,6 +3743,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3890,6 +3893,7 @@ S9sRpcClient::createGroupReplication(
     jobData["type"]             = "mysql";
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4040,7 +4044,8 @@ S9sRpcClient::createNdbCluster(
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = !options->keepFirewall();
-    
+    jobData["deploy_agents"]    = true;
+
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
     
@@ -4191,6 +4196,7 @@ S9sRpcClient::createPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
@@ -4384,6 +4390,7 @@ S9sRpcClient::createRedisSentinel(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->noInstall())
     {
@@ -4459,6 +4466,7 @@ S9sRpcClient::createElasticsearch(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->noInstall())
     {
@@ -4535,6 +4543,7 @@ S9sRpcClient::createMsSqlSingle(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = true;
 
     if (options->noInstall())
     {
@@ -4616,7 +4625,8 @@ S9sRpcClient::createMongoCluster(
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-
+    jobData["deploy_agents"]    = true;
+   
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -7216,6 +7226,7 @@ S9sRpcClient::checkHosts()
         jobData["nodes"]          = nodesField(hosts);
         jobData["vendor"]         = options->vendor();
         jobData["version"]        = options->providerVersion();
+        jobData["deploy_agents"]  = true;
     
         jobSpec["command"]        = "create_cluster";
         jobSpec["job_data"]       = jobData;
