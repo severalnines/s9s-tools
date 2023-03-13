@@ -3115,6 +3115,17 @@ S9sRpcClient::createCluster()
         return false;
     }
 
+    if (!options->hasRepoToken() && vendor == "enterprisedb")
+    {
+        PRINT_ERROR(
+            "The Repo Token is not provided for am enterprise cluster.\n"
+            "Use the --repo-token command line option to provide your company's Repo Token."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     // for redis we do not care about the version for now..
     if (dbVersion.empty()  &&
         (options->clusterType() != "redis" &&
@@ -4185,6 +4196,8 @@ S9sRpcClient::createPostgreSql(
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["vendor"]           = options->vendor();
+    if (options->hasRepoToken())
+        jobData["repo_token"]   = options->repoToken();
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
