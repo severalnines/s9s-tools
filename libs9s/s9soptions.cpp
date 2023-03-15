@@ -1720,19 +1720,19 @@ S9sOptions::vendor() const
 }
 
 /**
- * \returns the Repo/Download Token as it is set by the --repo-token command line option.
+ * \returns the Repo/Download Token as it is set by the --enterprise-token command line option.
  *          e.g. Repo Token for EDB-AS or CUSTOMER_DOWNLOAD_TOKEN for MariaDB Enterprise Server.
  */
 S9sString
 S9sOptions::repoToken() const
 {
-    return getString("repo_token");
+    return getString("enterprise_token");
 }
 
 bool
 S9sOptions::hasRepoToken() const
 {
-    return m_options.contains("repo_token");
+    return m_options.contains("enterprise_token");
 }
 
 /**
@@ -6792,7 +6792,7 @@ S9sOptions::printHelpCluster()
 "  --local-repository=NAME    Use a previously created local mirror for deploy.\n"
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
-"  --repo-token=REPOTOKEN     The customer's Repo/Download Token for an enterprise database.\n"
+"  --enterprise-token=TOKEN   The customer's Repo/Download Token for an enterprise database.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
@@ -12756,7 +12756,7 @@ S9sOptions::readOptionsCluster(
         { "provider-version", required_argument, 0, OptionProviderVersion },
         { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
         { "vendor",           required_argument, 0, OptionVendor          },
-        { "repo-token",       required_argument, 0, OptionRepoToken       },
+        { "enterprise-token", required_argument, 0, OptionRepoToken       },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
@@ -13225,8 +13225,8 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionRepoToken:
-                // --repo-token=STRING
-                m_options["repo_token"] = optarg;
+                // --enterprise-token=STRING
+                m_options["enterprise_token"] = optarg;
                 break;
 
             case OptionProviderVersion:

@@ -3119,7 +3119,7 @@ S9sRpcClient::createCluster()
     {
         PRINT_ERROR(
             "The Repo Token is not provided for am enterprise cluster.\n"
-            "Use the --repo-token command line option to provide your company's Repo Token."
+            "Use the --enterprise-token command line option to provide your company's Repo Token."
             );
 
         options->setExitStatus(S9sOptions::BadOptions);
@@ -4197,7 +4197,7 @@ S9sRpcClient::createPostgreSql(
     jobData["type"]             = "postgresql";
     jobData["vendor"]           = options->vendor();
     if (options->hasRepoToken())
-        jobData["repo_token"]   = options->repoToken();
+        jobData["enterprise_token"] = options->repoToken();
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
