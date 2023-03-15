@@ -1,8 +1,13 @@
-s9s-tools (1.9.2023012301-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2023030117-release1) UNRELEASED; urgency=medium
 
+  [ David Kedves ]
   * Add initial support of CentOS9/RockyLinux9 & AlmaLinux9
 
- -- David Kedves <kedaz@severalnines.com>  Mon, 23 Jan 2023 10:54:30 +0100
+  [ Severalnines ]
+  * Release 1.9.2023022717.
+  * Release 1.9.2023030117.
+
+ -- Severalnines <support@severalnines.com>  Wed, 01 Mar 2023 17:21:16 +0900
 
 s9s-tools (1.9.2023010901-release1) UNRELEASED; urgency=medium
 

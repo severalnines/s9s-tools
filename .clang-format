@@ -1,0 +1,25 @@
+﻿---
+BasedOnStyle: WebKit
+Language: Cpp
+UseTab: Never
+ColumnLimit: 80
+
+BreakBeforeBraces: Allman
+DerivePointerAlignment: true
+AlwaysBreakAfterReturnType: TopLevel
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveMacros: true
+AlignAfterOpenBracket: AlwaysBreak
+AllowAllArgumentsOnNextLine: false
+NamespaceIndentation: All
+IndentAccessModifiers: true
+BinPackArguments: false
+BinPackParameters: false
+AlwaysBreakBeforeMultilineStrings: true
+ContinuationIndentWidth: 8
+FixNamespaceComments: true
+SortIncludes: Never
+SortUsingDeclarations: false
+
+...
