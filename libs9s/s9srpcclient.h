@@ -364,6 +364,7 @@ class S9sRpcClient
         bool saveController();
         bool restoreController();
         bool setupAuditLogging(const int clusterId);
+        bool setupLogRotate(const int clusterId);
 
         bool createReport(const int clusterId);
 

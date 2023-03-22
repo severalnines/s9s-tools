@@ -180,6 +180,10 @@ S9sBusinessLogic::execute()
         {
             success = client.setupAuditLogging(clusterId);
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isSetupLogRotateRequested())
+        {
+            success = client.setupLogRotate(clusterId);
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isCreateReportRequested())
         {
             success = client.createReport(clusterId);

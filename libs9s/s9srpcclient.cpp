@@ -2892,6 +2892,36 @@ S9sRpcClient::setupAuditLogging(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::setupLogRotate(
+        const int clusterId)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList hosts = options->nodes();
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  jobData = composeJobData();
+
+    if (!hosts.empty())
+        jobData["nodes"] = nodesField(hosts);
+
+    jobSpec["command"]    = "setup_logrotate";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Setup Log Rotate";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    return executeRequest(uri, request);
+}
+
 
 /**
  * \returns true if the operation was successful, a reply is received from the
@@ -3168,11 +3198,9 @@ S9sRpcClient::createCluster()
         success = createElasticsearch(
             hosts, osUserName, dbVersion);
  
-    } else if (options->clusterType() == "mssql_single")
-    {
-        success = createMsSqlSingle(
-            hosts, osUserName, dbVersion);
-    } else if (options->clusterType() == "mssql_ao_async")
+    } else if (options->clusterType() == "mssql_single" ||
+               options->clusterType() == "mssql_ao_async"||
+               options->clusterType() == "mssql_ao_sync")
     {
         success = createMsSqlSingle(
             hosts, osUserName, dbVersion);
