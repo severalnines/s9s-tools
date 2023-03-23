@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # This is the s9s-tools install script. It installs the s9s CLI.
-# Copyright 2017-2022 severalnines.com
+# Copyright 2017-2023 severalnines.com
 #
 
 dist="Unknown"
@@ -51,9 +51,12 @@ do_release_file() {
                 detect_suse_version
                 break
             else
-                grep -q "VERSION=.*7." $file >/dev/null 2>/dev/null && distversion=7 && break
-                grep -q "VERSION=.*8." $file >/dev/null 2>/dev/null && distversion=8 && break
-                grep -q "VERSION=.*9." $file >/dev/null 2>/dev/null && distversion=9 && break
+                egrep -q "(VERSION=.*7\.|platform:el7)" $file \
+                    >/dev/null 2>/dev/null && dist="redhat" && distversion=7 && break
+                egrep -q "(VERSION=.*8\.|platform:el8)" $file \
+                    >/dev/null 2>/dev/null && dist="redhat" && distversion=8 && break
+                egrep -q "(VERSION=.*9\.|platform:el9)" $file \
+                    >/dev/null 2>/dev/null && dist="redhat" && distversion=9 && break
             fi
         fi
         if [[ $file =~ $regex_etc ]]; then
@@ -88,6 +91,8 @@ case $dist in
     redhat) dist="redhat";;
     centos) dist="redhat";;
     fedora) dist="redhat";;
+    rocky)  dist="redhat";;
+    alma)   dist="redhat";;
     oracle) dist="redhat";;
     system) dist="redhat";; # amazon ami
     suse)   dist="suse";;

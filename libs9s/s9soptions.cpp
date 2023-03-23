@@ -424,6 +424,7 @@ enum S9sOptionType
     OptionDbSchemaDbGrowth,
     OptionDbSchemaDate,
     OptionDbSchemaName,
+    OptionSetupLogRotate,
 };
 
 /**
@@ -5241,6 +5242,17 @@ S9sOptions::isDeployAgentsRequested() const
     return getBool("deploy_agents");
 }
 
+
+/**
+ * \returns true if the --setup-logrotate command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isSetupLogRotateRequested() const
+{
+    return getBool("setup_logrotate");
+}
+
 /**
  * \returns true if the --deploy-cmonagents command line option was provided
  * when the program was started.
@@ -6746,6 +6758,7 @@ S9sOptions::printHelpCluster()
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --set-read-only            Set the entire cluster into read-only mode.\n"
 "  --setup-audit-logging      Set up the audit logging on the nodes.\n"
+"  --setup-logrotate          Starts a job to setup logrotate on the nodes.\n"
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
@@ -10413,6 +10426,9 @@ S9sOptions::checkOptionsCluster()
     if (isDeployAgentsRequested())
         countOptions++;
 
+    if (isSetupLogRotateRequested())
+        countOptions++;
+
     if (isAddNodeRequested())
         countOptions++;
 
@@ -12709,6 +12725,7 @@ S9sOptions::readOptionsCluster(
         { "enable-recovery",  no_argument,       0, OptionEnableRecovery  },
         { "disable-recovery", no_argument,       0, OptionDisableRecovery },
         { "semi-sync",        required_argument, 0, OptionSemiSync        },
+        { "setup-logrotate",  no_argument,       0, OptionSetupLogRotate  },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -12935,6 +12952,11 @@ S9sOptions::readOptionsCluster(
             case OptionSetupAudit:
                 // --setup-audit-logging
                 m_options["setup_audit_logging"] = true;
+                break;
+
+            case OptionSetupLogRotate:
+                // --setup-logrotate
+                m_options["setup_logrotate"] = true;
                 break;
             
             case OptionCreateReport:
