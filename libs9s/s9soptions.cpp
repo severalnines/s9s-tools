@@ -82,7 +82,7 @@ enum S9sOptionType
     OptionProviderVersion,
     OptionProperties,
     OptionVendor,
-    OptionRepoToken,
+    OptionEnterpriseToken,
     OptionCreate,
     OptionCreateWithJob,
     OptionSync,
@@ -12773,7 +12773,7 @@ S9sOptions::readOptionsCluster(
         { "provider-version", required_argument, 0, OptionProviderVersion },
         { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
         { "vendor",           required_argument, 0, OptionVendor          },
-        { "enterprise-token", required_argument, 0, OptionRepoToken       },
+        { "enterprise-token", required_argument, 0, OptionEnterpriseToken },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
@@ -13246,7 +13246,7 @@ S9sOptions::readOptionsCluster(
                 m_options["vendor"] = optarg;
                 break;
 
-            case OptionRepoToken:
+            case OptionEnterpriseToken:
                 // --enterprise-token=STRING
                 m_options["enterprise_token"] = optarg;
                 break;
