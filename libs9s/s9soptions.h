@@ -173,7 +173,7 @@ class S9sOptions
         
         S9sString vendor() const;
         S9sString repoToken() const;
-        bool hasRepoToken() const;
+        bool hasEnterpriseToken() const;
 
         bool hasProviderVersion() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;

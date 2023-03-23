@@ -1724,13 +1724,13 @@ S9sOptions::vendor() const
  *          e.g. Repo Token for EDB-AS or CUSTOMER_DOWNLOAD_TOKEN for MariaDB Enterprise Server.
  */
 S9sString
-S9sOptions::repoToken() const
+S9sOptions::enterpriseToken() const
 {
     return getString("enterprise_token");
 }
 
 bool
-S9sOptions::hasRepoToken() const
+S9sOptions::hasEnterpriseToken() const
 {
     return m_options.contains("enterprise_token");
 }
