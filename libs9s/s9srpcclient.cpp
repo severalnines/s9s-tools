@@ -4197,7 +4197,7 @@ S9sRpcClient::createPostgreSql(
     jobData["type"]             = "postgresql";
     jobData["vendor"]           = options->vendor();
     if (options->hasEnterpriseToken())
-        jobData["enterprise_token"] = options->repoToken();
+        jobData["enterprise_token"] = options->enterpriseToken();
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();

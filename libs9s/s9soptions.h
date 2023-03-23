@@ -172,7 +172,7 @@ class S9sOptions
         S9sString longUserFormat() const;
         
         S9sString vendor() const;
-        S9sString repoToken() const;
+        S9sString enterpriseToken() const;
         bool hasEnterpriseToken() const;
 
         bool hasProviderVersion() const;
