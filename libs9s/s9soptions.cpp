@@ -6805,7 +6805,7 @@ S9sOptions::printHelpCluster()
 "  --local-repository=NAME    Use a previously created local mirror for deploy.\n"
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
-"  --enterprise-token=TOKEN   The customer's Repo/Download Token for an enterprise database.\n"
+"  --enterprise-token=TOKEN   The customer's Repo/Download Token for an Enterprise Database.\n"
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
