@@ -4309,6 +4309,7 @@ S9sRpcClient::registerPostgreSql(
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
