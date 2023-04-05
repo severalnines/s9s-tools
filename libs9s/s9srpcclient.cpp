@@ -3134,12 +3134,22 @@ S9sRpcClient::createCluster()
     osUserName     = options->osUser();
     vendor         = options->vendor();
 
-
-    if (vendor.empty() && options->clusterType() != "postgresql")
+    if (vendor.empty())
     {
         PRINT_ERROR(
             "The vendor name is unknown while creating a cluster.\n"
             "Use the --vendor command line option to provide the vendor."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (!options->hasEnterpriseToken() && vendor == "enterprisedb")
+    {
+        PRINT_ERROR(
+            "The Repo Token is not provided for am enterprise cluster.\n"
+            "Use the --enterprise-token command line option to provide your company's Repo Token."
             );
 
         options->setExitStatus(S9sOptions::BadOptions);
@@ -4219,6 +4229,8 @@ S9sRpcClient::createPostgreSql(
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["vendor"]           = options->vendor();
+    if (options->hasEnterpriseToken())
+        jobData["enterprise_token"] = options->enterpriseToken();
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = psqlVersion;
     jobData["postgre_user"]     = options->dbAdminUserName();
@@ -4297,6 +4309,7 @@ S9sRpcClient::registerPostgreSql(
     //
     jobData["cluster_type"]     = "postgresql_single";
     jobData["nodes"]            = nodesField(hosts);
+    jobData["vendor"]           = options->vendor();
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
