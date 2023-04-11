@@ -3134,7 +3134,8 @@ S9sRpcClient::createCluster()
     osUserName     = options->osUser();
     vendor         = options->vendor();
 
-    if (vendor.empty())
+
+    if (vendor.empty() && options->clusterType() != "postgresql")
     {
         PRINT_ERROR(
             "The vendor name is unknown while creating a cluster.\n"
