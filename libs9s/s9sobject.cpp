@@ -63,15 +63,6 @@ S9sObject::~S9sObject()
 {
 }
 
-S9sObject &
-S9sObject::operator=(
-        const S9sVariantMap &rhs)
-{
-    setProperties(rhs);
-    
-    return *this;
-}
-
 S9sString 
 S9sObject::className() const 
 {
