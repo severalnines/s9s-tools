@@ -152,7 +152,7 @@ UtS9sNode::testSetProperties()
     theNode.setProperties(theMap);
 
     S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
-    S9S_COMPARE(theNode.id(),         3);
+    S9S_COMPARE(theNode.hostId(),     3);
     S9S_COMPARE(theNode.clusterId(),  1);
     S9S_COMPARE(theNode.name(),       "192.168.1.189");
     S9S_COMPARE(theNode.hostName(),   "192.168.1.189");
@@ -198,7 +198,7 @@ UtS9sNode::testAssign()
     theNode = theMap;
     
     S9S_COMPARE(theNode.className(),  "CmonGaleraHost");
-    S9S_COMPARE(theNode.id(),         3);
+    S9S_COMPARE(theNode.hostId(),     3);
     S9S_COMPARE(theNode.clusterId(),  1);
     S9S_COMPARE(theNode.name(),       "192.168.1.189");
     S9S_COMPARE(theNode.hostName(),   "192.168.1.189");

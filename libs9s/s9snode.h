@@ -55,7 +55,7 @@ class S9sNode : public S9sObject
                 const bool       syntaxHighlight,
                 const S9sString &formatString) const;
 
-        virtual int id() const;
+        virtual int hostId() const;
         int clusterId() const;
         virtual S9sString name() const;
         S9sString hostName() const;

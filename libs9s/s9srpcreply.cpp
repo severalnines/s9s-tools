@@ -7802,7 +7802,7 @@ S9sRpcReply::createGraph(
             S9sVariant map   = data[idx].toVariantMap();
             S9sVariant value = map[filterName];
 
-            if (map["hostid"].toInt() != host.id())
+            if (map["hostid"].toInt() != host.hostId())
                 continue;
 
             if (!filterValues.contains(value))
@@ -8267,7 +8267,7 @@ S9sRpcReply::printJobListBrief()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sJob         job    = theList[idx].toVariantMap();
-        int            jobId  = job.id();
+        int            jobId  = job.jobId();
         int            cid    = job.clusterId();
         S9sString      user   = job.userName();
         S9sString      group  = job.groupName();
@@ -8337,7 +8337,7 @@ S9sRpcReply::printJobListBrief()
     {
         S9sVariantMap  theMap = theList[idx].toVariantMap();
         S9sJob         job    = theList[idx].toVariantMap();
-        int            jobId  = job.id();
+        int            jobId  = job.jobId();
         int            cid    = job.clusterId();
         S9sString      status = job.status();
         S9sString      title  = job.title();
@@ -8546,7 +8546,7 @@ S9sRpcReply::printJobListLong()
     {
         S9sVariantMap  theMap     = theList[idx].toVariantMap();
         S9sJob         job        = theList[idx].toVariantMap();
-        int            jobId      = job.id();
+        int            jobId      = job.jobId();
         S9sString      status     = job.status();
         S9sString      title      = job.title();
         S9sString      statusText = theMap["status_text"].toString();

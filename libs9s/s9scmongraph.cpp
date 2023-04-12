@@ -332,7 +332,7 @@ S9sCmonGraph::realize()
                 break;
 
             case LoadAverage:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -342,7 +342,7 @@ S9sCmonGraph::realize()
                 break;
             
             case CpuSys:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -352,7 +352,7 @@ S9sCmonGraph::realize()
                 break;
             
             case CpuIdle:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -362,7 +362,7 @@ S9sCmonGraph::realize()
                 break;
             
             case CpuUser:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -372,7 +372,7 @@ S9sCmonGraph::realize()
                 break;
             
             case CpuIoWait:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -382,7 +382,7 @@ S9sCmonGraph::realize()
                 break;
 
             case CpuTemp:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -392,7 +392,7 @@ S9sCmonGraph::realize()
                 break;
 
             case CpuGhz:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value["cpuid"].toInt() != 0)
@@ -402,7 +402,7 @@ S9sCmonGraph::realize()
                 break;
 
             case SqlStatements:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value.contains("COM_SELECT") || 
@@ -437,7 +437,7 @@ S9sCmonGraph::realize()
                 break;
 
             case SqlConnections:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
                
                 if (value.contains("CONNECTIONS"))
@@ -448,7 +448,7 @@ S9sCmonGraph::realize()
                 break;
 
             case SqlReplicationLag:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
                
                 if (value.contains("REPLICATION_LAG"))
@@ -456,7 +456,7 @@ S9sCmonGraph::realize()
                 break;
 
             case SqlCommits:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
                 
                 if (value.contains("commits"))
@@ -470,7 +470,7 @@ S9sCmonGraph::realize()
                 break;
             
             case SqlQueries:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value.contains("QUERIES"))
@@ -483,7 +483,7 @@ S9sCmonGraph::realize()
                 break;
             
             case SqlSlowQueries:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value.contains("SLOW_QUERIES"))
@@ -496,7 +496,7 @@ S9sCmonGraph::realize()
                 break;
             
             case SqlOpenTables:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 if (value.contains("OPEN_TABLES"))
@@ -508,7 +508,7 @@ S9sCmonGraph::realize()
                 break;
 
             case MemUtil:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["memoryutilization"].toDouble();
@@ -518,7 +518,7 @@ S9sCmonGraph::realize()
                 break;
 
             case MemFree:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["ramfree"].toDouble();
@@ -528,7 +528,7 @@ S9sCmonGraph::realize()
                 break;
             
             case SwapFree:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["swapfree"].toDouble();
@@ -538,7 +538,7 @@ S9sCmonGraph::realize()
                 break;
 
             case DiskFree:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["free"].toDouble();
@@ -548,7 +548,7 @@ S9sCmonGraph::realize()
                 break;
 
             case DiskReadSpeed:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
                 
                 dval  = value["reads"].toDouble();
@@ -560,7 +560,7 @@ S9sCmonGraph::realize()
                 break;
             
             case DiskWriteSpeed:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["writes"].toDouble();
@@ -572,7 +572,7 @@ S9sCmonGraph::realize()
                 break;
             
             case DiskReadWriteSpeed:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["writes"].toDouble();
@@ -585,7 +585,7 @@ S9sCmonGraph::realize()
                 break;
             
             case DiskUtilization:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["utilization"].toDouble();
@@ -595,7 +595,7 @@ S9sCmonGraph::realize()
                 break;
 
             case NetSentSpeed:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["txBytes"].toDouble();
@@ -606,7 +606,7 @@ S9sCmonGraph::realize()
                 break;
             
             case NetReceivedSpeed:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["rxBytes"].toDouble();
@@ -617,7 +617,7 @@ S9sCmonGraph::realize()
                 break;
             
             case NetReceiveErrors:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["rxErrors"].toDouble();
@@ -625,7 +625,7 @@ S9sCmonGraph::realize()
                 break;
             
             case NetTransmitErrors:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["txErrors"].toDouble();
@@ -633,7 +633,7 @@ S9sCmonGraph::realize()
                 break;
             
             case NetErrors:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["txErrors"].toDouble();
@@ -642,7 +642,7 @@ S9sCmonGraph::realize()
                 break;
             
             case NetSpeed:
-                if (value["hostid"].toInt() != m_node.id())
+                if (value["hostid"].toInt() != m_node.hostId())
                     continue;
 
                 dval  = value["rxBytes"].toDouble();

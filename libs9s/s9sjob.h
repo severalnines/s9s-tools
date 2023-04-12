@@ -36,7 +36,7 @@ class S9sJob : public S9sObject
 
         S9sJob &operator=(const S9sVariantMap &rhs);
        
-        virtual int id() const;
+        virtual int jobId() const;
         int clusterId() const;
         S9sString title() const;
         S9sString userName() const;

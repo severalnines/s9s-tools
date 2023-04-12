@@ -255,12 +255,13 @@ UtS9sRpcClient::testGetNextMaintenance()
     S9sVariantMap       payload;
     
     options->m_options["cluster_id"] = 42;
-    S9S_VERIFY(client.getNextMaintenance());
-    
+
     payload = client.lastPayload();
     if (isVerbose())
         printDebug(payload);
 
+    S9S_VERIFY(client.getNextMaintenance());
+    
     S9S_COMPARE(payload.size(), 4);
     S9S_COMPARE(payload["cluster_id"].toInt(), 42);
     S9S_COMPARE(payload["operation"].toString(), "getNextMaintenance");

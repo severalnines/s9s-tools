@@ -396,7 +396,7 @@ S9sNode::toString(
                 case 'I':
                     // The ID of the node.
                     partFormat += 'd';
-                    tmp.sprintf(STR(partFormat), id());
+                    tmp.sprintf(STR(partFormat), hostId());
 
                     retval += tmp;
                     break;
@@ -681,7 +681,7 @@ S9sNode::toString(
  * \returns The host ID, a unique ID that identifies the host itself.
  */
 int
-S9sNode::id() const
+S9sNode::hostId() const
 {
     if (m_properties.contains("hostId"))
         return m_properties.at("hostId").toInt();
@@ -1548,19 +1548,19 @@ S9sNode::masterClusterId() const
 S9sString
 S9sNode::cpuModel() const
 {
-    return m_cluster.cpuModel(id());
+    return m_cluster.cpuModel(hostId());
 }
 
 S9sVariant 
 S9sNode::memTotal() const
 {
-    return m_cluster.memTotal(id());
+    return m_cluster.memTotal(hostId());
 }
 
 S9sVariant 
 S9sNode::memFree() const
 {
-    return m_cluster.memFree(id());
+    return m_cluster.memFree(hostId());
 }
 
 /**
@@ -1569,7 +1569,7 @@ S9sNode::memFree() const
 S9sVariant 
 S9sNode::nCpuCores() const
 {
-    return m_cluster.nCpuCores(id());
+    return m_cluster.nCpuCores(hostId());
 }
 
 /**
@@ -1578,13 +1578,13 @@ S9sNode::nCpuCores() const
 S9sVariant 
 S9sNode::nCpus() const
 {
-    return m_cluster.nCpus(id());
+    return m_cluster.nCpus(hostId());
 }
 
 S9sVariant 
 S9sNode::nNics() const
 {
-    return m_cluster.nNics(id());
+    return m_cluster.nNics(hostId());
 }
 
 /**
@@ -1593,19 +1593,19 @@ S9sNode::nNics() const
 S9sVariant 
 S9sNode::nDevices() const
 {
-    return m_cluster.nDevices(id());
+    return m_cluster.nDevices(hostId());
 }
 
 S9sVariant 
 S9sNode::totalDiskBytes() const
 {
-    return m_cluster.totalDiskBytes(id());
+    return m_cluster.totalDiskBytes(hostId());
 }
 
 S9sVariant 
 S9sNode::freeDiskBytes() const
 {
-    return m_cluster.freeDiskBytes(id());
+    return m_cluster.freeDiskBytes(hostId());
 }
 
 /**
@@ -1625,19 +1625,19 @@ S9sNode::netBytesPerSecond() const
 S9sVariant
 S9sNode::cpuUsagePercent() const
 {
-    return m_cluster.cpuUsagePercent(id());
+    return m_cluster.cpuUsagePercent(hostId());
 }
 
 S9sVariant
 S9sNode::swapTotal() const
 {
-    return m_cluster.swapTotal(id());
+    return m_cluster.swapTotal(hostId());
 }
 
 S9sVariant
 S9sNode::swapFree() const
 {
-    return m_cluster.swapFree(id());
+    return m_cluster.swapFree(hostId());
 }
 
 /**
@@ -1647,7 +1647,7 @@ S9sNode::swapFree() const
 S9sVariant
 S9sNode::rxBytesPerSecond() const
 {
-    return m_cluster.rxBytesPerSecond(id());
+    return m_cluster.rxBytesPerSecond(hostId());
 }
 
 /**
@@ -1657,7 +1657,7 @@ S9sNode::rxBytesPerSecond() const
 S9sVariant
 S9sNode::txBytesPerSecond() const
 {
-    return m_cluster.txBytesPerSecond(id());
+    return m_cluster.txBytesPerSecond(hostId());
 }
 
 /**

@@ -809,7 +809,7 @@ S9sMonitor::printJobs()
     {
         S9sString statusText = S9sString::html2ansi(job.statusText());
 
-        idFormat.widen(job.id());
+        idFormat.widen(job.jobId());
         stateFormat.widen(job.status());
         progressFormat.widen("[--------- ]");
         titleFormat.widen(job.title());
@@ -875,7 +875,7 @@ S9sMonitor::printJobs()
         titleFormat.setColor(
                 TERM_BOLD, TERM_NORMAL);
 
-        idFormat.printf(job.id());
+        idFormat.printf(job.jobId());
         stateFormat.printf(job.status());
 
         ::printf("%s", STR(progressBar));
@@ -920,7 +920,7 @@ S9sMonitor::printNodes()
      */
     foreach (const S9sNode &node, m_nodes)
     {
-        S9sEvent       event = m_eventsForNodes[node.id()];
+        S9sEvent       event = m_eventsForNodes[node.hostId()];
         S9sString      clusterName = "-";
 
         if (m_clusters.contains(node.clusterId()))
@@ -990,7 +990,7 @@ S9sMonitor::printNodes()
 
     foreach (const S9sNode &node, m_nodes)
     {
-        S9sEvent       event = m_eventsForNodes[node.id()];
+        S9sEvent       event = m_eventsForNodes[node.hostId()];
         S9sString      clusterName = "-";
 
         if (m_clusters.contains(node.clusterId()))
@@ -1207,8 +1207,8 @@ S9sMonitor::processEvent(
     {
         S9sJob job = event.job();
             
-        m_jobs[job.id()] = job;
-        m_jobActivity[job.id()] = time(NULL);
+        m_jobs[job.jobId()] = job;
+        m_jobActivity[job.jobId()] = time(NULL);
     }
     
     // The hosts.
@@ -1218,8 +1218,8 @@ S9sMonitor::processEvent(
 
         node = event.host();
 
-        m_nodes[node.id()] = node;
-        m_eventsForNodes[node.id()] = event;
+        m_nodes[node.hostId()] = node;
+        m_eventsForNodes[node.hostId()] = event;
     }
     
     // The servers (together with the containers).

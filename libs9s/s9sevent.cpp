@@ -378,11 +378,11 @@ S9sEvent::eventJobToOneLiner() const
     switch (subClass)
     {
         case Created:
-            retval.sprintf("%4d %s", job.id(), STR(job.title()));
+            retval.sprintf("%4d %s", job.jobId(), STR(job.title()));
             break;
 
         case Changed:
-            retval.sprintf("%4d %s", job.id(), STR(job.title()));
+            retval.sprintf("%4d %s", job.jobId(), STR(job.title()));
             break;
 
         case UserMessage:

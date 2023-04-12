@@ -68,7 +68,7 @@ S9sJob::operator=(
  * \returns The job ID, a unique ID that identifies the job itself.
  */
 int
-S9sJob::id() const
+S9sJob::jobId() const
 {
     return property("job_id").toInt();
 }
