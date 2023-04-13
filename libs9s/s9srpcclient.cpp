@@ -1545,6 +1545,21 @@ S9sRpcClient::getJobInstance(
     return executeRequest(uri, request);
 }
 
+/** Same as getJobInstance(), except that the request json is never printed
+ */
+bool
+S9sRpcClient::getJobInstanceForWait(
+        const int jobId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+
+    request["operation"] = "getJobInstance";
+    request["job_id"]    = jobId;
+
+    return executeRequest(uri, request, false);
+}
+
 /**
  * \param jobId the ID of the job
  * \returns true if the operation was successful, a reply is received from the
