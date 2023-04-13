@@ -334,6 +334,7 @@ class S9sRpcClient
          *
          */
         bool getJobInstance(const int jobId);
+        bool getJobInstanceForWait(const int jobId);
         
         bool getJobLog(
                 const int  jobId,

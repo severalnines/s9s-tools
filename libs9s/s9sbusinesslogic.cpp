@@ -2269,7 +2269,7 @@ S9sBusinessLogic::waitForJobWithProgress(
         /*
          * Getting the job instance from the controller.
          */
-        success = client.getJobInstance(jobId);
+        success = client.getJobInstanceForWait(jobId);
         if (success)
         {
             reply     = client.reply();
