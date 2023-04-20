@@ -10762,7 +10762,7 @@ S9sRpcClient::addCredentialsToJobData(
 {
     S9sOptions    *options      = S9sOptions::instance();
 
-    S9sString      osUserName     = options->osUser(false);
+    S9sString      osUserName     = options->osUser();
     S9sString      osKeyFile      = options->osKeyFile();
     S9sString      osPassword     = options->osPassword();
     S9sString      osSudoPassword = options->osSudoPassword();

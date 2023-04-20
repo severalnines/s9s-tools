@@ -189,7 +189,7 @@ class S9sOptions
                     const S9sString &categoryName = "",
                     const S9sString &hostName = "");
 
-        S9sString osUser(bool defaultsToCmonUser = true) const;
+        S9sString osUser() const;
         S9sString osKeyFile() const;
         S9sString osPassword() const;
 
