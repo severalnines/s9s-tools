@@ -567,7 +567,7 @@ S9sOptions::createConfigFiles()
     userFile.fprintf("#\n");
     userFile.fprintf("# os_user          = some_user\n");
     userFile.fprintf("# os_sudo_password = some_password\n");
-    userFile.fprintf("# os_key_file      = /home/some_user/.ssh/test_ssh_key\n");
+    userFile.fprintf("# os_key_file      = /home/some_user/.ssh/id_rsa\n");
     userFile.fprintf("\n");
 }
 
@@ -1971,8 +1971,7 @@ S9sOptions::sshCredentials(
  * key.
  */
 S9sString
-S9sOptions::osUser(
-        bool defaultsToCmonUser) const
+S9sOptions::osUser() const
 {
     S9sString retval;
 
@@ -1986,8 +1985,8 @@ S9sOptions::osUser(
             retval = m_systemConfig.variableValue("os_user");
     }
 
-    if (retval.empty() && defaultsToCmonUser)
-        retval = userName();
+    if (retval.empty())
+        retval = getenv("USER");
 
     return retval;
 }
@@ -2030,6 +2029,12 @@ S9sOptions::osKeyFile() const
 
         if (retval.empty())
             retval = m_systemConfig.variableValue("os_key_file");
+
+        if (retval.empty())
+        {
+            retval = getenv("HOME");
+            retval += "/.ssh/id_rsa";
+        }
     }
 
     return retval;

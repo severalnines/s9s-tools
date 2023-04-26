@@ -7295,8 +7295,7 @@ S9sRpcClient::checkHosts()
         request["job"]            = job;
     }
 
-    if (options->hasSshCredentials())
-        request["ssh_credentials"] = options->sshCredentials().toVariantMap();
+    request["ssh_credentials"] = options->sshCredentials().toVariantMap();
 
     return executeRequest(uri, request);
 }
@@ -7314,7 +7313,7 @@ S9sRpcClient::registerServers()
     S9sVariantList servers   = options->servers();
    
     request["operation"]      = "registerServers";
-    request["servers"]        = serversField(servers);
+    request["servers"]        = serversField(servers, true);
     
     return executeRequest(uri, request);
 }
@@ -7345,12 +7344,9 @@ S9sRpcClient::createServer()
     }
     
     serverMap = servers[0].toVariantMap();
-    if (options->hasSshCredentials())
-    {
-        serverMap["ssh_credentials"] = 
-            options->sshCredentials(
-                    "", serverMap["hostname"].toString()).toVariantMap();
-    }
+
+    serverMap["ssh_credentials"] = options->sshCredentials(
+                "", serverMap["hostname"].toString()).toVariantMap();
     
     jobData["server"]           = serverMap;
     jobData["install_software"] = !options->noInstall();
@@ -10762,7 +10758,7 @@ S9sRpcClient::addCredentialsToJobData(
 {
     S9sOptions    *options      = S9sOptions::instance();
 
-    S9sString      osUserName     = options->osUser(false);
+    S9sString      osUserName     = options->osUser();
     S9sString      osKeyFile      = options->osKeyFile();
     S9sString      osPassword     = options->osPassword();
     S9sString      osSudoPassword = options->osSudoPassword();
@@ -11476,7 +11472,8 @@ S9sRpcClient::nodesField()
  */
 S9sVariant
 S9sRpcClient::serversField(
-        const S9sVariantList &servers)
+        const S9sVariantList &servers,
+        bool mustHaveSshCredentials)
 {
     S9sVariantList  retval;
     S9sOptions     *options = S9sOptions::instance();
@@ -11488,7 +11485,13 @@ S9sRpcClient::serversField(
         if (thisMap["class_name"].toString().empty())
             thisMap["class_name"] = "CmonContainerServer";
 
-        if (options->hasSshCredentials())
+        if (mustHaveSshCredentials)
+        {
+            thisMap["ssh_credentials"] = 
+                options->sshCredentials(
+                        "", thisMap["hostname"].toString()).toVariantMap();
+        }
+        else if (options->hasSshCredentials())
         {
             thisMap["ssh_credentials"] = 
                 options->sshCredentials(

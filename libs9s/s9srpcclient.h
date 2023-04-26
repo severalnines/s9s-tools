@@ -652,7 +652,8 @@ class S9sRpcClient
         
         static S9sVariant
             serversField(
-                const S9sVariantList &servers);
+                const S9sVariantList &servers,
+                bool mustHaveSshCredentials = false);
 
         static S9sString timeStampString();
 
