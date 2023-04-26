@@ -705,7 +705,7 @@ S9sBusinessLogic::execute()
         } else if (options->isListSubnetsRequested())
         {
             /*
-             * s9s server --list-memory
+             * s9s server --list-subnets
              */
             S9sRpcReply reply;
 
@@ -716,7 +716,7 @@ S9sBusinessLogic::execute()
         } else if (options->isListTemplatesRequested())
         {
             /*
-             * s9s server --list-memory
+             * s9s server --list-templates
              */
             S9sRpcReply reply;
 
@@ -727,7 +727,7 @@ S9sBusinessLogic::execute()
         } else if (options->isListImagesRequested())
         {
             /*
-             * s9s server --list-memory
+             * s9s server --list-images
              */
             S9sRpcReply reply;
 
