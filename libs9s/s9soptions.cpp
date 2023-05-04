@@ -6768,6 +6768,7 @@ S9sOptions::printHelpCluster()
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
 "  --sync                     Synchronize cluster list with UI Frontend.\n"
+"  --upgrade-cluster          Upgrade database software on the cluster.\n"
 
 
 "\n"
