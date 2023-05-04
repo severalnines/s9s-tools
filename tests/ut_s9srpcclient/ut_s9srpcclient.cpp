@@ -34,7 +34,8 @@
 bool 
 S9sRpcClientTester::doExecuteRequest(
         const S9sString &uri,
-        S9sVariantMap &payload)
+        S9sVariantMap &payload,
+        S9s::Redirect redirect)
 {
     S9S_DEBUG("*** ");
     S9S_DEBUG("*** uri     : %s", STR(uri));
