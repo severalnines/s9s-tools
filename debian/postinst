@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# this script must not fail on errors
+set +e
+
+set PATH=${PATH}:/usr/bin:/usr/sbin:/bin:/sbin
+
+# Upgrading APT key of s9s-tools (home:kedazo -> home:severalnines)
+# SRC: https://build.opensuse.org/project/keys_and_certificates/home:severalnines
+if command -v apt-key >/dev/null 2>/dev/null; then
+apt-key add - >/dev/null 2>/dev/null <<REPOKEYEND
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+=KIGh
+-----END PGP PUBLIC KEY BLOCK-----
+REPOKEYEND
+fi
+

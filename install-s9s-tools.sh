@@ -101,6 +101,9 @@ esac
 
 add_s9s_commandline_apt() {
     log_msg "=> Adding APT repository ..."
+    apt-get -yq install wget || true
+    wget -qO - https://build.opensuse.org/projects/home:severalnines/public_key | apt-key add -
+
     # Available distros: wheezy, jessie, precise, trusty, xenial, yakkety, zesty
     wget -qO - http://repo.severalnines.com/s9s-tools/${os_codename}/Release.key | apt-key add -
     echo "deb http://repo.severalnines.com/s9s-tools/${os_codename}/ ./" | tee /etc/apt/sources.list.d/s9s-tools.list
@@ -110,6 +113,8 @@ add_s9s_commandline_apt() {
 
 add_s9s_commandline_yum() {
     log_msg "=> Adding YUM repository ..."
+    rpm --import https://build.opensuse.org/projects/home:severalnines/public_key || true
+
     repo_source_file=/etc/yum.repos.d/s9s-tools.repo
     if [[ -z $CENTOS ]]; then
         REPO="RHEL_7"
@@ -140,6 +145,8 @@ EOF
 
 add_s9s_commandline_zypper() {
     log_msg "=> Adding Zypper repository ..."
+    rpm --import https://build.opensuse.org/projects/home:severalnines/public_key || true
+
     repo_source_file=/tmp/s9s-tools.repo
     cat > $repo_source_file << EOF
 [s9s-tools]
