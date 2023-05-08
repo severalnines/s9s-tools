@@ -70,7 +70,7 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 - s9s job: scheduled jobs can be enabled/disabled (--enable/--disable)
 * Wed Dec  7 2022 Severalnines <support@severalnines.com> 1.9.2022120701
 - Implemented local repo options for cluster
-* Fri Nov  3 2022 Severalnines <support@severalnines.com> 1.9.2022110415
+* Thu Nov  3 2022 Severalnines <support@severalnines.com> 1.9.2022110415
 - New build
 * Wed Oct 19 2022 Severalnines <support@severalnines.com> 1.9.2022101916
 - Release 1.9.2022101916.

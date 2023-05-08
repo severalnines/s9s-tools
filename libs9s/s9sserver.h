@@ -103,8 +103,14 @@ class S9sServer : public S9sObject
         int nRunningContainersMax() const;
         S9sString nRunningContainersMaxString() const;
 
-        S9sString ownerName() const;
-        S9sString groupOwnerName() const;
+        virtual S9sString 
+            ownerName(
+                    const S9sString defaultValue = "-") const;
+
+        virtual S9sString 
+            groupOwnerName(
+                    const S9sString defaultValue = "-") const;
+
         S9sString model(const S9sString &defaultValue = "") const;
 
         S9sString osVersionString(const S9sString &defaultValue = "") const;

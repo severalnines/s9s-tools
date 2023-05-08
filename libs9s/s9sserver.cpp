@@ -1069,15 +1069,21 @@ S9sServer::nRunningContainersMaxString() const
 }
 
 S9sString
-S9sServer::ownerName() const
+S9sServer::ownerName(const S9sString defaultValue) const
 {
-    return property("owner_user_name").toString();
+    if (hasProperty("owner_user_name"))
+        return property("owner_user_name").toString();
+
+    return defaultValue;
 }
 
 S9sString
-S9sServer::groupOwnerName() const
+S9sServer::groupOwnerName(const S9sString defaultValue) const
 {
-    return property("owner_group_name").toString();
+    if (hasProperty("owner_group_name"))
+        return property("owner_group_name").toString();
+
+    return defaultValue;
 }
 
 /**
