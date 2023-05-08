@@ -107,7 +107,8 @@ class S9sRpcClientTester : public S9sRpcClient
        virtual bool 
             doExecuteRequest(
                 const S9sString &uri,
-                S9sVariantMap &payload);
+                S9sVariantMap &payload,
+                S9s::Redirect redirect);
 
     private:
         S9sVariantList    m_urls;
