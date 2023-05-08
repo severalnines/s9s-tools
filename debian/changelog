@@ -1,12 +1,13 @@
-s9s-tools (1.9.2023041323-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2023050817-release1) UNRELEASED; urgency=medium
 
   [ David Kedves ]
   * New release with compilation fixes for OpenSUSE
 
   [ Severalnines ]
   * Release 1.9.2023041323.
+  * Release 1.9.2023050817.
 
- -- Severalnines <support@severalnines.com>  Thu, 13 Apr 2023 23:18:04 +0900
+ -- Severalnines <support@severalnines.com>  Mon, 08 May 2023 17:44:08 +0900
 
 s9s-tools (1.9.2023030117-release1) UNRELEASED; urgency=medium
 
