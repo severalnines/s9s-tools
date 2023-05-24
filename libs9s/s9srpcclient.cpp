@@ -2525,12 +2525,21 @@ S9sRpcClient::inspectHost()
 bool
 S9sRpcClient::rollingRestart()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request = composeRequest();
     S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
 
+    // The job_data.
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
+    else
+        jobData["stop_timeout"] = 1800;
+
     jobSpec["command"]    = "rolling_restart";
+    jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Rolling Restart";
@@ -6319,8 +6328,11 @@ S9sRpcClient::stopCluster()
     title = "Stopping Cluster";
 
     // The job_data.
-    jobData["stop_timeout"]        = 1800;
-    
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
+    else
+        jobData["stop_timeout"] = 1800;
+
     if (options->hasMinutes())
         jobData["maintenance_minutes"] = options->minutes();
 
