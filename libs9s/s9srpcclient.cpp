@@ -3722,6 +3722,14 @@ S9sRpcClient::registerHost()
     {
         command = "registernode";
         title   = "Register MongoDb Node";
+    } else if (protocol == "mongocfg")
+    {
+        command = "registernode";
+        title   = "Register MongoCfg Node";
+    } else if (protocol == "mongos")
+    {
+        command = "registernode";
+        title   = "Register Mongos Node";
     } else {
         command = protocol;
         title   = "Register Node";
