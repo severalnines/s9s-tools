@@ -1,7 +1,7 @@
 Source: s9s-tools
 Section: devel
 Priority: optional
-Maintainer: David Kedves <kedazo@severalnines.com>
+Maintainer: Severalnines <cc-team@severalnines.com>
 Build-Depends: debhelper (>= 5), automake, bison, flex, gcc, libssl-dev
 Standards-Version: 3.9.1
 
