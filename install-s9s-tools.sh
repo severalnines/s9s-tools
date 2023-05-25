@@ -108,7 +108,7 @@ add_s9s_commandline_apt() {
     wget -qO - http://repo.severalnines.com/s9s-tools/${os_codename}/Release.key | apt-key add -
     echo "deb http://repo.severalnines.com/s9s-tools/${os_codename}/ ./" | tee /etc/apt/sources.list.d/s9s-tools.list
     # update repositories
-    apt-get -yq update
+    apt -yq update -oAcquire::AllowReleaseInfoChange::Origin=true -oAcquire::AllowReleaseInfoChange::Label=true
 }
 
 add_s9s_commandline_yum() {
