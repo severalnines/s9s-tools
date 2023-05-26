@@ -2535,8 +2535,6 @@ S9sRpcClient::rollingRestart()
     // The job_data.
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();
-    else
-        jobData["stop_timeout"] = 1800;
 
     jobSpec["command"]    = "rolling_restart";
     jobSpec["job_data"]   = jobData;
@@ -2673,6 +2671,12 @@ S9sRpcClient::enableSsl()
     jobData["cert_file"]   = options->sslCertFile();
     jobData["key_file"]    = options->sslKeyFile();
 
+    if (options->force())
+        jobData["force_stop"] = true;
+
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
+
     // JobSpec...
     jobSpec["command"]     = "setup_ssl";
     jobSpec["job_data"]    = jobData;
@@ -2691,6 +2695,7 @@ S9sRpcClient::enableSsl()
 bool
 S9sRpcClient::disableSsl()
 {
+    S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  request = composeRequest();
     S9sVariantMap  job     = composeJob();
     S9sVariantMap  jobData = composeJobData();
@@ -2700,6 +2705,12 @@ S9sRpcClient::disableSsl()
     // JobData...
     jobData["action"]      = "disable";
     jobData["expire_days"] = 1000;
+
+    if (options->force())
+        jobData["force_stop"] = true;
+
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
 
     // JobSpec...
     jobSpec["command"]     = "setup_ssl";
@@ -6475,6 +6486,9 @@ S9sRpcClient::stopNode()
      
     if (options->force())
         jobData["force_stop"] = true;
+
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
 
     // The jobspec describing the command.
     jobSpec["command"]    = "stop";
