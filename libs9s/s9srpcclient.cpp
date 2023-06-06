@@ -5009,8 +5009,8 @@ S9sRpcClient::addNode(
     {
         S9sVariantList nodes;
         S9sString index;
-        for(uint i=0; i < hosts.size(); i++)
-            nodes << hosts[i].toVariantMap();
+        for(const auto & host : hosts)
+            nodes << host.toVariantMap();
         jobData["nodes"] = nodes;
     }
     if (options->noInstall())
