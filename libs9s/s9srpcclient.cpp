@@ -5008,7 +5008,6 @@ S9sRpcClient::addNode(
     else
     {
         S9sVariantList nodes;
-        S9sString index;
         for(const auto & host : hosts)
             nodes << host.toVariantMap();
         jobData["nodes"] = nodes;
