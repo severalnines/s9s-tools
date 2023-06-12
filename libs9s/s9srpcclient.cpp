@@ -5102,15 +5102,17 @@ S9sRpcClient::addNode(
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
-
-    if (hosts.size() != 1u)
-    {
-        PRINT_ERROR("Addnode is currently implemented only for one node.");
-        return false;
-    }
     
     // The job_data describing the cluster.
-    jobData["node"] = hosts[0].toVariantMap();
+    if(hosts.size() == 1)
+        jobData["node"] = hosts[0].toVariantMap();
+    else
+    {
+        S9sVariantList nodes;
+        for(const auto & host : hosts)
+            nodes << host.toVariantMap();
+        jobData["nodes"] = nodes;
+    }
     if (options->noInstall())
     {
         jobData["install_software"] = false;
