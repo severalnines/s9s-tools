@@ -100,6 +100,8 @@ enum S9sOptionType
     OptionPasswordReset,
     OptionDbAdmin,
     OptionDbAdminPassword,
+    OptionReplUser,
+    OptionReplPassword,
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
@@ -2085,6 +2087,51 @@ S9sOptions::dbAdminPassword()
             retval = m_systemConfig.variableValue("db_admin_password");
     }
     
+    return retval;
+}
+
+/**
+ * \returns The database replication user name used when importing cluster
+ */
+S9sString
+S9sOptions::replicationUser(
+        const S9sString &defaultValue) const
+{
+    S9sString retval;
+
+    if (m_options.contains("replication_user"))
+    {
+        retval = m_options.at("replication_user").toString();
+    }
+    else
+    {
+        retval = m_userConfig.variableValue("replication_user");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("replication_user");
+    }
+    if (retval.empty())
+        retval = defaultValue;
+    return retval;
+}
+
+/**
+ * \returns The replication user's password used when importing cluster
+ */
+S9sString
+S9sOptions::replicationPassword()
+{
+    S9sString retval;
+    if (m_options.contains("replication_password"))
+    {
+        retval = m_options.at("replication_password").toString();
+    }
+    else
+    {
+        retval = m_userConfig.variableValue("replication_password");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("replication_password");
+    }
     return retval;
 }
 
@@ -6784,6 +6831,8 @@ S9sOptions::printHelpCluster()
 "  --datadir=DIRECTORY        The directory on the node that holds the data.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
+"  --repl-user=USERNAME       The user name for the cluster's replication user.\n"
+"  --repl-passwd=PASSWD       The password for the cluster's replication user.\n"
 "  --db-name=NAME             The name of the database.\n"
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
@@ -12763,6 +12812,8 @@ S9sOptions::readOptionsCluster(
         { "datadir",          required_argument, 0, OptionDatadir         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
+        { "repl-user",        required_argument, 0, OptionReplUser        },
+        { "repl-passwd",      required_argument, 0, OptionReplPassword    },
         { "db-name",          required_argument, 0, OptionDbName          },
         { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
@@ -13286,6 +13337,15 @@ S9sOptions::readOptionsCluster(
                 // --db-admin-passwd=PASSWD
                 m_options["db_admin_password"]  = optarg;
                 break;
+
+            case OptionReplUser:
+                // --repl-user=USERNAME
+                m_options["replication_user"] = optarg;
+                break;
+
+            case OptionReplPassword:
+                // --repl-passwor=PASSWD
+                m_options["replication_password"] = optarg;
             
             case OptionAccount:
                 // --account=USERNAME
