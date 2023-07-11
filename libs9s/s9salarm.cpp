@@ -44,10 +44,6 @@ S9sAlarm::S9sAlarm(
         m_properties["class_name"] = "CmonAlarm";
 }
 
-S9sAlarm::~S9sAlarm()
-{
-}
-
 S9sAlarm &
 S9sAlarm::operator=(
         const S9sVariantMap &rhs)

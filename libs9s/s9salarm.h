@@ -30,13 +30,13 @@ class S9sAlarm : public S9sObject
     public:
         S9sAlarm();
         S9sAlarm(const S9sAlarm &orig);
-        S9sAlarm(const S9sVariantMap &properties);
+        explicit S9sAlarm(const S9sVariantMap &properties);
 
-        virtual ~S9sAlarm();
+        virtual ~S9sAlarm() = default;
 
         S9sAlarm &operator=(const S9sVariantMap &rhs);
 
-        const S9sVariantMap &toVariantMap() const;
+        const S9sVariantMap &toVariantMap() const override;
 
         S9sString title() const;
         int alarmId() const;
