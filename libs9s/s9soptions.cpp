@@ -7130,6 +7130,7 @@ S9sOptions::printHelpAlarm()
 "  --delete                   Set the alarm to be ignored.\n"
 "  --list                     List the alarms.\n"
 "  --stat                     Prints a short list about the number of alarms.\n"
+"  --cluster-id=ID            List alarms related to specified cluster\n"
 "\n"
     );
 }

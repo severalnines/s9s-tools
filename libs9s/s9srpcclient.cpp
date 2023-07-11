@@ -2001,9 +2001,14 @@ S9sRpcClient::getAlarms()
 {
     S9sString      uri = "/v2/alarm/";
     S9sVariantMap  request   = composeRequest();
+    S9sOptions    *options   = S9sOptions::instance();
 
     // Building the request.
     request["operation"]  = "getAlarms";
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    }
     return executeRequest(uri, request);
 }
 
