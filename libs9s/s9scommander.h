@@ -19,12 +19,12 @@
  */
 #pragma once
 
-#include "S9sDisplay"
-#include "S9sRpcClient"
-#include "S9sTreeNode"
-#include "S9sBrowser"
-#include "S9sInfoPanel"
-#include "S9sEditor"
+#include "s9sdisplay.h"
+#include "s9srpcclient.h"
+#include "s9streenode.h"
+#include "s9sbrowser.h"
+#include "s9sinfopanel.h"
+#include "s9seditor.h"
 
 class S9sDialog;
 

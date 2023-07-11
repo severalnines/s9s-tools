@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sVariant"
+#include "s9sstring.h"
+#include "s9svariant.h"
 
 #include <regex.h>
 

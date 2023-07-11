@@ -21,12 +21,12 @@
 
 #include <termios.h>
 
-#include "S9sDisplay"
-#include "S9sFormatter"
-#include "S9sRpcReply"
-#include "S9sProcess"
-#include "S9sSqlProcess"
-#include "S9sVector"
+#include "s9sdisplay.h"
+#include "s9sformatter.h"
+#include "s9srpcreply.h"
+#include "s9sprocess.h"
+#include "s9ssqlprocess.h"
+#include "s9svector.h"
 
 class S9sRpcClient;
 

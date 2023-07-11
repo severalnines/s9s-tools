@@ -20,8 +20,8 @@
 #include "s9sfile.h"
 #include "s9sfile_p.h"
 
-#include "S9sVariantList"
-#include "S9sEvent"
+#include "s9svariantlist.h"
+#include "s9sevent.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>

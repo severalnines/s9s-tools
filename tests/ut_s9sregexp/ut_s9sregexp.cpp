@@ -22,9 +22,9 @@
 #include <cstdio>
 #include <cstring>
 
-#include "S9sRegExp"
+#include "s9sregexp.h"
 #include "s9sregexp_p.h"
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 //#define DEBUG
 //#define WARNING

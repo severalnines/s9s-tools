@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 /**
  * A class that various other classes use as a base. The reason to add this was

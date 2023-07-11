@@ -19,10 +19,10 @@
  */
 #pragma once
 
-#include "S9sObject"
-#include "S9sVariantMap"
-#include "S9sCluster"
-#include "S9sNode"
+#include "s9sobject.h"
+#include "s9svariantmap.h"
+#include "s9scluster.h"
+#include "s9snode.h"
 
 /**
  * Represents a replication link between a master and a slave. This is an

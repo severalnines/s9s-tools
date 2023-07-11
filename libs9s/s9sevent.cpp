@@ -19,12 +19,12 @@
  */
 #include "s9sevent.h"
 
-#include "S9sOptions"
-#include "S9sJob"
-#include "S9sNode"
-#include "S9sServer"
-#include "S9sCluster"
-#include "S9sDateTime"
+#include "s9soptions.h"
+#include "s9sjob.h"
+#include "s9snode.h"
+#include "s9sserver.h"
+#include "s9scluster.h"
+#include "s9sdatetime.h"
 
 //#define DEBUG
 //#define WARNING

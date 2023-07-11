@@ -19,7 +19,7 @@
  */
 #include "s9surl.h"
 
-#include "S9sRegExp"
+#include "s9sregexp.h"
 
 //#define DEBUG
 //#define WARNING

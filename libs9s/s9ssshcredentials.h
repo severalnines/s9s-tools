@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sObject"
+#include "s9sobject.h"
 
 class S9sSshCredentials : public S9sObject
 {

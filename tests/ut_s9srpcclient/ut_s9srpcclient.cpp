@@ -19,8 +19,8 @@
  */
 #include "ut_s9srpcclient.h"
 
-#include "S9sNode"
-#include "S9sOptions"
+#include "s9snode.h"
+#include "s9soptions.h"
 
 //#define DEBUG
 #define WARNING

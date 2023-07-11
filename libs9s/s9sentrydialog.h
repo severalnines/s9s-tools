@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sDialog"
-#include "S9sDisplayEntry"
+#include "s9sdialog.h"
+#include "s9sdisplayentry.h"
 
 class S9sEntryDialog : public S9sDialog
 {

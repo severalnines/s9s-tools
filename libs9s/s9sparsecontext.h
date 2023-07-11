@@ -3,11 +3,11 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sStack"
-#include "S9sMap"
-#include "S9sVariantList"
-#include "S9sParseContextState"
+#include "s9sstring.h"
+#include "s9sstack.h"
+#include "s9smap.h"
+#include "s9svariantlist.h"
+#include "s9sparsecontextstate.h"
 
 class S9sParseContext
 {

@@ -3,7 +3,7 @@
  */
 #include "s9scmongraph.h"
 
-#include "S9sOptions"
+#include "s9soptions.h"
 #include <ctime>
 
 #define DEBUG

@@ -23,9 +23,9 @@
 #include <cstdio>
 #include <cstring>
 
-#include "S9sVariantList"
-#include "S9sFormat"
-#include "S9sOptions"
+#include "s9svariantlist.h"
+#include "s9sformat.h"
+#include "s9soptions.h"
 
 //#define DEBUG
 #include "s9sdebug.h"

@@ -18,15 +18,13 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9scommander.h"
-#include "S9sDateTime"
-#include "S9sMutexLocker"
-#include "S9sDialog"
-#include "S9sEntryDialog"
-#include "S9sQuestionDialog"
-#include "S9sOptions"
+#include "s9sdatetime.h"
+#include "s9smutexlocker.h"
+#include "s9sentrydialog.h"
+#include "s9squestiondialog.h"
+#include "s9soptions.h"
 
 #include <unistd.h>
-#include <sys/ioctl.h>
 
 //#define DEBUG
 //#define WARNING

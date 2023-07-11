@@ -7,9 +7,9 @@
 #include <vector>
 #include <string>
 
-#include "S9sGlobal"
-#include "S9sString"
-#include "S9sVector"
+#include "s9sglobal.h"
+#include "s9sstring.h"
+#include "s9svector.h"
 
 template <typename Key, typename T>
 class S9sMap : public std::map<Key, T>

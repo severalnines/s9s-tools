@@ -20,7 +20,7 @@
 #include "s9sformat.h"
 
 #include <stdio.h>
-#include "S9sOptions"
+#include "s9soptions.h"
 
 //#define DEBUG
 //#define WARNING

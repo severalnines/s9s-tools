@@ -5,9 +5,9 @@
 
 #include <stdio.h>
 
-#include "S9sVariant"
-#include "S9sString"
-#include "S9sMap"
+#include "s9svariant.h"
+#include "s9sstring.h"
+#include "s9smap.h"
 
 #define S9S_UNIT_TEST_MAIN(classname) \
 int main (int argc, char *argv[]) \

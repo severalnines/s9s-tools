@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sVariantMap"
+#include "s9sstring.h"
+#include "s9svariantmap.h"
 
 /**
  * A simple class to parse URLs.

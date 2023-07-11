@@ -19,8 +19,8 @@
  */
 #include "s9smessage.h"
 
-#include "S9sOptions"
-#include "S9sFormatter"
+#include "s9soptions.h"
+#include "s9sformatter.h"
 
 //#define DEBUG
 #define WARNING

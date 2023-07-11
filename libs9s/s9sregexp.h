@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sVariantMap"
+#include "s9sstring.h"
+#include "s9svariantmap.h"
 
 class S9sRegExpPrivate;
 class S9sVariantList;

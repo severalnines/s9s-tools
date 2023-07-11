@@ -19,8 +19,6 @@
  */
 #include "s9saccount.h"
 
-#include <S9sVariantMap>
-
 //#define DEBUG
 //#define WARNING
 #include "s9sdebug.h"

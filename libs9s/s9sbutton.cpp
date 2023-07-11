@@ -19,7 +19,7 @@
  */
 #include "s9sbutton.h"
 
-#include "S9sDisplay"
+#include "s9sdisplay.h"
 
 #define DEBUG
 //#define WARNING

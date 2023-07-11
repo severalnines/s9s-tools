@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sServer"
+#include "s9sserver.h"
 
 /**
  * A class that represents a Cmon Controller, a class that is used since the

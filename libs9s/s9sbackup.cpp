@@ -19,11 +19,11 @@
  */
 #include "s9sbackup.h"
 
-#include <S9sUrl>
-#include <S9sVariantMap>
-#include <S9sRpcReply>
-#include <S9sOptions>
-#include <S9sDateTime>
+#include <s9surl.h>
+#include <s9svariantmap.h>
+#include "s9srpcreply.h"
+#include <s9soptions.h>
+#include <s9sdatetime.h>
 
 //#define DEBUG
 //#define WARNING

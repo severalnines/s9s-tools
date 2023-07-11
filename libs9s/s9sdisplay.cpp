@@ -19,12 +19,9 @@
  */
 #include "s9sdisplay.h"
 
-#include "S9sOptions"
-#include "S9sCluster"
-#include "S9sContainer"
-#include "S9sRpcReply"
-#include "S9sMutexLocker"
-#include "S9sDateTime"
+#include "s9soptions.h"
+#include "s9scontainer.h"
+#include "s9sdatetime.h"
 
 #define DEBUG
 //#define WARNING

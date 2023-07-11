@@ -48,7 +48,7 @@
 
 #define YY_EXTRA_TYPE S9sClusterConfigParseContext * 
 
-#include "S9sConfigFile"
+#include "s9sconfigfile.h"
 #include "config_parser.h"
 #include <unistd.h>
 

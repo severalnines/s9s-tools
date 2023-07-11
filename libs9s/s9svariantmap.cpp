@@ -1,13 +1,13 @@
 /* 
  * Copyright (C) 2011-2016 severalnines.com
  */
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 #include <cmath>
 
-#include "S9sVariantList"
-#include "S9sJsonParseContext"
-#include "S9sObject"
+#include "s9svariantlist.h"
+#include "s9sjsonparsecontext.h"
+#include "s9sobject.h"
 
 #define YY_EXTRA_TYPE S9sJsonParseContext *
 #include "json_parser.h"

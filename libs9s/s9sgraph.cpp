@@ -3,8 +3,8 @@
  */
 #include "s9sgraph.h"
 
-#include "S9sDateTime"
-#include "S9sOptions"
+#include "s9sdatetime.h"
+#include "s9soptions.h"
 
 #include "stdio.h"
 #include "math.h"

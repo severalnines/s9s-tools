@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sDisplayList"
-#include "S9sTreeNode"
+#include "s9sdisplaylist.h"
+#include "s9streenode.h"
 
 class S9sBrowser :
     public S9sDisplayList

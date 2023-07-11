@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "S9sVariant"
-#include "S9sVariantList"
+#include "s9svariant.h"
+#include "s9svariantlist.h"
 
 #include <math.h>
 #include <vector>

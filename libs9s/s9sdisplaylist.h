@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sWidget"
+#include "s9swidget.h"
 
 class S9sDisplayList : public S9sWidget
 {

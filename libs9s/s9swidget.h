@@ -19,9 +19,9 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sVariant"
-#include "S9sVariantMap"
+#include "s9sstring.h"
+#include "s9svariant.h"
+#include "s9svariantmap.h"
 
 class S9sWidget
 {

@@ -18,7 +18,7 @@
  * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sdatetime.h"
-#include "S9sVariant"
+#include "s9svariant.h"
 
 #include <stdio.h>
 

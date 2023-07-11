@@ -19,8 +19,8 @@
  */
 #include "s9scalc.h"
 
-#include "S9sDateTime"
-#include "S9sMutexLocker"
+#include "s9sdatetime.h"
+#include "s9smutexlocker.h"
 
 #include <unistd.h>
 

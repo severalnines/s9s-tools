@@ -19,10 +19,8 @@
  */
 #include "s9snode.h"
 
-#include <S9sUrl>
-#include <S9sVariantMap>
-#include <S9sRpcReply>
-#include <S9sSshCredentials>
+#include "s9srpcreply.h"
+#include <s9ssshcredentials.h>
 
 //#define DEBUG
 //#define WARNING

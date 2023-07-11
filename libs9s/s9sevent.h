@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sObject"
-#include "S9sFormatter"
+#include "s9sobject.h"
+#include "s9sformatter.h"
 
 class S9sNode;
 class S9sServer;

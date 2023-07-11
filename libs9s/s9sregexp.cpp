@@ -4,7 +4,7 @@
 #include "s9sregexp.h"
 #include "s9sregexp_p.h"
 
-#include "S9sVariant"
+#include "s9svariant.h"
 
 //#define DEBUG
 #define WARNING

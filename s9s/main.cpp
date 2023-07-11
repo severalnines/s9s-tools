@@ -18,16 +18,16 @@
  * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "library.h"
-#include "S9sOptions"
-#include "S9sRpcClient"
-#include "S9sBusinessLogic"
+#include "s9soptions.h"
+#include "s9srpcclient.h"
+#include "s9sbusinesslogic.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 
 #include <unistd.h>
-#include <S9sRpcReply>
+#include "s9srpcreply.h"
 
 //#define DEBUG
 //#define WARNING

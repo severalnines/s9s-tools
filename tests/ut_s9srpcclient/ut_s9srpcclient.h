@@ -19,7 +19,7 @@
  */
 #include "s9sunittest.h"
 
-#include <S9sRpcClient>
+#include <s9srpcclient.h>
 
 class UtS9sRpcClient : public S9sUnitTest
 {

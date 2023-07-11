@@ -19,9 +19,9 @@
  */
 #include "ut_s9soptions.h"
 
-#include "S9sOptions"
-#include "S9sNode"
-#include "S9sFile"
+#include "s9soptions.h"
+#include "s9snode.h"
+#include "s9sfile.h"
 
 #include <cstdio>
 #include <cstring>

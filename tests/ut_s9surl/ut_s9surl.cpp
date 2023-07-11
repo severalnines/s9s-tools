@@ -19,7 +19,7 @@
  */
 #include "ut_s9surl.h"
 
-#include "S9sUrl"
+#include "s9surl.h"
 
 //#define DEBUG
 #include "s9sdebug.h"

@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sDialog"
+#include "s9sdialog.h"
 
 class S9sQuestionDialog : public S9sDialog
 {

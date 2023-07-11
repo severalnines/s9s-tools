@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sObject"
-#include "S9sVariantMap"
+#include "s9sobject.h"
+#include "s9svariantmap.h"
 
 
 /**

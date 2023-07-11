@@ -21,9 +21,9 @@
 
 #include <ctime>
 
-#include "S9sGlobal"
-#include "S9sString"
-#include "S9sVariantMap"
+#include "s9sglobal.h"
+#include "s9sstring.h"
+#include "s9svariantmap.h"
 
 /**
  * Helper macro to print date & time in debug and log messages.
