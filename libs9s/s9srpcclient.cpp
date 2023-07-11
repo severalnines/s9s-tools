@@ -20,15 +20,15 @@
 #include "s9srpcclient.h"
 #include "s9srpcclient_p.h"
 
-#include "S9sOptions"
-#include "S9sUser"
-#include "S9sNode"
-#include "S9sAccount"
-#include "S9sRsaKey"
-#include "S9sDateTime"
-#include "S9sFile"
-#include "S9sSshCredentials"
-#include "S9sContainer"
+#include "s9soptions.h"
+#include "s9suser.h"
+#include "s9snode.h"
+#include "s9saccount.h"
+#include "s9srsakey.h"
+#include "s9sdatetime.h"
+#include "s9sfile.h"
+#include "s9ssshcredentials.h"
+#include "s9scontainer.h"
 
 #include <cstring>
 #include <cstdio>

@@ -1,8 +1,8 @@
 %{
 
-#include "S9sGlobal"
-#include "S9sVariant"
-#include "S9sConfigFile"
+#include "s9sglobal.h"
+#include "s9svariant.h"
+#include "s9sconfigfile.h"
 
 #include "config_parser.h"
 #include "config_lexer.h"

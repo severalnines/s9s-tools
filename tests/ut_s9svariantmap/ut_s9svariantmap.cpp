@@ -19,7 +19,7 @@
  */
 #include "ut_s9svariantmap.h"
 
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 //#define DEBUG
 #define WARNING

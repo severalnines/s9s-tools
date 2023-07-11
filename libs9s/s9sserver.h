@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sObject"
+#include "s9sobject.h"
 
 /**
  * A class that represents a hardware server.

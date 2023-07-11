@@ -3,7 +3,7 @@
  */
 #include "s9sunittest.h"
 
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

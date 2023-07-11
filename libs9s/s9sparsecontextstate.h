@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "S9sString"
+#include "s9sstring.h"
 
 /**
  * A state that is used by the CmonParseContext to represent one input

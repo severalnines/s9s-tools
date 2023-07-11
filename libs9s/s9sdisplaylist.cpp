@@ -18,7 +18,7 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sdisplaylist.h"
-#include "S9sDisplay"
+#include "s9sdisplay.h"
 
 S9sDisplayList::S9sDisplayList() :
     S9sWidget(), 

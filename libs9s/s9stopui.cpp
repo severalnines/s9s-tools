@@ -19,11 +19,11 @@
  */
 #include "s9stopui.h"
 
-#include "S9sRpcClient"
-#include "S9sOptions"
-#include "S9sDateTime"
-#include "S9sMutexLocker"
-#include "S9sSqlProcess"
+#include "s9srpcclient.h"
+#include "s9soptions.h"
+#include "s9sdatetime.h"
+#include "s9smutexlocker.h"
+#include "s9ssqlprocess.h"
 
 #include <cstdio>
 #include <unistd.h>

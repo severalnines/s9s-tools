@@ -2,7 +2,7 @@
 
 #define YY_EXTRA_TYPE S9sJsonParseContext * 
 
-#include "S9sJsonParseContext"
+#include "s9sjsonparsecontext.h"
 #include "json_parser.h"
 #include <unistd.h>
 #include <cmath>

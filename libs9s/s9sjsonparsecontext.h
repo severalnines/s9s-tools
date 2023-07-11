@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
-#include "S9sParseContext"
+#include "s9svariantmap.h"
+#include "s9sparsecontext.h"
 
 class S9sJsonParseContext :
     public S9sVariantMap,

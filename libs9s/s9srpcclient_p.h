@@ -6,10 +6,10 @@
 #include <cstdlib>
 #include <openssl/ssl.h>
 
-#include "S9sString"
-#include "S9sRpcReply"
-#include "S9sVariantMap"
-#include "S9sController"
+#include "s9sstring.h"
+#include "s9srpcreply.h"
+#include "s9svariantmap.h"
+#include "s9scontroller.h"
 #include "s9srpcclient.h"
 
 class S9sRpcClientPrivate

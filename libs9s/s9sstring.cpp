@@ -33,7 +33,7 @@
 #include <ctime>
 
 #include <regex.h>
-#include "S9sRegExp"
+#include "s9sregexp.h"
 
 // Let's read in 16KB chunks
 #define READ_BUFFER_SIZE 16384

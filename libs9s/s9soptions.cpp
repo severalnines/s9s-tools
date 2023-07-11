@@ -20,15 +20,15 @@
 #include "s9soptions.h"
 
 #include "config.h"
-#include "S9sNode"
-#include "S9sAccount"
-#include "S9sFile"
-#include "S9sRegExp"
-#include "S9sDir"
+#include "s9snode.h"
+#include "s9saccount.h"
+#include "s9sfile.h"
+#include "s9sregexp.h"
+#include "s9sdir.h"
 #include "s9srsakey.h"
-#include "S9sDateTime"
-#include "S9sContainer"
-#include "S9sSshCredentials"
+#include "s9sdatetime.h"
+#include "s9scontainer.h"
+#include "s9ssshcredentials.h"
 
 #include <sys/ioctl.h>
 #include <stdio.h>

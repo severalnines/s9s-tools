@@ -19,9 +19,9 @@
  */
 #include "ut_s9sfile.h"
 
-#include "S9sFile"
-#include "S9sEvent"
-#include "S9sDateTime"
+#include "s9sfile.h"
+#include "s9sevent.h"
+#include "s9sdatetime.h"
 
 #include <cstdio>
 #include <cstring>

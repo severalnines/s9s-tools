@@ -2,7 +2,7 @@
  * Copyright (C) 2011-2018 severalnines.com
  */
 #pragma once
-#include "S9sMutex"
+#include "s9smutex.h"
 
 class S9sMutexLocker
 {

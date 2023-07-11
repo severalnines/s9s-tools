@@ -18,10 +18,10 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sserver.h"
-#include "S9sContainer"
-#include "S9sRegExp"
-#include "S9sFormatter"
-#include "S9sRpcReply"
+#include "s9scontainer.h"
+#include "s9sregexp.h"
+#include "s9sformatter.h"
+#include "s9srpcreply.h"
 
 //#define DEBUG
 //#define WARNING

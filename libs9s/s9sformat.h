@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sString"
+#include "s9sstring.h"
 
 /**
  * A helper class to produce uniform but variable width column tables on the

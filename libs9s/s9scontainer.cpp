@@ -19,10 +19,8 @@
  */
 #include "s9scontainer.h"
 
-#include <S9sUrl>
-#include <S9sVariantMap>
-#include <S9sRpcReply>
-#include <S9sOptions>
+#include "s9srpcreply.h"
+#include <s9soptions.h>
 
 //#define DEBUG
 //#define WARNING

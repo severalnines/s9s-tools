@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sRpcClient"
-#include "S9sTopUi"
+#include "s9srpcclient.h"
+#include "s9stopui.h"
 
 /**
  * A class that is able to execute whatever the user requested through the

@@ -19,17 +19,17 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sVariantMap"
-#include "S9sEvent"
-#include "S9sNode"
-#include "S9sServer"
-#include "S9sCluster"
-#include "S9sJob"
-#include "S9sMutex"
-#include "S9sThread"
-#include "S9sWidget"
-#include "S9sFile"
+#include "s9sstring.h"
+#include "s9svariantmap.h"
+#include "s9sevent.h"
+#include "s9snode.h"
+#include "s9sserver.h"
+#include "s9scluster.h"
+#include "s9sjob.h"
+#include "s9smutex.h"
+#include "s9sthread.h"
+#include "s9swidget.h"
+#include "s9sfile.h"
 
 #define S9S_KEY_DOWN      0x425b1b
 #define S9S_KEY_UP        0x415b1b

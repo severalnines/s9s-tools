@@ -19,7 +19,7 @@
  */
 #include "ut_s9sgraph.h"
 
-#include "S9sGraph"
+#include "s9sgraph.h"
 
 #include <math.h>
 

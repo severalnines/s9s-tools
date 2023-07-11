@@ -89,153 +89,85 @@ libs9s_public_h_headers =     \
 	json_lexer.h              \
 	json_parser.h             \
 	library.h                 \
-	S9sMutex                  \
 	s9smutex.h                \
-	S9sMutexLocker            \
 	s9smutexlocker.h          \
-	S9sThread                 \
 	s9sthread.h               \
-	S9sObject                 \
 	s9sobject.h               \
-	S9sSqlProcess             \
 	s9ssqlprocess.h           \
-	S9sProcess                \
 	s9sprocess.h              \
-	S9sSshCredentials         \
 	s9ssshcredentials.h       \
-	S9sAccount                \
 	s9saccount.h              \
-	S9sBackup                 \
 	s9sbackup.h               \
-	S9sBusinessLogic          \
 	s9sbusinesslogic.h        \
-	S9sCluster                \
 	s9scluster.h              \
-	S9sCmonGraph              \
 	s9scmongraph.h            \
-	S9sConfigFile             \
 	s9sconfigfile.h           \
 	s9sconfigfile_p.h         \
-	S9sContainer              \
 	s9scontainer.h            \
-	S9sEvent                  \
 	s9sevent.h                \
-	S9sDateTime               \
 	s9sdatetime.h             \
 	s9sdebug.h                \
-	S9sDir                    \
 	s9sdir.h                  \
-	S9sFile                   \
 	s9sfile.h                 \
 	s9sfile_p.h               \
-	S9sFormat                 \
 	s9sformat.h               \
-	S9sFormatter              \
 	s9sformatter.h            \
-	S9sGlobal                 \
 	s9sglobal.h               \
-	S9sGraph                  \
 	s9sgraph.h                \
-	S9sGroup                  \
 	s9sgroup.h                \
-	S9sJsonParseContext       \
 	s9sjsonparsecontext.h     \
-	S9sMap                    \
 	s9smap.h                  \
-	S9sMessage                \
 	s9smessage.h              \
-	S9sAlarm                  \
 	s9salarm.h                \
-	S9sNode                   \
 	s9snode.h                 \
-	S9sReplication            \
 	s9sreplication.h          \
-	S9sSpreadsheet            \
 	s9sspreadsheet.h          \
-	S9sServer                 \
 	s9sserver.h               \
 	s9sserver.cpp             \
-	S9sPkgInfo                \
 	s9spkginfo.h              \
 	s9spkginfo.cpp            \
-	S9sController             \
 	s9scontroller.h           \
 	s9scontroller.cpp         \
-	S9sJob                    \
 	s9sjob.h                  \
 	s9sjob.cpp                \
-	S9sOptions                \
 	s9soptions.h              \
-	S9sParseContext           \
 	s9sparsecontext.h         \
-	S9sParseContextState      \
 	s9sparsecontextstate.h    \
-	S9sRegExp                 \
 	s9sregexp.h               \
 	s9sregexp_p.h             \
-	S9sReport                 \
 	s9sreport.h               \
-	S9sRpcClient              \
 	s9srpcclient.h            \
 	s9srpcclient_p.h          \
-	S9sRpcReply               \
 	s9srpcreply.h             \
 	s9sdbgrowthreport.h       \
-	S9sRsaKey                 \
 	s9srsakey.h               \
 	s9srsakey_p.h             \
-	S9sStack                  \
 	s9sstack.h                \
-	S9sString                 \
 	s9sstring.h               \
-	S9sStringList             \
 	s9sstringlist.h           \
-	S9sDisplay                \
 	s9sdisplay.h              \
-	S9sWidget                 \
 	s9swidget.h               \
-	S9sButton                 \
 	s9sbutton.h               \
-	S9sDisplayEntry           \
 	s9sdisplayentry.h         \
-	S9sDisplayList            \
 	s9sdisplaylist.h          \
-	S9sDialog                 \
 	s9sdialog.h               \
-	S9sEntryDialog            \
 	s9sentrydialog.h          \
-	S9sQuestionDialog         \
 	s9squestiondialog.h       \
-	S9sBrowser                \
 	s9sbrowser.h              \
-	S9sInfoPanel              \
-	S9sEditor                 \
 	s9sinfopanel.h            \
 	s9seditor.h               \
-	S9sMonitor                \
 	s9smonitor.h              \
-	S9sCommander              \
 	s9scommander.h            \
-	S9sCalc                   \
 	s9scalc.h                 \
-	S9sTopUi                  \
 	s9stopui.h                \
 	s9sunion.h                \
-	S9sUrl                    \
 	s9surl.h                  \
-	S9sTreeNode               \
 	s9streenode.h             \
-	S9sUser                   \
 	s9suser.h                 \
-	S9sVariant                \
-	S9sVariantArray           \
 	s9svariantarray.h         \
 	s9svariant.h              \
-	S9sVariantList            \
 	s9svariantlist.h          \
-	S9sVariantMap             \
 	s9svariantmap.h           \
-	S9sVector                 \
 	s9svector.h
 
 

@@ -3,7 +3,7 @@
  */
 #include "s9sparsecontext.h"
 
-#include "S9sGlobal"
+#include "s9sglobal.h"
 #include <string.h>
 
 //#define DEBUG

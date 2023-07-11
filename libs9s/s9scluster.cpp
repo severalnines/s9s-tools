@@ -18,9 +18,9 @@
  * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9scluster.h"
-#include "S9sRpcReply"
+#include "s9srpcreply.h"
 
-#include "S9sNode"
+#include "s9snode.h"
 
 //#define DEBUG
 //#define WARNING

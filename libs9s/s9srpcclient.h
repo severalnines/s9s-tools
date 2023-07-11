@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sRpcReply"
+#include "s9sstring.h"
+#include "s9srpcreply.h"
 
 class S9sRpcClientPrivate;
 class S9sUser;

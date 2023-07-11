@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sObject"
-#include "S9sDateTime"
+#include "s9sobject.h"
+#include "s9sdatetime.h"
 
 /**
  * A class that represents a hardware server.

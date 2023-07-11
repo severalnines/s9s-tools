@@ -18,8 +18,8 @@
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9sbrowser.h"
-#include "S9sFormat"
-#include "S9sDisplay"
+#include "s9sformat.h"
+#include "s9sdisplay.h"
 
 //#define DEBUG
 //#define WARNING

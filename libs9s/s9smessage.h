@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include <S9sVariantMap>
-#include <S9sDateTime>
+#include <s9svariantmap.h>
+#include <s9sdatetime.h>
 
 /**
  * Represents human readable messages that are in the log or in the job message

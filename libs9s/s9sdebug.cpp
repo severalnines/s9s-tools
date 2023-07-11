@@ -1,7 +1,7 @@
 #include "s9sdebug.h"
 
-#include "S9sOptions"
-#include "S9sDateTime"
+#include "s9soptions.h"
+#include "s9sdatetime.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

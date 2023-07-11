@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include "S9sWidget"
-#include "S9sButton"
+#include "s9swidget.h"
+#include "s9sbutton.h"
 
 class S9sDisplay;
 

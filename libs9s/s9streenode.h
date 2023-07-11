@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 /**
  * A class that represents a node in the CDT as they are returned by the tree

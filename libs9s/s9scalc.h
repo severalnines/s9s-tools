@@ -19,10 +19,10 @@
  */
 #pragma once
 
-#include "S9sDisplay"
-#include "S9sRpcClient"
-#include "S9sSpreadsheet"
-#include "S9sDisplayEntry"
+#include "s9sdisplay.h"
+#include "s9srpcclient.h"
+#include "s9sspreadsheet.h"
+#include "s9sdisplayentry.h"
 
 class S9sCalc :
     public S9sDisplay

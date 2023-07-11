@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "S9sVariant"
+#include "s9svariant.h"
 #include <vector>
 
 class S9sVariantArray 

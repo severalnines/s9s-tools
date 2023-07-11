@@ -17,25 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "iostream"
 #include "s9sbusinesslogic.h"
 
-#include "S9sStringList"
-#include "S9sRpcReply"
-#include "S9sOptions"
-#include "S9sUser"
-#include "S9sNode"
-#include "S9sAccount"
-#include "S9sDateTime"
-#include "S9sTopUi"
-#include "S9sFile"
-#include "S9sRsaKey"
-#include "S9sDir"
-#include "S9sCmonGraph"
-#include "S9sEvent"
-#include "S9sMonitor"
-#include "S9sCalc"
-#include "S9sCommander"
+#include "s9sstringlist.h"
+#include "s9srpcreply.h"
+#include "s9soptions.h"
+#include "s9suser.h"
+#include "s9saccount.h"
+#include "s9stopui.h"
+#include "s9sfile.h"
+#include "s9srsakey.h"
+#include "s9sdir.h"
+#include "s9scmongraph.h"
+#include "s9smonitor.h"
+#include "s9scalc.h"
+#include "s9scommander.h"
 
 #include <stdio.h>
 #include <unistd.h>

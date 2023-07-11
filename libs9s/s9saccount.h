@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
+#include "s9svariantmap.h"
 
 /**
  * A class that represents an account. 

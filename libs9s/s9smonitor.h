@@ -19,11 +19,11 @@
  */
 #pragma once
 
-#include "S9sDisplay"
-#include "S9sFormatter"
-#include "S9sRpcClient"
-#include "S9sRpcReply"
-#include "S9sDisplayList"
+#include "s9sdisplay.h"
+#include "s9sformatter.h"
+#include "s9srpcclient.h"
+#include "s9srpcreply.h"
+#include "s9sdisplaylist.h"
 
 /**
  * Implements a view that can be used to monitor objects through events.

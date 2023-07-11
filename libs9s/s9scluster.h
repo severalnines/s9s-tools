@@ -19,8 +19,8 @@
  */
 #pragma once
 
-#include <S9sVariantMap>
-#include <S9sObject>
+#include <s9svariantmap.h>
+#include <s9sobject.h>
 
 class S9sNode;
 

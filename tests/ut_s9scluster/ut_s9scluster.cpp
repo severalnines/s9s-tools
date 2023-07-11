@@ -19,10 +19,10 @@
  */
 #include "ut_s9scluster.h"
 
-#include "S9sCluster"
-#include "S9sVariantMap"
-#include "S9sRpcClient"
-#include "S9sOptions"
+#include "s9scluster.h"
+#include "s9svariantmap.h"
+#include "s9srpcclient.h"
+#include "s9soptions.h"
 
 #define DEBUG
 #define WARNING

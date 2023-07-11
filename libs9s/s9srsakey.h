@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "S9sString"
+#include "s9sstring.h"
 
 class S9sRsaKeyPrivate;
 

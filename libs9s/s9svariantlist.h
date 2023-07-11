@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include <S9sVariant>
-#include <S9sVector>
+#include <s9svariant.h>
+#include <s9svector.h>
 
 class S9sVariantList : public S9sVector<S9sVariant>
 {

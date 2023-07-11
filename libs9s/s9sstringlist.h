@@ -5,8 +5,8 @@
 
 #define STR_LIST(_thelist) ((_thelist).toString(';').c_str())
 
-#include "S9sVector"
-#include "S9sString"
+#include "s9svector.h"
+#include "s9sstring.h"
 
 class S9sStringList : public S9sVector<S9sString>
 {

@@ -3,8 +3,8 @@
  */
 #pragma once
 
-#include "S9sGraph"
-#include "S9sNode"
+#include "s9sgraph.h"
+#include "s9snode.h"
 
 /**
  * A graph that understands Cmon Statistical data.

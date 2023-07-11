@@ -19,8 +19,8 @@
  */
 #include "ut_s9sconfigfile.h"
 
-#include "S9sConfigFile"
-#include "S9sFile"
+#include "s9sconfigfile.h"
+#include "s9sfile.h"
 
 //#define DEBUG
 #define WARNING

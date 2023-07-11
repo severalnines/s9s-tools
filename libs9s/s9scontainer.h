@@ -19,10 +19,10 @@
  */
 #pragma once
 
-#include "S9sObject"
-#include "S9sVariantMap"
-#include "S9sUrl"
-#include "S9sCluster"
+#include "s9sobject.h"
+#include "s9svariantmap.h"
+#include "s9surl.h"
+#include "s9scluster.h"
 
 /**
  * A class that represents a node/host/server. 

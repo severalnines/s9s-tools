@@ -3,14 +3,14 @@
  */
 #include "s9sformatter.h"
 
-#include "S9sOptions"
-#include "S9sFormat"
-#include "S9sObject"
-#include "S9sUser"
-#include "S9sCluster"
-#include "S9sNode"
-#include "S9sServer"
-#include "S9sContainer"
+#include "s9soptions.h"
+#include "s9sformat.h"
+#include "s9sobject.h"
+#include "s9suser.h"
+#include "s9scluster.h"
+#include "s9snode.h"
+#include "s9sserver.h"
+#include "s9scontainer.h"
 
 //#define DEBUG
 #define WARNING

@@ -19,7 +19,7 @@
  */
 #include "s9suser.h"
 
-#include "S9sFormatter"
+#include "s9sformatter.h"
 
 //#define DEBUG
 //#define WARNING

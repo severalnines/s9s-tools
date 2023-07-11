@@ -19,9 +19,9 @@
  */
 #include "ut_s9svariant.h"
 
-#include "S9sVariant"
-#include "S9sVariantMap"
-#include "S9sVariantList"
+#include "s9svariant.h"
+#include "s9svariantmap.h"
+#include "s9svariantlist.h"
 #include <cstdio>
 #include <cstring>
 

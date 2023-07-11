@@ -3,8 +3,8 @@
  */
 #include "s9sregexp_p.h"
 
-#include "S9sVariantList"
-#include "S9sVariantMap"
+#include "s9svariantlist.h"
+#include "s9svariantmap.h"
 
 //#define DEBUG
 #define WARNING

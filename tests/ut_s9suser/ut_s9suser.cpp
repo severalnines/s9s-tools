@@ -19,7 +19,7 @@
  */
 #include "ut_s9suser.h"
 
-#include "S9sUser"
+#include "s9suser.h"
 #include <cstdio>
 #include <cstring>
 

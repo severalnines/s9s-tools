@@ -18,8 +18,8 @@
  * along with S9sTools. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "s9svariant.h"
-#include "S9sVariantMap"
-#include "S9sVariantList"
+#include "s9svariantmap.h"
+#include "s9svariantlist.h"
 
 #include <errno.h>
 #include <strings.h>
@@ -28,10 +28,10 @@
 #include <cmath>
 #include <limits> 
 
-#include "S9sNode"
-#include "S9sContainer"
-#include "S9sAccount"
-#include "S9sDateTime"
+#include "s9snode.h"
+#include "s9scontainer.h"
+#include "s9saccount.h"
+#include "s9sdatetime.h"
 
 //#define DEBUG
 //#define WARNING

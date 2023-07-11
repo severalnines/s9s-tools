@@ -19,10 +19,10 @@
  */
 #pragma once
 
-#include "S9sVariantMap"
-#include "S9sFormat"
-#include "S9sObject"
-#include "S9sFormatter"
+#include "s9svariantmap.h"
+#include "s9sformat.h"
+#include "s9sobject.h"
+#include "s9sformatter.h"
 #include "s9sdbgrowthreport.h"
 
 class S9sNode;

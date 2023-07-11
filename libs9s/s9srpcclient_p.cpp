@@ -11,8 +11,8 @@
 #include <unistd.h>
 #include <cerrno>
 
-#include "S9sRegExp"
-#include "S9sOptions"
+#include "s9sregexp.h"
+#include "s9soptions.h"
 
 //#define DEBUG
 //#define WARNING

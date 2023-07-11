@@ -23,8 +23,8 @@
 #include <cstring>
 #include <ctime>
 
-#include "S9sFile"
-#include "S9sVariantMap"
+#include "s9sfile.h"
+#include "s9svariantmap.h"
 
 #define YY_EXTRA_TYPE S9sClusterConfigParseContext *
 #include "config_parser.h"

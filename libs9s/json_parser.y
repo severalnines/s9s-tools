@@ -1,8 +1,8 @@
 %{
 
-#include "S9sGlobal"
-#include "S9sVariant"
-#include "S9sJsonParseContext"
+#include "s9sglobal.h"
+#include "s9svariant.h"
+#include "s9sjsonparsecontext.h"
 
 #include "json_parser.h"
 #include "json_lexer.h"

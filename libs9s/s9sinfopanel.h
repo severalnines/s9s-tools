@@ -19,9 +19,9 @@
  */
 #pragma once
 
-#include "S9sWidget"
-#include "S9sTreeNode"
-#include "S9sRpcReply"
+#include "s9swidget.h"
+#include "s9streenode.h"
+#include "s9srpcreply.h"
 
 class S9sInfoPanel :
     public S9sWidget

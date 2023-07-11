@@ -20,8 +20,8 @@
 #pragma once
 
 #include <s9sunion.h>
-#include <S9sString>
-#include <S9sFormatter>
+#include <s9sstring.h>
+#include <s9sformatter.h>
 
 class S9sNode;
 class S9sContainer;

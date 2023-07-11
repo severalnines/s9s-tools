@@ -19,12 +19,12 @@
  */
 #include "s9seditor.h"
 
-#include "S9sDisplay"
-#include "S9sUser"
-#include "S9sCluster"
-#include "S9sContainer"
-#include "S9sNode"
-#include "S9sServer"
+#include "s9sdisplay.h"
+#include "s9suser.h"
+#include "s9scluster.h"
+#include "s9scontainer.h"
+#include "s9snode.h"
+#include "s9sserver.h"
 
 //#define DEBUG
 //#define WARNING

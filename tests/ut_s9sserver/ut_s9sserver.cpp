@@ -19,8 +19,8 @@
  */
 #include "ut_s9sserver.h"
 
-#include "S9sUser"
-#include "S9sServer"
+#include "s9suser.h"
+#include "s9sserver.h"
 #include <cstdio>
 #include <cstring>
 

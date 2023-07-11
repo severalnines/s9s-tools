@@ -19,7 +19,7 @@
  */
 #include "ut_s9sdatetime.h"
 
-#include "S9sDateTime"
+#include "s9sdatetime.h"
 
 //#define DEBUG
 //#define WARNING

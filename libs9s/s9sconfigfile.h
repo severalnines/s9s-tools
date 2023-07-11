@@ -19,11 +19,11 @@
  */
 #pragma once
 
-#include "S9sString"
-#include "S9sVariant"
-#include "S9sMap"
-#include "S9sVector"
-#include "S9sParseContext"
+#include "s9sstring.h"
+#include "s9svariant.h"
+#include "s9smap.h"
+#include "s9svector.h"
+#include "s9sparsecontext.h"
 
 class S9sConfigAstNode;
 class S9sConfigFilePrivate;
