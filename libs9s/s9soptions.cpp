@@ -102,6 +102,7 @@ enum S9sOptionType
     OptionDbAdminPassword,
     OptionReplUser,
     OptionReplPassword,
+    OptionSentinelPassword,
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
@@ -2134,6 +2135,21 @@ S9sOptions::replicationPassword()
     }
     return retval;
 }
+
+/**
+ * \returns The redis sentinel password used when importing redis cluster
+ */
+S9sString
+S9sOptions::sentinelPassword()
+{
+    S9sString retval;
+    if (m_options.contains("sentinel_password"))
+    {
+        retval = m_options.at("sentinel_password").toString();
+    }
+    return retval;
+}
+
 
 /**
  * \returns the cluster type string that is provided by the --cluster-type
@@ -12814,6 +12830,7 @@ S9sOptions::readOptionsCluster(
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "repl-user",        required_argument, 0, OptionReplUser        },
         { "repl-passwd",      required_argument, 0, OptionReplPassword    },
+        { "sentinel-passwd",  required_argument, 0, OptionSentinelPassword},
         { "db-name",          required_argument, 0, OptionDbName          },
         { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
@@ -13344,8 +13361,14 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionReplPassword:
-                // --repl-passwor=PASSWD
+                // --repl-passwd=PASSWD
                 m_options["replication_password"] = optarg;
+                break;
+
+            case OptionSentinelPassword:
+                // --sentinel-passwd=PASSWD
+                m_options["sentinel_password"] = optarg;
+                break;
             
             case OptionAccount:
                 // --account=USERNAME

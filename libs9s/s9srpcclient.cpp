@@ -11682,6 +11682,14 @@ S9sRpcClient::registerRedisCluster(
         jobData["replication_password"] = options->replicationPassword();
         jobData["replication_user"] = options->replicationUser();
     }
+    if(!options->sentinelPassword().empty())
+        jobData["sentinel_password"] = options->sentinelPassword();
+    else
+    {
+        PRINT_ERROR(
+                "Redis sentinel clusters requires '--sentinel-passwd' option");
+        return false;
+    }
 
     if (!redisVersion.empty())
         jobData["version"]      = redisVersion;
