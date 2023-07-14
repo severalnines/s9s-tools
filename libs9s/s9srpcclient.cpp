@@ -3622,6 +3622,12 @@ S9sRpcClient::registerGaleraCluster(
     jobData["vendor"]           = options->vendor();
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    if(!options->replicationPassword().empty())
+    {
+        jobData["replication_password"] = options->replicationPassword();
+        jobData["replication_user"] = options->replicationUser();
+    }
+
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -3903,6 +3909,12 @@ S9sRpcClient::registerMySqlReplication(
     jobData["vendor"]           = options->vendor();
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    if(!options->replicationPassword().empty())
+    {
+        jobData["replication_password"] = options->replicationPassword();
+        jobData["replication_user"] = options->replicationUser();
+    }
+
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -4047,6 +4059,12 @@ S9sRpcClient::registerGroupReplication(
     jobData["vendor"]           = options->vendor();
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    if(!options->replicationPassword().empty())
+    {
+        jobData["replication_password"] = options->replicationPassword();
+        jobData["replication_user"] = options->replicationUser();
+    }
+
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -4220,6 +4238,12 @@ S9sRpcClient::registerNdbCluster(
     jobData["ndbd_hostnames"]   = ndbdHostNames;
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+    if(!options->replicationPassword().empty())
+    {
+        jobData["replication_password"] = options->replicationPassword();
+        jobData["replication_user"] = options->replicationUser();
+    }
+
     
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -10775,6 +10799,13 @@ S9sRpcClient::composeJobData(
 
 	if (! adminPassword.empty())
             jobData["admin_password"] = adminPassword;
+
+    if(!options->replicationPassword().empty())
+    {
+        jobData["replication_password"] = options->replicationPassword();
+        jobData["replication_user"] = options->replicationUser();
+    }
+
     
 	if (! monitorUser.empty())
 	    jobData["monitor_user"] = monitorUser;
@@ -11650,6 +11681,20 @@ S9sRpcClient::registerRedisCluster(
 
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
+
+    if(!options->replicationPassword().empty())
+    {
+        jobData["replication_password"] = options->replicationPassword();
+        jobData["replication_user"] = options->replicationUser();
+    }
+    if(!options->sentinelPassword().empty())
+        jobData["sentinel_password"] = options->sentinelPassword();
+    else
+    {
+        PRINT_ERROR(
+                "Redis sentinel clusters requires '--sentinel-passwd' option");
+        return false;
+    }
 
     if (!redisVersion.empty())
         jobData["version"]      = redisVersion;
