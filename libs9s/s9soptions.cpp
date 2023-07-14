@@ -2116,8 +2116,8 @@ S9sOptions::replicationUser(
 S9sString
 S9sOptions::replicationPassword()
 {
-    if (m_options.contains("sentinel_password"))
-        return m_options.at("sentinel_password").toString();
+    if (m_options.contains("replication_password"))
+        return m_options.at("replication_password").toString();
     return {};
 }
 
