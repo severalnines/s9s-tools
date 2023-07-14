@@ -2116,18 +2116,9 @@ S9sOptions::replicationUser(
 S9sString
 S9sOptions::replicationPassword()
 {
-    S9sString retval;
-    if (m_options.contains("replication_password"))
-    {
-        retval = m_options.at("replication_password").toString();
-    }
-    else
-    {
-        retval = m_userConfig.variableValue("replication_password");
-        if (retval.empty())
-            retval = m_systemConfig.variableValue("replication_password");
-    }
-    return retval;
+    if (m_options.contains("sentinel_password"))
+        return m_options.at("sentinel_password").toString();
+    return {};
 }
 
 /**
