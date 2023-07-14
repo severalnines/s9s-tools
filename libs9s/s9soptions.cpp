@@ -2098,22 +2098,16 @@ S9sString
 S9sOptions::replicationUser(
         const S9sString &defaultValue) const
 {
-    S9sString retval;
-
-    if (m_options.contains("replication_user"))
-    {
-        retval = m_options.at("replication_user").toString();
-    }
-    else
-    {
-        retval = m_userConfig.variableValue("replication_user");
-
-        if (retval.empty())
-            retval = m_systemConfig.variableValue("replication_user");
-    }
-    if (retval.empty())
-        retval = defaultValue;
-    return retval;
+    std::vector<std::string> possibleValues {
+        m_options.at("replication_user").toString(),
+        m_userConfig.variableValue("replication_user"),
+        m_systemConfig.variableValue("replication_user"),
+        defaultValue
+    };
+    
+    return *std::find_if(std::begin(possibleValues), std::end(possibleValues), [](const std::string & val) {
+        return !val.empty();
+    });
 }
 
 /**
@@ -2142,12 +2136,9 @@ S9sOptions::replicationPassword()
 S9sString
 S9sOptions::sentinelPassword()
 {
-    S9sString retval;
     if (m_options.contains("sentinel_password"))
-    {
-        retval = m_options.at("sentinel_password").toString();
-    }
-    return retval;
+        return m_options.at("sentinel_password").toString();
+    return {};
 }
 
 
