@@ -470,6 +470,36 @@ s9s cluster \\
     --wait
 .fi
 
+.B NOTE
+After Enable SSL for MongoDB Shards cluster with PBM Agent nodes all PBM agent nodes should be restarted.
+
+.B EXAMPLE of terminal commands to restart PBM Agent nodes
+.nf
+CLUSTER_1_PBMAGENT_NODES=$(s9s node --cluster-id=1 --list --long | grep "^to" | awk '{print $5 "?port=" $6}')
+for e in $CLUSTER_1_PBMAGENT_NODES; do s9s node --restart --cluster-id="1" --nodes="$e;" --print-request --log --debug; done
+.fi
+
+.TP
+.B --disable-ssl
+Disables SSL connections to the database nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --disable-ssl \\
+    --cluster-id=2 \\
+    --wait
+.fi
+
+.B NOTE
+After Disable SSL for MongoDB Shards cluster with PBM Agent nodes all PBM agent nodes should be restarted.
+
+.B EXAMPLE of terminal commands to restart PBM Agent nodes
+.nf
+CLUSTER_2_PBMAGENT_NODES=$(s9s node --cluster-id=2 --list --long | grep "^to" | awk '{print $5 "?port=" $6}')
+for e in $CLUSTER_2_PBMAGENT_NODES; do s9s node --restart --cluster-id="2" --nodes="$e;" --print-request --log --debug; done
+.fi
+
 .TP
 .B \-\-reconfigure-node
 Reconfigures the existing nodes with the optionaly specified node properties.
