@@ -265,6 +265,27 @@ s9s backup \\
 .fi
 
 
+
+.TP
+.B \-\^\-pgbackrest-immediate
+By default PostgreSql when started in recovery mode after backup restoration
+applies the available complete WAL stream as well to provide the most up to
+date state of the database.
+By this option we can ask PgBackRest and by that PostgreSql not to apply WAL
+or at least only as much as it is a must for database consistency and finish
+recovery as soon as possible.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --restore \\
+    --cluster-id=1 \\
+    --backup-id=10 \\
+    --pgbackrest-immediate \\
+    --log
+.fi
+
+
 .TP
 .B \-\^\-save\-cluster\-info
 Saves the information the controller has about one cluster.
