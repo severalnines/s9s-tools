@@ -6331,6 +6331,9 @@ S9sRpcClient::removeNode()
     // The job_data...
     jobData["nodes"]      = nodesField(hosts);
     jobData["enable_uninstall"] = options->uninstall();
+
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
      
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
@@ -8692,6 +8695,8 @@ S9sRpcClient::restoreBackup()
     if (!options->databases().empty())
         jobData["database"] = options->databases();
 
+    if (options->hasTimeout())
+        jobData["stop_timeout"] = options->timeout();
 
     if(!options->backupSourceAddress().empty())
         jobData["source_address"] = options->backupSourceAddress();
