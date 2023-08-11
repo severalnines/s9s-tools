@@ -1,8 +1,10 @@
-s9s-tools (1.9.????-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2023081118-release1) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
   * Add --pgbackrest-immediate option to ask PgBackRest and PostgreSql not to
     apply WAL at the end of backup restoration.
+
+ -- Severalnines <support@severalnines.com>  Fri, 11 Aug 2023 11:18:21 +0100
 
 s9s-tools (1.9.2023052518-release1) UNRELEASED; urgency=medium
 
