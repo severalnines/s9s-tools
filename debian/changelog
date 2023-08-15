@@ -1,8 +1,8 @@
 s9s-tools (1.9.2023081120-release1) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
-  * Add --pgbackrest-immediate option to ask PgBackRest and PostgreSql not to
-    apply WAL at the end of backup restoration.
+  * Add --psql-immediate option to ask PostgreSql not to apply WAL when
+    started in recovery mode at the end of backup restoration.
 
   [ Severalnines ]
   * Release 1.9.2023081120.
