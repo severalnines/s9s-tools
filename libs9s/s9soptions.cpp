@@ -126,7 +126,7 @@ enum S9sOptionType
     OptionBackupSourceAddress,
     OptionBackupDirectory,
     OptionPitrStopTime,
-    OptionPgBackRestImmediate,
+    OptionPsqlImmediate,
     OptionClusterDecryptionKey,
     OptionKeepTempDir,
     OptionTempDirPath,
@@ -3469,12 +3469,12 @@ S9sOptions::pitrStopTime() const
 }
 
 /**
- * \returns The argument for the --pgbackrest-immediate option.
+ * \returns The argument for the --psql-immediate option.
  */
 bool
-S9sOptions::pgbackrestImmediate() const
+S9sOptions::psqlImmediate() const
 {
-    return getBool("pgbackrest_immediate");
+    return getBool("psql_immediate");
 }
 
 /**
@@ -6626,7 +6626,7 @@ S9sOptions::printHelpBackup()
 "  --parallellism=N           Number of threads used while creating backup.\n"
 "  --pitr-compatible          Create backup compatible with PITR.\n"
 "  --pitr-stop-time           Do point in time recovery with specified time.\n"
-"  --pgbackrest-immediate     Restore only basebackup with PgBackRest.\n"
+"  --psql-immediate           PostgreSql restore basebackup, don't apply WAL.\n"
 "  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
 "  --snapshot-repository=NAME The name of the snapshot repository to be used (only elasticsearch cluster).\n"
@@ -7838,7 +7838,7 @@ S9sOptions::readOptionsBackup(
         { "no-install",       no_argument,       0, OptionNoInstall       },
         { "no-terminate",     no_argument,       0, OptionNoTerminate     },
         { "pitr-stop-time",   required_argument, 0, OptionPitrStopTime    },
-        { "pgbackrest-immediate", no_argument,   0, OptionPgBackRestImmediate},
+        { "psql-immediate",   no_argument,       0, OptionPsqlImmediate   },
         { "cluster-decryption-key", required_argument, 0, OptionClusterDecryptionKey},
 
         // For save cluster and restore cluster...
@@ -8332,9 +8332,9 @@ S9sOptions::readOptionsBackup(
                 m_options["pitr_stop_time"] = optarg;
                 break;
 
-            case OptionPgBackRestImmediate:
-                // --pgbackrest-immediate
-                m_options["pgbackrest_immediate"] = true;
+            case OptionPsqlImmediate:
+                // --psql-immediate
+                m_options["psql_immediate"] = true;
                 break;
 
             case OptionClusterDecryptionKey:

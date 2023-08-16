@@ -378,7 +378,7 @@ class S9sOptions
         S9sString cloudProvider() const;
         S9sString storageHost() const;
         S9sString pitrStopTime() const;
-        bool      pgbackrestImmediate() const;
+        bool      psqlImmediate() const;
         int      clusterDecryptionKey() const;
         S9sString backupMethod() const;
         S9sString backupPath() const;

@@ -8677,8 +8677,8 @@ S9sRpcClient::restoreBackup()
     if (!pitrStopTime.empty())
         jobData["pitr_stop_time"] = pitrStopTime;
 
-    if (options->pgbackrestImmediate())
-        jobData["pgbackrest_immediate"] = true;
+    if (options->psqlImmediate())
+        jobData["psql_immediate"] = true;
 
     if (!options->nodes().empty())
     {
