@@ -10471,7 +10471,7 @@ S9sRpcClient::composeBackupJob()
             
         {
             PRINT_ERROR("Only supported S3 buckets. Use: "
-            "--cloud-provider=aws or --cloud-provider=s3");
+            "--cloud-provider=aws|s3 or --cloud-provider=s3");
             return S9sVariantMap();
         }
         else
