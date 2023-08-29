@@ -10465,10 +10465,11 @@ S9sRpcClient::composeBackupJob()
     {
         jobData["cloud_only"] = true;
         // checks with current available functionality
-        if(cloudStorageProv.empty() || cloudStorageProv != AWS_CLOUD_PROVIDER)
+        if(cloudStorageProv.empty() || 
+           (cloudStorageProv != AWS_CLOUD_PROVIDER && cloudStorageProv != S3_CLOUD_SERVICE_PROVIDER))
         {
             PRINT_ERROR("Only supported S3 buckets. Use: "
-            "--cloud-provider=aws --s3-bucket=<my-bucket> options");
+            "--cloud-provider=aws or --cloud-provider=s3");
             return S9sVariantMap();
         }
         else
