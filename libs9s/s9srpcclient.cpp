@@ -10465,7 +10465,9 @@ S9sRpcClient::composeBackupJob()
     {
         jobData["cloud_only"] = true;
         // checks with current available functionality
-        if(cloudStorageProv.empty() || cloudStorageProv != AWS_CLOUD_PROVIDER)
+        if(cloudStorageProv.empty() || (
+               cloudStorageProv != AWS_CLOUD_PROVIDER &&
+               cloudStorageProv != S3_CLOUD_SERVICE_PROVIDER))
         {
             PRINT_ERROR("Only supported S3 buckets. Use: "
             "--cloud-provider=aws --s3-bucket=<my-bucket> options");
@@ -10493,8 +10495,8 @@ S9sRpcClient::composeBackupJob()
             }
             // aws hardcoded properties (by now)
             jobCloudData["auto_create_bucket"]  = true;
-            jobCloudData["cloud_storage_provider"] = AWS_CLOUD_PROVIDER;
-            jobCloudData["cloud_storage_service"]  = S3_CLOUD_SERVICE_PROVIDER;
+            jobCloudData["cloud_storage_provider"] = cloudStorageProv;            
+            jobCloudData["cloud_storage_service"] = cloudStorageProv;            
             if(backupRetention != 0)
                 jobCloudData["backup_retention"] = backupRetention;
         }
