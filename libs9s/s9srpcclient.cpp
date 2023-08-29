@@ -10494,8 +10494,8 @@ S9sRpcClient::composeBackupJob()
             }
             // aws hardcoded properties (by now)
             jobCloudData["auto_create_bucket"]  = true;
-            jobCloudData["cloud_storage_provider"] = AWS_CLOUD_PROVIDER;
-            jobCloudData["cloud_storage_service"]  = S3_CLOUD_SERVICE_PROVIDER;
+            jobCloudData["cloud_storage_provider"] = cloudStorageProv;
+            jobCloudData["cloud_storage_service"]  = cloudStorageProv;
             if(backupRetention != 0)
                 jobCloudData["backup_retention"] = backupRetention;
         }
