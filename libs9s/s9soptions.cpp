@@ -126,7 +126,6 @@ enum S9sOptionType
     OptionBackupSourceAddress,
     OptionBackupDirectory,
     OptionPitrStopTime,
-    OptionPsqlImmediate,
     OptionClusterDecryptionKey,
     OptionKeepTempDir,
     OptionTempDirPath,
@@ -3469,15 +3468,6 @@ S9sOptions::pitrStopTime() const
 }
 
 /**
- * \returns The argument for the --psql-immediate option.
- */
-bool
-S9sOptions::psqlImmediate() const
-{
-    return getBool("psql_immediate");
-}
-
-/**
  * \returns The argument for the --cluster-decryption-key option.
  */
 int
@@ -6626,7 +6616,6 @@ S9sOptions::printHelpBackup()
 "  --parallellism=N           Number of threads used while creating backup.\n"
 "  --pitr-compatible          Create backup compatible with PITR.\n"
 "  --pitr-stop-time           Do point in time recovery with specified time.\n"
-"  --psql-immediate           PostgreSql restore basebackup, don't apply WAL.\n"
 "  --safety-copies=N          How many copies kept even when they are old.\n"
 "  --subdirectory=PATTERN     The subdirectory that holds the new backup.\n"
 "  --snapshot-repository=NAME The name of the snapshot repository to be used (only elasticsearch cluster).\n"
@@ -7838,7 +7827,6 @@ S9sOptions::readOptionsBackup(
         { "no-install",       no_argument,       0, OptionNoInstall       },
         { "no-terminate",     no_argument,       0, OptionNoTerminate     },
         { "pitr-stop-time",   required_argument, 0, OptionPitrStopTime    },
-        { "psql-immediate",   no_argument,       0, OptionPsqlImmediate   },
         { "cluster-decryption-key", required_argument, 0, OptionClusterDecryptionKey},
 
         // For save cluster and restore cluster...
@@ -8330,11 +8318,6 @@ S9sOptions::readOptionsBackup(
             case OptionPitrStopTime:
                 // --pitr-stop-time="2020-07-14T14:27:04"
                 m_options["pitr_stop_time"] = optarg;
-                break;
-
-            case OptionPsqlImmediate:
-                // --psql-immediate
-                m_options["psql_immediate"] = true;
                 break;
 
             case OptionClusterDecryptionKey:

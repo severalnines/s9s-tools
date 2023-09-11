@@ -8677,9 +8677,6 @@ S9sRpcClient::restoreBackup()
     if (!pitrStopTime.empty())
         jobData["pitr_stop_time"] = pitrStopTime;
 
-    if (options->psqlImmediate())
-        jobData["psql_immediate"] = true;
-
     if (!options->nodes().empty())
     {
         // on which node we want to restore the backup
