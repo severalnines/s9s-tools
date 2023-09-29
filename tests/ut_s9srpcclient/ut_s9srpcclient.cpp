@@ -155,6 +155,8 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetUserPreferences,    retval);
     PERFORM_TEST(testDeleteUserPreferences, retval);
 
+    PERFORM_TEST(testDatetimeRegex, retval);
+
     return retval;
 }
 
@@ -2171,6 +2173,26 @@ UtS9sRpcClient::testDeleteUserPreferences()
     S9S_COMPARE(payload["user"]["preferences"]["key4"], "");
 
     //====================================================
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDatetimeRegex() {
+    S9S_COMPARE(isValidDateTimeFormat("randomStr"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-31T14:27:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-13-31 14:27:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-32 14:27:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-1 14:27:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-10 24:27:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-10 21:60:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-10 21:06:60"), false);
+    S9S_COMPARE(isValidDateTimeFormat("aaa2020-12-31 14:27:40"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40ccc"), false);
+
+    S9S_COMPARE(isValidDateTimeFormat("2023-12-31 23:59:59"), true);
+    S9S_COMPARE(isValidDateTimeFormat("2024-01-01 00:00:00"), true);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40"), true);
 
     return true;
 }
