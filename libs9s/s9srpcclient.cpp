@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <iostream> 
 #include <ctime>
+#include <regex>
 
 //#define DEBUG
 #define WARNING
@@ -8675,7 +8676,14 @@ S9sRpcClient::restoreBackup()
     jobData["backup_datadir_before_restore"] = options->backupDatadir();
 
     if (!pitrStopTime.empty())
+    {
+        if(!isValidDateTimeFormat(pitrStopTime))
+        {
+            PRINT_ERROR("PITR stop time must be provided in format: YYYY-MM-DD HH:MM:SS");
+            return false;
+        }
         jobData["pitr_stop_time"] = pitrStopTime;
+    }
 
     if (options->psqlImmediate())
         jobData["psql_immediate"] = true;
@@ -11730,4 +11738,10 @@ S9sRpcClient::registerRedisCluster(
     request["job"]              = job;
 
     return executeRequest(uri, request);
+}
+
+bool
+isValidDateTimeFormat(const std::string& str) {
+    std::regex datetimeRegex("^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$");
+    return std::regex_match(str, datetimeRegex);
 }

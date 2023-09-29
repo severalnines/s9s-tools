@@ -664,3 +664,4 @@ class S9sRpcClient
         friend class UtS9sNode;
 };
 
+bool isValidDateTimeFormat(const std::string& str);
