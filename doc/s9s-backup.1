@@ -253,6 +253,8 @@ s9s backup \\
 .TP
 .B \-\^\-pitr\-stop\-time
 Timestamp specification for doing point in time backup recovery.
+It have to be in format: "YYYY-MM-DD HH:MM:SS" with optional timezone
+specifier like: "+HH:MM" or "Z" for UTC.
 
 .B EXAMPLE
 .nf
@@ -260,7 +262,7 @@ s9s backup \\
     --restore \\
     --cluster-id=1 \\
     --backup-id=10 \\
-    --pitr-stop-time="2020-07-14T14:27:04" \\
+    --pitr-stop-time="2020-07-14 14:27:04+01:00" \\
     --log
 .fi
 
