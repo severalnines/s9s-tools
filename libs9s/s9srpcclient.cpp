@@ -1024,7 +1024,7 @@ S9sRpcClient::pingController()
     request["operation"]       = "ping";
     request["request_created"] = timeString;
 
-    retval = executeRequest(uri, request, S9s::DenyRedirect);
+    retval = executeRequest(uri, request, S9s::SpecificController);
     return retval;
 }
 
@@ -10885,152 +10885,36 @@ S9sRpcClient::composeJobDataOneContainer() const
  *   this request is going to be included in the debug output.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
- *
- * \code{.js}
- * {
- *     "controllers": 
- *     {
- *         "192.168.0.100:9501": 
- *         {
- *             "class_name": "CmonController",
- *             "hostname": "192.168.0.100",
- *             "ip": "192.168.0.100",
- *             "port": 9501
- *         },
- *         "192.168.0.223:9501": 
- *         {
- *             "class_name": "CmonController",
- *             "hostname": "192.168.0.223",
- *             "ip": "192.168.0.223",
- *             "port": 9501
- *         },
- *         "192.168.0.235:9501": 
- *         {
- *             "class_name": "CmonController",
- *             "hostname": "192.168.0.235",
- *             "ip": "192.168.0.235",
- *             "port": 9501
- *         }
- *     },
- *     "error_string": "Redirect notification.",
- *     "reply_received": "2019-03-20T09:44:17.987Z",
- *     "request_created": "2019-03-20T09:44:17.979Z",
- *     "request_id": 1,
- *     "request_processed": "2019-03-20T09:44:17.988Z",
- *     "request_status": "Redirect"
- * }
- * \endcode
  */
 bool
 S9sRpcClient::executeRequest(
-        const S9sString &uri,
-        S9sVariantMap   &request,
-        bool             printRequest,
-        S9s::Redirect    redirect)
+        const S9sString      &uri,
+        S9sVariantMap        &request,
+        bool                  printRequest,
+        S9s::RemoteController remote)
 {
     S9sDateTime    now = S9sDateTime::currentDateTime();
     S9sString      timeString = now.toString(S9sDateTime::TzDateTimeFormat);
     bool           retval;
-    int            nTry = 0;
-    S9sVariantMap  triedKeys;
-   
+
     request["request_created"] = timeString;
     request["request_id"]      = ++m_priv->m_requestId;
-    
+
     if (printRequest)
         printRequestJson(request);
 
     while (true)
     {
-        S9sString      hostName;
-        int            port = 0;
-        S9sString      role;
+        retval = doExecuteRequest(uri, request, remote);
 
-        retval = doExecuteRequest(uri, request, redirect);
-            
-        if (retval && m_priv->m_reply.isRedirect())
-            m_priv->rememberRedirect();
-
-        if (!retval || redirect != S9s::AllowRedirect)
-        {
+        if (!retval)
             break;
-        }
-
-        if (!retval || !m_priv->m_reply.isRedirect())
-        {
+        if (remote == S9s::SpecificController)
             break;
-        } else {
-            S9sVariantMap        controllers;
-            S9sVariantMap        controller;
-            S9sVector<S9sString> keys;
+        if (!m_priv->m_reply.isRedirect())
+            break;
 
-            PRINT_LOG("Redirect notification received.");
-            PRINT_VERBOSE("Redirect notification received.");
-
-            controllers = m_priv->m_reply["controllers"].toVariantMap();
-            PRINT_VERBOSE(
-                    "Has %u controller(s) in redirect.", 
-                    controllers.size());
-
-            keys = controllers.keys();
-            for (uint idx = 0u; idx < keys.size(); ++idx)
-            {
-                S9sString key = keys[idx];
-
-                PRINT_VERBOSE("Investigating %s...", STR(key));
-                if (triedKeys.contains(key))
-                {
-                    PRINT_VERBOSE("Already tried %s.", STR(key));
-                    continue;
-                }
-
-                triedKeys[key] = true;
-                controller = controllers[key].toVariantMap();
-                hostName   = controller["hostname"].toString();
-                port       = controller["port"].toInt();
-                role       = controller["role"].toString();
-
-                if (m_priv->m_hostName == hostName &&
-                        m_priv->m_port == port)
-                {
-                    PRINT_VERBOSE("We just tried this %s.", STR(key));
-                    continue;
-                }
-
-                if (role != "leader")
-                {
-                    PRINT_VERBOSE("Controller %s is not leader, skip it.",
-                            STR(key));
-                    continue;
-                }
-
-                break;
-            }
-
-            if (hostName.empty())
-            {
-                PRINT_VERBOSE("Could not find controller to try.");
-                return retval;
-            }
-    
-            //S9S_WARNING("Trying %s:%d", STR(hostName), port);
-            PRINT_VERBOSE("Redirected to %s:%d.", STR(hostName), port);
-            PRINT_LOG("Redirected to %s:%d.", STR(hostName), port);
-
-            m_priv->close();
-            m_priv->m_hostName = hostName;
-            m_priv->m_port     = port;
-
-            // This is just an unnecessary protection: if the code is ok this
-            // will never happen.
-            ++nTry;
-            if (nTry > 15) 
-            {
-                PRINT_LOG("Too many redirects (%d), aborting.", nTry);
-                PRINT_VERBOSE("Too many redirects (%d), aborting.", nTry);
-                break;
-            }
-        }
+        m_priv->processRedirectResponse();
     }
 
     return retval;
@@ -11047,9 +10931,9 @@ S9sRpcClient::executeRequest(
  */
 bool
 S9sRpcClient::doExecuteRequest(
-        const S9sString     &uri,
-        S9sVariantMap       &request,
-        S9s::Redirect        redirect)
+        const S9sString       &uri,
+        S9sVariantMap         &request,
+        S9s::RemoteController  remote)
 {
     S9sString    payload = request.toString();
     S9sOptions  *options = S9sOptions::instance();    
@@ -11076,7 +10960,7 @@ S9sRpcClient::doExecuteRequest(
     m_priv->m_jsonReply.clear();
     m_priv->m_reply.clear();
 
-    if (!m_priv->connect(redirect))
+    if (!m_priv->connect(remote))
     {
         PRINT_LOG("%s", STR(m_priv->m_errorString));
         PRINT_VERBOSE("Connection failed: %s", STR(m_priv->m_errorString));

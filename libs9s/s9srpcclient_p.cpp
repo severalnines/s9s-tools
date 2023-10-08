@@ -92,13 +92,11 @@ S9sRpcClientPrivate::clearBuffer()
  * \returns whether it connected successfully
  */
 bool
-S9sRpcClientPrivate::connect(
-        S9s::Redirect        redirect)
+S9sRpcClientPrivate::connectToCmon()
 {
     struct hostent *hp;
     struct timeval timeout;
     struct sockaddr_in server;
-    bool   success;
 
     PRINT_LOG("%p: Connecting to '%s:%d'.", this, STR(m_hostName), m_port);
 
@@ -149,136 +147,204 @@ S9sRpcClientPrivate::connect(
     /*
      * Doing the DNS lookup.
      */
-    success = true;
     hp = gethostbyname(STR(m_hostName));
     if (hp == NULL)
     {
         m_errorString.sprintf("Host '%s' not found.", STR(m_hostName));
         PRINT_VERBOSE("ERROR: %s", STR(m_errorString));
         close();
-        success = false;
-    } else {
-        memset(&server, 0, sizeof(struct sockaddr_in));
-        /*
-         * Connecting to the server. (TODO: IPv6)
-         */
-        memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
-        server.sin_family = AF_INET;
-        server.sin_port = htons(m_port);
-
-        if (::connect(m_socketFd, (struct sockaddr *) &server, sizeof server)
-                == -1)
-        {
-
-            // errno: 111 connection refused.
-            // errno: 115 timeout
-            //PRINT_LOG("errno: %d", errno);
-            if (errno == 115)
-            {
-                int timeout = S9sOptions::instance()->clientConnectionTimeout();
-
-                PRINT_LOG("Connect to %s:%d failed: Timeout (%ds).", 
-                        STR(m_hostName), m_port, timeout);
-
-                m_errorString.sprintf(
-                        "Connect to %s:%d failed: Timeout (%ds).", 
-                        STR(m_hostName), m_port, timeout);
-                
-                PRINT_VERBOSE("%s", STR(m_errorString));
-            } else {
-                PRINT_LOG("Connect to %s:%d failed(%d): %m.", 
-                        STR(m_hostName), m_port,
-                        errno);
-
-                m_errorString.sprintf(
-                        "Connect to %s:%d failed(%d): %m.", 
-                        STR(m_hostName), m_port, errno);
-        
-                PRINT_VERBOSE("%s", STR(m_errorString));
-            }
-
-            setConnectFailed(m_hostName, m_port);
-            close();
-
-            success = false;
-        }
-    }
-       
-    /*
-     * If either the DNS lookup or the connect failed and we have an other
-     * controller to connect we do a recursive call here.
-     */
-    if (!success && tryNextHost(redirect))
-    {
-        PRINT_VERBOSE("Failed, trying next host.");
-        return connect();
-    } else if (!success)
-    {
-        m_authenticated = false;
-        PRINT_VERBOSE("Connect failed, giving up.");
         return false;
     }
 
+    memset(&server, 0, sizeof(struct sockaddr_in));
     /*
-     *
+     * Connecting to the server. (TODO: IPv6)
      */
+    memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(m_port);
+
+    if (0 == ::connect(m_socketFd, (struct sockaddr *) &server, sizeof server))
+        return true;
+
+    // error case
+    // errno: 111 connection refused.
+    // errno: 115 timeout
+    //PRINT_LOG("errno: %d", errno);
+    if (errno == 115)
+    {
+        int timeout = S9sOptions::instance()->clientConnectionTimeout();
+
+        PRINT_LOG("Connect to %s:%d failed: Timeout (%ds).", 
+                STR(m_hostName), m_port, timeout);
+
+        m_errorString.sprintf(
+                "Connect to %s:%d failed: Timeout (%ds).", 
+                STR(m_hostName), m_port, timeout);
+        
+        PRINT_VERBOSE("%s", STR(m_errorString));
+    } else {
+        PRINT_LOG("Connect to %s:%d failed(%d): %m.", 
+                STR(m_hostName), m_port,
+                errno);
+
+        m_errorString.sprintf(
+                "Connect to %s:%d failed(%d): %m.", 
+                STR(m_hostName), m_port, errno);
+
+        PRINT_VERBOSE("%s", STR(m_errorString));
+    }
+
+    setConnectFailed(m_hostName, m_port);
+    close();
+
+    return false;
+}
+
+bool
+S9sRpcClientPrivate::connectToAnyCmon()
+{
+    if (m_servers.empty())
+        loadControllerList();
+
+    for (uint idx = 0u; idx < m_servers.size(); ++idx)
+    {
+        S9sController &controller = m_servers[idx];
+
+        // I guess, failed earlier. May we don't need this.
+        if (controller.connectFailed())
+            continue;
+
+        m_hostName = controller.hostName();
+        m_port     = controller.port();
+
+        PRINT_LOG("Next controller to try %s:%d.",
+                STR(m_hostName), m_port);
+
+        if (connectToCmon())
+            return true;
+
+        PRINT_VERBOSE("Failed, trying next host.");
+    }
+
+    PRINT_LOG("No other controller to try.");
+    PRINT_VERBOSE("Connect failed, giving up.");
+    return false;
+}
+
+bool
+S9sRpcClientPrivate::initTLS()
+{
+    PRINT_VERBOSE ("Initiate TLS...");
+
+    static bool openSslInitialized;
+    if (!openSslInitialized)
+    {
+        openSslInitialized = true;
+        SSL_load_error_strings ();
+        SSL_library_init ();
+    }
+
+    #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+    m_sslContext = SSL_CTX_new(TLS_client_method());
+    #else
+    m_sslContext = SSL_CTX_new(SSLv23_client_method());
+    #endif
+
+    if (!m_sslContext)
+    {
+        m_errorString = "Couldn't create SSL context.";
+        close();
+        return false;
+    }
+
+    SSL_CTX_set_verify(m_sslContext, SSL_VERIFY_NONE, NULL);
+    SSL_CTX_set_options(m_sslContext,
+            SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+    SSL_CTX_set_mode(m_sslContext, SSL_MODE_AUTO_RETRY);
+
+    m_ssl = SSL_new(m_sslContext);
+
+    if (!m_ssl)
+    {
+        m_errorString = "Couldn't create SSL.";
+        close();
+        return false;
+    }
+
+    SSL_set_fd(m_ssl, m_socketFd);
+    SSL_set_connect_state(m_ssl);
+    SSL_set_tlsext_host_name(m_ssl, STR(m_hostName));
+
+    if (SSL_connect(m_ssl) <= 0 || SSL_do_handshake(m_ssl) <= 0)
+    {
+        m_errorString = "SSL handshake failed.";
+        close();
+        return false;
+    }
+
+    PRINT_VERBOSE("TLS handshake finished (version: %s, cipher: %s).",
+        SSL_get_version(m_ssl), SSL_get_cipher(m_ssl));
+
+    return true;
+}
+
+/**
+ * \returns whether it connected successfully
+ */
+bool
+S9sRpcClientPrivate::connect(
+        S9s::RemoteController remote)
+{
+    if (!connectToCmon())
+    {
+        if (remote == S9s::SpecificController)
+        {
+            m_authenticated = false;
+            return false;
+        }
+        if (!connectToAnyCmon())
+        {
+            m_authenticated = false;
+            return false;
+        }
+    }
+
     //PRINT_LOG("Connected.");
     PRINT_VERBOSE("Connected.");
-    if (m_useTls)
+    if (!m_useTls)
+        return true;
+
+    if(!initTLS())
     {
-        PRINT_VERBOSE ("Initiate TLS...");
-
-        static bool openSslInitialized;
-        if (!openSslInitialized)
-        {
-            openSslInitialized = true;
-            SSL_load_error_strings ();
-            SSL_library_init ();
-        }
-
-        #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
-        m_sslContext = SSL_CTX_new(TLS_client_method());
-        #else
-        m_sslContext = SSL_CTX_new(SSLv23_client_method());
-        #endif
-
-        if (!m_sslContext)
-        {
-            m_errorString = "Couldn't create SSL context.";
-            close();
-            return false;
-        }
-
-        SSL_CTX_set_verify(m_sslContext, SSL_VERIFY_NONE, NULL);
-        SSL_CTX_set_options(m_sslContext,
-                SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
-        SSL_CTX_set_mode(m_sslContext, SSL_MODE_AUTO_RETRY);
-
-        m_ssl = SSL_new(m_sslContext);
-
-        if (!m_ssl)
-        {
-            m_errorString = "Couldn't create SSL.";
-            close();
-            return false;
-        }
-
-        SSL_set_fd(m_ssl, m_socketFd);
-        SSL_set_connect_state(m_ssl);
-        SSL_set_tlsext_host_name(m_ssl, STR(m_hostName));
-
-        if (SSL_connect(m_ssl) <= 0 || SSL_do_handshake(m_ssl) <= 0)
-        {
-            m_errorString = "SSL handshake failed.";
-            close();
-            return false;
-        }
-
-        PRINT_VERBOSE("TLS handshake finished (version: %s, cipher: %s).",
-            SSL_get_version(m_ssl), SSL_get_cipher(m_ssl));
+        m_authenticated = false;
+        return false;
     }
 
     return true;
+}
+
+/** Save received controllers list, set current as failed and close this
+ * failed connection.
+ */
+void
+S9sRpcClientPrivate::processRedirectResponse()
+{
+    PRINT_LOG("Processing redirect.");
+
+    saveControllerList();
+    setConnectFailed(m_hostName, m_port);
+
+    //If we will get a specified leader from a fixed backend, this
+    //code snippet should be used:
+#if 0
+    CmonVariantMap leader = m_reply["leader"].toVariantMap();
+
+    m_hostName = leader["hostname"].toString();
+    m_port     = leder["port"].toInt();
+#endif
+
+    close();
 }
 
 void
@@ -473,15 +539,16 @@ S9sRpcClientPrivate::setBuffer(
     m_dataSize = content.size();
 }
 
-/**
- * This is how the refirect notification looks like:
+/** Finds the known list of controllers in the (redirect) response got
+ * from a the currently connected controller being a follower.
+ * Saves this list of controllers into s9s state. The next time
+ * loadControllerList() will be called, that will load this updated
+ * new list of controllers.
  *
+ * This is how the redirect notification looks like:
 {
     "error_string": "Redirect notification.",
-    "failed_controllers": 
-    {
-    },
-    "follower_controllers": 
+    "controllers": 
     {
         "192.168.0.127:10001": 
         {
@@ -496,14 +563,14 @@ S9sRpcClientPrivate::setBuffer(
             "hostname": "192.168.0.127",
             "ip": "192.168.0.127",
             "port": 9556
+        },
+        "192.168.0.127:20001":
+        {
+            "class_name": "CmonController",
+            "hostname": "192.168.0.127",
+            "ip": "192.168.0.127",
+            "port": 20001
         }
-    },
-    "leader_controller": 
-    {
-        "class_name": "CmonController",
-        "hostname": "192.168.0.127",
-        "ip": "192.168.0.127",
-        "port": 20001
     },
     "reply_received": "2019-02-18T09:04:46.923Z",
     "request_created": "2019-02-18T09:04:46.915Z",
@@ -513,7 +580,7 @@ S9sRpcClientPrivate::setBuffer(
     "status": "CmonControllerFollower"
 }
  *
- * Here is how the m_controllers look like.
+ * Here is how the controllers local variable will look like.
 [{
     "class_name": "CmonController",
     "hostname": "192.168.0.127",
@@ -532,7 +599,7 @@ S9sRpcClientPrivate::setBuffer(
 }]
  */
 void
-S9sRpcClientPrivate::rememberRedirect()
+S9sRpcClientPrivate::saveControllerList()
 {
     S9sVariantMap  leader;
     S9sVariantMap  redirect;
@@ -540,27 +607,21 @@ S9sRpcClientPrivate::rememberRedirect()
     S9sOptions    *options = S9sOptions::instance();
     S9sString      key = "redirects";
     bool           found = false;
-
-    PRINT_LOG("Processing redirect.");
-
-    /*
-     * Collecting the controllers into a list that is stored in the object.
-     */
-    m_controllers.clear();
+    S9sVariantList controllers;
 
     if (m_reply.contains("controllers"))
     {
-        S9sVariantMap followers = 
+        S9sVariantMap controllersMap = 
             m_reply["controllers"].toVariantMap();
 
-        foreach(const S9sVariant &variant, followers)
+        foreach(const S9sVariant &variant, controllersMap)
         {
-            m_controllers << variant.toVariantMap();
+            controllers << variant.toVariantMap();
         }
     }
 
     redirect["url"]         = options->controllerUrl();
-    redirect["controllers"] = m_controllers;
+    redirect["controllers"] = controllers;
 
     redirects = options->getState(key).toVariantList();
     for (uint idx = 0u; idx < redirects.size(); ++idx)
@@ -582,13 +643,19 @@ S9sRpcClientPrivate::rememberRedirect()
             STR(key),
             STR(S9sVariant(redirects).toString()));
 
-    PRINT_LOG("m_controllers: %s", STR(S9sVariant(m_controllers).toString()));
+    PRINT_LOG("controllers: %s",
+            STR(S9sVariant(controllers).toString()));
 
     options->setState(key, redirects);
 }
 
+/** Load list of known nodes of controller cluster
+ * identified with options->controllerUrl() into m_servers member.
+ *
+ * @returns true if such controller nodes found, false if not.
+ */
 bool
-S9sRpcClientPrivate::loadRedirect()
+S9sRpcClientPrivate::loadControllerList()
 {
     S9sOptions    *options = S9sOptions::instance();    
     S9sVariantList redirects;
@@ -642,62 +709,33 @@ S9sRpcClientPrivate::setConnectFailed(
         const int         port)
 {
     if (m_servers.empty())
-        loadRedirect();
+        loadControllerList();
 
     PRINT_LOG("Setting controller %s:%d state to failed.", STR(hostName), port);
 
-    if (!m_servers.empty())
-    {
-        PRINT_LOG("IDX   STATE    NAME            PORT");
-        PRINT_LOG("-----------------------------------");
-
-        for (uint idx = 0u; idx < m_servers.size(); ++idx)
-        {
-            S9sController &controller = m_servers[idx];
-
-            if (controller.hostName() == hostName && 
-                    controller.port() == port)
-            {
-                controller.setConnectFailed();
-            }
-        
-            PRINT_LOG("[%03u] %s %12s %6d", 
-                    idx, 
-                    controller.connectFailed() ? "failed  " : "untested",
-                    STR(controller.hostName()), controller.port());
-        }
-    
-        PRINT_LOG("-----------------------------------");
-    }
-}
-
-bool
-S9sRpcClientPrivate::tryNextHost(
-        S9s::Redirect        redirect)
-{
-    if (redirect == S9s::DenyRedirect)
-        return false;
-
     if (m_servers.empty())
-        loadRedirect();
+        return;
+
+    PRINT_LOG("IDX   STATE    NAME            PORT");
+    PRINT_LOG("-----------------------------------");
 
     for (uint idx = 0u; idx < m_servers.size(); ++idx)
     {
         S9sController &controller = m_servers[idx];
 
-        if (!controller.connectFailed())
+        if (controller.hostName() == hostName && 
+                controller.port() == port)
         {
-            m_hostName = controller.hostName();
-            m_port     = controller.port();
-
-            PRINT_LOG("Next controller to try %s:%d.",
-                    STR(m_hostName), m_port);
-            return true;
+            controller.setConnectFailed();
         }
+    
+        PRINT_LOG("[%03u] %s %12s %6d", 
+                idx, 
+                controller.connectFailed() ? "failed  " : "untested",
+                STR(controller.hostName()), controller.port());
     }
 
-    PRINT_LOG("No other controller to try.");
-    return false;
+    PRINT_LOG("-----------------------------------");
 }
 
 /**

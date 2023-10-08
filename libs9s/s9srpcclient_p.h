@@ -21,14 +21,7 @@ class S9sRpcClientPrivate
         void ref();
         int unRef();
 
-        void rememberRedirect();
-        bool loadRedirect();
-
-        void setConnectFailed(
-                const S9sString  &hostName, 
-                const int         port);
-
-        bool tryNextHost(S9s::Redirect redirect);
+        void processRedirectResponse();
 
         void printBuffer(const S9sString &title);
 
@@ -40,7 +33,16 @@ class S9sRpcClientPrivate
         void clearBuffer();
         void ensureHasBuffer(size_t size);
 
-        bool connect(S9s::Redirect redirect = S9s::AllowRedirect);
+        bool loadControllerList();
+        void saveControllerList();
+        void setConnectFailed(
+                const S9sString  &hostName, 
+                const int         port);
+
+        bool connectToCmon();
+        bool connectToAnyCmon();
+        bool initTLS();
+        bool connect(S9s::RemoteController remote = S9s::AnyController);
         void close();
         ssize_t write(const char *data, size_t length);
         ssize_t read(char *buffer, size_t bufSize);
@@ -74,7 +76,6 @@ class S9sRpcClientPrivate
         void           *m_callbackUserData;
         bool            m_authenticated;
         
-        S9sVariantList  m_controllers;
         S9sVector<S9sController> m_servers;
         friend class S9sRpcClient;
 };

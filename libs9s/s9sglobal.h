@@ -38,10 +38,10 @@ namespace S9s
         PrivateDnsName,
     };
 
-    enum Redirect
+    enum RemoteController
     {
-        AllowRedirect = 0,
-        DenyRedirect
+        AnyController = 0,
+        SpecificController
     };
 };
 

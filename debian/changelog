@@ -1,3 +1,10 @@
+s9s-tools (1.9.2023100823-release1) UNRELEASED; urgency=medium
+
+  [ Peter Csaszar ]
+  * Simplified logic for CmonHA redirection. On redirect, we save list of
+    known controlloers and iterate on the next known controller to try to
+    connect to.
+
 s9s-tools (1.9.2023052518-release1) UNRELEASED; urgency=medium
 
   [ David Kedves ]

@@ -460,15 +460,15 @@ class S9sRpcClient
         virtual S9sVariantMap composeJobDataOneContainer() const;
         
         virtual bool executeRequest(
-                const S9sString &uri,
-                S9sVariantMap   &request,
-                bool             printRequest = true,
-                S9s::Redirect    redirect = S9s::AllowRedirect);
+                const S9sString       &uri,
+                S9sVariantMap         &request,
+                bool                   printRequest = true,
+                S9s::RemoteController  remote = S9s::AnyController);
 
         virtual bool doExecuteRequest(
-                const S9sString &uri,
-                S9sVariantMap   &request,
-                S9s::Redirect    redirect = S9s::AllowRedirect);
+                const S9sString       &uri,
+                S9sVariantMap         &request,
+                S9s::RemoteController  remote = S9s::AnyController);
 
         void setError(
                 const S9sString &errorString,
