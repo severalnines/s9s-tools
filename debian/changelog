@@ -1,4 +1,4 @@
-s9s-tools (1.9.2023100616-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2023101818-release1) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
   * Add --psql-immediate option to ask PostgreSql not to apply WAL when
@@ -10,8 +10,9 @@ s9s-tools (1.9.2023100616-release1) UNRELEASED; urgency=medium
   * Release 1.9.2023083001.
   * Release 1.9.2023100314.
   * Release 1.9.2023100616.
+  * Release 1.9.2023101818.
 
- -- Severalnines <support@severalnines.com>  Fri, 06 Oct 2023 16:59:31 +0900
+ -- Severalnines <support@severalnines.com>  Wed, 18 Oct 2023 18:06:36 +0900
 
 s9s-tools (1.9.2023052518-release1) UNRELEASED; urgency=medium
 
