@@ -11742,7 +11742,7 @@ S9sRpcClient::registerRedisCluster(
 
 bool
 isValidDateTimeFormat(const std::string& str) {
-    std::regex datetimeRegex("^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]) "
-            "(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(([+-][0-2][0-9](:[0-5][0-9])?)|[Z])?$");
+    static const std::regex datetimeRegex("^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]) "
+            "(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(([+-][0-2][0-9]((:)?[0-5][0-9])?)|[Z])?$");
     return std::regex_match(str, datetimeRegex);
 }
