@@ -2189,6 +2189,7 @@ UtS9sRpcClient::testDatetimeRegex() {
     S9S_COMPARE(isValidDateTimeFormat("2020-12-10 21:06:60"), false);
     S9S_COMPARE(isValidDateTimeFormat("aaa2020-12-31 14:27:40"), false);
     S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40ccc"), false);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40+12345"), false);
 
     S9S_COMPARE(isValidDateTimeFormat("2023-12-31 23:59:59"), true);
     S9S_COMPARE(isValidDateTimeFormat("2024-01-01 00:00:00"), true);
@@ -2198,6 +2199,8 @@ UtS9sRpcClient::testDatetimeRegex() {
     S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40-02"), true);
     S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40+10"), true);
     S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40-02:20"), true);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40-0220"), true);
+    S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40+0000"), true);
 
 
     return true;
