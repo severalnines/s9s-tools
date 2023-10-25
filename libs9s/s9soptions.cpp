@@ -387,6 +387,8 @@ enum S9sOptionType
     OptionNoInstall,
     OptionNoTerminate,
     OptionWithTimescaleDb,
+    OptionUpgradeMethod,
+    OptionUpgradeToVersion,
     OptionToken,
     OptionNoWrap,
     OptionRemoteClusterId,
@@ -3226,6 +3228,18 @@ bool
 S9sOptions::withTimescaleDb() const
 {
     return getBool("with_timescaledb");
+}
+
+S9sString
+S9sOptions::upgradeToVersion() const
+{
+    return getString("upgrade_to_version");
+}
+
+S9sString
+S9sOptions::upgradeMethod() const
+{
+    return getString("upgrade_method");
 }
 
 
@@ -6879,6 +6893,9 @@ S9sOptions::printHelpCluster()
 "  --with-ssl                 Set up ssl while installing cluster.\n"
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
+"  --upgrade-method           Strategy for doing major upgrade (copy, link).\n"
+"  --upgrade-to-version       Trigger major upgrade against minor to the "
+"                             specified new version if implemented.\n"
 "\n"
 "Load balancer related options\n"
 "  --admin-password=USERNAME  Admin password for ProxySql or Maxscale.\n"
@@ -12851,6 +12868,8 @@ S9sOptions::readOptionsCluster(
         { "enterprise-token", required_argument, 0, OptionEnterpriseToken },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "upgrade-method",   required_argument, 0, OptionUpgradeMethod   },
+        { "upgrade-to-version",required_argument, 0, OptionUpgradeToVersion },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
 
@@ -13386,6 +13405,16 @@ S9sOptions::readOptionsCluster(
             case OptionWithTimescaleDb:
                 // --with-timescaledb
                 m_options["with_timescaledb"] = true;
+                break;
+
+            case OptionUpgradeMethod:
+                // --upgrade-method
+                m_options["upgrade_method"] = optarg;
+                break;
+
+            case OptionUpgradeToVersion:
+                // --upgrade-to-version
+                m_options["upgrade_to_version"] = optarg;
                 break;
             
             case OptionWithoutTags:
