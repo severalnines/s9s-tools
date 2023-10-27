@@ -322,6 +322,8 @@ class S9sOptions
 
         bool withDatabase() const;
         bool withTimescaleDb() const;
+        S9sString upgradeMethod() const;
+        S9sString upgradeToVersion() const;
 
         S9sString dbName() const;
         S9sString dbOwner() const;

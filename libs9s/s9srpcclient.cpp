@@ -7192,9 +7192,12 @@ S9sRpcClient::upgradeCluster()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
+    S9sString      upgradeToVersion = options->upgradeToVersion();
+    S9sString      method    = options->upgradeMethod();
+    S9sString      version   = options->providerVersion();
     S9sVariantMap  request   = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
@@ -7204,7 +7207,15 @@ S9sRpcClient::upgradeCluster()
     jobData["clusterid"]  = clusterId;
     if (hosts.size() != 0)
     {
-	jobData["nodes"]      = nodesField(hosts);
+        jobData["nodes"] = nodesField(hosts);
+    }
+    if (upgradeToVersion != "")
+    {
+        jobData["upgrade_to_version"] = upgradeToVersion;
+    }
+    if (method != "")
+    {
+        jobData["upgrade_method"] = method;
     }
     if (options->force())
         jobData["force"] = true;
