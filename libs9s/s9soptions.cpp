@@ -6894,7 +6894,7 @@ S9sOptions::printHelpCluster()
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "  --upgrade-method           Strategy for doing major upgrade (copy, link).\n"
-"  --upgrade-to-version       Trigger major upgrade against minor to the "
+"  --upgrade-to-version       Trigger major upgrade against minor to the\n"
 "                             specified new version if implemented.\n"
 "\n"
 "Load balancer related options\n"
