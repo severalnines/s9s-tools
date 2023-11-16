@@ -914,6 +914,8 @@ S9sNode::roleFlag() const
             return 'C';
         else if (theRole == "bvs")
             return 'V';
+        else if (theRole == "ucs")
+            return 'P';
         else if (theRole == "arbiter")
             return 'A';
         else if (theRole == "backuprepo")
