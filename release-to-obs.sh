@@ -1,7 +1,8 @@
 #!/bin/bash
 # a script to make the s9s-tools easily releasable
 # Author: David Kedves <kedazo@severalnines.com>
-REPONAME='home:severalnines/s9s-tools'
+# REPONAME='home:severalnines/s9s-tools'
+REPONAME='home:alvaro-vinuela/s9s-tools-tests'
 CURRDIR=`pwd`
 SRCDIR=${CURRDIR}/../build
 
