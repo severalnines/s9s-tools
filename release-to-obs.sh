@@ -1,8 +1,13 @@
 #!/bin/bash
 # a script to make the s9s-tools easily releasable
 # Author: David Kedves <kedazo@severalnines.com>
-# REPONAME='home:severalnines/s9s-tools'
-REPONAME='home:alvaro-vinuela/s9s-tools-tests'
+if [ "${PUBLISHING_REPO}" == "TESTING" ]; then
+    REPONAME='home:alvaro-vinuela/s9s-tools-tests'
+else
+    REPONAME='home:severalnines/s9s-tools'
+fi
+
+echo "Comitting source files to OBS repository: ${REPONAME}"
 CURRDIR=`pwd`
 SRCDIR=${CURRDIR}/../build
 
