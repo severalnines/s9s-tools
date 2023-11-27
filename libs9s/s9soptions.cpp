@@ -6893,6 +6893,7 @@ S9sOptions::printHelpCluster()
 "  --with-ssl                 Set up ssl while installing cluster.\n"
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
+"  --uninstall                Uninstall software when removing a node.\n"
 "  --upgrade-method           Strategy for doing major upgrade (copy, link).\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
 "                             specified new version if implemented.\n"
