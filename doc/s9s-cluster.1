@@ -415,6 +415,18 @@ s9s cluster \\
     --wait
 .fi
 
+To also uninstall software use \-\-uninstall option too.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --remove-node \\
+    --uninstall \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.245:9600 \\
+    --wait
+.fi
+
 .TP
 .B --rolling-restart
 Restart all nodes of the cluster by keeping the cluster alive. This command 
