@@ -3548,6 +3548,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
@@ -3836,6 +3837,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
@@ -3992,6 +3994,7 @@ S9sRpcClient::createGroupReplication(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
