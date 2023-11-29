@@ -3473,6 +3473,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
 
