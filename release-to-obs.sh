@@ -27,6 +27,13 @@ echo "Cleaning up."
 git reset --hard
 git clean -dfx
 git pull
+
+
+if [ "${PUBLISHING_REPO}" == "TESTING" ]; then
+    ./version-bump.sh
+fi
+
+
 rm -rf ${SRCDIR}
 mkdir -p ${SRCDIR}
 cp -fva ${CURRDIR} ${SRCDIR}/s9s-tools-master
