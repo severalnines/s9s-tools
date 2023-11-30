@@ -1,3 +1,11 @@
+s9s-tools (1.9.2023113008-release1) UNRELEASED; urgency=medium
+
+  [ Peter Csaszar ]
+  * Drop --psql-immediate option because it might be too confusing for our
+    customers.
+
+ -- Severalnines <support@severalnines.com>  Wed, 30 Nov 2023 08:46:06 +0100
+
 s9s-tools (1.9.2023112922-release1) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
