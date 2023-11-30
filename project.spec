@@ -54,6 +54,26 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Wed Nov 29 2023 Severalnines <support@severalnines.com> 1.9.2023112922
+- Release 1.9.2023112922.
+* Wed Nov 29 2023 Severalnines <support@severalnines.com> 1.9.2023112913
+- Release 1.9.2023112913.
+* Tue Nov 28 2023 Severalnines <support@severalnines.com> 1.9.2023112821
+- Release 1.9.2023112821.
+* Thu Nov 23 2023 Severalnines <support@severalnines.com> 1.9.2023112301
+- Release 1.9.2023112301.
+* Thu Nov 23 2023 Severalnines <support@severalnines.com> 1.9.2023112300
+- Release 1.9.2023112300.
+* Wed Nov 22 2023 Severalnines <support@severalnines.com> 1.9.2023112223
+- Release 1.9.2023112223.
+* Mon Oct 23 2023 Severalnines <support@severalnines.com> 1.9.2023102321
+- Release 1.9.2023102321.
+* Wed Oct 18 2023 Severalnines <support@severalnines.com> 1.9.2023101818
+- Release 1.9.2023101818.
+* Fri Oct  6 2023 Severalnines <support@severalnines.com> 1.9.2023100616
+- Release 1.9.2023100616.
+* Tue Oct  3 2023 Severalnines <support@severalnines.com> 1.9.2023100314
+- Release 1.9.2023100314.
 * Wed Aug 30 2023 Severalnines <support@severalnines.com> 1.9.2023083001
 - Release 1.9.2023083001.
 * Fri Aug 25 2023 Severalnines <support@severalnines.com> 1.9.2023082520

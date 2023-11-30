@@ -160,16 +160,59 @@ mys9s cluster \\
 
 .TP
 .B \-\-upgrade-cluster
-Upgrade cluster packages.
+Upgrade cluster packages while keeping the same major version.
 
 .B EXAMPLE
 .nf
-mys9s cluster \\
+s9s cluster \\
     --upgrade-cluster \\
     --cluster-id=1 \\
     --nodes="192.168.0.84:5433;192.168.0.85" \\
     --wait
 .fi
+
+.TP
+.B \-\-upgrade-to-version
+The new newer major version to upgrade too. Without this,
+only minor upgrade will be done.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --upgrade-cluster \\
+    --upgrade-to-version=12 \\
+    --cluster-id=1 \\
+    --log
+.fi
+
+.TP
+.B --upgrade-method
+Strategy for doing major upgrade. For PostgreSql there are two methods
+supported: copy and link. The default valuse is 'copy'.
+
+.RS 7
+.TP
+.B copy
+This method will copy all data by doing backup on the old version and
+restore on the new version.
+
+.TP
+.B link
+With link method tha data files won't be copied, instead hard links will be created to the old version's data files.
+
+.TP
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --upgrade-cluster \\
+    --upgrade-to-version=12 \\
+    --upgrade-method=link \\
+    --cluster-id=1 \\
+    --log
+.fi
+
+.RE
+
 
 .TP
 .B --create-report
@@ -367,6 +410,18 @@ using the \fB\-\-nodes\fR command line option.
 .nf
 s9s cluster \\
     --remove-node \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.245:9600 \\
+    --wait
+.fi
+
+To also uninstall software use \-\-uninstall option too.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --remove-node \\
+    --uninstall \\
     --cluster-id=1 \\
     --nodes=192.168.0.245:9600 \\
     --wait
@@ -1086,7 +1141,6 @@ cluster this option can be used to set tags for the newly created cluster.
 .B --with-timescaledb
 Install the TimescaleDB option when creating a new cluster. This is currently
 only supported on PostgreSQL systems.
-
 
 
 \"

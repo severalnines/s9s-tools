@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <iostream> 
 #include <ctime>
+#include <regex>
 
 //#define DEBUG
 #define WARNING
@@ -3472,6 +3473,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["mysql_password"]   = options->dbAdminPassword();
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
 
@@ -3546,6 +3548,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
@@ -3834,6 +3837,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["nodes"]            = nodesField(hosts);
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
@@ -3990,6 +3994,7 @@ S9sRpcClient::createGroupReplication(
     jobData["vendor"]           = vendor;
     jobData["version"]          = mySqlVersion;
     jobData["type"]             = "mysql";
+    jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
@@ -7191,9 +7196,12 @@ S9sRpcClient::upgradeCluster()
     S9sOptions    *options   = S9sOptions::instance();
     int            clusterId = options->clusterId();
     S9sVariantList hosts     = options->nodes();
+    S9sString      upgradeToVersion = options->upgradeToVersion();
+    S9sString      method    = options->upgradeMethod();
+    S9sString      version   = options->providerVersion();
     S9sVariantMap  request   = composeRequest();
-    S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
@@ -7203,7 +7211,15 @@ S9sRpcClient::upgradeCluster()
     jobData["clusterid"]  = clusterId;
     if (hosts.size() != 0)
     {
-	jobData["nodes"]      = nodesField(hosts);
+        jobData["nodes"] = nodesField(hosts);
+    }
+    if (upgradeToVersion != "")
+    {
+        jobData["upgrade_to_version"] = upgradeToVersion;
+    }
+    if (method != "")
+    {
+        jobData["upgrade_method"] = method;
     }
     if (options->force())
         jobData["force"] = true;
@@ -8675,7 +8691,14 @@ S9sRpcClient::restoreBackup()
     jobData["backup_datadir_before_restore"] = options->backupDatadir();
 
     if (!pitrStopTime.empty())
+    {
+        if(!isValidDateTimeFormat(pitrStopTime))
+        {
+            PRINT_ERROR("PITR stop time must be provided in format: YYYY-MM-DD HH:MM:SS");
+            return false;
+        }
         jobData["pitr_stop_time"] = pitrStopTime;
+    }
 
     if (!options->nodes().empty())
     {
@@ -11727,4 +11750,11 @@ S9sRpcClient::registerRedisCluster(
     request["job"]              = job;
 
     return executeRequest(uri, request);
+}
+
+bool
+isValidDateTimeFormat(const std::string& str) {
+    static const std::regex datetimeRegex("^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]) "
+            "(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(([+-][0-2][0-9]((:)?[0-5][0-9])?)|[Z])?$");
+    return std::regex_match(str, datetimeRegex);
 }
