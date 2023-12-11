@@ -27,6 +27,20 @@ echo "Cleaning up."
 git reset --hard
 git clean -dfx
 git pull
+
+
+if [ "${PUBLISHING_REPO}" == "TESTING" ]; then
+    ./version-bump.sh
+else
+    ./version-bump.sh
+    if [ -f version.txt ]; then
+        git commit -a -m "Version bump"
+        git tag `cat version.txt`
+        git push origin master --tags
+    fi
+fi
+
+
 rm -rf ${SRCDIR}
 mkdir -p ${SRCDIR}
 cp -fva ${CURRDIR} ${SRCDIR}/s9s-tools-master

@@ -6,6 +6,14 @@ if [ ! -d debian ]; then
     exit 1
 fi
 
+if [ "${PUBLISHING_REPO}" == "TESTING" ]; then
+    VERSION_SUFFIX='testing'
+    RELEASE_LOG_LINE='Testing release'
+else
+    VERSION_SUFFIX='release1'
+    RELEASE_LOG_LINE='Release'
+fi
+
 # remove old source packages
 # rm -fv ../s9s-tools*
 
@@ -23,9 +31,9 @@ echo "VERSION:"
 echo "${VERSION}" | tee version.txt
 
 # debian changelog update
-debchange --newversion "${VERSION}-release1" "Release ${VERSION}."
+debchange --newversion "${VERSION}-${VERSION_SUFFIX}" "${RELEASE_LOG_LINE} ${VERSION}."
 # rpm project version update
-sed "s/%changelog/%changelog\n* ${RPMDATE} ${DEBFULLNAME} <${DEBEMAIL}> ${VERSION}\n- Release ${VERSION}./" -i project.spec
+sed "s/%changelog/%changelog\n* ${RPMDATE} ${DEBFULLNAME} <${DEBEMAIL}> ${VERSION}\n- ${RELEASE_LOG_LINE} ${VERSION}./" -i project.spec
 
 #dpkg-buildpackage -rfakeroot -S --no-sign
 
