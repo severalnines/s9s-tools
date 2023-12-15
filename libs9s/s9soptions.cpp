@@ -386,8 +386,11 @@ enum S9sOptionType
     OptionNoInstall,
     OptionNoTerminate,
     OptionWithTimescaleDb,
-    OptionUpgradeMethod,
     OptionUpgradeToVersion,
+    OptionUpgradeMethod,
+    OptionDeleteOldNode,
+    OptionUpgradeTmpPort,
+    OptionUCSPort,
     OptionToken,
     OptionNoWrap,
     OptionRemoteClusterId,
@@ -3239,6 +3242,27 @@ S9sString
 S9sOptions::upgradeMethod() const
 {
     return getString("upgrade_method");
+}
+
+/**
+ * \returns  true if the old node data after major upgrade should be deleted.
+ */
+bool
+S9sOptions::deleteOldNode() const
+{
+    return getBool("delete_old_node");
+}
+
+int
+S9sOptions::upgradeTmpPort() const
+{
+    return getString("upgrade_tmp_port").toInt();
+}
+
+int
+S9sOptions::ucsPort() const
+{
+    return getString("ucs_port").toInt();
 }
 
 
@@ -6883,9 +6907,16 @@ S9sOptions::printHelpCluster()
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "  --uninstall                Uninstall software when removing a node.\n"
-"  --upgrade-method           Strategy for doing major upgrade (copy, link).\n"
+"\n"
+"Major upgrade related options\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
 "                             specified new version if implemented.\n"
+"  --upgrade-method           Strategy for doing major upgrade (copy, link).\n"
+"  --delete-old-node          After major upgrade delete old node data.\n"
+"  --upgrade-tmp-port=INT     During upgrade use this port to avoid client\n"
+"                             connections.\n"
+"  --ucs-port=INT             During upgrade, use this port for upgrade\n"
+"                             candidate server nodes with new version.\n"
 "\n"
 "Load balancer related options\n"
 "  --admin-password=USERNAME  Admin password for ProxySql or Maxscale.\n"
@@ -12852,8 +12883,11 @@ S9sOptions::readOptionsCluster(
         { "enterprise-token", required_argument, 0, OptionEnterpriseToken },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
-        { "upgrade-method",   required_argument, 0, OptionUpgradeMethod   },
         { "upgrade-to-version",required_argument, 0, OptionUpgradeToVersion },
+        { "upgrade-method",   required_argument, 0, OptionUpgradeMethod   },
+        { "delete-old-node",  no_argument,       0, OptionDeleteOldNode   },
+        { "upgrade-tmp-port", required_argument, 0, OptionUpgradeTmpPort  },
+        { "ucs-port",         required_argument, 0, OptionUCSPort },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
 
@@ -13391,16 +13425,31 @@ S9sOptions::readOptionsCluster(
                 m_options["with_timescaledb"] = true;
                 break;
 
+            case OptionUpgradeToVersion:
+                // --upgrade-to-version
+                m_options["upgrade_to_version"] = optarg;
+                break;
+
             case OptionUpgradeMethod:
                 // --upgrade-method
                 m_options["upgrade_method"] = optarg;
                 break;
 
-            case OptionUpgradeToVersion:
-                // --upgrade-to-version
-                m_options["upgrade_to_version"] = optarg;
+            case OptionDeleteOldNode:
+                // --delete-old-node
+                m_options["delete_old_node"] = true;
                 break;
-            
+
+            case OptionUpgradeTmpPort:
+                // --upgrade-tmp-port
+                m_options["upgrade_tmp_port"] = optarg;
+                break;
+
+            case OptionUCSPort:
+                // --ucs-port
+                m_options["ucs_port"] = optarg;
+                break;
+
             case OptionWithoutTags:
                 // --without-tags=one;two
                 setWithoutTags(optarg);
