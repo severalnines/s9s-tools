@@ -324,6 +324,9 @@ class S9sOptions
         bool withTimescaleDb() const;
         S9sString upgradeMethod() const;
         S9sString upgradeToVersion() const;
+        bool deleteOldNode() const;
+        int upgradeTmpPort() const;
+        int ucsPort() const;
 
         S9sString dbName() const;
         S9sString dbOwner() const;

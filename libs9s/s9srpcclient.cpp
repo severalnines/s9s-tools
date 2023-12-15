@@ -7198,6 +7198,9 @@ S9sRpcClient::upgradeCluster()
     S9sVariantList hosts     = options->nodes();
     S9sString      upgradeToVersion = options->upgradeToVersion();
     S9sString      method    = options->upgradeMethod();
+    bool           deleteOld = options->deleteOldNode();
+    int            upgradePort = options->upgradeTmpPort();
+    int            ucsPort   = options->ucsPort();
     S9sString      version   = options->providerVersion();
     S9sVariantMap  request   = composeRequest();
     S9sVariantMap  job       = composeJob();
@@ -7221,6 +7224,12 @@ S9sRpcClient::upgradeCluster()
     {
         jobData["upgrade_method"] = method;
     }
+    if (deleteOld)
+        jobData["delete_old_node"] = deleteOld;
+    if (upgradePort != 0)
+        jobData["upgrade_tmp_port"] = upgradePort;
+    if (ucsPort != 0)
+        jobData["ucs_port"] = ucsPort;
     if (options->force())
         jobData["force"] = true;
 
