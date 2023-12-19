@@ -10392,7 +10392,8 @@ S9sOptions::readOptionsDbVersions(
             {
                     // Generic Options
                     {"batch",            no_argument,       0, OptionBatch},
-                    {"cmon-user",        required_argument, 0, 'u'},
+                    {"cmon-user",        required_argument, 0, 'u'}, 
+                    {"password",         required_argument, 0, 'p'}, 
                     {"color",            optional_argument, 0, OptionColor},
                     {"config-file",      required_argument, 0, 4},
                     {"debug",            no_argument,       0, OptionDebug},
@@ -10427,6 +10428,7 @@ S9sOptions::readOptionsDbVersions(
         int option_index = 0;
         c = getopt_long(
                 argc, argv, "hvc:P:t:V",
+                // argc, argv, "hvc:P:t:VLli:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -10452,6 +10454,16 @@ S9sOptions::readOptionsDbVersions(
             case 'V':
                 // -V, --version
                 m_options["print-version"] = true;
+                break;
+
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
                 break;
 
             case 'c':
@@ -10603,7 +10615,7 @@ S9sOptions::checkOptionsDbVersions()
         return false;
     }
 
-    if(!isGetClusterTypes() || !isGetVendors())
+    if(isListDbVersionsRequested() || isListDb3dVersionsRequested())
     {
         /*
          * The --cluster-type option is required.
