@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <iostream>
 #include "s9soptions.h"
 
 #include "config.h"
@@ -433,6 +434,10 @@ enum S9sOptionType
     OptionDbSchemaDate,
     OptionDbSchemaName,
     OptionSetupLogRotate,
+    OptionDbVersionsList,
+    OptionDb3dVersionsList,
+    OptionClusterTypes,
+    OptionVendors
 };
 
 /**
@@ -495,6 +500,7 @@ S9sOptions::S9sOptions() :
     m_modes["reports"]      = Report;
     m_modes["replications"] = Replication;
     m_modes["dbschema"]     = DbSchema;
+    m_modes["dbversions"]   = DbVersions;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2483,6 +2489,19 @@ S9sOptions::hasClusterNameOption()
     return m_options.contains("cluster_name");
 }
 
+bool
+S9sOptions::hasClusterTypeOption() const
+{
+    return m_options.contains("cluster_type");
+}
+
+bool
+S9sOptions::hasVendorOption() const
+{
+    return m_options.contains("vendor");
+}
+
+
 /**
  * \returns True if the --job-id command line option was provided.
  */
@@ -4157,6 +4176,16 @@ S9sOptions::isDbSchemaOperation() const
 }
 
 /**
+ * \returns true if the main operation is "dbversions".
+ */
+bool
+S9sOptions::isDbVersionsOperation() const
+{
+    return m_operationMode == DbVersions;
+}
+
+
+/**
  * \returns True if the --help command line option was provided.
  */
 bool
@@ -4449,6 +4478,48 @@ S9sOptions::isDbGrowthRequested() const
 {
     return getBool("dbgrowth");
 }
+
+/**
+ * \returns true if the "list_versions" function is requested by providing the --list-versions
+ *   command line option.
+ */
+bool
+S9sOptions::isListDbVersionsRequested() const
+{
+    return getBool("list_versions");
+}
+
+/**
+ * \returns true if the "list_3d_versions" function is requested by providing the --list-3d-versions
+ *   command line option.
+ */
+bool
+S9sOptions::isListDb3dVersionsRequested() const
+{
+    return getBool("list_3d_versions");
+}
+
+/**
+ * \returns true if the "cluster_types" function is requested by providing the --cluster-types
+ *   command line option.
+ */
+bool
+S9sOptions::isGetClusterTypes() const
+{
+    return getBool("cluster_types");
+}
+
+/**
+ * \returns true if the "vendors" function is requested by providing the --vendors
+ *   command line option.
+ */
+bool
+S9sOptions::isGetVendors() const
+{
+    return getBool("vendors");
+}
+
+
 
 /**
  * \returns true if the "date" function is presented by providing the --date
@@ -6119,7 +6190,6 @@ S9sOptions::readOptions(
 
         break;
     }
-
     switch (m_operationMode)
     {
         case NoMode:
@@ -6301,6 +6371,13 @@ S9sOptions::readOptions(
                 retval = checkOptionsDbSchema();
 
             break;
+        case DbVersions:
+            retval = readOptionsDbVersions(*argc, argv);
+
+            if (retval)
+                retval = checkOptionsDbVersions();
+
+            break;
     }
 
     return retval;
@@ -6475,6 +6552,10 @@ S9sOptions::printHelp()
 
         case DbSchema:
             printHelpDbSchema();
+            break;
+
+        case DbVersions:
+            printHelpDbVersions();
             break;
     }
 }
@@ -7297,6 +7378,24 @@ S9sOptions::printHelpDbSchema()
 "\n"
     );
 }
+
+void
+S9sOptions::printHelpDbVersions()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"dbversions\" command:\n"
+"  --cluster-types            Tells to retrieve the list of available cluster types.\n"
+"  --vendors                  Tells to retrieve the list of available vendors on all supported clusters.\n"
+"  --list-versions            Tells to retrieve the list of available versions.\n"
+"  --list-3d-versions         Tells to retrieve the list of available 3 digits versions.\n"
+"  --cluster-type=TYPE        The TYPE of the cluster (i.e. \"galera\").\n"
+"  --vendor=VENDOR            The vendor of the packages to use (i.e. \"percona\").\n"
+"\n"
+    );
+}
+
 
 /**
  * Reads the command line options in "node" mode.
@@ -10279,6 +10378,261 @@ S9sOptions::checkOptionsDbSchema()
 
     return true;
 }
+
+/**
+ * Reads the command line options in "dbschema" mode.
+ */
+bool
+S9sOptions::readOptionsDbVersions(
+        int argc,
+        char *argv[])
+{
+    int c;
+    struct option long_options[] =
+            {
+                    // Generic Options
+                    {"batch",            no_argument,       0, OptionBatch},
+                    {"cmon-user",        required_argument, 0, 'u'},
+                    {"color",            optional_argument, 0, OptionColor},
+                    {"config-file",      required_argument, 0, 4},
+                    {"debug",            no_argument,       0, OptionDebug},
+                    {"help",             no_argument,       0, OptionHelp},
+                    {"human-readable",   no_argument,       0, 'h'},
+                    {"long",             no_argument,       0, 'l'},
+                    {"no-header",        no_argument,       0, OptionNoHeader},
+                    {"controller-port",  required_argument, 0, 'P'},
+                    {"controller",       required_argument, 0, 'c'},
+                    {"print-json",       no_argument,       0, OptionPrintJson},
+                    {"print-request",    no_argument,       0, OptionPrintRequest},
+                    {"rpc-tls",          no_argument,       0, OptionRpcTls},
+                    {"verbose",          no_argument,       0, 'v'},
+                    {"version",          no_argument,       0, 'V'},
+
+                    // Main Options
+                    {"list-versions",    no_argument, 0,       OptionDbVersionsList},
+                    {"list-3d-versions", no_argument, 0,       OptionDb3dVersionsList},
+                    {"cluster-types",    no_argument, 0,       OptionClusterTypes},
+                    {"vendors",          no_argument, 0,       OptionVendors},
+                    // Arguments on get versions operations
+                    {"cluster-type",     required_argument, 0, OptionClusterType},
+                    {"vendor",           required_argument, 0, OptionVendor},
+
+                    {0, 0,                                  0, 0}
+            };
+
+    optind = 0;
+    //opterr = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V",
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case 4:
+                // --config-file=FILE
+                m_options["config-file"] = optarg;
+                break;
+
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+
+            /*
+             * Options related to dbversions
+             */
+            case OptionDbVersionsList:
+                // --list-versions
+                m_options["list_versions"] = true;
+                break;
+
+            case OptionDb3dVersionsList:
+                // --list-3d-versions
+                m_options["list_3d_versions"] = true;
+                break;
+
+            case OptionClusterTypes:
+                // --cluster-types
+                m_options["cluster_types"] = true;
+                break;
+
+            case OptionVendors:
+                // --vendors
+                m_options["vendors"] = true;
+                break;
+
+
+            case OptionClusterType:
+                // --cluster-type=TYPE
+                m_options["cluster_type"] = optarg;
+                break;
+
+            case OptionVendor:
+                // --vendor=VENDOR
+                m_options["vendor"] = optarg;
+                break;
+
+            case '?':
+            default:
+            S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c))
+                    {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else
+                    {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsDbVersions()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListDbVersionsRequested())
+        countOptions++;
+    if (isListDb3dVersionsRequested())
+        countOptions++;
+    if (isGetClusterTypes())
+        countOptions++;
+    if (isGetVendors())
+        countOptions++;
+
+    if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+    if (countOptions > 1)
+    {
+        m_errorMessage = "Please provide only one of the main options.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if(!isGetClusterTypes() || !isGetVendors())
+    {
+        /*
+         * The --cluster-type option is required.
+         */
+        if(!hasClusterTypeOption())
+        {
+            m_errorMessage =
+                    "The --cluster-type option must be used when getting versions for the dbversions operation.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        /*
+         * The --vendor option is required.
+         */
+        if(!hasVendorOption())
+        {
+            m_errorMessage =
+                    "The --vendor option must be used when getting versions for the dbversions operation.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 bool
 S9sOptions::checkOptionsBackup()

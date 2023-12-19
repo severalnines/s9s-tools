@@ -1,0 +1,69 @@
+.TH S9S-DBVERSIONS 1 "December 19, 2023"
+
+.SH NAME
+s9s-dbversions \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s-dbversions
+.RI [OPTION]... 
+.RI [PATH]...
+.SH DESCRIPTION
+\fBs9s\fP  is a command line tool for ClusterControl, which can be used to
+obtaine databases versiones of the different clusters supported bby clustercontrol.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B --cluster-types
+Gets the list of supported cluster types.
+Returned values can be used as argument to the --cluster-type option (upper or lower case).
+
+.TP
+.B --vendors
+Gets the list of supported vendors on all supported clusters.
+In no version is retrieved for specific cluster type - vendor, it means that it is not supported.
+
+.TP
+.B --list-versions
+Lists the available 1 or 2 digits versions supported by clustercontrol for a given 
+cluster type and provider
+
+.TP
+.B --list-3d-versions
+Lists the available 3 digits versions supported by clustercontrol for a given 
+cluster type and provider (if supported), if not bad request will be returned
+
+.B EXAMPLE
+.nf
+s9s dbversions --list-versions --cluster-type galera --provider mariadb
+10.4
+10.5
+10.6
+10.7
+10.8
+10.9
+10.10
+10.11
+.fi
+
+The list will contain the list of 3 digits available versions separated by new line char.
+
+.\"
+.\" Arguments related to list-versions operations
+.\"
+.SS Arguments related to list versions operations
+The list operations: 'getDbVersions' (--list-versions) and 'getDb3dVersions' (--list-3d-versions)
+can be used to get the list of available versions and they need following Arguments
+
+.TP
+.BI \-\^\-cluster-type= CLUSTER_TYPE_NAME 
+This option must be used on get versions operations. 
+The possible values to use are returned by the --cluster-types operation (on upper or lower case).
+
+.TP
+.BI \-\^\-provider= PROVIDER_NAME
+This option must be used on get versions operations. 
+The possible values to use are returned by the --vendors main operation (lower case only).

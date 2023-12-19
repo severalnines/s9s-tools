@@ -10398,6 +10398,97 @@ S9sRpcClient::getDbGrowth()
 }
 
 /**
+ * \param clusterType The cluster type to obtaind available get db versions
+ * \param vendor The vendor packages to used obtaind available get db versions
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * The method that gets the list of available db versions for a given cluster type & vendor
+ */
+bool
+S9sRpcClient::getDbVersions(
+        const S9sString clusterType,
+        const S9sString vendor)
+{
+    S9sString      uri = "/v2/dbversions/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getDbVersions";
+    request["clusterType"] = clusterType;
+    request["vendor"] = vendor;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterType The cluster type to obtaind available get db versions
+ * \param vendor The vendor packages to used obtaind available get db versions
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * The method that gets the list of available db versions for a given cluster type & vendor
+ */
+bool
+S9sRpcClient::getDb3dVersions(
+        const S9sString clusterType,
+        const S9sString vendor)
+{
+    S9sString      uri = "/v2/dbversions/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getDb3dVersions";
+    request["clusterType"] = clusterType;
+    request["vendor"] = vendor;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns the list of available cluster types to query on dbversions 
+ *   is an error message).
+ *
+ * The method that gets the list of available cluster types on dbversions endpoint
+ */
+bool
+S9sRpcClient::getClusterTypes()
+{
+    S9sString      uri = "/v2/dbversions/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getClusterTypes";
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \returns the list of available vendors on all supported clusters
+ *
+ * The method that gets the list of available vendors
+ */
+bool
+S9sRpcClient::getVendors()
+{
+    S9sString      uri = "/v2/dbversions/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getVendors";
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+
+
+/**
  * \returns A prepared request that after further settings added can be sent to
  *   the controller.
  */
