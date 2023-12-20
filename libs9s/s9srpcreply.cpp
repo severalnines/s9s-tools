@@ -354,8 +354,6 @@ S9sRpcReply::dbVersions()
     
     if (contains("db_versions"))
         theList = operator[]("db_versions").toVariantList();
-    else if (contains("db_versions"))
-        theList << operator[]("db_versions");
 
     return theList;
 }
@@ -367,8 +365,6 @@ S9sRpcReply::clusterTypes()
     
     if (contains("cluster_types"))
         theList = operator[]("cluster_types").toVariantList();
-    else if (contains("cluster_types"))
-        theList << operator[]("cluster_types");
 
     return theList;
 }
@@ -380,8 +376,6 @@ S9sRpcReply::vendors()
     
     if (contains("vendors"))
         theList = operator[]("vendors").toVariantList();
-    else if (contains("vendors"))
-        theList << operator[]("vendors");
 
     return theList;
 }
