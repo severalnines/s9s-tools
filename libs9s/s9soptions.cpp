@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with s9s-tools. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <iostream>
 #include "s9soptions.h"
 
 #include "config.h"
