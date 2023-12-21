@@ -7385,10 +7385,10 @@ S9sOptions::printHelpDbVersions()
 
     printf(
 "Options for the \"dbversions\" command:\n"
-"  --cluster-types            Tells to retrieve the list of available cluster types.\n"
-"  --vendors                  Tells to retrieve the list of available vendors on all supported clusters.\n"
-"  --list-versions            Tells to retrieve the list of available versions.\n"
-"  --list-3d-versions         Tells to retrieve the list of available 3 digits versions.\n"
+"  --cluster-types            To retrieve the list of available cluster types.\n"
+"  --vendors                  To retrieve the list of available vendors on all supported clusters.\n"
+"  --list-versions            To retrieve the list of available versions.\n"
+"  --list-3d-versions         To retrieve the list of available 3 digits versions.\n"
 "  --cluster-type=TYPE        The TYPE of the cluster (i.e. \"galera\").\n"
 "  --vendor=VENDOR            The vendor of the packages to use (i.e. \"percona\").\n"
 "\n"
@@ -10394,7 +10394,6 @@ S9sOptions::readOptionsDbVersions(
                     {"cmon-user",        required_argument, 0, 'u'}, 
                     {"password",         required_argument, 0, 'p'}, 
                     {"color",            optional_argument, 0, OptionColor},
-                    {"config-file",      required_argument, 0, 4},
                     {"debug",            no_argument,       0, OptionDebug},
                     {"help",             no_argument,       0, OptionHelp},
                     {"human-readable",   no_argument,       0, 'h'},
@@ -10478,11 +10477,6 @@ S9sOptions::readOptionsDbVersions(
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
-                break;
-
-            case 4:
-                // --config-file=FILE
-                m_options["config-file"] = optarg;
                 break;
 
             case OptionBatch:
