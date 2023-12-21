@@ -10408,41 +10408,18 @@ S9sRpcClient::getDbGrowth()
 bool
 S9sRpcClient::getDbVersions(
         const S9sString clusterType,
-        const S9sString vendor)
+        const S9sString vendor,
+        const bool patchNumber)
 {
     S9sString      uri = "/v2/dbversions/";
     S9sVariantMap  request;
     bool           retval;
 
     request["operation"] = "getDbVersions";
-    request["clusterType"] = clusterType;
+    request["cluster_type"] = clusterType;
     request["vendor"] = vendor;
-
-    retval = executeRequest(uri, request);
-
-    return retval;
-}
-
-/**
- * \param clusterType The cluster type to obtaind available get db versions
- * \param vendor The vendor packages to used obtaind available get db versions
- * \returns true if the request sent and a return is received (even if the reply
- *   is an error message).
- *
- * The method that gets the list of available db versions for a given cluster type & vendor
- */
-bool
-S9sRpcClient::getDb3dVersions(
-        const S9sString clusterType,
-        const S9sString vendor)
-{
-    S9sString      uri = "/v2/dbversions/";
-    S9sVariantMap  request;
-    bool           retval;
-
-    request["operation"] = "getDb3dVersions";
-    request["clusterType"] = clusterType;
-    request["vendor"] = vendor;
+    if(patchNumber)
+        request["patch_number"] = true;
 
     retval = executeRequest(uri, request);
 

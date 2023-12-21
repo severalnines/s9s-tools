@@ -10410,7 +10410,7 @@ S9sOptions::readOptionsDbVersions(
 
                     // Main Options
                     {"list-versions",    no_argument, 0,       OptionDbVersionsList},
-                    {"list-3d-versions", no_argument, 0,       OptionDb3dVersionsList},
+                    {"list-3d",          no_argument, 0,       OptionDb3dVersionsList},
                     {"cluster-types",    no_argument, 0,       OptionClusterTypes},
                     {"vendors",          no_argument, 0,       OptionVendors},
                     // Arguments on get versions operations
@@ -10594,8 +10594,6 @@ S9sOptions::checkOptionsDbVersions()
      */
     if (isListDbVersionsRequested())
         countOptions++;
-    if (isListDb3dVersionsRequested())
-        countOptions++;
     if (isGetClusterTypes())
         countOptions++;
     if (isGetVendors())
@@ -10614,7 +10612,7 @@ S9sOptions::checkOptionsDbVersions()
         return false;
     }
 
-    if(isListDbVersionsRequested() || isListDb3dVersionsRequested())
+    if(isListDbVersionsRequested())
     {
         /*
          * The --cluster-type option is required.
