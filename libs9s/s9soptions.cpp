@@ -10420,13 +10420,11 @@ S9sOptions::readOptionsDbVersions(
             };
 
     optind = 0;
-    //opterr = 0;
     for (;;)
     {
         int option_index = 0;
         c = getopt_long(
                 argc, argv, "hvc:P:t:V",
-                // argc, argv, "hvc:P:t:VLli:", 
                 long_options, &option_index);
 
         if (c == -1)
