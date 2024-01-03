@@ -331,6 +331,15 @@ class S9sRpcClient
         bool deleteUserPreferences();
 
         /*
+         * Requests related to db versions on clusters
+         */
+        bool getDbVersions(const S9sString clusterType,
+                           const S9sString vendor,
+                           const bool      patchNumber);
+        bool getClusterTypes();
+        bool getVendors();
+
+        /*
          *
          */
         bool getJobInstance(const int jobId);

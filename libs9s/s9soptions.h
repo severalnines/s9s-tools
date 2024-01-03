@@ -75,6 +75,7 @@ class S9sOptions
             Report,
             Replication,
             DbSchema,
+            DbVersions,
         };
 
         enum ExitCodes
@@ -264,6 +265,10 @@ class S9sOptions
         S9sString clusterName() const;
         bool hasClusterNameOption();
 
+
+        bool hasClusterTypeOption() const;
+        bool hasVendorOption() const;
+
         bool hasJobId() const;
         int jobId() const;
         
@@ -446,6 +451,7 @@ class S9sOptions
         bool isReportOperation() const;
         bool isReplicationOperation() const;
         bool isDbSchemaOperation() const;
+        bool isDbVersionsOperation() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -492,6 +498,10 @@ class S9sOptions
         bool isRemoveTagRequested() const;
 
         bool isDbGrowthRequested() const;
+        bool isListDbVersionsRequested() const;
+        bool isListDb3dVersionsRequested() const;
+        bool isGetClusterTypes() const;
+        bool isGetVendors() const;
         bool hasDbSchemaDate() const;
         bool hasDbSchemaName() const;
         S9sString dBSchemaDate() const;
@@ -724,6 +734,7 @@ class S9sOptions
         void printHelpReport();
         void printHelpReplication();
         void printHelpDbSchema();
+        void printHelpDbVersions();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
@@ -801,6 +812,9 @@ class S9sOptions
 
         bool readOptionsDbSchema(int argc, char *argv[]);
         bool checkOptionsDbSchema();
+
+        bool readOptionsDbVersions(int argc, char *argv[]);
+        bool checkOptionsDbVersions();
 
         bool setMode(const S9sString &modeName);
 

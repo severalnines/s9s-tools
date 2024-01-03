@@ -1294,7 +1294,33 @@ S9sBusinessLogic::execute()
         } else {
             PRINT_ERROR("Unknown dbschema operation.");
         }
-    } else {
+    } else if (options->isDbVersionsOperation())
+    {
+        if(options->isListDbVersionsRequested()) {
+            S9sString clusterType = options->clusterType();
+            S9sString vendor = options->vendor();
+            success = client.getDbVersions(clusterType, vendor, options->isListDb3dVersionsRequested());
+            S9sRpcReply reply = client.reply();
+            reply.printDbVersionsList();
+        }
+        else if(options->isGetClusterTypes()) {
+            success = client.getClusterTypes();
+            S9sRpcReply reply = client.reply();
+            reply.printClusterTypes();
+        }
+        else if(options->isGetVendors()) {
+            success = client.getVendors();
+            S9sRpcReply reply = client.reply();
+            reply.printVendors();
+        }
+
+        else {
+            PRINT_ERROR("Unknown dbversions operation.");
+        }
+
+    }
+    
+    else {
         PRINT_ERROR("Unknown operation.");
     }
 }

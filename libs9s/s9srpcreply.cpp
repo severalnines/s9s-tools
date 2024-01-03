@@ -347,6 +347,40 @@ S9sRpcReply::users()
     return theList;
 }
 
+S9sVariantList
+S9sRpcReply::dbVersions()
+{
+    S9sVariantList  theList;
+    
+    if (contains("db_versions"))
+        theList = operator[]("db_versions").toVariantList();
+
+    return theList;
+}
+
+S9sVariantList
+S9sRpcReply::clusterTypes()
+{
+    S9sVariantList  theList;
+    
+    if (contains("cluster_types"))
+        theList = operator[]("cluster_types").toVariantList();
+
+    return theList;
+}
+
+S9sVariantList
+S9sRpcReply::vendors()
+{
+    S9sVariantList  theList;
+    
+    if (contains("vendors"))
+        theList = operator[]("vendors").toVariantList();
+
+    return theList;
+}
+
+
 void
 S9sRpcReply::printTopQueries()
 {
@@ -1009,6 +1043,91 @@ S9sRpcReply::printDbGrowthListLong()
 {
     m_dbgrowthReport.printReport(operator[]("data"));
 }
+
+void
+S9sRpcReply::printDbVersionsList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk()) {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printDbVersionsListLong();
+    }
+}
+
+/**
+ * Prints the db versions list in its long and detailed format.
+ */
+void
+S9sRpcReply::printDbVersionsListLong()
+{
+    S9sVariantList  versionsList = dbVersions();
+    for(auto version : versionsList)
+    {
+        ::printf("%s\n", STR(version.toString()));
+    }
+}
+
+void
+S9sRpcReply::printClusterTypes()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk()) {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printClusterTypesLong();
+    }
+}
+
+/**
+ * Prints the cluster types list in its long and detailed format.
+ */
+void
+S9sRpcReply::printClusterTypesLong()
+{
+    S9sVariantList  versionsList = clusterTypes();
+    for(auto version : versionsList)
+    {
+        ::printf("%s\n", STR(version.toString()));
+    }
+}
+
+void
+S9sRpcReply::printVendors()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk()) {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        printVendorsLong();
+    }
+}
+
+/**
+ * Prints the vendors list in its long and detailed format.
+ */
+void
+S9sRpcReply::printVendorsLong()
+{
+    S9sVariantList  versionsList = vendors();
+    for(auto version : versionsList)
+    {
+        ::printf("%s\n", STR(version.toString()));
+    }
+}
+
 
 void
 S9sRpcReply::printReportList()

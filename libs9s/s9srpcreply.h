@@ -76,6 +76,9 @@ class S9sRpcReply : public S9sVariantMap
         S9sVariantList clusters();
         S9sVariantList users();
         S9sVariantList alarms();
+        S9sVariantList dbVersions();
+        S9sVariantList clusterTypes();
+        S9sVariantList vendors();
 
         S9sString clusterName(const int clusterId);
         S9sString clusterStatusText(const int clusterId);
@@ -106,6 +109,15 @@ class S9sRpcReply : public S9sVariantMap
 
         void printDbGrowthList();
         void printDbGrowthListLong();
+
+        void printDbVersionsList();
+        void printDbVersionsListLong();
+
+        void printClusterTypes();
+        void printClusterTypesLong();
+
+        void printVendors();
+        void printVendorsLong();
 
         void printReportList();
         void printReportTemplateList();
