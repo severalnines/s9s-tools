@@ -435,6 +435,7 @@ enum S9sOptionType
     OptionSetupLogRotate,
     OptionDbVersionsList,
     OptionDb3dVersionsList,
+    OptionUseVendorApi,
     OptionClusterTypes,
     OptionVendors
 };
@@ -4497,6 +4498,17 @@ S9sOptions::isListDb3dVersionsRequested() const
 {
     return getBool("list_3d_versions");
 }
+
+/**
+ * \returns true if the "use_vendor_api" function is requested by providing the --use-vendor-api
+ *   command line option.
+ */
+bool
+S9sOptions::isUseVendorApiRequested() const
+{
+    return getBool("use_vendor_api");
+}
+
 
 /**
  * \returns true if the "cluster_types" function is requested by providing the --cluster-types
@@ -10410,6 +10422,7 @@ S9sOptions::readOptionsDbVersions(
                     // Main Options
                     {"list-versions",    no_argument, 0,       OptionDbVersionsList},
                     {"list-3d",          no_argument, 0,       OptionDb3dVersionsList},
+                    {"use-vendor-api",   no_argument, 0,       OptionUseVendorApi},
                     {"cluster-types",    no_argument, 0,       OptionClusterTypes},
                     {"vendors",          no_argument, 0,       OptionVendors},
                     // Arguments on get versions operations
@@ -10528,6 +10541,12 @@ S9sOptions::readOptionsDbVersions(
                 // --list-3d-versions
                 m_options["list_3d_versions"] = true;
                 break;
+
+            case OptionUseVendorApi:
+                // --use-vendor-api
+                m_options["use_vendor_api"] = true;
+                break;
+
 
             case OptionClusterTypes:
                 // --cluster-types
