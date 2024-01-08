@@ -7400,7 +7400,8 @@ S9sOptions::printHelpDbVersions()
 "  --cluster-types            To retrieve the list of available cluster types.\n"
 "  --vendors                  To retrieve the list of available vendors on all supported clusters.\n"
 "  --list-versions            To retrieve the list of available versions.\n"
-"  --list-3d-versions         To retrieve the list of available 3 digits versions.\n"
+"  --list-3d                  To retrieve the list of available 3 digits versions.\n"
+"  --use-vendor-api           To retrieve the list of available 3 digits versions using vendor's api.\n"
 "  --cluster-type=TYPE        The TYPE of the cluster (i.e. \"galera\").\n"
 "  --vendor=VENDOR            The vendor of the packages to use (i.e. \"percona\").\n"
 "\n"
@@ -10538,7 +10539,7 @@ S9sOptions::readOptionsDbVersions(
                 break;
 
             case OptionDb3dVersionsList:
-                // --list-3d-versions
+                // --list-3d
                 m_options["list_3d_versions"] = true;
                 break;
 
