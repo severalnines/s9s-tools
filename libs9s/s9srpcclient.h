@@ -335,7 +335,8 @@ class S9sRpcClient
          */
         bool getDbVersions(const S9sString clusterType,
                            const S9sString vendor,
-                           const bool      patchNumber);
+                           const bool      patchNumber,
+                           const bool      useVendorApi);
         bool getClusterTypes();
         bool getVendors();
 

@@ -500,6 +500,7 @@ class S9sOptions
         bool isDbGrowthRequested() const;
         bool isListDbVersionsRequested() const;
         bool isListDb3dVersionsRequested() const;
+        bool isUseVendorApiRequested() const;
         bool isGetClusterTypes() const;
         bool isGetVendors() const;
         bool hasDbSchemaDate() const;

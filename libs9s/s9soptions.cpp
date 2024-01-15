@@ -435,6 +435,7 @@ enum S9sOptionType
     OptionSetupLogRotate,
     OptionDbVersionsList,
     OptionDb3dVersionsList,
+    OptionUseVendorApi,
     OptionClusterTypes,
     OptionVendors
 };
@@ -4499,6 +4500,17 @@ S9sOptions::isListDb3dVersionsRequested() const
 }
 
 /**
+ * \returns true if the "use_vendor_api" function is requested by providing the --use-vendor-api
+ *   command line option.
+ */
+bool
+S9sOptions::isUseVendorApiRequested() const
+{
+    return getBool("use_vendor_api");
+}
+
+
+/**
  * \returns true if the "cluster_types" function is requested by providing the --cluster-types
  *   command line option.
  */
@@ -7388,7 +7400,8 @@ S9sOptions::printHelpDbVersions()
 "  --cluster-types            To retrieve the list of available cluster types.\n"
 "  --vendors                  To retrieve the list of available vendors on all supported clusters.\n"
 "  --list-versions            To retrieve the list of available versions.\n"
-"  --list-3d-versions         To retrieve the list of available 3 digits versions.\n"
+"  --list-3d                  To retrieve the list of available 3 digits versions.\n"
+"  --use-vendor-api           To retrieve the list of available 3 digits versions using vendor's api.\n"
 "  --cluster-type=TYPE        The TYPE of the cluster (i.e. \"galera\").\n"
 "  --vendor=VENDOR            The vendor of the packages to use (i.e. \"percona\").\n"
 "\n"
@@ -10410,6 +10423,7 @@ S9sOptions::readOptionsDbVersions(
                     // Main Options
                     {"list-versions",    no_argument, 0,       OptionDbVersionsList},
                     {"list-3d",          no_argument, 0,       OptionDb3dVersionsList},
+                    {"use-vendor-api",   no_argument, 0,       OptionUseVendorApi},
                     {"cluster-types",    no_argument, 0,       OptionClusterTypes},
                     {"vendors",          no_argument, 0,       OptionVendors},
                     // Arguments on get versions operations
@@ -10525,9 +10539,15 @@ S9sOptions::readOptionsDbVersions(
                 break;
 
             case OptionDb3dVersionsList:
-                // --list-3d-versions
+                // --list-3d
                 m_options["list_3d_versions"] = true;
                 break;
+
+            case OptionUseVendorApi:
+                // --use-vendor-api
+                m_options["use_vendor_api"] = true;
+                break;
+
 
             case OptionClusterTypes:
                 // --cluster-types

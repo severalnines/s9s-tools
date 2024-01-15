@@ -10409,7 +10409,8 @@ bool
 S9sRpcClient::getDbVersions(
         const S9sString clusterType,
         const S9sString vendor,
-        const bool patchNumber)
+        const bool patchNumber,
+        const bool useVendorApi)
 {
     S9sString      uri = "/v2/dbversions/";
     S9sVariantMap  request;
@@ -10420,6 +10421,13 @@ S9sRpcClient::getDbVersions(
     request["vendor"] = vendor;
     if(patchNumber)
         request["patch_number"] = true;
+    if(useVendorApi)
+    {
+        if(patchNumber)
+            request["use_vendor_api"] = true;
+        else
+            ::printf("--use-vendor-api is only supported with --list-3d. Skipping option\n");
+    }
 
     retval = executeRequest(uri, request);
 

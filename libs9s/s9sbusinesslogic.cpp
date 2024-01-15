@@ -1299,7 +1299,10 @@ S9sBusinessLogic::execute()
         if(options->isListDbVersionsRequested()) {
             S9sString clusterType = options->clusterType();
             S9sString vendor = options->vendor();
-            success = client.getDbVersions(clusterType, vendor, options->isListDb3dVersionsRequested());
+            success = client.getDbVersions(clusterType,
+                                           vendor,
+                                           options->isListDb3dVersionsRequested(),
+                                           options->isUseVendorApiRequested());
             S9sRpcReply reply = client.reply();
             reply.printDbVersionsList();
         }

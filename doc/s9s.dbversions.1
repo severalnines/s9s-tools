@@ -87,7 +87,23 @@ The list will contain the available 3-digit versions separated by a newline char
 .SS Arguments related to list versions operations
 The list operations: 'getDbVersions' (--list-versions) and 'getDb3dVersions' (--list-3d-versions)
 can be used to get the list of available versions and they need the following arguments:
+.TP
+.B --list-3d
+Lists the available 3 digits versions supported by ClusterControl for a given 
+cluster type and vendor (if supported). If not, a bad request will be returned.
 
+.TP
+.B --use-vendor-api
+Lists the available 3 digits versions supported by ClusterControl for a given 
+cluster type and vendor by querying vendor's api (if exists). If vendor has no api
+field 'use_vendor_api' on reply will be false.
+This option must be used in combination with --list-3d.
+
+
+
+.\"
+.\" Arguments related to other operations
+.\"
 .TP
 .BI \-\^\-cluster-type=CLUSTER_TYPE_NAME 
 This option must be used on get versions operations. 
@@ -97,11 +113,6 @@ The possible values to use are returned by the --cluster-types operation (in upp
 .BI \-\^\-vendor=VENDOR_NAME
 This option must be used on get versions operations. 
 The possible values to use are returned by the --vendors main operation (lower case only).
-
-.TP
-.B --list-3d
-Lists the available 3 digits versions supported by ClusterControl for a given 
-cluster type and vendor (if supported). If not, a bad request will be returned.
 
 .B EXAMPLE
 .nf
