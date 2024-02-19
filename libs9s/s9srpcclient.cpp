@@ -3752,6 +3752,10 @@ S9sRpcClient::registerHost()
     
         jobData["eth_interface"] = options->getString("eth_interface");
         jobData["virtual_ip"]    = options->getString("virtual_ip");
+    } else if (protocol == "postgresql")
+    {
+        command = "registernode";
+        title   = "Register PostgreSql Node";
     } else if (protocol == "mongodb")
     {
         command = "registernode";
