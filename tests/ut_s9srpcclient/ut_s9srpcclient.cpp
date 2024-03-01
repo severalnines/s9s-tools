@@ -872,7 +872,7 @@ UtS9sRpcClient::testCreateCluster01()
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-            true);
+            false);
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "install_software").toBoolean(),
@@ -924,7 +924,7 @@ UtS9sRpcClient::testCreateCluster02()
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-            true);
+            false);
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "install_software").toBoolean(),
@@ -976,7 +976,7 @@ UtS9sRpcClient::testCreateCluster03()
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-            true);
+            false);
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "install_software").toBoolean(),
@@ -1028,7 +1028,7 @@ UtS9sRpcClient::testCreateCluster04()
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-            true);
+            false);
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "install_software").toBoolean(),
@@ -1080,7 +1080,7 @@ UtS9sRpcClient::testCreateCluster05()
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-            true);
+            false);
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "install_software").toBoolean(),
@@ -1133,7 +1133,7 @@ UtS9sRpcClient::testCreateCluster06()
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-            true);
+            false);
     
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "install_software").toBoolean(),

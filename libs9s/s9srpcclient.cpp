@@ -3489,7 +3489,7 @@ S9sRpcClient::createGaleraCluster(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
     
     if (options->hasBackupId())
@@ -3565,7 +3565,7 @@ S9sRpcClient::createMySqlSingleCluster(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
 
     if (!options->clusterName().empty())
@@ -3858,7 +3858,7 @@ S9sRpcClient::createMySqlReplication(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
 
     // 
@@ -4012,7 +4012,7 @@ S9sRpcClient::createGroupReplication(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
    
     if (!options->clusterName().empty())
@@ -4169,7 +4169,7 @@ S9sRpcClient::createNdbCluster(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
     
     if (!options->clusterName().empty())
@@ -4332,7 +4332,7 @@ S9sRpcClient::createPostgreSql(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     } 
 
     if (options->hasBackupId())
@@ -4521,7 +4521,7 @@ S9sRpcClient::createRedisSentinel(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     } 
 
     if (!options->clusterName().empty())
@@ -4597,7 +4597,7 @@ S9sRpcClient::createElasticsearch(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     } 
 
     if (!options->clusterName().empty())
@@ -4674,7 +4674,7 @@ S9sRpcClient::createMsSqlSingle(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     } 
 
     if (!options->license().empty())
@@ -4756,7 +4756,7 @@ S9sRpcClient::createMongoCluster(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
 
     if (!options->clusterName().empty())
@@ -5157,7 +5157,7 @@ S9sRpcClient::addNode(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
         
     jobData["disable_firewall"] = !options->keepFirewall();
