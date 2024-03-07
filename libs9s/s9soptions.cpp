@@ -2150,7 +2150,7 @@ S9sOptions::sentinelPassword()
  * \returns The default redis sharded port to use on redis sharded hosts
  */
 int
-S9sOptions::redisShardedPort()
+S9sOptions::redisShardedPort() const
 {
     if (m_options.contains("redis_sharded_port"))
         return m_options.at("redis_sharded_port").toInt();
@@ -2161,7 +2161,7 @@ S9sOptions::redisShardedPort()
  * \returns The default redis bus port to use on redis sharded hosts
  */
 int
-S9sOptions::redisShardedBusPort()
+S9sOptions::redisShardedBusPort() const
 {
     if (m_options.contains("redis_sharded_bus_port"))
         return m_options.at("redis_sharded_bus_port").toInt();
@@ -2172,7 +2172,7 @@ S9sOptions::redisShardedBusPort()
  * \returns The value of the 'cluster-node-timeout- to use on configuration
  */
 int
-S9sOptions::redisNodeTimeoutMs()
+S9sOptions::redisNodeTimeoutMs() const
 {
     if (m_options.contains("redis_node_timeout_ms"))
         return m_options.at("redis_node_timeout_ms").toInt();

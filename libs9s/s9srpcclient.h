@@ -572,12 +572,6 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &redisVersion);
 
-        bool registerRedisSharded(
-                const S9sVariantList &hosts,
-                const S9sString      &osUserName,
-                const S9sString      &redisVersion);
-
-
         bool createMsSqlSingle(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
