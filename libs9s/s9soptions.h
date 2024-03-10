@@ -199,6 +199,9 @@ class S9sOptions
         S9sString replicationUser(const S9sString &defaultValue = "replica-user") const;
         S9sString replicationPassword();
         S9sString sentinelPassword();
+        int redisShardedPort() const;
+        int redisShardedBusPort() const;
+        int redisNodeTimeoutMs() const;
         S9sString clusterType() const;
         S9sString formatDateTime(S9sDateTime value) const;
         S9s::AddressType addressType() const;

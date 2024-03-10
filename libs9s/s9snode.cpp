@@ -111,6 +111,18 @@ S9sNode::S9sNode(
         else if (m_url.protocol().toLower() == "redis-sentinel" ||
             m_url.protocol().toLower() == "sentinel")
             m_properties["class_name"] = "CmonRedisSentinelHost";
+        else if (m_url.protocol().toLower() == "redis-primary" ||
+            m_url.protocol().toLower() == "redis-sharded-primary")
+        {
+            m_properties["class_name"] = "CmonRedisShardedHost";
+            m_properties["role"] = "primary";
+        }
+        else if (m_url.protocol().toLower() == "redis-replica" ||
+            m_url.protocol().toLower() == "redis-sharded-replica")
+        {
+            m_properties["class_name"] = "CmonRedisShardedHost";
+            m_properties["role"] = "replica";
+        }
         else if (m_url.protocol().toLower() == "mssql")
             m_properties["class_name"] = "CmonMsSqlHost";
         else if (m_url.protocol().toLower() == "elastic")

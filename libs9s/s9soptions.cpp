@@ -103,6 +103,9 @@ enum S9sOptionType
     OptionReplUser,
     OptionReplPassword,
     OptionSentinelPassword,
+    OptionRedisShardedPort,
+    OptionRedisShardedBusPort,
+    OptionRedisNodeTimeoutMs,
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
@@ -2142,6 +2145,40 @@ S9sOptions::sentinelPassword()
         return m_options.at("sentinel_password").toString();
     return {};
 }
+
+/**
+ * \returns The default redis sharded port to use on redis sharded hosts
+ */
+int
+S9sOptions::redisShardedPort() const
+{
+    if (m_options.contains("redis_sharded_port"))
+        return m_options.at("redis_sharded_port").toInt();
+    return 0;
+}
+
+/**
+ * \returns The default redis bus port to use on redis sharded hosts
+ */
+int
+S9sOptions::redisShardedBusPort() const
+{
+    if (m_options.contains("redis_sharded_bus_port"))
+        return m_options.at("redis_sharded_bus_port").toInt();
+    return 0;
+}
+
+/**
+ * \returns The value of the 'cluster-node-timeout- to use on configuration
+ */
+int
+S9sOptions::redisNodeTimeoutMs() const
+{
+    if (m_options.contains("redis_node_timeout_ms"))
+        return m_options.at("redis_node_timeout_ms").toInt();
+    return 0;
+}
+
 
 
 /**
@@ -13239,6 +13276,9 @@ S9sOptions::readOptionsCluster(
         { "repl-user",        required_argument, 0, OptionReplUser        },
         { "repl-passwd",      required_argument, 0, OptionReplPassword    },
         { "sentinel-passwd",  required_argument, 0, OptionSentinelPassword},
+        { "redis-port",       required_argument, 0, OptionRedisShardedPort},
+        { "redis-bus-port",   required_argument, 0, OptionRedisShardedBusPort},
+        { "node-timeout-ms",  required_argument, 0, OptionRedisNodeTimeoutMs},
         { "db-name",          required_argument, 0, OptionDbName          },
         { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
@@ -13781,6 +13821,21 @@ S9sOptions::readOptionsCluster(
             case OptionSentinelPassword:
                 // --sentinel-passwd=PASSWD
                 m_options["sentinel_password"] = optarg;
+                break;
+
+            case OptionRedisShardedPort:
+                // --redis-port=portNumber
+                m_options["redis_sharded_port"] = atoi(optarg);
+                break;
+
+            case OptionRedisShardedBusPort:
+                // --redis-bus-port=portNumber
+                m_options["redis_sharded_bus_port"] = atoi(optarg);
+                break;
+
+            case OptionRedisNodeTimeoutMs:
+                // --redis-node-timeout-ms=milliseconds
+                m_options["redis_node_timeout_ms"] = atoi(optarg);
                 break;
             
             case OptionAccount:
