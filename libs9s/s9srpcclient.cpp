@@ -4522,7 +4522,7 @@ S9sRpcClient::createRedisSharded(
         jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = true;
+        jobData["enable_uninstall"] = false;
     }
 
     if (!options->clusterName().empty())
