@@ -3245,7 +3245,8 @@ S9sRpcClient::createCluster()
     {
         success = createRedisSentinel(
             hosts, osUserName, dbVersion);
-    } else if (options->clusterType() == "redis-sharded")
+    } else if (options->clusterType() == "redis_sharded" ||
+               options->clusterType() == "redis-sharded")
     {
         success = createRedisSharded(
             hosts, osUserName, dbVersion);
@@ -4503,8 +4504,8 @@ S9sRpcClient::createRedisSharded(
     addCredentialsToJobData(jobData);
 
     // The job_data describing the cluster.
-    jobData["cluster_type"]     = "redis-sharded";
-    jobData["type"]             = "redis-sharded";
+    jobData["cluster_type"]     = "redis_sharded";
+    jobData["type"]             = "redis_sharded";
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = version;
     jobData["db_user"]          = options->dbAdminUserName();
