@@ -4537,7 +4537,14 @@ S9sRpcClient::createRedisSharded(
         jobData["redis_sharded_port"] = options->redisShardedPort();
 
     if (options->redisShardedBusPort() != 0)
+    {
+        if(version.contains("6"))
+        {
+            PRINT_ERROR("Redis 6 does not support redis sharded bus port");
+            return false;
+        }
         jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
+    }
 
     if (options->redisNodeTimeoutMs() != 0)
         jobData["node_timeout_ms"] = options->redisNodeTimeoutMs();
@@ -11887,7 +11894,6 @@ S9sRpcClient::registerRedisShardedCluster(
     jobData["cluster_type"]     = "redis_sharded";
     jobData["type"]             = "redis_sharded";
     jobData["nodes"]            = nodesField(hosts);
-
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
 
