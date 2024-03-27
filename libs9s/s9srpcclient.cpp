@@ -11935,7 +11935,7 @@ S9sRpcClient::registerRedisShardedCluster(
     //
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register Redis Cluster";
+    job["title"]                = "Register Redis Sharded Cluster";
     job["job_spec"]             = jobSpec;
 
     //
