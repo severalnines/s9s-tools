@@ -11911,15 +11911,7 @@ S9sRpcClient::registerRedisShardedCluster(
                 "Redis sharded clusters requires '--redis-sharded-port' option");
         return false;
     }
-    if(options->redisShardedBusPort() != 0)
-        jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
-    else
-    {
-        PRINT_ERROR(
-                "Redis sharded clusters requires '--redis-sharded-bus-port' option");
-        return false;
-    }
-       
+      
     if (!redisVersion.empty())
         jobData["version"]      = redisVersion;
 
