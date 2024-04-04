@@ -4554,7 +4554,7 @@ S9sRpcClient::createRedisSharded(
 
     if (options->redisNodeTimeoutMs() != 0)
         jobData["node_timeout_ms"] = options->redisNodeTimeoutMs();
-    if (options->redisReplicaValidityFactor() != 0)
+    if (options->redisReplicaValidityFactor() != -1)
         jobData["redis_cluster_replica_validity_factor"] = options->redisReplicaValidityFactor();
 
     // The jobspec describing the command.

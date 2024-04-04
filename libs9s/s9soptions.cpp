@@ -2188,7 +2188,7 @@ S9sOptions::redisReplicaValidityFactor() const
 {
     if (m_options.contains("redis_cluster_replica_validity_factor"))
         return m_options.at("redis_cluster_replica_validity_factor").toInt();
-    return 0;
+    return -1;
 }
 
 
