@@ -4538,7 +4538,13 @@ S9sRpcClient::createRedisSharded(
 
     if (options->redisShardedBusPort() != 0)
     {
-        if(version.contains("6"))
+        int versionNum = 0;
+        if(!version.empty())
+        {
+           char majorVersion = version.c_str()[0];
+           versionNum = atoi(&majorVersion);
+        }
+        if(versionNum == 6)
         {
             PRINT_ERROR("Redis 6 does not support redis sharded bus port");
             return false;
@@ -11908,7 +11914,7 @@ S9sRpcClient::registerRedisShardedCluster(
     else
     {
         PRINT_ERROR(
-                "Redis sharded clusters requires '--redis-sharded-port' option");
+                "Redis sharded cluster requires '--redis-sharded-port' option");
         return false;
     }
       
