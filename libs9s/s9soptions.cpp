@@ -106,6 +106,7 @@ enum S9sOptionType
     OptionRedisShardedPort,
     OptionRedisShardedBusPort,
     OptionRedisNodeTimeoutMs,
+    OptionRedisReplicaValidityFactor,
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
@@ -2178,6 +2179,18 @@ S9sOptions::redisNodeTimeoutMs() const
         return m_options.at("redis_node_timeout_ms").toInt();
     return 0;
 }
+
+/**
+ * \returns The value of the 'cluster-replica-validity-factor- to use on configuration
+ */
+int
+S9sOptions::redisReplicaValidityFactor() const
+{
+    if (m_options.contains("redis_cluster_replica_validity_factor"))
+        return m_options.at("redis_cluster_replica_validity_factor").toInt();
+    return 0;
+}
+
 
 
 
@@ -13279,6 +13292,7 @@ S9sOptions::readOptionsCluster(
         { "redis-port",       required_argument, 0, OptionRedisShardedPort},
         { "redis-bus-port",   required_argument, 0, OptionRedisShardedBusPort},
         { "node-timeout-ms",  required_argument, 0, OptionRedisNodeTimeoutMs},
+        { "replica-validity-factor", required_argument, 0, OptionRedisReplicaValidityFactor},
         { "db-name",          required_argument, 0, OptionDbName          },
         { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
@@ -13837,6 +13851,12 @@ S9sOptions::readOptionsCluster(
                 // --redis-node-timeout-ms=milliseconds
                 m_options["redis_node_timeout_ms"] = atoi(optarg);
                 break;
+
+            case OptionRedisReplicaValidityFactor:
+                // --redis-replica-validity-factor=FACTOR
+                m_options["redis_cluster_replica_validity_factor"] = atoi(optarg);
+                break;
+
             
             case OptionAccount:
                 // --account=USERNAME

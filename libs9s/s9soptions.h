@@ -202,6 +202,7 @@ class S9sOptions
         int redisShardedPort() const;
         int redisShardedBusPort() const;
         int redisNodeTimeoutMs() const;
+        int redisReplicaValidityFactor() const;
         S9sString clusterType() const;
         S9sString formatDateTime(S9sDateTime value) const;
         S9s::AddressType addressType() const;
