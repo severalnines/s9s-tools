@@ -3373,10 +3373,14 @@ S9sRpcClient::registerCluster()
 
         success = registerNdbCluster(
                 mySqlHosts, mgmdHosts, ndbdHosts, osUserName);
+    } else if (options->clusterType() == "redis-sharded" || options->clusterType() == "redis_sharded")
+    {
+        success = registerRedisShardedCluster(hosts, osUserName, options->providerVersion());
     } else if (options->clusterType() == "redis")
     {
         success = registerRedisCluster(hosts, osUserName, options->providerVersion());
-    } else {
+    } 
+    else {
         PRINT_ERROR("Register cluster is currently not implemented for "
                 " cluster type '%s'.",
                 STR(options->clusterType()));
@@ -4533,10 +4537,25 @@ S9sRpcClient::createRedisSharded(
         jobData["redis_sharded_port"] = options->redisShardedPort();
 
     if (options->redisShardedBusPort() != 0)
+    {
+        int versionNum = 0;
+        if(!version.empty())
+        {
+           char majorVersion = version.c_str()[0];
+           versionNum = atoi(&majorVersion);
+        }
+        if(versionNum == 6)
+        {
+            PRINT_ERROR("Redis 6 does not support redis sharded bus port");
+            return false;
+        }
         jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
+    }
 
     if (options->redisNodeTimeoutMs() != 0)
         jobData["node_timeout_ms"] = options->redisNodeTimeoutMs();
+    if (options->redisReplicaValidityFactor() != -1)
+        jobData["redis_cluster_replica_validity_factor"] = options->redisReplicaValidityFactor();
 
     // The jobspec describing the command.
     jobSpec["command"]          = "create_cluster";
@@ -11850,6 +11869,85 @@ S9sRpcClient::syncClusters()
 }
 
 bool
+S9sRpcClient::registerRedisShardedCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &redisVersion)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Node is not specified while registering existing cluster.");
+        return false;
+    }
+    else if (hosts.size() > 1u)
+    {
+
+        PRINT_ERROR("Redis sharded clusters requires only one cluster's node to discover topology");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    //
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "redis_sharded";
+    jobData["type"]             = "redis_sharded";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
+
+    if (!redisVersion.empty())
+        jobData["version"]      = redisVersion;
+
+    //
+    // Required parameters
+    //
+    if(options->redisShardedPort() != 0)
+        jobData["redis_sharded_port"] = options->redisShardedPort();
+    else
+    {
+        PRINT_ERROR(
+                "Redis sharded cluster requires '--redis-sharded-port' option");
+        return false;
+    }
+      
+    if (!redisVersion.empty())
+        jobData["version"]      = redisVersion;
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    //
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    //
+    // The job instance describing how the job will be executed.
+    //
+    job["title"]                = "Register Redis Sharded Cluster";
+    job["job_spec"]             = jobSpec;
+
+    //
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::registerRedisCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
@@ -11910,7 +12008,7 @@ S9sRpcClient::registerRedisCluster(
     //
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register Redis Cluster";
+    job["title"]                = "Register Redis Sentinel Cluster";
     job["job_spec"]             = jobSpec;
 
     //

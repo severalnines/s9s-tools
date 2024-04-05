@@ -918,7 +918,7 @@ S9sNode::roleFlag() const
     {
         if (theRole == "master" || theRole.toLower() == "primary")
             return 'M';
-        else if (theRole == "slave" || theRole.toLower() == "secondary")
+        else if (theRole == "slave" || theRole.toLower() == "secondary" || theRole.toLower() == "replica")
             return 'S';
         else if (theRole == "multi")
             return 'U';
@@ -1180,7 +1180,7 @@ S9sNode::nodeTypeFlag() const
         return 's';
     else if (className() == "CmonRedisSentinelHost")
         return 'S';
-    else if (className() == "CmonRedisHost")
+    else if (className() == "CmonRedisHost" || className() == "RedisShardedHost")
         return 'R';
     else if (className() == "CmonElasticHost")
         return 'E';
