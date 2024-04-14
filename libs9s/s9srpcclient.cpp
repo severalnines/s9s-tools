@@ -5059,8 +5059,10 @@ S9sRpcClient::createNode()
         for (uint idx = 0; idx < hosts.size(); ++idx)
         {
             const S9sNode &node = hosts[idx].toNode();
-            bool           master = node.property("master").toBoolean();
-            bool           slave = node.property("slave").toBoolean();
+            bool           master = node.property("master").toBoolean() || 
+                                    node.property("primary").toBoolean();
+            bool           slave = node.property("slave").toBoolean() || 
+                                   node.property("replica").toBoolean();
 
             S9S_DEBUG("[%02u] %5s %s", 
                     idx, 
@@ -5312,8 +5314,10 @@ S9sRpcClient::addReplicationSlave(
     for (uint idx = 0; idx < hosts.size(); ++idx)
     {
         const S9sNode &node = hosts[idx].toNode();
-        bool           isMaster = node.property("master").toBoolean();
-        bool           isSlave = node.property("slave").toBoolean();
+        bool           isMaster = node.property("master").toBoolean() || 
+                                   node.property("primary").toBoolean();
+        bool           isSlave = node.property("slave").toBoolean() || 
+                                  node.property("replica").toBoolean();
 
         if (isSlave)
         {
