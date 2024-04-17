@@ -637,6 +637,9 @@ class S9sRpcClient
         bool addElasticNode(
                 const S9sVariantList &hosts);
 
+        bool addRedisShardedNode(
+                const S9sVariantList &hosts);
+
         // Low level methods that reinstalls software on a node as an attempt to fix it.
 
         bool reinstallPBMAgent(

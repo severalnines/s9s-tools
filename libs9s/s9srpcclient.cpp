@@ -4889,17 +4889,18 @@ S9sRpcClient::createNode()
     S9sOptions    *options   = S9sOptions::instance();
     S9sVariantList hosts;
     S9sRpcReply    reply;
-    bool           hasHaproxy    = false;
-    bool           hasKeepalived = false;
-    bool           hasPgBouncer  = false;
-    bool           hasPgBackRest = false;
-    bool           hasPBMAgent   = false;
-    bool           hasNFSClient  = false;
-    bool           hasNFSServer  = false;
-    bool           hasProxySql   = false;
-    bool           hasMaxScale   = false;
-    bool           hasMongo      = false;
-    bool           hasElastic    = false;
+    bool           hasHaproxy      = false;
+    bool           hasKeepalived   = false;
+    bool           hasPgBouncer    = false;
+    bool           hasPgBackRest   = false;
+    bool           hasPBMAgent     = false;
+    bool           hasNFSClient    = false;
+    bool           hasNFSServer    = false;
+    bool           hasProxySql     = false;
+    bool           hasMaxScale     = false;
+    bool           hasMongo        = false;
+    bool           hasElastic      = false;
+    bool           hasRedisSharded = false;
     bool           success;
 
     hosts = options->nodes();
@@ -4960,11 +4961,13 @@ S9sRpcClient::createNode()
         {
         } else if (protocol == "postgresql")
         {
-        } else if (protocol == "redis")
+        } else if (protocol == "redis" || protocol == "redis-sentinel")
         {
-        } else if (protocol == "redis-sentinel")
+        } else if (protocol == "redis-sharded")
         {
-        } else if (protocol == "mssql")
+            hasRedisSharded = true;
+        }
+        else if (protocol == "mssql")
         {
         } else if (protocol == "elastic")
         {            
@@ -5052,7 +5055,11 @@ S9sRpcClient::createNode()
     } else if (hasElastic)
     {
         success = addElasticNode(hosts);
-    } else {
+    } else if (hasRedisSharded)
+    {
+        success = addRedisShardedNode(hosts);
+    }
+    else {
         int nSlaves  = 0;
         int nMasters = 0;
 
@@ -6075,6 +6082,89 @@ S9sRpcClient::addElasticNode(
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Add Node to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * \param clusterId The ID of the cluster.
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * Creates a job that will add a new elastic node to the cluster.
+ */
+bool
+S9sRpcClient::addRedisShardedNode(
+        const S9sVariantList &hosts)
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+
+    if (hosts.size() < 1u || hosts.size() > 2u)
+    {
+        PRINT_ERROR("Incorrect node list. One or two hosts are expected.");
+        return false;
+    }
+
+    // The job_data describing the cluster.
+    #ifdef SEND_NODES
+    jobData["nodes"] = nodesField(hosts);
+    #else
+    S9sVariantList nodes;
+    S9sString protocol;
+    for(uint i=0; i < hosts.size(); i++)
+    {
+        S9sNode host = hosts[i].toNode();
+        protocol = host.protocol().toLower();
+        if (hosts[i].isNode())
+        {
+            S9sVariantMap nodei;
+            nodei["class_name"] = "RedisShardedHost";
+            nodei["hostname"] = hosts[i].toNode().hostName();
+            nodei["protocol"] = "redis-sharded";
+            S9sString role = hosts[i].toNode().role();
+            if(role != "primary" && role != "replica")
+            {
+                PRINT_ERROR("Only nodes with role 'primary' or 'replica' can be added");
+                return false;
+            }
+            nodei["role"] = role;
+            nodes.push_back(nodei);
+        }
+        if (protocol != "redis-sharded")
+        {
+            PRINT_ERROR("When adding redis sharded node protocol sould be \'redis-sharded\' not: %s",
+                STR(protocol));
+            return false;
+        }
+    }
+    jobData["nodes"] = nodes;
+    #endif
+
+    jobData["install_software"] = !options->noInstall();
+    jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["disable_selinux"]  = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "addnode";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Add Node to Redis Sharded Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
