@@ -3392,7 +3392,7 @@ S9sRpcReply::printLogLong()
     // code is used here as it is added to the brief format.
     if (!hasLogFormatFile && formatString.empty())
     {
-        formatString = "%C %36B:%-5L: %-8S %M\n";
+        formatString = "%C%I %36B:%-5L: %-8S %M\n";
     }
 
     for (uint idx = 0; idx < theList.size(); ++idx)
