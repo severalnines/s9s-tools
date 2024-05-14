@@ -1,4 +1,4 @@
-s9s-tools (1.9.2024041800-testing) UNRELEASED; urgency=medium
+s9s-tools (1.9.2024051420-release1) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
   * Drop --psql-immediate option because it might be too confusing for our
@@ -20,8 +20,9 @@ s9s-tools (1.9.2024041800-testing) UNRELEASED; urgency=medium
   * Testing release 1.9.2024040519.
   * Testing release 1.9.2024040519.
   * Testing release 1.9.2024041800.
+  * Release 1.9.2024051420.
 
- -- Severalnines <support@severalnines.com>  Thu, 18 Apr 2024 00:53:47 +0900
+ -- Severalnines <support@severalnines.com>  Tue, 14 May 2024 20:49:07 +0900
 
 s9s-tools (1.9.2023112922-release1) UNRELEASED; urgency=medium
 
