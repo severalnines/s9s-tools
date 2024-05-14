@@ -59,6 +59,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 * Wed May 15 2024 Severalnines <support@severalnines.com> 1.9.2024051500
 - Release 1.9.2024051500.
 * Wed May 15 2024 Severalnines <support@severalnines.com> 1.9.2024051500
+- Release 1.9.2024051500.
+* Wed May 15 2024 Severalnines <support@severalnines.com> 1.9.2024051500
 - Testing release 1.9.2024051500.
 * Tue May 14 2024 Severalnines <support@severalnines.com> 1.9.2024051423
 - Release 1.9.2024051423.
