@@ -10760,9 +10760,9 @@ S9sRpcClient::composeBackupJob()
     if (!s3region.empty())
         jobData["s3_region"] = s3region;
 
-    if (cloudOnly)
+    if (cloudOnly || !cloudStorageProv.empty() || !s3bucket.empty())
     {
-        jobData["cloud_only"] = true;
+        jobData["cloud_only"] = cloudOnly;
         // checks with current available functionality
         if(cloudStorageProv.empty() || 
            (cloudStorageProv != AWS_CLOUD_PROVIDER && cloudStorageProv != S3_CLOUD_SERVICE_PROVIDER))
