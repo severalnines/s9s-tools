@@ -139,6 +139,7 @@ enum S9sOptionType
     OptionS3Bucket,
     OptionS3Region,
     OptionOnlyCloud,
+    OptionDeleteAfterUpload,
     OptionCloudProvider,
     OptionStorageHost,
     OptionSubDirectory,
@@ -3487,6 +3488,17 @@ S9sOptions::cloudOnly() const
 {
     return m_options.contains("cloud_only");
 }
+
+
+/**
+ * \returns The argument for the --delete-after-upload option
+ */
+bool
+S9sOptions::deleteAfterUpload() const
+{
+    return m_options.contains("delete_after_upload");
+}
+
 
 bool
 S9sOptions::hasCloudProviderOption() const
@@ -8029,6 +8041,7 @@ S9sOptions::readOptionsBackup(
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "s3-region",        required_argument, 0, OptionS3Region        },
         { "cloud-only",       no_argument,       0, OptionOnlyCloud       },
+        { "delete-after-upload", no_argument,    0, OptionDeleteAfterUpload},
         { "cloud-provider",   required_argument, 0, OptionCloudProvider   },
         { "test-server",      required_argument, 0, OptionTestServer      },
         { "title",            required_argument, 0, OptionTitle           },
@@ -8472,6 +8485,12 @@ S9sOptions::readOptionsBackup(
                 // --cloud-only
                 m_options["cloud_only"] = true;
                 break;
+
+            case OptionDeleteAfterUpload:
+                // --delete-after-upload
+                m_options["delete_after_upload"] = true;
+                break;
+
 
             case OptionCloudProvider:
                 // --cloud-provider

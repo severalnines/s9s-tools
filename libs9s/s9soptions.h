@@ -388,6 +388,7 @@ class S9sOptions
         bool      hasS3regionOption() const;
         S9sString s3region() const;
         bool      cloudOnly() const;
+        bool      deleteAfterUpload() const;
         bool      hasCloudProviderOption() const;
         S9sString cloudProvider() const;
         S9sString storageHost() const;
