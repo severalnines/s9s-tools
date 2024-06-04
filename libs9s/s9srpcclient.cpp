@@ -10709,6 +10709,7 @@ S9sRpcClient::composeBackupJob()
     S9sString       s3bucket         = options->s3bucket();
     S9sString       s3region         = options->s3region();
     bool            cloudOnly        = options->cloudOnly();
+    bool            deleteAfterUpload= options->deleteAfterUpload();
     S9sString       cloudStorageProv = options->cloudProvider();
     int             backupRetention  = options->backupRetention();
     S9sString       storageHost      = options->storageHost();
@@ -10797,6 +10798,8 @@ S9sRpcClient::composeBackupJob()
             jobCloudData["cloud_storage_service"]  = cloudStorageProv;
             if(backupRetention != 0)
                 jobCloudData["backup_retention"] = backupRetention;
+            if(deleteAfterUpload)
+                jobCloudData["delete_after_upload"] = deleteAfterUpload;
         }
         jobData["upload_backup_data_to_cloud_storage"] = jobCloudData;
     }
