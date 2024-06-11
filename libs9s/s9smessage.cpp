@@ -461,6 +461,15 @@ S9sMessage::toString(
                     retval += tmp;
                     break;
                 
+                case 'D':
+                    // The 'created' date&time.
+                    partFormat += 's';
+                    tmp.sprintf(
+                            STR(partFormat),
+                            STR(created().toString(S9sDateTime::LogIdDateFormat)));
+                    retval += tmp;
+                    break;
+
                 case 'h':
                     // The related host name. 
                     partFormat += 's';
