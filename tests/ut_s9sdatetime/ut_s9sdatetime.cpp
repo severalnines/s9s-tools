@@ -64,17 +64,29 @@ UtS9sDateTime::testCreate()
     S9S_VERIFY(success);
 
     S9S_DEBUG("");
+    S9S_DEBUG("");
     S9S_DEBUG("TzDateTimeFormat : %s", 
             STR(dateTime.toString(S9sDateTime::TzDateTimeFormat)));
-
     S9S_DEBUG("  LongTimeFormat : %s",
             STR(dateTime.toString(S9sDateTime::LongTimeFormat)));
-
+    S9S_DEBUG("<> Local TZ time <> LogIdDateFormat <>: <>%s<>",
+            STR(dateTime.toString(S9sDateTime::LogIdDateFormat)));
+    S9S_DEBUG("");
 
     S9S_VERIFY(
             dateTime.toString(S9sDateTime::TzDateTimeFormat).
             contains("T07:13:54.000Z"));
-    
+
+    setenv("TZ", "/usr/share/zoneinfo/Europe/UTC", 1); // NOLINT
+    tzset();
+    S9S_DEBUG("");
+    S9S_DEBUG("<> UTC time <> LogIdDateFormat <>: <>%s<>",
+            STR(dateTime.toString(S9sDateTime::LogIdDateFormat)));
+    S9S_DEBUG("");
+    S9S_VERIFY(
+            dateTime.toString(S9sDateTime::LogIdDateFormat).
+            contains("_071354_"));
+
     return true;
 }
 

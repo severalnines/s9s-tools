@@ -589,6 +589,16 @@ S9sDateTime::toString(
             }
             break;
 
+        case LogIdDateFormat:
+            {
+                char buffer[120] = {0}; //NOLINT
+                if (strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S_", lt) == 0)
+                    retval = "_strftime_failed_";
+                else
+                    retval = buffer;
+            }
+            break;
+
     }
     return retval;
 }
