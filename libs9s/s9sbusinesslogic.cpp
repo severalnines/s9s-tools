@@ -2747,9 +2747,10 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
                 user.setPublicKey("No Name", pubKeyStr);
 
             request = S9sRpcClient::createUserRequest(
-                    user, 
+                    user,
                     options->newPassword(),
-                    options->createGroup());
+                    options->createGroup(),
+                    options->forcePasswordUpdate());
             S9S_WARNING("-> \n%s", STR(request.toString()));
         }
         else
@@ -2958,7 +2959,10 @@ S9sBusinessLogic::executeCreateUserThroughRpc(
     user.setPublicKey("No Name", pubKeyStr);
 
     success = client.createUser(
-            user, options->newPassword(), options->createGroup());
+            user,
+            options->newPassword(),
+            options->createGroup(),
+            options->forcePasswordUpdate());
 
     client.printMessages("User created.", success);
     client.setExitStatus();

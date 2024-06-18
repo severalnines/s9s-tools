@@ -152,6 +152,7 @@ enum S9sOptionType
     OptionPing,
     OptionGroup,
     OptionCreateGroup,
+    OptionForcePasswordUpdate,
     OptionFirstName,
     OptionEmailAddress,
     OptionLastName,
@@ -11848,6 +11849,7 @@ S9sOptions::readOptionsUser(
        
         // Options about the user.
         { "create-group",     no_argument,       0, OptionCreateGroup     },
+        { "force-password-update", no_argument,  0, OptionForcePasswordUpdate },
         { "email-address",    required_argument, 0, OptionEmailAddress    },
         { "preferences",      no_argument,       0, OptionPreferences     },
         { "preferences-to-set",   required_argument, 0, OptionPreferencesToSet   },
@@ -12088,6 +12090,11 @@ S9sOptions::readOptionsUser(
             case OptionCreateGroup:
                 // --create-group
                 m_options["create_group"] = true;
+                break;
+
+            case OptionForcePasswordUpdate:
+                // --force-password-update
+                m_options["force_password_update"] = true;
                 break;
             
             case OptionFirstName:
@@ -17037,6 +17044,15 @@ bool
 S9sOptions::createGroup() const
 {
     return getBool("create_group");
+}
+
+/**
+ * \returns True if the --force-password-update command line option is used.
+ */
+bool
+S9sOptions::forcePasswordUpdate() const
+{
+    return getBool("force_password_update");
 }
 
 /**

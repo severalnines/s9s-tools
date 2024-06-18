@@ -9563,7 +9563,8 @@ S9sVariantMap
 S9sRpcClient::createUserRequest(
         const S9sUser   &user,
         const S9sString &newPassword,
-        bool             createGroup)
+        bool             createGroup,
+        bool             forcePasswordUpdate)
 {
     S9sVariantMap  request;
 
@@ -9573,6 +9574,7 @@ S9sRpcClient::createUserRequest(
 
     if (!newPassword.empty())
         request["new_password"] = newPassword;
+    request["force_password_update"] = forcePasswordUpdate;
 
     return request;
 }
@@ -9581,12 +9583,17 @@ bool
 S9sRpcClient::createUser(
         const S9sUser   &user,
         const S9sString &newPassword,
-        bool             createGroup)
+        bool             createGroup,
+        bool             forcePasswordUpdate)
 {
-    S9sString      uri = "/v2/users/";
-    S9sVariantMap  request;
-    
-    request = createUserRequest(user, newPassword, createGroup);
+    S9sString     uri = "/v2/users/";
+    S9sVariantMap request;
+
+    request = createUserRequest(
+            user,
+            newPassword,
+            createGroup,
+            forcePasswordUpdate);
 
     return executeRequest(uri, request);
 }
@@ -10210,6 +10217,7 @@ S9sRpcClient::setPassword()
 
     if (options->hasNewPassword())
         request["new_password"] = options->newPassword();
+    request["force_password_update"] = options->forcePasswordUpdate();
     
     return executeRequest(uri, request);
 }
