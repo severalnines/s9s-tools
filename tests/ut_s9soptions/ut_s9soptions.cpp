@@ -359,19 +359,21 @@ UtS9sOptions::testReadOptions06()
     { 
         "/bin/s9s", "user", "--create", "--group=GROUPNAME", "--create-group",
         "--first-name=FIRSTNAME", "--last-name=LASTNAME", "--title=TITLE",
-        "--email-address=EMAIL", "--user-format=FORMAT", NULL
+        "--email-address=EMAIL", "--user-format=FORMAT", "--force-password-update",
+        NULL
     };
     int   argc   = sizeof(argv) / sizeof(char *) - 1;
 
 
     success = options->readOptions(&argc, (char**)argv);
     S9S_VERIFY(success);
-    
-    S9S_COMPARE(options->binaryName(),     "s9s");
-    S9S_COMPARE(options->m_operationMode,  S9sOptions::User);
+
+    S9S_COMPARE(options->binaryName(), "s9s");
+    S9S_COMPARE(options->m_operationMode, S9sOptions::User);
     S9S_VERIFY(options->isCreateRequested());
     S9S_COMPARE(options->group(), "GROUPNAME");
     S9S_VERIFY(options->createGroup());
+    S9S_VERIFY(options->forcePasswordUpdate());
     S9S_COMPARE(options->firstName(), "FIRSTNAME");
     S9S_COMPARE(options->lastName(), "LASTNAME");
     S9S_COMPARE(options->title(), "TITLE");

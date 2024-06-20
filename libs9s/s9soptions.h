@@ -461,6 +461,7 @@ class S9sOptions
         bool isGenerateKeyRequested() const;
         S9sString group() const;
         bool createGroup() const;
+        bool forcePasswordUpdate() const;
         S9sString lastName() const;
         S9sString firstName() const;
         S9sString title() const;

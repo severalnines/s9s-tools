@@ -286,12 +286,14 @@ class S9sRpcClient
             createUserRequest(
                     const S9sUser   &user,
                     const S9sString &newPassword,
-                    bool             createGroup);
+                    bool             createGroup,
+                    bool             forcePasswordUpdate);
 
         bool createUser(
                 const S9sUser   &user,
                 const S9sString &newPassword,
-                bool             createGroup);
+                bool             createGroup,
+                bool             forcePasswordUpdate);
 
         
         bool addToGroup();
