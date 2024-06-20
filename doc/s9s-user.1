@@ -722,6 +722,7 @@ s9s user \\
     --first-name="Some" \\
     --last-name="Guy"   \\
     --new-password="hispassword" \\
+    --force-password-update \\
     laszlo
 .fi
 
@@ -730,11 +731,13 @@ passing the \fB\-\-cmon-user\fP and \fB\-\-password\fP command line options.
 This is usually not necessary, the previous example left the username in the
 configuration file and the secret key in the configuration directory.
 
-Please note that we spcify the new user's username as a command line argument
-(it is "laszlo" in this example), his password with the \fB--new-password\fP,
+Please note that we specify the new user's username as a command line argument
+(it is "laszlo" in this example), their password with the \fB--new-password\fP,
 but we do not request a keypair to be created. The user can generate the key
-pair and register it using this password. The user name of course also change
-the password.
+pair and register it using this password. The user can of course also change
+the password, and is actually required to do so by the \fB--force-password-update\fP
+argument. The latter marks the user's password as expired, so the user will be
+asked to change it upon the first web login.
 
 
 Here is how to get a detailed list of the users managed by the controller. The
