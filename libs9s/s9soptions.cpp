@@ -105,8 +105,10 @@ enum S9sOptionType
     OptionSentinelPassword,
     OptionRedisShardedPort,
     OptionRedisShardedBusPort,
-    OptionRedisNodeTimeoutMs,
-    OptionRedisReplicaValidityFactor,
+    OptionRedisOrValkeyNodeTimeoutMs,
+    OptionRedisOrValkeyReplicaValidityFactor,
+    OptionValkeyShardedPort,
+    OptionValkeyShardedBusPort,
     OptionClusterType,
     OptionStop,
     OptionPromoteSlave,
@@ -2175,10 +2177,10 @@ S9sOptions::redisShardedBusPort() const
  * \returns The value of the 'cluster-node-timeout- to use on configuration
  */
 int
-S9sOptions::redisNodeTimeoutMs() const
+S9sOptions::redisOrValkeyNodeTimeoutMs() const
 {
-    if (m_options.contains("redis_node_timeout_ms"))
-        return m_options.at("redis_node_timeout_ms").toInt();
+    if (m_options.contains("node_timeout_ms"))
+        return m_options.at("node_timeout_ms").toInt();
     return 0;
 }
 
@@ -2186,14 +2188,35 @@ S9sOptions::redisNodeTimeoutMs() const
  * \returns The value of the 'cluster-replica-validity-factor- to use on configuration
  */
 int
-S9sOptions::redisReplicaValidityFactor() const
+S9sOptions::redisOrValkeyReplicaValidityFactor() const
 {
-    if (m_options.contains("redis_cluster_replica_validity_factor"))
-        return m_options.at("redis_cluster_replica_validity_factor").toInt();
+    if (m_options.contains("cluster_replica_validity_factor"))
+        return m_options.at("cluster_replica_validity_factor").toInt();
     return -1;
 }
 
 
+/**
+ * \returns The default valkey sharded port to use on valkey sharded hosts
+ */
+int
+S9sOptions::valkeyShardedPort() const
+{
+    if (m_options.contains("valkey_sharded_port"))
+        return m_options.at("valkey_sharded_port").toInt();
+    return 0;
+}
+
+/**
+ * \returns The default valkey bus port to use on valkey sharded hosts
+ */
+int
+S9sOptions::valkeyShardedBusPort() const
+{
+    if (m_options.contains("valkey_sharded_bus_port"))
+        return m_options.at("valkey_sharded_bus_port").toInt();
+    return 0;
+}
 
 
 /**
@@ -13317,8 +13340,10 @@ S9sOptions::readOptionsCluster(
         { "sentinel-passwd",  required_argument, 0, OptionSentinelPassword},
         { "redis-port",       required_argument, 0, OptionRedisShardedPort},
         { "redis-bus-port",   required_argument, 0, OptionRedisShardedBusPort},
-        { "node-timeout-ms",  required_argument, 0, OptionRedisNodeTimeoutMs},
-        { "replica-validity-factor", required_argument, 0, OptionRedisReplicaValidityFactor},
+        { "valkey-port",      required_argument, 0, OptionValkeyShardedPort},
+        { "valkey-bus-port",  required_argument, 0, OptionValkeyShardedBusPort},
+        { "node-timeout-ms",  required_argument, 0, OptionRedisOrValkeyNodeTimeoutMs},
+        { "replica-validity-factor", required_argument, 0, OptionRedisOrValkeyReplicaValidityFactor},
         { "db-name",          required_argument, 0, OptionDbName          },
         { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
@@ -13873,17 +13898,26 @@ S9sOptions::readOptionsCluster(
                 m_options["redis_sharded_bus_port"] = atoi(optarg);
                 break;
 
-            case OptionRedisNodeTimeoutMs:
-                // --redis-node-timeout-ms=milliseconds
-                m_options["redis_node_timeout_ms"] = atoi(optarg);
+            case OptionRedisOrValkeyNodeTimeoutMs:
+                // --node-timeout-ms=milliseconds
+                m_options["node_timeout_ms"] = atoi(optarg);
                 break;
 
-            case OptionRedisReplicaValidityFactor:
-                // --redis-replica-validity-factor=FACTOR
-                m_options["redis_cluster_replica_validity_factor"] = atoi(optarg);
+            case OptionRedisOrValkeyReplicaValidityFactor:
+                // --replica-validity-factor=FACTOR
+                m_options["cluster_replica_validity_factor"] = atoi(optarg);
                 break;
 
-            
+            case OptionValkeyShardedPort:
+                // --valkey-port=portNumber
+                m_options["valkey_sharded_port"] = atoi(optarg);
+                break;
+
+            case OptionValkeyShardedBusPort:
+                // --valkey-bus-port=portNumber
+                m_options["valkey_sharded_bus_port"] = atoi(optarg);
+                break;
+           
             case OptionAccount:
                 // --account=USERNAME
                 if (!setAccount(optarg))

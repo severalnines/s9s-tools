@@ -123,6 +123,19 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "RedisShardedHost";
             m_properties["role"] = "replica";
         }
+        else if (m_url.protocol().toLower() == "valkey-primary" ||
+            m_url.protocol().toLower() == "valkey-sharded-primary")
+        {
+            m_properties["class_name"] = "ValkeyShardedHost";
+            m_properties["role"] = "primary";
+        }
+        else if (m_url.protocol().toLower() == "valkey-replica" ||
+            m_url.protocol().toLower() == "valkey-sharded-replica")
+        {
+            m_properties["class_name"] = "valkeyShardedHost";
+            m_properties["role"] = "replica";
+        }
+
         else if (m_url.protocol().toLower() == "mssql")
             m_properties["class_name"] = "CmonMsSqlHost";
         else if (m_url.protocol().toLower() == "elastic")

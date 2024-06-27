@@ -201,8 +201,10 @@ class S9sOptions
         S9sString sentinelPassword();
         int redisShardedPort() const;
         int redisShardedBusPort() const;
-        int redisNodeTimeoutMs() const;
-        int redisReplicaValidityFactor() const;
+        int redisOrValkeyNodeTimeoutMs() const;
+        int redisOrValkeyReplicaValidityFactor() const;
+        int valkeyShardedPort() const;
+        int valkeyShardedBusPort() const;
         S9sString clusterType() const;
         S9sString formatDateTime(S9sDateTime value) const;
         S9s::AddressType addressType() const;

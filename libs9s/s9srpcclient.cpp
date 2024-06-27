@@ -3246,10 +3246,12 @@ S9sRpcClient::createCluster()
         success = createRedisSentinel(
             hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "redis_sharded" ||
-               options->clusterType() == "redis-sharded")
+               options->clusterType() == "redis-sharded" ||
+               options->clusterType() == "valkey_sharded" ||
+               options->clusterType() == "valkey-sharded")
     {
-        success = createRedisSharded(
-            hosts, osUserName, dbVersion);
+        success = createRedisOrValkeySharded(
+            hosts, osUserName, dbVersion, options->clusterType());
     } else if (options->clusterType() == "elastic")
     {
         success = createElasticsearch(
@@ -4485,16 +4487,19 @@ S9sRpcClient::registerMongoDbCluster(
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
  * \param osUserName the user name to be used to SSH to the host.
+ * \param version the version of the database to install.
+ * \param clusterType the type of the cluster to create. 
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
  *
  * This method will create a job that creates a redis sharded cluster
  */
 bool
-S9sRpcClient::createRedisSharded(
+S9sRpcClient::createRedisOrValkeySharded(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &version)
+        const S9sString      &version,
+        const S9sString      &clusterType)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -4502,6 +4507,70 @@ S9sRpcClient::createRedisSharded(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    S9sString       jobClusterType;
+    S9sString       jobTitle;
+
+    if(clusterType.contains("redis"))
+    {
+        jobClusterType = "redis_sharded";
+        jobTitle = "Creating Redis Sharded Cluster";
+        // redis specific options and checks
+        if (options->redisShardedPort() != 0)
+            jobData["redis_sharded_port"] = options->redisShardedPort();
+
+        if (options->redisShardedBusPort() != 0)
+        {
+            int versionNum = 0;
+            if(!version.empty())
+            {
+               char majorVersion = version.c_str()[0];
+               versionNum = atoi(&majorVersion);
+            }
+            if(versionNum == 6)
+            {
+                PRINT_ERROR("Redis 6 does not support redis sharded bus port");
+                return false;
+            }
+            jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
+        }
+        if (options->redisOrValkeyReplicaValidityFactor() != -1)
+            jobData["redis_cluster_replica_validity_factor"] = options->redisOrValkeyReplicaValidityFactor();
+    }
+    else if(clusterType.contains("valkey"))
+    {
+        jobClusterType = "valkey_sharded";
+        jobTitle = "Creating Valkey Sharded Cluster";
+        // valkey specific options and checks
+        if (options->valkeyShardedPort() != 0)
+            jobData["valkey_sharded_port"] = options->valkeyShardedPort();
+
+        int versionNum = 0;
+        if(!version.empty())
+        {
+           char majorVersion = version.c_str()[0];
+           versionNum = atoi(&majorVersion);
+        }
+        if(versionNum == 6)
+        {
+            PRINT_ERROR("Valkey does not support version 6");
+            return false;
+        }
+
+        if (options->valkeyShardedBusPort() != 0)
+        {
+            jobData["valkey_sharded_bus_port"] = options->valkeyShardedBusPort();
+        }
+        if (options->redisOrValkeyReplicaValidityFactor() != -1)
+            jobData["valkey_cluster_replica_validity_factor"] = options->redisOrValkeyReplicaValidityFactor();
+    }
+    else
+    {
+        PRINT_ERROR("Invalid cluster type while creating Redis or Valkey Sharded cluster.");
+        return false;
+    }
+
+    if (options->redisOrValkeyNodeTimeoutMs() != 0)
+        jobData["node_timeout_ms"] = options->redisOrValkeyNodeTimeoutMs();
 
     if (hosts.size() < 1u)
     {
@@ -4512,8 +4581,8 @@ S9sRpcClient::createRedisSharded(
     addCredentialsToJobData(jobData);
 
     // The job_data describing the cluster.
-    jobData["cluster_type"]     = "redis_sharded";
-    jobData["type"]             = "redis_sharded";
+    jobData["cluster_type"]     = jobClusterType;
+    jobData["type"]             = jobClusterType;
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = version;
     jobData["db_user"]          = options->dbAdminUserName();
@@ -4533,36 +4602,12 @@ S9sRpcClient::createRedisSharded(
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
-    if (options->redisShardedPort() != 0)
-        jobData["redis_sharded_port"] = options->redisShardedPort();
-
-    if (options->redisShardedBusPort() != 0)
-    {
-        int versionNum = 0;
-        if(!version.empty())
-        {
-           char majorVersion = version.c_str()[0];
-           versionNum = atoi(&majorVersion);
-        }
-        if(versionNum == 6)
-        {
-            PRINT_ERROR("Redis 6 does not support redis sharded bus port");
-            return false;
-        }
-        jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
-    }
-
-    if (options->redisNodeTimeoutMs() != 0)
-        jobData["node_timeout_ms"] = options->redisNodeTimeoutMs();
-    if (options->redisReplicaValidityFactor() != -1)
-        jobData["redis_cluster_replica_validity_factor"] = options->redisReplicaValidityFactor();
-
     // The jobspec describing the command.
     jobSpec["command"]          = "create_cluster";
     jobSpec["job_data"]         = jobData;
 
     // The job instance describing how the job will be executed.
-    job["title"]                = "Creating Redis Sharded Cluster";
+    job["title"]                = jobTitle;
     job["job_spec"]             = jobSpec;
 
     // The request describing we want to register a job instance.
