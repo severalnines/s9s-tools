@@ -4483,6 +4483,61 @@ S9sRpcClient::registerMongoDbCluster(
     return executeRequest(uri, request);
 }
 
+
+bool S9sRpcClient::redisSpecificJobData(S9sOptions *options, S9sVariantMap &jobData, const S9sString &version)
+{
+    // redis specific options and checks
+    if (options->redisShardedPort() != 0)
+        jobData["redis_sharded_port"] = options->redisShardedPort();
+
+    if (options->redisShardedBusPort() != 0)
+    {
+        int versionNum = 0;
+        if(!version.empty())
+        {
+           char majorVersion = version.c_str()[0];
+           versionNum = atoi(&majorVersion);
+        }
+        if(versionNum == 6)
+        {
+            PRINT_ERROR("Redis 6 does not support redis sharded bus port");
+            return false;
+        }
+        jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
+    }
+    if (options->redisOrValkeyReplicaValidityFactor() != -1)
+        jobData["redis_cluster_replica_validity_factor"] = options->redisOrValkeyReplicaValidityFactor();
+    return true;
+}
+
+
+bool S9sRpcClient::valkeySpecificJobData(S9sOptions *options, S9sVariantMap &jobData, const S9sString &version)
+{
+    // valkey specific options and checks
+    if (options->valkeyShardedPort() != 0)
+        jobData["valkey_sharded_port"] = options->valkeyShardedPort();
+
+    int versionNum = 0;
+    if(!version.empty())
+    {
+       char majorVersion = version.c_str()[0];
+       versionNum = atoi(&majorVersion);
+    }
+    if(versionNum == 6)
+    {
+        PRINT_ERROR("Valkey does not support version 6");
+        return false;
+    }
+
+    if (options->valkeyShardedBusPort() != 0)
+    {
+        jobData["valkey_sharded_bus_port"] = options->valkeyShardedBusPort();
+    }
+    if (options->redisOrValkeyReplicaValidityFactor() != -1)
+        jobData["valkey_cluster_replica_validity_factor"] = options->redisOrValkeyReplicaValidityFactor();
+    return true;
+}
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -4514,54 +4569,15 @@ S9sRpcClient::createRedisOrValkeySharded(
     {
         jobClusterType = "redis_sharded";
         jobTitle = "Creating Redis Sharded Cluster";
-        // redis specific options and checks
-        if (options->redisShardedPort() != 0)
-            jobData["redis_sharded_port"] = options->redisShardedPort();
-
-        if (options->redisShardedBusPort() != 0)
-        {
-            int versionNum = 0;
-            if(!version.empty())
-            {
-               char majorVersion = version.c_str()[0];
-               versionNum = atoi(&majorVersion);
-            }
-            if(versionNum == 6)
-            {
-                PRINT_ERROR("Redis 6 does not support redis sharded bus port");
-                return false;
-            }
-            jobData["redis_sharded_bus_port"] = options->redisShardedBusPort();
-        }
-        if (options->redisOrValkeyReplicaValidityFactor() != -1)
-            jobData["redis_cluster_replica_validity_factor"] = options->redisOrValkeyReplicaValidityFactor();
+        if(!redisSpecificJobData(options, jobData, version))
+            return false;
     }
     else if(clusterType.contains("valkey"))
     {
         jobClusterType = "valkey_sharded";
         jobTitle = "Creating Valkey Sharded Cluster";
-        // valkey specific options and checks
-        if (options->valkeyShardedPort() != 0)
-            jobData["valkey_sharded_port"] = options->valkeyShardedPort();
-
-        int versionNum = 0;
-        if(!version.empty())
-        {
-           char majorVersion = version.c_str()[0];
-           versionNum = atoi(&majorVersion);
-        }
-        if(versionNum == 6)
-        {
-            PRINT_ERROR("Valkey does not support version 6");
+        if(!valkeySpecificJobData(options, jobData, version))
             return false;
-        }
-
-        if (options->valkeyShardedBusPort() != 0)
-        {
-            jobData["valkey_sharded_bus_port"] = options->valkeyShardedBusPort();
-        }
-        if (options->redisOrValkeyReplicaValidityFactor() != -1)
-            jobData["valkey_cluster_replica_validity_factor"] = options->redisOrValkeyReplicaValidityFactor();
     }
     else
     {
