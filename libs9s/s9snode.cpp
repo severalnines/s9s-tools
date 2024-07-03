@@ -112,13 +112,17 @@ S9sNode::S9sNode(
             m_url.protocol().toLower() == "sentinel")
             m_properties["class_name"] = "CmonRedisSentinelHost";
         else if (m_url.protocol().toLower() == "redis-primary" ||
-            m_url.protocol().toLower() == "redis-sharded-primary")
+            m_url.protocol().toLower() == "redis-sharded-primary" ||
+            m_url.protocol().toLower() == "valkey-primary" ||
+            m_url.protocol().toLower() == "valkey-sharded-primary")
         {
             m_properties["class_name"] = "RedisShardedHost";
             m_properties["role"] = "primary";
         }
         else if (m_url.protocol().toLower() == "redis-replica" ||
-            m_url.protocol().toLower() == "redis-sharded-replica")
+            m_url.protocol().toLower() == "redis-sharded-replica" ||
+            m_url.protocol().toLower() == "valkey-replica" ||
+            m_url.protocol().toLower() == "valkey-sharded-replica")
         {
             m_properties["class_name"] = "RedisShardedHost";
             m_properties["role"] = "replica";

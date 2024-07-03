@@ -553,11 +553,18 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &psqlVersion);
 
-        bool createRedisSharded(
+        bool createRedisOrValkeySharded(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &redisVersion);
+                const S9sString      &redisVersion,
+                const S9sString      &clusterType);
 
+        bool redisSpecificJobData(S9sOptions *options,
+                                  S9sVariantMap &jobData,
+                                  const S9sString &version);
+        bool valkeySpecificJobData(S9sOptions *options,
+                                   S9sVariantMap &jobData,
+                                   const S9sString &version);
 
         bool createRedisSentinel(
                 const S9sVariantList &hosts,
