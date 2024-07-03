@@ -6574,8 +6574,6 @@ S9sRpcClient::stopCluster()
     // The job_data.
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();
-    else
-        jobData["stop_timeout"] = 1800;
 
     if (options->hasMinutes())
         jobData["maintenance_minutes"] = options->minutes();
