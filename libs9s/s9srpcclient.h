@@ -581,10 +581,11 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &redisVersion);
 
-        bool registerRedisShardedCluster(
+        bool registerRedisOrValkeyShardedCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &redisVersion);
+                const S9sString      &providerVersion,
+                const S9sString      &clusterType);
 
         bool createMsSqlSingle(
                 const S9sVariantList &hosts,

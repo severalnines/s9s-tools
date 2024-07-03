@@ -3375,9 +3375,13 @@ S9sRpcClient::registerCluster()
 
         success = registerNdbCluster(
                 mySqlHosts, mgmdHosts, ndbdHosts, osUserName);
-    } else if (options->clusterType() == "redis-sharded" || options->clusterType() == "redis_sharded")
+    } else if (options->clusterType() == "redis-sharded" || options->clusterType() == "redis_sharded" ||
+               options->clusterType() == "valkey-sharded" || options->clusterType() == "valkey_sharded")
     {
-        success = registerRedisShardedCluster(hosts, osUserName, options->providerVersion());
+        success = registerRedisOrValkeyShardedCluster(hosts,
+                                                      osUserName,
+                                                      options->providerVersion(),
+                                                      options->clusterType());
     } else if (options->clusterType() == "redis")
     {
         success = registerRedisCluster(hosts, osUserName, options->providerVersion());
@@ -12031,10 +12035,11 @@ S9sRpcClient::syncClusters()
 }
 
 bool
-S9sRpcClient::registerRedisShardedCluster(
+S9sRpcClient::registerRedisOrValkeyShardedCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &redisVersion)
+        const S9sString      &providerVersion,
+        const S9sString      &clusterType)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -12042,6 +12047,7 @@ S9sRpcClient::registerRedisShardedCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    bool            isValkeyCluster = clusterType.contains("valkey");
 
     if (hosts.size() < 1u)
     {
@@ -12052,7 +12058,8 @@ S9sRpcClient::registerRedisShardedCluster(
     else if (hosts.size() > 1u)
     {
 
-        PRINT_ERROR("Redis sharded clusters requires only one cluster's node to discover topology");
+        PRINT_ERROR("%s sharded clusters requires only one cluster's node to discover topology",
+                     isValkeyCluster ? "Valkey" : "Redis");
         return false;
     }
 
@@ -12061,29 +12068,30 @@ S9sRpcClient::registerRedisShardedCluster(
     //
     // The job_data describing the cluster.
     //
-    jobData["cluster_type"]     = "redis_sharded";
-    jobData["type"]             = "redis_sharded";
+    jobData["cluster_type"]     = isValkeyCluster ? "valkey_sharded" : "redis_sharded";
+    jobData["type"]             = isValkeyCluster ? "valkey_sharded" : "redis_sharded";
     jobData["nodes"]            = nodesField(hosts);
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
 
-    if (!redisVersion.empty())
-        jobData["version"]      = redisVersion;
+    if (!providerVersion.empty())
+        jobData["version"]      = providerVersion;
 
     //
     // Required parameters
     //
     if(options->redisShardedPort() != 0)
         jobData["redis_sharded_port"] = options->redisShardedPort();
+    else if(options->valkeyShardedPort() != 0)
+        jobData["valkey_sharded_port"] = options->valkeyShardedPort();
     else
     {
-        PRINT_ERROR(
-                "Redis sharded cluster requires '--redis-sharded-port' option");
+        S9sString clusterName = isValkeyCluster ? "valkey" : "redis";
+        PRINT_ERROR("%s sharded cluster requires '--%s-sharded-port' option",
+                    STR(clusterName),
+                    STR(clusterName));
         return false;
     }
-      
-    if (!redisVersion.empty())
-        jobData["version"]      = redisVersion;
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -12097,7 +12105,7 @@ S9sRpcClient::registerRedisShardedCluster(
     //
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register Redis Sharded Cluster";
+    job["title"]                = isValkeyCluster ? "Register Valkey Sharded Cluster" : "Register Redis Sharded Cluster";
     job["job_spec"]             = jobSpec;
 
     //
