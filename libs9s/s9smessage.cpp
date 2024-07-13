@@ -422,6 +422,7 @@ S9sMessage::toString(
         {
             switch (c)
             {
+#ifndef PUBLIC_RELEASE
                 case 'B':
                     // The base name in color.
                     partFormat += 's';
@@ -437,7 +438,7 @@ S9sMessage::toString(
                     if (syntaxHighlight)
                         retval += TERM_NORMAL;
                     break;
-
+#endif
                 case 'c':
                     // The 'log_class' property.
                     partFormat += 's';
@@ -504,13 +505,15 @@ S9sMessage::toString(
                     tmp.sprintf(STR(partFormat), STR(m_properties.toString()));
                     retval += tmp;
                     break;
-                
+
+#ifndef PUBLIC_RELEASE
                 case 'L':
                     // The line number.
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), lineNumber());
                     retval += tmp;
                     break;
+#endif
 
                 case 'M':
                     // The message in color.
@@ -569,6 +572,7 @@ S9sMessage::toString(
                     retval += TERM_NORMAL;
                     break;
 
+#ifndef PUBLIC_RELEASE
                 case 'F':
                     // The file name in color.
                     partFormat += 's';
@@ -596,7 +600,7 @@ S9sMessage::toString(
                     retval += TERM_NORMAL;
                     break;
 #endif
-
+#endif
                 case '%':
                     retval += '%';
                     break;
