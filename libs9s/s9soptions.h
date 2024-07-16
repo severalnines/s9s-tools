@@ -399,7 +399,7 @@ class S9sOptions
         S9sString backupMethod() const;
         S9sString backupPath() const;
         S9sString backupSourceAddress() const;
-        bool noCompression() const;
+        bool compression() const;
         bool pitrCompatible() const;
         bool usePigz() const;
         bool onNode() const;

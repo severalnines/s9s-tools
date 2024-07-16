@@ -179,7 +179,7 @@ enum S9sOptionType
     OptionListClusterTypes,
     OptionListContainers,
     OptionType,
-    OptionNoCompression,
+    OptionCompression,
     OptionPitrCompatible,
     OptionUsePigz,
     OptionOnNode,
@@ -3655,12 +3655,12 @@ S9sOptions::encryptBackup() const
 }
 
 /**
- * \returns true if the --no-compression command line option was provided.
+ * \returns true if the --compression command line option was provided.
  */
 bool
-S9sOptions::noCompression() const
+S9sOptions::compression() const
 {
-    return getBool("no_compression");
+    return getBool("compression");
 }
 
 bool
@@ -6826,7 +6826,7 @@ S9sOptions::printHelpBackup()
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
-"  --no-compression           Do not compress the archive file.\n"
+"  --compression              Compress the backup.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
@@ -8048,7 +8048,7 @@ S9sOptions::readOptionsBackup(
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
-        { "no-compression",   no_argument,       0, OptionNoCompression   },
+        { "compression",      no_argument,       0, OptionCompression     },
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
@@ -8397,13 +8397,14 @@ S9sOptions::readOptionsBackup(
                 m_options["encrypt_backup"] = true;
                 break;
                 
-            case OptionNoCompression:
-                // --no-compression
-                m_options["no_compression"] = true;
+            case OptionCompression:
+                // --compression
+                m_options["compression"] = true;
                 break;
 
             case OptionUsePigz:
                 // --use-pigz
+                m_options["compression"] = true;
                 m_options["use_pigz"] = true;
                 break;
             
