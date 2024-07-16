@@ -6212,7 +6212,7 @@ S9sRpcClient::addRedisShardedNode(
         }
         if (protocol != "redis-sharded" && protocol != "valkey-sharded")
         {
-            PRINT_ERROR("When adding redis/valkey sharded node protocol sould be \'redis-sharded\' or \'valkey-sharded\' not: %s",
+            PRINT_ERROR("When adding redis/valkey sharded node, protocol should be \'redis-sharded\' or \'valkey-sharded\' not: %s",
                 STR(protocol));
             return false;
         }
