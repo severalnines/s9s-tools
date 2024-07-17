@@ -10908,8 +10908,8 @@ S9sRpcClient::composeBackupJob()
     if (options->pitrCompatible())
         jobData["pitr_compatible"] = true;
 
-    if (options->noCompression())
-        jobData["compression"]   = false;
+    if (options->compression())
+        jobData["compression"]   = true;
 
     if (options->usePigz())
         jobData["use_pigz"]      = true;

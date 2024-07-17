@@ -1706,7 +1706,7 @@ UtS9sRpcClient::testComposeBackupJob()
     options->m_options["backup_password"]     = "backuppassword";
     options->m_options["databases"]           = "databases";
     options->m_options["pitr_compatible"]     = true;
-    options->m_options["no_compression"]      = false;
+    options->m_options["compression"]         = false;
     options->m_options["use_pigz"]            = true;
     options->m_options["on_node"]             = true;
     options->m_options["on_controller"]       = false;
@@ -1834,7 +1834,7 @@ UtS9sRpcClient::testBackup()
     options->m_options["backup_password"]     = "backuppassword1";
     options->m_options["databases"]           = "databases1";
     options->m_options["pitr_compatible"]     = true;
-    options->m_options["no_compression"]      = false;
+    options->m_options["compression"]      = false;
     options->m_options["use_pigz"]            = true;
     options->m_options["on_node"]             = true;
     options->m_options["on_controller"]       = false;
@@ -2045,7 +2045,7 @@ UtS9sRpcClient::testBackupSchedule()
     options->m_options["backup_password"]     = "backuppassword1";
     options->m_options["databases"]           = "databases1";
     options->m_options["pitr_compatible"]     = true;
-    options->m_options["no_compression"]      = false;
+    options->m_options["compression"]         = false;
     options->m_options["use_pigz"]            = true;
     options->m_options["on_node"]             = true;
     options->m_options["on_controller"]       = false;
