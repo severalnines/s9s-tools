@@ -5028,7 +5028,7 @@ S9sRpcClient::createNode()
         {
         } else if (protocol == "redis" || protocol == "redis-sentinel")
         {
-        } else if (protocol == "redis-sharded")
+        } else if (protocol == "redis-sharded" || protocol == "valkey-sharded")
         {
             hasRedisSharded = true;
         }
@@ -6210,9 +6210,9 @@ S9sRpcClient::addRedisShardedNode(
             nodei["role"] = role;
             nodes.push_back(nodei);
         }
-        if (protocol != "redis-sharded")
+        if (protocol != "redis-sharded" && protocol != "valkey-sharded")
         {
-            PRINT_ERROR("When adding redis sharded node protocol sould be \'redis-sharded\' not: %s",
+            PRINT_ERROR("When adding redis/valkey sharded node, protocol should be \'redis-sharded\' or \'valkey-sharded\' not: %s",
                 STR(protocol));
             return false;
         }
