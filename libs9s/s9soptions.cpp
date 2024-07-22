@@ -180,6 +180,7 @@ enum S9sOptionType
     OptionListContainers,
     OptionType,
     OptionCompression,
+    OptionCompressionLevel,
     OptionPitrCompatible,
     OptionUsePigz,
     OptionOnNode,
@@ -3663,6 +3664,18 @@ S9sOptions::compression() const
     return getBool("compression");
 }
 
+/**
+ * \returns value of specified --compression-lelvel option if provided. Default value otherwise -1
+ */
+int
+S9sOptions::compressionLevel() const
+{
+    if(m_options.contains("compression_level"))
+        return m_options.at("compression_level").toInt();
+    return -1;
+}
+
+
 bool
 S9sOptions::pitrCompatible() const
 {
@@ -6827,6 +6840,7 @@ S9sOptions::printHelpBackup()
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --compression              Compress the backup.\n"
+"  --compression-level        Backup compress level value to use (between 1 and 9).\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
@@ -8049,6 +8063,7 @@ S9sOptions::readOptionsBackup(
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
         { "compression",      no_argument,       0, OptionCompression     },
+        { "compression-level",required_argument, 0, OptionCompressionLevel},
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
@@ -8401,6 +8416,12 @@ S9sOptions::readOptionsBackup(
                 // --compression
                 m_options["compression"] = true;
                 break;
+
+            case OptionCompressionLevel:
+                // --compression-level
+                m_options["compression_level"] = optarg;
+                break;
+
 
             case OptionUsePigz:
                 // --use-pigz

@@ -6639,6 +6639,8 @@ S9sRpcClient::stopCluster()
     // The job_data.
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();
+    else
+        jobData["stop_timeout"] = 1800;
 
     if (options->hasMinutes())
         jobData["maintenance_minutes"] = options->minutes();
@@ -10908,6 +10910,17 @@ S9sRpcClient::composeBackupJob()
 
     if (options->compression())
         jobData["compression"]   = true;
+
+    if (options->compressionLevel() > 0)
+    {
+        int value = options->compressionLevel();
+        if(value < 1 || value > 9)
+        {
+            PRINT_ERROR("Compression level must be between 1 and 9. Option ignored.");
+        }
+        else
+            jobData["compression_level"] = value;
+    }
 
     if (options->usePigz())
         jobData["use_pigz"]      = true;
