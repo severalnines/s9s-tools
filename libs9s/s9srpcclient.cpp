@@ -8723,6 +8723,14 @@ S9sRpcClient::createBackup()
         return false;
     }
 
+
+    // The recurrence is not needed on 'createBackup' operation 
+    if(job.contains("recurrence"))
+    {
+        PRINT_ERROR("Recurrence is not a valid option for 'createBackup' operation and will be ignored.");
+        job.erase("recurrence");
+    }
+
     // There can be 1 or 0 nodes specified.
     if (hosts.size() > 1u)
     {
@@ -8762,7 +8770,7 @@ S9sRpcClient::createBackupSchedule()
     }
 
 
-    // The recurrence is not for the job, it is for the backup here.
+    // The recurrence is the 'schedule' option on 'scheduleBackup' operation 
     job.erase("recurrence");
 
     schedule["class_name"] = "CmonBackupSchedule";
