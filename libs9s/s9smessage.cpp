@@ -461,15 +461,6 @@ S9sMessage::toString(
                     retval += tmp;
                     break;
                 
-                case 'D':
-                    // The 'created' date&time.
-                    partFormat += 's';
-                    tmp.sprintf(
-                            STR(partFormat),
-                            STR(created().toString(S9sDateTime::LogIdDateFormat)));
-                    retval += tmp;
-                    break;
-
                 case 'h':
                     // The related host name. 
                     partFormat += 's';
@@ -485,7 +476,7 @@ S9sMessage::toString(
                     break;
                 
                 case 'I':
-                    // The message ID.
+                    // The message ID to pass to cmon, e.g. for a logs request
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), messageId());
                     retval += tmp;
