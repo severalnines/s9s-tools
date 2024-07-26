@@ -179,8 +179,8 @@ enum S9sOptionType
     OptionListClusterTypes,
     OptionListContainers,
     OptionType,
-    OptionCompression,
     OptionCompressionLevel,
+    OptionNoCompression,
     OptionPitrCompatible,
     OptionUsePigz,
     OptionOnNode,
@@ -3660,9 +3660,9 @@ S9sOptions::encryptBackup() const
  * \returns true if the --compression command line option was provided.
  */
 bool
-S9sOptions::compression() const
+S9sOptions::noCompression() const
 {
-    return getBool("compression");
+    return getBool("no_compression");
 }
 
 /**
@@ -6852,8 +6852,8 @@ S9sOptions::printHelpBackup()
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
-"  --compression              Compress the backup.\n"
 "  --compression-level        Backup compress level value to use (between 1 and 9).\n"
+"  --no-compression           Do not compress the backup.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
@@ -8077,8 +8077,8 @@ S9sOptions::readOptionsBackup(
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
-        { "compression",      no_argument,       0, OptionCompression     },
         { "compression-level",required_argument, 0, OptionCompressionLevel},
+        { "no-compression",   no_argument,       0, OptionNoCompression   },
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
@@ -8437,9 +8437,9 @@ S9sOptions::readOptionsBackup(
                 m_options["encrypt_backup"] = true;
                 break;
                 
-            case OptionCompression:
-                // --compression
-                m_options["compression"] = true;
+            case OptionNoCompression:
+                // --no-compression
+                m_options["no_compression"] = true;
                 break;
 
             case OptionCompressionLevel:
@@ -8450,7 +8450,6 @@ S9sOptions::readOptionsBackup(
 
             case OptionUsePigz:
                 // --use-pigz
-                m_options["compression"] = true;
                 m_options["use_pigz"] = true;
                 break;
             

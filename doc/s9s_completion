@@ -135,7 +135,7 @@ function _s9s()
                 opts+="--backup-user= --backup-password= "
                 opts+="--backup-directory= --backup-method= --databases= "
                 opts+="--full-path= --memory= "
-                opts+="--compression --on-node --on-controller "
+                opts+="--no-compression --on-node --on-controller "
                 opts+="--parallellism= --title= --use-pigz "
                 opts+="--to-individual-files --pitr-compatible "
             fi
