@@ -306,8 +306,7 @@ class S9sRpcReply : public S9sVariantMap
         void printServersStat();
 
         
-        void printLogBrief();
-        void printLogLong();
+        void printCmonLog();
 
         void printConfigBrief();
         

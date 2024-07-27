@@ -3331,108 +3331,16 @@ S9sRpcReply::printLogList()
 
     if (options->isJsonRequested())
         printJsonFormat();
-    else if (options->isLongRequested())
-        printLogLong();
     else 
-        printLogBrief();
+        printCmonLog();
 }
 
 void
-S9sRpcReply::printLogBrief()
+S9sRpcReply::printCmonLog()
 {
-    S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sString       formatString = options->briefLogFormat();
-    S9sVariantList  variantList = operator[]("log_entries").toVariantList();
-    
-    if (variantList.empty() && contains("log_entry"))
-        variantList << operator[]("log_entry").toVariantMap();
-
-    for (uint idx = 0; idx < variantList.size(); ++idx)
-    {
-        S9sVariantMap theMap  = variantList[idx].toVariantMap();
-        S9sMessage    message = theMap;
-        S9sString     severity = message.severity();
-        
-        // Filtering by severity level is done on the controller now.
-
-        if (formatString.empty())
-            printf("%s\n", STR(S9sString::html2ansi(message.message())));
-        else {
-            printf("%s",
-                    STR(message.toString(syntaxHighlight, formatString)));
-        }
-    }
-}
-
-void
-S9sRpcReply::printLogLong()
-{
-    S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
-    S9sString       formatString = options->longLogFormat();
-    bool            hasLogFormatFile = options->hasLogFormatFile();
-    S9sString       logFormatFile = options->logFormatFile();
-    S9sVariantList  variantList = operator[]("log_entries").toVariantList();
-    S9sVector<S9sMessage> theList;
-
-    if (variantList.empty() && contains("log_entry"))
-        variantList << operator[]("log_entry").toVariantMap();
-
-    for (uint idx = 0u; idx < variantList.size(); ++idx)
-    {
-        S9sVariantMap theMap  = variantList[idx].toVariantMap();
-        S9sMessage    message = theMap;
-        
-        theList << message;
-    }
-    
-    // FIXME:
-    // The implementation of the long format is just a formatstring, the same
-    // code is used here as it is added to the brief format.
-    if (!hasLogFormatFile && formatString.empty())
-    {
-        formatString = "%C %36B:%-5L: %-8S %M\n";
-    }
-
-    for (uint idx = 0; idx < theList.size(); ++idx)
-    {
-        S9sMessage    message  = theList[idx];
-        S9sString     severity = message.severity();
-
-        // Filtering by severity level is done on the controller now.
-        
-        if (hasLogFormatFile)
-        {
-            S9sVariantList fileNames;
-            S9sString      fileName;
-            S9sFile        file;
-
-            fileNames = logFormatFile.split(";");
-            for (uint idx = 0u; idx < fileNames.size(); ++idx)
-            {
-                fileName = fileNames[idx].toString();
-                S9S_WARNING("***      fileName: '%s'", STR(fileName));
-                fileName = message.toString(false, fileName);
-                S9S_WARNING("*** form fileName: '%s'", STR(fileName));
-
-                file     = S9sFile(fileName);
-                if (file.exists())
-                    break;
-            }
-
-            formatString = "";
-            file.readTxtFile(formatString);
-        }
-
-        if (formatString.empty())
-        {
-            //printf("%s\n", STR(S9sString::html2ansi(message.message())));
-        } else {
-            ::printf("%s",
-                    STR(message.toString(syntaxHighlight, formatString)));
-        }
-    }
+    const auto variantList = operator[]("log_entries").toVariantList();
+    for (const auto &logLine : variantList)
+        printf("%s\n", STR(S9sString::html2ansi(logLine.toString())));
 }
 
 void
