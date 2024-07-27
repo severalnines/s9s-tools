@@ -476,7 +476,7 @@ S9sMessage::toString(
                     break;
                 
                 case 'I':
-                    // The message ID to pass to cmon, e.g. for a logs request
+                    // The message ID.
                     partFormat += 'd';
                     tmp.sprintf(STR(partFormat), messageId());
                     retval += tmp;
