@@ -207,6 +207,18 @@ s9s backup \\
 .fi
 
 .TP
+.B --delete-schedules
+Delete the backup schedule specified on job id.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --delete-schedules \\
+    --job-id=1
+.fi
+
+
+.TP
 .B --restore-cluster-info 
 Restores the information the controller has about a cluster from a previously 
 created archive file.
@@ -711,8 +723,13 @@ are going to be archived into the backup file. By default all the databases are
 going to be archived.
 
 .TP
-.BI \-\^\-no\-compression
-Do not compress the archive file created by the backup.
+.BI \-\^\-compression
+Compress the archive file created by the backup.
+
+.TP
+.BI \-\^\-compression\-level
+Compression level (used threads) to apply on backup compression process. 
+Value must be between 1 and 9.
 
 .TP
 .BI \-\^\-on\-node

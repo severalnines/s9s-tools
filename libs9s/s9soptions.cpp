@@ -180,6 +180,7 @@ enum S9sOptionType
     OptionListContainers,
     OptionType,
     OptionCompression,
+    OptionCompressionLevel,
     OptionPitrCompatible,
     OptionUsePigz,
     OptionOnNode,
@@ -282,6 +283,7 @@ enum S9sOptionType
     OptionListProcessors,
     OptionListMemory,
     OptionListSchedules,
+    OptionDeleteSchedules,
     OptionCreateSchedule,
     OptionGetAcl,
     OptionCat,
@@ -3663,6 +3665,18 @@ S9sOptions::compression() const
     return getBool("compression");
 }
 
+/**
+ * \returns value of specified --compression-lelvel option if provided. Default value otherwise -1
+ */
+int
+S9sOptions::compressionLevel() const
+{
+    if(m_options.contains("compression_level"))
+        return m_options.at("compression_level").toInt();
+    return -1;
+}
+
+
 bool
 S9sOptions::pitrCompatible() const
 {
@@ -4409,6 +4423,16 @@ S9sOptions::isListSchedulesRequested() const
 {
     return getBool("list_schedules");
 }
+
+/**
+ * \returns True if the --delete-schedules command line option is provided.
+ */
+bool
+S9sOptions::isDeleteSchedulesRequested() const
+{
+    return getBool("delete_schedules");
+}
+
 
 /**
  * \returns True if the --create-schedule command line option is provided.
@@ -6799,6 +6823,7 @@ S9sOptions::printHelpBackup()
 "  --list-files                   List the backups in backup file format.\n"
 "  --list                         List the backups.\n"
 "  --list-schedules               List the backup schedules.\n"
+"  --delete-schedules             Delete the job-id of the backup schedule.\n"
 "  --restore-cluster-info         Restores a saved cluster object.\n"
 "  --restore-controller           Restores the controller from a file.\n"
 "  --restore                      Restore an existing backup.\n"
@@ -6812,6 +6837,7 @@ S9sOptions::printHelpBackup()
 "  --backup-id=ID             The ID of the backup.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
+"  --job-id=ID                The ID of the job of the backup schedule to delete.\n"
 "\n"
 "  --backup-datadir           Backup the SQL data directory before restoring.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
@@ -6827,6 +6853,7 @@ S9sOptions::printHelpBackup()
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --compression              Compress the backup.\n"
+"  --compression-level        Backup compress level value to use (between 1 and 9).\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
 "  --parallellism=N           Number of threads used while creating backup.\n"
@@ -8007,6 +8034,7 @@ S9sOptions::readOptionsBackup(
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
         { "list-schedules",   no_argument,       0, OptionListSchedules   },
+        { "delete-schedules", no_argument,       0, OptionDeleteSchedules },
         { "restore-cluster-info", no_argument,   0, OptionRestoreCluster  },
         { "restore-controller", no_argument,     0, OptionRestoreController },
         { "restore",          no_argument,       0, OptionRestore         },
@@ -8023,6 +8051,7 @@ S9sOptions::readOptionsBackup(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "job-id",           required_argument, 0, OptionJobId           },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -8049,6 +8078,7 @@ S9sOptions::readOptionsBackup(
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
         { "compression",      no_argument,       0, OptionCompression     },
+        { "compression-level",required_argument, 0, OptionCompressionLevel},
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
@@ -8165,6 +8195,16 @@ S9sOptions::readOptionsBackup(
             case OptionListSchedules:
                 // --list-schedules
                 m_options["list_schedules"] = true;
+                break;
+
+            case OptionDeleteSchedules:
+                // --delete-schedules
+                m_options["delete_schedules"] = true;
+                break;
+
+            case OptionJobId:
+                // --job-id=ID
+                m_options["job_id"] = atoi(optarg);
                 break;
             
             case OptionListDatabases:
@@ -8401,6 +8441,12 @@ S9sOptions::readOptionsBackup(
                 // --compression
                 m_options["compression"] = true;
                 break;
+
+            case OptionCompressionLevel:
+                // --compression-level
+                m_options["compression_level"] = optarg;
+                break;
+
 
             case OptionUsePigz:
                 // --use-pigz
@@ -10800,6 +10846,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
 
     if (isListSchedulesRequested())
+        countOptions++;
+
+    if (isDeleteSchedulesRequested())
         countOptions++;
     
     if (isCreateScheduleRequested())

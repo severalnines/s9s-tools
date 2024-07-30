@@ -400,6 +400,7 @@ class S9sOptions
         S9sString backupPath() const;
         S9sString backupSourceAddress() const;
         bool compression() const;
+        int compressionLevel() const;
         bool pitrCompatible() const;
         bool usePigz() const;
         bool onNode() const;
@@ -492,6 +493,7 @@ class S9sOptions
         bool isListTemplatesRequested() const;
         bool isListMemoryRequested() const;
         bool isListSchedulesRequested() const;
+        bool isDeleteSchedulesRequested() const;
         bool isCreateScheduleRequested() const;
         bool isListSnapshotRepositoryRequested() const;
         bool isCreateSnapshotRepositoryRequested() const;

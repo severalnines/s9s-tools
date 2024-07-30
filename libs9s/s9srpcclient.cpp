@@ -6639,6 +6639,8 @@ S9sRpcClient::stopCluster()
     // The job_data.
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();
+    else
+        jobData["stop_timeout"] = 1800;
 
     if (options->hasMinutes())
         jobData["maintenance_minutes"] = options->minutes();
@@ -8721,6 +8723,14 @@ S9sRpcClient::createBackup()
         return false;
     }
 
+
+    // The recurrence is not needed on 'createBackup' operation 
+    if(job.contains("recurrence"))
+    {
+        PRINT_ERROR("Recurrence is not a valid option for 'createBackup' operation and will be ignored.");
+        job.erase("recurrence");
+    }
+
     // There can be 1 or 0 nodes specified.
     if (hosts.size() > 1u)
     {
@@ -8760,7 +8770,7 @@ S9sRpcClient::createBackupSchedule()
     }
 
 
-    // The recurrence is not for the job, it is for the backup here.
+    // The recurrence is the 'schedule' option on 'scheduleBackup' operation 
     job.erase("recurrence");
 
     schedule["class_name"] = "CmonBackupSchedule";
@@ -8774,6 +8784,30 @@ S9sRpcClient::createBackupSchedule()
     
     return executeRequest(uri, request);
 }
+
+
+bool
+S9sRpcClient::deleteBackupSchedule()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   schedule;
+    S9sVariantMap   request;
+    // As for other backup schedules they are treated as jobs so, not using 'backups' URI but 'jobs' one
+    S9sString       uri = "/v2/jobs/";
+
+    // The job-id must be specified.
+    if (!options->hasJobId())
+    {
+        PRINT_ERROR("The backup ID (--job-id) must be specified.");
+        return false;
+    }
+
+    request["operation"] = "deleteJobInstance";
+    request["job_id"]    = options->jobId();
+
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::createSnapshotRepository()
@@ -10908,6 +10942,17 @@ S9sRpcClient::composeBackupJob()
 
     if (options->compression())
         jobData["compression"]   = true;
+
+    if (options->compressionLevel() > 0)
+    {
+        int value = options->compressionLevel();
+        if(value < 1 || value > 9)
+        {
+            PRINT_ERROR("Compression level must be between 1 and 9. Option ignored.");
+        }
+        else
+            jobData["compression_level"] = value;
+    }
 
     if (options->usePigz())
         jobData["use_pigz"]      = true;
