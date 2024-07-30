@@ -896,6 +896,10 @@ S9sBusinessLogic::execute()
         {
             printBackupSchedules(client);
             client.setExitStatus();
+        } else if (options->isDeleteSchedulesRequested())
+        {
+            if(client.deleteBackupSchedule())
+                client.printMessages("Deleted.", true);
         } else if (options->isCreateSnapshotRepositoryRequested())
         {
             success = client.createSnapshotRepository();

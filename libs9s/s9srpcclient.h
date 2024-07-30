@@ -198,6 +198,7 @@ class S9sRpcClient
          */
         bool createBackup();
         bool createBackupSchedule();
+        bool deleteBackupSchedule();
         bool createSnapshotRepository();
         bool verifyBackup();
         bool restoreBackup();

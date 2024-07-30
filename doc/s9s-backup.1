@@ -207,6 +207,18 @@ s9s backup \\
 .fi
 
 .TP
+.B --delete-schedules
+Delete the backup schedule specified on job id.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --delete-schedules \\
+    --job-id=1
+.fi
+
+
+.TP
 .B --restore-cluster-info 
 Restores the information the controller has about a cluster from a previously 
 created archive file.

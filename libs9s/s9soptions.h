@@ -493,6 +493,7 @@ class S9sOptions
         bool isListTemplatesRequested() const;
         bool isListMemoryRequested() const;
         bool isListSchedulesRequested() const;
+        bool isDeleteSchedulesRequested() const;
         bool isCreateScheduleRequested() const;
         bool isListSnapshotRepositoryRequested() const;
         bool isCreateSnapshotRepositoryRequested() const;

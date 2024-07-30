@@ -283,6 +283,7 @@ enum S9sOptionType
     OptionListProcessors,
     OptionListMemory,
     OptionListSchedules,
+    OptionDeleteSchedules,
     OptionCreateSchedule,
     OptionGetAcl,
     OptionCat,
@@ -4424,6 +4425,16 @@ S9sOptions::isListSchedulesRequested() const
 }
 
 /**
+ * \returns True if the --delete-schedules command line option is provided.
+ */
+bool
+S9sOptions::isDeleteSchedulesRequested() const
+{
+    return getBool("delete_schedules");
+}
+
+
+/**
  * \returns True if the --create-schedule command line option is provided.
  */
 bool
@@ -6812,6 +6823,7 @@ S9sOptions::printHelpBackup()
 "  --list-files                   List the backups in backup file format.\n"
 "  --list                         List the backups.\n"
 "  --list-schedules               List the backup schedules.\n"
+"  --delete-schedules             Delete the job-id of the backup schedule.\n"
 "  --restore-cluster-info         Restores a saved cluster object.\n"
 "  --restore-controller           Restores the controller from a file.\n"
 "  --restore                      Restore an existing backup.\n"
@@ -6825,6 +6837,7 @@ S9sOptions::printHelpBackup()
 "  --backup-id=ID             The ID of the backup.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
+"  --job-id=ID                The ID of the job of the backup schedule to delete.\n"
 "\n"
 "  --backup-datadir           Backup the SQL data directory before restoring.\n"
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
@@ -8021,6 +8034,7 @@ S9sOptions::readOptionsBackup(
         { "list-files",       no_argument,       0, OptionListFiles       },
         { "list",             no_argument,       0, 'L'                   },
         { "list-schedules",   no_argument,       0, OptionListSchedules   },
+        { "delete-schedules", no_argument,       0, OptionDeleteSchedules },
         { "restore-cluster-info", no_argument,   0, OptionRestoreCluster  },
         { "restore-controller", no_argument,     0, OptionRestoreController },
         { "restore",          no_argument,       0, OptionRestore         },
@@ -8037,6 +8051,7 @@ S9sOptions::readOptionsBackup(
         { "batch",            no_argument,       0, OptionBatch           },
         { "no-header",        no_argument,       0, OptionNoHeader        },
         { "job-tags",         required_argument, 0, OptionJobTags         },
+        { "job-id",           required_argument, 0, OptionJobId           },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -8180,6 +8195,16 @@ S9sOptions::readOptionsBackup(
             case OptionListSchedules:
                 // --list-schedules
                 m_options["list_schedules"] = true;
+                break;
+
+            case OptionDeleteSchedules:
+                // --delete-schedules
+                m_options["delete_schedules"] = true;
+                break;
+
+            case OptionJobId:
+                // --job-id=ID
+                m_options["job_id"] = atoi(optarg);
                 break;
             
             case OptionListDatabases:
@@ -10821,6 +10846,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
 
     if (isListSchedulesRequested())
+        countOptions++;
+
+    if (isDeleteSchedulesRequested())
         countOptions++;
     
     if (isCreateScheduleRequested())

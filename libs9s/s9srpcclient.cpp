@@ -8785,6 +8785,30 @@ S9sRpcClient::createBackupSchedule()
     return executeRequest(uri, request);
 }
 
+
+bool
+S9sRpcClient::deleteBackupSchedule()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   schedule;
+    S9sVariantMap   request;
+    // As for other backup schedules they are treated as jobs so, not using 'backups' URI but 'jobs' one
+    S9sString       uri = "/v2/jobs/";
+
+    // The job-id must be specified.
+    if (!options->hasJobId())
+    {
+        PRINT_ERROR("The backup ID (--job-id) must be specified.");
+        return false;
+    }
+
+    request["operation"] = "deleteJobInstance";
+    request["job_id"]    = options->jobId();
+
+    return executeRequest(uri, request);
+}
+
+
 bool
 S9sRpcClient::createSnapshotRepository()
 {
