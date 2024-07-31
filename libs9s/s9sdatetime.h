@@ -72,8 +72,6 @@ class S9sDateTime
             EmailDateTimeFormat,
             /** "2015-11-19T04:46:01.000Z" */
             TzDateTimeFormat,
-            /** "20240510_131501_", with log_id is used for unique Log Message ID: 20240510_131501_1767 */
-            LogIdDateFormat,
         };
 
         S9sDateTime();
