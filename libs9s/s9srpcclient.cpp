@@ -10940,8 +10940,10 @@ S9sRpcClient::composeBackupJob()
     if (options->pitrCompatible())
         jobData["pitr_compatible"] = true;
 
-    if (options->compression())
-        jobData["compression"]   = true;
+    if (options->noCompression())
+        jobData["compression"] = false;
+    else
+        jobData["compression"] = true;
 
     if (options->compressionLevel() > 0)
     {
@@ -10955,7 +10957,10 @@ S9sRpcClient::composeBackupJob()
     }
 
     if (options->usePigz())
-        jobData["use_pigz"]      = true;
+    {
+        jobData["compression"] = true;
+        jobData["use_pigz"] = true;
+    }
 
     if (options->onNode())
         jobData["cc_storage"]    = false;
