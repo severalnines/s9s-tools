@@ -572,11 +572,6 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &redisVersion);
 
-        bool createElasticsearch(
-                const S9sVariantList &hosts,
-                const S9sString      &osUserName,
-                const S9sString      &elasticVersion);
-
         bool registerRedisCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
@@ -587,6 +582,15 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &providerVersion,
                 const S9sString      &clusterType);
+
+        bool createElasticsearch(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &elasticVersion);
+
+        bool registerElasticsearchCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
 
         bool createMsSqlSingle(
                 const S9sVariantList &hosts,
