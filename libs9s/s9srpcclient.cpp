@@ -11293,6 +11293,9 @@ S9sRpcClient::addCredentialsToJobData(
 
     if (!options->sslKeyFile().empty())
         jobData["key_file"]    = options->sslKeyFile();
+
+    if (!options->sslCaPass().empty())
+        jobData["certificates_password"] = options->sslCaPass();
 }
 
 /**
@@ -12135,7 +12138,6 @@ S9sRpcClient::registerElasticsearchCluster(
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
-
     //
     // The jobspec describing the command.
     //
