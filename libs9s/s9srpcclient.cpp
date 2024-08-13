@@ -10953,7 +10953,14 @@ S9sRpcClient::composeBackupJob()
             PRINT_ERROR("Compression level must be between 1 and 9. Option ignored.");
         }
         else
-            jobData["compression_level"] = value;
+        {
+            if(options->noCompression())
+                PRINT_ERROR(
+                        "Option --compression-level is ignored due to "
+                        "--no-compression option being set.");
+            else
+                jobData["compression_level"] = value;
+        }
     }
 
     if (options->usePigz())
