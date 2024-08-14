@@ -1217,7 +1217,13 @@ to be imported by ClusterControl and be deployed to the database nodes.
 
 .TP
 .BI --ssl-pass= PASSWD
-The password for an existing CA private key or the generated CA private key.
+The password for an existing CA private key when register cluster.
+
+.TP
+.BI --copy-certs-dir= PATH
+The path to the directory where the SSL certificates are stored and will
+be copied on imported cluster. (Please ommit initial '/var/lib/cmon/ca')
+
 
 
 .\"
