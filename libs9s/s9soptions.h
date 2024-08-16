@@ -210,6 +210,8 @@ class S9sOptions
         S9s::AddressType addressType() const;
 
         S9sString sslCaFile() const;
+        S9sString sslCaPass() const;
+        S9sString moveCertsDir() const;
         S9sString sslCertFile() const;
         S9sString sslKeyFile() const;
 

@@ -3382,10 +3382,15 @@ S9sRpcClient::registerCluster()
                                                       osUserName,
                                                       options->providerVersion(),
                                                       options->clusterType());
-    } else if (options->clusterType() == "redis")
+    } 
+    else if (options->clusterType() == "redis")
     {
         success = registerRedisCluster(hosts, osUserName, options->providerVersion());
     } 
+    else if (options->clusterType() == "elastic")
+    {
+        success = registerElasticsearchCluster(hosts, osUserName);
+    }
     else {
         PRINT_ERROR("Register cluster is currently not implemented for "
                 " cluster type '%s'.",
@@ -11168,6 +11173,10 @@ S9sRpcClient::composeJobData(
     else if (options->getBool("without_ssl"))
         jobData["enable_ssl"] = false;
 
+
+    if (!options->moveCertsDir().empty())
+        jobData["move_certs_dir"] = options->moveCertsDir();
+
     if (options->dry())
         jobData["dry_run"] = true;
 
@@ -11295,6 +11304,9 @@ S9sRpcClient::addCredentialsToJobData(
 
     if (!options->sslKeyFile().empty())
         jobData["key_file"]    = options->sslKeyFile();
+
+    if (!options->sslCaPass().empty())
+        jobData["certificates_password"] = options->sslCaPass();
 }
 
 /**
@@ -12088,6 +12100,81 @@ S9sRpcClient::syncClusters()
 
     return executeRequest(uri, request);
 }
+
+bool
+S9sRpcClient::registerElasticsearchCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR(
+                "Node is not specified while registering existing cluster.");
+        return false;
+    }
+    else if (hosts.size() > 1u)
+    {
+
+        PRINT_ERROR("Elasticsearch clusters requires only one cluster's node to discover topology");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    if(!jobData.contains("certificates_password"))
+        PRINT_ERROR("Certificated password (--ssl-pass) is recommended for Elasticsearch cluster import. Add node operation may fail without it.");
+    if(!jobData.contains("move_certs_dir"))
+        PRINT_ERROR("It has not been specified the certificates folder to use for Elasticsearch imported cluster (--move-certs-dir). Add node operation may fail without it.");
+
+    //
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "elastic";
+    jobData["type"]             = "elastic";
+    jobData["nodes"]            = nodesField(hosts);
+    if(options->dbAdminUserName().empty())
+    {
+        PRINT_ERROR("Database user is required for Elasticsearch cluster");
+        return false;
+    }
+    jobData["db_user"]          = options->dbAdminUserName();
+    if(options->dbAdminPassword().empty())
+    {
+        PRINT_ERROR("Database password is required for Elasticsearch cluster");
+        return false;
+    }
+    jobData["db_password"]      = options->dbAdminPassword();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+    //
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    //
+    // The job instance describing how the job will be executed.
+    //
+    job["title"]                = "Register Elasticsearch Cluster";
+    job["job_spec"]             = jobSpec;
+
+    //
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::registerRedisOrValkeyShardedCluster(
