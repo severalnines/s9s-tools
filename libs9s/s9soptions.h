@@ -211,7 +211,7 @@ class S9sOptions
 
         S9sString sslCaFile() const;
         S9sString sslCaPass() const;
-        S9sString copyCertsDir() const;
+        S9sString moveCertsDir() const;
         S9sString sslCertFile() const;
         S9sString sslKeyFile() const;
 

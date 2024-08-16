@@ -11167,8 +11167,8 @@ S9sRpcClient::composeJobData(
         jobData["enable_ssl"] = false;
 
 
-    if (!options->copyCertsDir().empty())
-        jobData["copy_certs_dir"] = options->copyCertsDir();
+    if (!options->moveCertsDir().empty())
+        jobData["move_certs_dir"] = options->moveCertsDir();
 
     if (options->dry())
         jobData["dry_run"] = true;
@@ -12123,8 +12123,8 @@ S9sRpcClient::registerElasticsearchCluster(
 
     if(!jobData.contains("certificates_password"))
         PRINT_ERROR("Certificated password (--ssl-pass) is recommended for Elasticsearch cluster import. Add node operation may fail without it.");
-    if(!jobData.contains("copy_certs_dir"))
-        PRINT_ERROR("It has not been specified the certificates folder to use for Elasticsearch imported cluster (--copy-certs-dir). Add node operation may fail without it.");
+    if(!jobData.contains("move_certs_dir"))
+        PRINT_ERROR("It has not been specified the certificates folder to use for Elasticsearch imported cluster (--move-certs-dir). Add node operation may fail without it.");
 
     //
     // The job_data describing the cluster.

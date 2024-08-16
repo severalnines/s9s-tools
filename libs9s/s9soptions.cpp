@@ -435,7 +435,7 @@ enum S9sOptionType
     OptionSslKeyFile,
     OptionSslCaFile,
     OptionSslCaPass,
-    OptionCopyCertsDir,
+    OptionMoveCertsDir,
 
     OptionVirtualIp,
     OptionEthInterface,
@@ -7140,7 +7140,7 @@ S9sOptions::printHelpCluster()
 "  --ssl-pass=STRING          Password for pre existing CA private key\n"
 "  --ssl-cert=STRING          The SSL certificate file path on controller.\n"
 "  --ssl-key=STRING           The SSL key file path on controller.\n"
-"  --copy-certs-dir=PATH      Path to certificates directory to be copied on imported cluster\n"
+"  --move-certs-dir=PATH      Path to certificates directory to be moved on imported cluster\n"
 "Microsoft SQL Server related options\n"
 "  --license=STRING           The license (Evaluation, Developer, etc).\n"
 "Elasticsearch related options\n"
@@ -13469,7 +13469,7 @@ S9sOptions::readOptionsCluster(
         // options for creation
         { "ssl-ca",              required_argument, 0, OptionSslCaFile     },
         { "ssl-pass",            required_argument, 0, OptionSslCaPass     },
-        { "copy-certs-dir",      required_argument, 0, OptionCopyCertsDir},
+        { "move-certs-dir",      required_argument, 0, OptionMoveCertsDir},
         { "ssl-cert",            required_argument, 0, OptionSslCertFile   },
         { "ssl-key",             required_argument, 0, OptionSslKeyFile    },
         
@@ -14302,9 +14302,9 @@ S9sOptions::readOptionsCluster(
                 m_options["ssl_pass"] = optarg;
                 break;
 
-            case OptionCopyCertsDir:
-                // --copy-certs-dir
-                m_options["copy_certs_dir"] = optarg;
+            case OptionMoveCertsDir:
+                // --move-certs-dir
+                m_options["move_certs_dir"] = optarg;
                 break;
 
             case OptionSslCertFile:
@@ -17308,16 +17308,16 @@ S9sOptions::sslCaPass() const
 }
 
 /**
- * \returns The certificates directory to be compied on registered cluster
- * (--copy-certs-dir)
+ * \returns The certificates directory to be moved on registered cluster
+ * (--move-certs-dir)
  */
 S9sString
-S9sOptions::copyCertsDir() const
+S9sOptions::moveCertsDir() const
 {
     S9sString retval;
 
-    if (m_options.contains("copy_certs_dir"))
-        retval = m_options.at("copy_certs_dir").toString();
+    if (m_options.contains("move_certs_dir"))
+        retval = m_options.at("move_certs_dir").toString();
 
     return retval;
 }
