@@ -1531,9 +1531,9 @@ S9sRpcReply::printCloudCredentials()
  *
  * \code
  * # s9s cloud-credentials --list
- * ID      NAME     PROVIDER    REGION     COMMENT      ENDPOINT
- * 2       alvaro1  aws         us-west-1  test
- * 3       minioc   minio       us-east-1  test_minio   192.168.1.40:9000
+ * ID      NAME     PROVIDER    REGION     ENDPOINT          COMMENT     
+ * 2       alvaro1  aws         us-west-1                    test  
+ * 3       minioc   minio       us-east-1  10.8.9.221:9000   test_minio
  * \endcode
  *
  * The request looks like this:
@@ -1588,8 +1588,8 @@ S9sRpcReply::printCloudCredentialsLong()
         nameFormat.printHeader("NAME");
         providerFormat.printHeader("PROVIDER");
         regionFormat.printHeader("REGION");
-        commentFormat.printHeader("COMMENT");
         endpointFormat.printHeader("ENDPOINT");
+        commentFormat.printHeader("COMMENT");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }    
@@ -1611,8 +1611,11 @@ S9sRpcReply::printCloudCredentialsLong()
             nameFormat.printf(name);
             providerFormat.printf(providerName);
             regionFormat.printf(credentials["access_key_region"].toString());
+            if(providerName == "aws")
+                endpointFormat.printf("<default>");
+            else
+                endpointFormat.printf(credentials["endpoint"].toString());
             commentFormat.printf(comment);
-            endpointFormat.printf(credentials["endpoint"].toString());
             ::printf("\n");
         }
     }
