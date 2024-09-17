@@ -1325,8 +1325,33 @@ S9sBusinessLogic::execute()
             PRINT_ERROR("Unknown dbversions operation.");
         }
 
+    } else if (options->isCloudCredentialsOperation())
+    {
+        if(options->isCreateCloudCredential()) {
+            S9sString provider = options->cloudProvider();
+            success = client.createCloudCredentials(options);
+            S9sRpcReply reply = client.reply();
+            reply.isOk() ? ::printf("Cloud credential '%s' saved.\n", STR(options->credentialName())) : 
+                           ::printf("Cloud credential could not be saved. Error: %s.\n",
+                           STR(reply.errorString()));
+        }
+        else if(options->isListCloudCredentials()) {
+            success = client.listCloudCredentials();
+            S9sRpcReply reply = client.reply();
+            reply.printCloudCredentials();
+        }
+        else if(options->isDeleteCloudCredential()) {
+            const int id = options->credentialId();
+            const S9sString provider = options->cloudProvider();
+            success = client.deleteCloudCredentials(id, provider);
+            S9sRpcReply reply = client.reply();
+            reply.isOk() ? ::printf("Cloud credential %d deleted.\n", id) : 
+                           ::printf("Cloud credential could not be deleted. Error: %s.\n",
+                           STR(reply.errorString()));
+        }
+        else 
+            PRINT_ERROR("Unknown cloud-credentials operation.");
     }
-    
     else {
         PRINT_ERROR("Unknown operation.");
     }

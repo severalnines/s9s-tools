@@ -140,6 +140,12 @@ enum S9sOptionType
     OptionSnapshotLocation,
     OptionS3Bucket,
     OptionS3Region,
+    OptionS3AccessKeyId,
+    OptionS3SecretKey,
+    OptionEndpoint,
+    OptionS3UseSsl,
+    OptionS3InsecureSsl,
+    OptionComment,
     OptionOnlyCloud,
     OptionDeleteAfterUpload,
     OptionCloudProvider,
@@ -387,6 +393,7 @@ enum S9sOptionType
     OptionAlarmId,
     OptionLogFile,
     OptionCredentialId,
+    OptionCredentialName,
     OptionCreateSnaphotRepository,
     OptionListSnaphotRepository,
     OptionDeleteSnaphotRepository,
@@ -449,7 +456,10 @@ enum S9sOptionType
     OptionDb3dVersionsList,
     OptionUseVendorApi,
     OptionClusterTypes,
-    OptionVendors
+    OptionVendors,
+    OptionCloudCredentialsList,
+    OptionCloudCredentialsCreate,
+    OptionCloudCredentialsDelete
 };
 
 /**
@@ -513,6 +523,7 @@ S9sOptions::S9sOptions() :
     m_modes["replications"] = Replication;
     m_modes["dbschema"]     = DbSchema;
     m_modes["dbversions"]   = DbVersions;
+    m_modes["cloud-credentials"] = CloudCredentials;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2468,6 +2479,19 @@ S9sOptions::credentialId() const
     return getInt("credential_id");
 }
 
+bool
+S9sOptions::hasCredentialNameOption() const
+{
+    return m_options.contains("credential_name");
+}
+
+S9sString
+S9sOptions::credentialName() const
+{
+    return getString("credential_name");
+}
+
+
 
 /**
  * \returns True if the --backup-id command line option was provided.
@@ -3508,6 +3532,121 @@ S9sOptions::s3region() const
     return retval;
 }
 
+bool
+S9sOptions::hasS3AccessKeyIdOption() const
+{
+    return m_options.contains("s3_access_key_id");
+}
+
+/**
+ * \returns The argument for the --s3-access-key-id option
+ */
+S9sString
+S9sOptions::s3AccessKeyId() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("s3_access_key_id"))
+    {
+        retval = m_options.at("s3_access_key_id").toString();
+    } else {
+        retval = m_userConfig.variableValue("s3_access_key_id");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("s3_access_key_id");
+    }
+
+    return retval;
+}
+
+bool
+S9sOptions::hasS3SecretKeyOption() const
+{
+    return m_options.contains("s3_secret_key");
+}
+
+/**
+ * \returns The argument for the --s3-secrete-key option
+ */
+S9sString
+S9sOptions::s3SecretKey() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("s3_secret_key"))
+    {
+        retval = m_options.at("s3_secret_key").toString();
+    } else {
+        retval = m_userConfig.variableValue("s3_secret_key");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("s3_secret_key");
+    }
+
+    return retval;
+}
+
+bool
+S9sOptions::hasEndpointOption() const
+{
+    return m_options.contains("endpoint");
+}
+
+/**
+ * \returns The argument for the --endpoint option
+ */
+S9sString
+S9sOptions::endpoint() const
+{
+    S9sString  retval;
+
+    if (m_options.contains("endpoint"))
+    {
+        retval = m_options.at("endpoint").toString();
+    } else {
+        retval = m_userConfig.variableValue("endpoint");
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("endpoint");
+    }
+
+    return retval;
+}
+
+bool
+S9sOptions::hasCommentOption() const
+{
+    return m_options.contains("comment");
+}
+
+/**
+ * \returns The argument for the --comment option
+ */
+S9sString
+S9sOptions::comment() const
+{
+    S9sString  retval;
+    if (m_options.contains("comment"))
+        retval = m_options.at("comment").toString();
+
+    return retval;
+}
+
+/**
+ * \returns The argument for the --use-ssl option
+ */
+bool
+S9sOptions::hasUseSsl() const
+{
+    return m_options.contains("use_ssl");
+}
+
+/**
+ * \returns The argument for the --insecure-ssl option
+ */
+bool
+S9sOptions::hasInsecureSsl() const
+{
+    return m_options.contains("insecure_ssl");
+}
+
 /**
  * \returns The argument for the --cloud-only option
  */
@@ -4286,6 +4425,15 @@ S9sOptions::isDbVersionsOperation() const
     return m_operationMode == DbVersions;
 }
 
+/**
+ * \returns true if the main operation is "cloud-credentials".
+ */
+bool
+S9sOptions::isCloudCredentialsOperation() const
+{
+    return m_operationMode == CloudCredentials;
+}
+
 
 /**
  * \returns True if the --help command line option was provided.
@@ -4725,6 +4873,38 @@ S9sOptions::ownerGroupName() const
 
     return retval;
 }
+
+
+/**
+ * \returns true if the "list_cloud_credentials" function is requested by providing the --list
+ *   command line option.
+ */
+bool
+S9sOptions::isListCloudCredentials() const
+{
+    return getBool("list_cloud_credentials");
+}
+
+/**
+ * \returns true if the "create_cloud_credential" function is requested by providing the --create
+ *   command line option.
+ */
+bool
+S9sOptions::isCreateCloudCredential() const
+{
+    return getBool("create_cloud_credential");
+}
+
+/**
+ * \returns true if the "delete_cloud_credential" function is requested by providing the --delete
+ *   command line option.
+ */
+bool
+S9sOptions::isDeleteCloudCredential() const
+{
+    return getBool("delete_cloud_credential");
+}
+
 
 /**
  * \returns True if the --list-processors command line option is provided.
@@ -6501,6 +6681,13 @@ S9sOptions::readOptions(
                 retval = checkOptionsDbVersions();
 
             break;
+        case CloudCredentials:
+            retval = readOptionsCloudCredentials(*argc, argv);
+
+            if (retval)
+                retval = checkOptionsCloudCredentials();
+
+            break;
     }
 
     return retval;
@@ -6679,6 +6866,10 @@ S9sOptions::printHelp()
 
         case DbVersions:
             printHelpDbVersions();
+            break;
+
+        case CloudCredentials:
+            printHelpCloudCredentials();
             break;
     }
 }
@@ -7521,6 +7712,26 @@ S9sOptions::printHelpDbVersions()
 "  --use-vendor-api           To retrieve the list of available 3 digits versions using vendor's api.\n"
 "  --cluster-type=TYPE        The TYPE of the cluster (i.e. \"galera\").\n"
 "  --vendor=VENDOR            The vendor of the packages to use (i.e. \"percona\").\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpCloudCredentials()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"cloud-credentials\" command:\n"
+"  --list                     To retrieve the list of stored cloud credentials.\n"
+"  --create                   To create cloud credential and store on CC.\n"
+"  --delete                   To delete cloud credential stored on CC.\n"
+"  --provider                 To specify the cloud provider of credential create.\n"
+"  --s3-region                To specify the region (as in cloud provider) of credential to create.\n"
+"  --s3-access-key-id         To specify the access key id (as in cloud provider) of credential to create.\n"
+"  --s3-secret-key            To specify the secret key (as in cloud provider) of credential to create.\n"
+"  --endpoint                 To specify the endpoint on s3 compatible provider of credential to create.\n"
+"  --comment                  To specify the command associated to credential to create.\n"
 "\n"
     );
 }
@@ -8543,6 +8754,11 @@ S9sOptions::readOptionsBackup(
             case OptionCredentialId:
                 // --credential-id=ID
                 m_options["credential_id"] = optarg;
+                break;
+
+            case OptionCredentialName:
+                // --credential-name=CREDENTIAL_NAME
+                m_options["credential_name"] = optarg;
                 break;
 
             case OptionS3Bucket:
@@ -10789,6 +11005,133 @@ S9sOptions::checkOptionsDbVersions()
             m_errorMessage =
                     "The --vendor option must be used when getting versions for the dbversions operation.";
 
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsCloudCredentials()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListCloudCredentials())
+        countOptions++;
+    if (isDeleteCloudCredential())
+        countOptions++;
+    if (isCreateCloudCredential())
+        countOptions++;
+
+    if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+    if (countOptions > 1)
+    {
+        m_errorMessage = "Please provide only one of the main options.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if(isDeleteCloudCredential())
+    {
+        /*
+         * The --cloud-id option is required
+         */
+        if(!hasCredentialIdOption())
+        {
+            m_errorMessage = "The --cloud-id option must be used when deleting cloud credential operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        /*
+         * The --cloud-provider option is required
+         */
+        if(!hasCloudProviderOption())
+        {
+            m_errorMessage = "The --clould-provider option must be used when deleting cloud credential operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if(isCreateCloudCredential())
+    {
+        /*
+         * The -name option is required
+         */
+        if(!hasCredentialNameOption())
+        {
+            m_errorMessage = "The --credential-name option must be used when creating cloud credential operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        /*
+         * The --cloud-provider option is required
+         */
+        if(!hasCloudProviderOption())
+        {
+            m_errorMessage = "The --clould-provider option must be used when creating cloud credential operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        S9sString cprovider = cloudProvider();
+
+        if(cprovider.toLower() == "s3" || cprovider.toLower() == "aws")
+        {
+            S9sString errMessageAwsAndS3 = "option must be used when creating 's3' or 'aws' cloud credential operation.";
+            // common mandatory options for s3 and aws
+            if(!hasS3AccessKeyIdOption())
+            {
+                m_errorMessage = "The --s3-access-key-id " + errMessageAwsAndS3;
+                m_exitStatus = BadOptions;
+                return false;
+            }
+            if(!hasS3SecretKeyOption())
+            {
+                m_errorMessage = "The --s3-secret-key " + errMessageAwsAndS3;
+                m_exitStatus = BadOptions;
+                return false;
+            }
+            if(!hasS3regionOption())
+            {
+                m_errorMessage = "The --s3-region " + errMessageAwsAndS3;
+                m_exitStatus = BadOptions;
+                return false;
+            }
+
+            // mandatory for s3
+            if (cprovider.toLower() == "s3")
+            {
+                /*
+                 * The --endpoint option is required.
+                 */
+                if(!hasEndpointOption())
+                {
+                    m_errorMessage = "The --endpoint option must be used when creating s3 cloud credential operation.";
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            m_errorMessage = "The --clould-provider option provided is not valid. Supported values are 's3' and 'aws'.";
             m_exitStatus = BadOptions;
             return false;
         }
@@ -17078,6 +17421,243 @@ S9sOptions::readOptionsNoMode(
 
     return true;
 }
+
+/**
+ * Reads the command line options in "cloud-credentials" subcommand
+ */
+bool
+S9sOptions::readOptionsCloudCredentials(
+        int argc,
+        char *argv[])
+{
+    int c;
+    struct option long_options[] =
+            {
+                    // Generic Options
+                    {"batch",            no_argument,       0, OptionBatch},
+                    {"cmon-user",        required_argument, 0, 'u'}, 
+                    {"password",         required_argument, 0, 'p'}, 
+                    {"color",            optional_argument, 0, OptionColor},
+                    {"debug",            no_argument,       0, OptionDebug},
+                    {"help",             no_argument,       0, OptionHelp},
+                    {"human-readable",   no_argument,       0, 'h'},
+                    {"long",             no_argument,       0, 'l'},
+                    {"no-header",        no_argument,       0, OptionNoHeader},
+                    {"controller-port",  required_argument, 0, 'P'},
+                    {"controller",       required_argument, 0, 'c'},
+                    {"print-json",       no_argument,       0, OptionPrintJson},
+                    {"print-request",    no_argument,       0, OptionPrintRequest},
+                    {"rpc-tls",          no_argument,       0, OptionRpcTls},
+                    {"verbose",          no_argument,       0, 'v'},
+                    {"version",          no_argument,       0, 'V'},
+
+                    // Main Options
+                    {"list",             no_argument, 0,       OptionCloudCredentialsList},
+                    {"create",           no_argument, 0,       OptionCloudCredentialsCreate},
+                    {"delete",           no_argument, 0,       OptionCloudCredentialsDelete},
+                    {"cloud-provider",   required_argument, 0, OptionCloudProvider},
+                    {"name",             required_argument, 0, OptionCredentialName},
+                    // Arguments on aws and s3
+                    {"s3-region",        required_argument, 0, OptionS3Region},
+                    {"s3-access-key-id", required_argument, 0, OptionS3AccessKeyId},
+                    {"s3-secret-key",    required_argument, 0, OptionS3SecretKey},
+                    {"endpoint",         required_argument, 0, OptionEndpoint},
+                    {"s3-use-ssl",       no_argument,       0, OptionS3UseSsl},
+                    {"s3-insecure-ssl",  no_argument,       0, OptionS3InsecureSsl},
+                    {"credential-id",    required_argument, 0, OptionCredentialId},
+                    // optionals
+                    {"comment",          required_argument, 0, OptionComment},
+
+                    {0, 0,                                  0, 0}
+            };
+
+    optind = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V",
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+            
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+
+            /*
+             * Options related to cloud credentials
+             */
+            case OptionCloudCredentialsList:
+                // --list
+                m_options["list_cloud_credentials"] = true;
+                break;
+
+            case OptionCloudCredentialsCreate:
+                // --create
+                m_options["create_cloud_credential"] = true;
+                break;
+
+            case OptionCloudCredentialsDelete:
+                // --delete
+                m_options["delete_cloud_credential"] = true;
+                break;
+
+            case OptionCloudProvider:
+                // --cloud-provider
+                m_options["cloud_provider"] = optarg;
+                break;
+
+            case OptionCredentialName:
+                // --cloud-provider
+                m_options["credential_name"] = optarg;
+                break;
+
+            case OptionS3Region:
+                // --s3-region
+                m_options["s3_region"] = optarg;
+                break;
+
+            case OptionS3AccessKeyId:
+                // --s3-access-key-id
+                m_options["s3_access_key_id"] = optarg;
+                break;
+
+            case OptionS3SecretKey:
+                // --s3-secret-key
+                m_options["s3_secret_key"] = optarg;
+                break;
+
+            case OptionEndpoint:
+                // --endpoint
+                m_options["endpoint"] = optarg;
+                break;
+
+            case OptionS3UseSsl:
+                // --s3-use-ssl
+                m_options["s3_use_ssl"] = true;
+                break;
+
+            case OptionS3InsecureSsl:
+                // --s3-insecure-ssl
+                m_options["s3_insecure_ssl"] = true;
+                break;
+
+            case OptionCredentialId:
+                // --credential-id
+                m_options["credential_id"] = optarg;
+                break;
+
+            // optional
+            case OptionComment:
+                // --comment
+                m_options["comment"] = optarg;
+                break;
+
+
+            case '?':
+            default:
+            S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c))
+                    {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else
+                    {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
 
 /**
  * \returns The path of the private key of the user. There is a default path

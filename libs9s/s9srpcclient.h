@@ -344,6 +344,13 @@ class S9sRpcClient
         bool getVendors();
 
         /*
+         * Requests related to cloud credentials operations
+         */
+        bool listCloudCredentials();
+        bool createCloudCredentials(S9sOptions *options);
+        bool deleteCloudCredentials(const int & credentialId, const S9sString & provider);
+
+        /*
          *
          */
         bool getJobInstance(const int jobId);

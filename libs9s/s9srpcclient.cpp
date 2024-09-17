@@ -10776,6 +10776,65 @@ S9sRpcClient::getVendors()
 }
 
 
+/**
+ * \returns the list of cloud credentials stored in the controller 
+ *
+ */
+bool
+S9sRpcClient::listCloudCredentials()
+{
+    const S9sString uri = "/v2/cloud/";
+    S9sVariantMap  request;
+    request["operation"] = "listCredentials";
+    return executeRequest(uri, request);
+}
+
+
+/**
+ * \returns creates a cloud credential to store in the controller 
+ *
+ */
+bool
+S9sRpcClient::createCloudCredentials(S9sOptions *options)
+{
+    const S9sString uri = "/v2/cloud/";
+    S9sVariantMap  request;
+    const S9sString provider = options->cloudProvider();
+    request["operation"] = "addCredentials";
+    request["provider"] = options->cloudProvider();
+    request["name"] = options->credentialName();
+    S9sVariantMap credentialsMap;
+    credentialsMap["access_key_id"] = options->s3AccessKeyId();
+    credentialsMap["access_key_secret"] = options->s3SecretKey();
+    credentialsMap["access_key_region"] = options->s3region();
+    if(provider == "s3")
+    {
+        credentialsMap["endpoint"] = options->endpoint();
+        credentialsMap["use_ssl"] = options->hasUseSsl();
+        credentialsMap["insecure_ssl"] = options->hasInsecureSsl();
+    }
+    request["credentials"] = credentialsMap;
+    if(options->hasCommentOption())
+        request["comment"] = options->comment();
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns creates a cloud credential to store in the controller 
+ *
+ */
+bool
+S9sRpcClient::deleteCloudCredentials(const int & credentialId, const S9sString & provider)
+{
+    const S9sString uri = "/v2/cloud/";
+    S9sVariantMap  request;
+
+    request["operation"] = "removeCredentials";
+    request["id"] = std::to_string(credentialId);
+    request["provider"] = provider;
+    return executeRequest(uri, request);
+}
 
 /**
  * \returns A prepared request that after further settings added can be sent to

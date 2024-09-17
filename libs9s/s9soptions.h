@@ -76,6 +76,7 @@ class S9sOptions
             Replication,
             DbSchema,
             DbVersions,
+            CloudCredentials,
         };
 
         enum ExitCodes
@@ -246,6 +247,9 @@ class S9sOptions
 
         bool hasCredentialIdOption() const;
         int credentialId() const;
+
+        bool hasCredentialNameOption() const;
+        S9sString credentialName() const;
         
         bool hasBackupId() const;
         int backupId() const;
@@ -391,6 +395,16 @@ class S9sOptions
         S9sString s3bucket() const;
         bool      hasS3regionOption() const;
         S9sString s3region() const;
+        bool      hasS3AccessKeyIdOption() const;
+        S9sString s3AccessKeyId() const;
+        bool      hasS3SecretKeyOption() const;
+        S9sString s3SecretKey() const;
+        bool      hasEndpointOption() const;
+        S9sString endpoint() const;
+        bool      hasCommentOption() const;
+        S9sString comment() const;
+        bool      hasUseSsl() const;
+        bool      hasInsecureSsl() const;
         bool      cloudOnly() const;
         bool      deleteAfterUpload() const;
         bool      hasCloudProviderOption() const;
@@ -462,6 +476,7 @@ class S9sOptions
         bool isReplicationOperation() const;
         bool isDbSchemaOperation() const;
         bool isDbVersionsOperation() const;
+        bool isCloudCredentialsOperation() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -531,6 +546,10 @@ class S9sOptions
         bool hasOwner() const;
         S9sString ownerUserName() const;
         S9sString ownerGroupName() const;
+
+        bool isListCloudCredentials() const;
+        bool isCreateCloudCredential() const;
+        bool isDeleteCloudCredential() const;
 
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;
@@ -748,6 +767,7 @@ class S9sOptions
         void printHelpReplication();
         void printHelpDbSchema();
         void printHelpDbVersions();
+        void printHelpCloudCredentials();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
@@ -828,6 +848,9 @@ class S9sOptions
 
         bool readOptionsDbVersions(int argc, char *argv[]);
         bool checkOptionsDbVersions();
+
+        bool readOptionsCloudCredentials(int argc, char *argv[]);
+        bool checkOptionsCloudCredentials();
 
         bool setMode(const S9sString &modeName);
 
