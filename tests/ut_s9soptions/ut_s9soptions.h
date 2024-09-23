@@ -39,6 +39,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testReadOptions06();
         bool testReadOptions07();
         bool testSetNodes();
+        bool testPerconaProCluster();
 };
 
 

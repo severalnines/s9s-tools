@@ -177,6 +177,12 @@ class S9sOptions
         S9sString enterpriseToken() const;
         bool hasEnterpriseToken() const;
 
+        bool hasPerconaProToken() const;
+        bool hasPerconaClientId() const;
+
+        S9sString perconaProToken() const;
+        S9sString perconaClientId() const;
+
         bool hasProviderVersion() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
 

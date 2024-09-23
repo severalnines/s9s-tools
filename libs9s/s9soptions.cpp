@@ -83,6 +83,8 @@ enum S9sOptionType
     OptionProperties,
     OptionVendor,
     OptionEnterpriseToken,
+    OptionPerconaProToken,
+    OptionPerconaClientId,
     OptionCreate,
     OptionCreateWithJob,
     OptionSync,
@@ -1771,6 +1773,30 @@ bool
 S9sOptions::hasEnterpriseToken() const
 {
     return m_options.contains("enterprise_token");
+}
+
+bool
+S9sOptions::hasPerconaClientId() const
+{
+    return m_options.contains("percona_client_id");
+}
+
+bool
+S9sOptions::hasPerconaProToken() const
+{
+    return m_options.contains("percona_pro_token");
+}
+
+S9sString
+S9sOptions::perconaProToken() const
+{
+    return getString("percona_pro_token");
+}
+
+S9sString
+S9sOptions::perconaClientId() const
+{
+    return getString("percona_client_id");
 }
 
 /**
@@ -7296,6 +7322,9 @@ S9sOptions::printHelpCluster()
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
 "  --enterprise-token=TOKEN   The customer's Repo/Download Token for an Enterprise Database.\n"
+"  --percona-client-id=CLIENTID The client ID for Percona Pro Repository\n"
+"  --percona-pro-token=TOKEN  The token for Percona Pro Repository\n"
+
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
 "  --with-database            Create a database for the user too.\n"
@@ -13757,6 +13786,8 @@ S9sOptions::readOptionsCluster(
         { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
         { "vendor",           required_argument, 0, OptionVendor          },
         { "enterprise-token", required_argument, 0, OptionEnterpriseToken },
+        { "percona-client-id", required_argument, 0, OptionPerconaClientId },
+        { "percona-pro-token", required_argument, 0, OptionPerconaProToken },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
         { "upgrade-to-version",required_argument, 0, OptionUpgradeToVersion },
@@ -14239,6 +14270,16 @@ S9sOptions::readOptionsCluster(
             case OptionEnterpriseToken:
                 // --enterprise-token=STRING
                 m_options["enterprise_token"] = optarg;
+                break;
+
+            case OptionPerconaClientId:
+                // --percona-client-id=STRING
+                m_options["percona_client_id"] = optarg;
+                break;
+
+            case OptionPerconaProToken:
+                // --percona-pro-token=STRING
+                m_options["percona_pro_token"] = optarg;
                 break;
 
             case OptionProviderVersion:
