@@ -3198,6 +3198,17 @@ S9sRpcClient::createCluster()
         return false;
     }
 
+    if (vendor == "perconapro" and (!options->hasPerconaProToken() or ! options->hasPerconaClientId()))
+    {
+        PRINT_ERROR(
+            "You have to provide both clientId and token for Percona Pro repository\n"
+            "Use the --percona-client-id and --percona-pro-token to provide data for Percona Pro repository."
+            );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     // for redis we do not care about the version for now..
     if (dbVersion.empty()  &&
         (options->clusterType() != "redis" &&
@@ -3881,7 +3892,12 @@ S9sRpcClient::createMySqlReplication(
         jobData["enable_uninstall"] = false;
     }
 
-    // 
+    if (options->hasPerconaClientId() and options->hasPerconaProToken())  {
+        jobData["percona_client_id"] = options->perconaClientId();
+        jobData["percona_pro_token"] = options->perconaProToken();
+    }
+
+    //
     // The jobspec describing the command.
     //
     jobSpec["command"]    = "create_cluster";

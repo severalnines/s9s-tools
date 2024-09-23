@@ -56,6 +56,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions06, retval);
     PERFORM_TEST(testReadOptions07, retval);
     PERFORM_TEST(testSetNodes,      retval);
+    PERFORM_TEST(testPerconaProCluster, retval);
 
     return retval;
 }
@@ -453,6 +454,33 @@ UtS9sOptions::testSetNodes()
     return true;
 }
 
+bool
+UtS9sOptions::testPerconaProCluster()
+{
+    S9sOptions *options = S9sOptions::instance();
+    const char *argv[] = { "/bin/s9s",
+                           "cluster",
+                           "--create",
+                           "--cluster-type=mysqlreplication",
+                           "--nodes=10.63.201.251",
+                           "--vendor=perconapro",
+                           "--provider-version=8.0",
+                           "--percona-client-id=123",
+                           "--percona-pro-token=protoken",
+                           NULL };
+    int argc = sizeof(argv) / sizeof(char *) - 1;
+    S9S_VERIFY(options->readOptions(&argc, (char **)argv));
+
+    S9S_COMPARE(options->m_operationMode, S9sOptions::Cluster);
+    S9S_COMPARE(options->vendor(), "perconapro");
+    S9S_VERIFY(options->hasPerconaProToken());
+    S9S_VERIFY(options->hasPerconaClientId());
+    S9S_COMPARE(options->perconaProToken(), "protoken");
+    S9S_COMPARE(options->perconaClientId(), "123");
+
+    S9sOptions::uninit();
+    return true;
+}
 
 S9S_UNIT_TEST_MAIN(UtS9sOptions)
 
