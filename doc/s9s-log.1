@@ -112,160 +112,8 @@ Controls which cluster to check.
 .SS Log Related Options
 
 .TP
-.BR \-\^\-from= \fIDATE&TIME\fP
-Controls the start time of the period that will be printed in the log list.
-
-.TP
 .BR --limit= \fINUMBER\fP
 Limits the number of logs messages printed.
-
-.TP
-.BI --message-id= ID
-The numerical ID for the message to list. When this command line option is
-provided there will be at most one message processed.
-
-.TP
-.BR \-\^\-log\-format= \fIFORMATSTRING\fP
-Controls the format of the messages as they are printed. This command line
-option has the same effect as the "brief_log_format" and "long_log_format" 
-configuration variables.
-
-The
-format string uses the '%' character to mark variable fields, flag characters as
-they are specified in the standard printf() C library functions and its own
-field name letters to refer to the various properties of the messages. 
-
-The "%+12I" format string for example has the "+12" flag characters in it with
-the standard meaning: the field will be 12 character wide and the "+" or "-"
-sign will always be printed with the number.
-
-Standard '\\' notation is also available, \\n for example encodes a new-line 
-character.
-
-The properties of the message are encoded by letters. The in the "%-5L" for
-example the letter "L" encodes the "line-number" field, so the number of the
-source line that produced the message will be substituted. The program supports
-the following fields:
-
-.RS 7
-.TP
-.B B
-The base name of the source file that produced the message. 
-
-.TP
-.B c
-The \fB"log_class"\fP property of the log message. All the log messages are of
-the same class (\fBCmonLogMessage\fP), the \fB"log_class"\fP however shows what
-extra information is held by the message, what kind of event triggered the
-creation of the given log message.
-
-.TP
-.B C
-The creation date&time that marks the exact moment when the message was
-created. The format of the date&time sustituted can be set using the 
-\fB\-\^\-date\-format\fP command line option.
-
-.TP
-.B F
-The name of the source file that created the message. This is similar to the
-\fBB\fR fields, but instead of the base name the entire file name will be
-substituted.
-
-.TP
-.B h
-The host name of the host that is related to the log message. Please note that
-not all log entries are related to one specific host.
-
-.TP
-.B i
-The cluster ID. If the log message is not related to any clusters the ID here
-will be 0. 
-
-.TP
-.B I
-The ID of the message, a numerical ID that can be used as a unique identifier
-for the message.
-
-.TP
-.B J
-The Job ID if the message has a job ID.
-
-.TP
-.B j
-The entire message object as a JSon string.
-
-.TP
-.B L
-The line number in the source file where the message was created. This property
-is implemented mostly for debugging purposes.
-
-.TP
-.B M
-The message text.
-
-.TP
-.B S 
-The severity of the message in text format. This field can be "MESSAGE",
-"WARNING" or "FAILURE".
-
-.TP
-.B T
-The creation time of the message. This is similar to the \fBC\fR field, but
-shows only hours, minutes and seconds instead of the full date and time.
-
-.TP
-.B %
-The '%' character itself. 
-
-.RE 
-
-Moreover the format string can contain expression \fB${...}\fR that refer the
-properties of the log entry. For example the expression
-\fB${/log_specifics/job_instance}\fR will be substituted by the value of the
-given property converted into a string. Please note that various messages have
-different properties. The \fB"log_class"\fR property (denoted by \fB"%c"\fR or
-\fB${/log_class}\fR in the format string) can be used to identify what
-properties can be expected.
-
-.B EXAMPLE
-
-The following example prints a log message that is about a Cmon Job being
-started. It prints some information with the '%' notation and the job JSon
-string that is part of the log entry:
-
-.nf
-# s9s log \\
-    --list \\
-    --message-id=23 \\
-    --log-format='   ID: %I\\nclass: %c\\n  loc: %B:%L\\n mess: %M\\n job:\\n${/log_specifics/job_instance/job_spec}\\n'
-
-   ID: 23
-class: JobStarted
-  loc: CmonCommandHandlerWorker.cpp:332
- mess: Job 'Create Cluster' just started.
- job:
-{
-    "command": "create_cluster",
-    "job_data": 
-    {
-        "cluster_name": "ft_postgresql_8488",
-        "cluster_type": "postgresql_single",
-        "enable_uninstall": true,
-        "install_software": true,
-        "nodes": [ 
-        {
-            "class_name": "CmonHost",
-            "hostname": "192.168.0.76",
-            "port": 8089
-        } ],
-        "postgre_user": "postmaster",
-        "ssh_user": "pipas",
-        "sudo_password": "",
-        "type": "postgresql",
-        "version": "10"
-    }
-}
-.fi
 
 .\"
 .\"
@@ -273,14 +121,6 @@ class: JobStarted
 .TP
 .BR \-\^\-offset= \fINUMBER\fP
 Controls the relative index of the first item printed.
-
-.\"
-.\"
-.\"
-.TP
-.BR \-\^\-until= \fIDATE&TIME\fP
-Controls the end time of the period that will be printed in the log list.
-
 
 .\"
 .\"
@@ -301,6 +141,5 @@ The next example can be used to view the log messages for a given cluster:
 # \fBs9s log \\
     --list \\
     --cluster-id=1 \\
-    --long \fR
 .fi
 
