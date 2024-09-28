@@ -4233,7 +4233,7 @@ S9sOptions::toIndividualFiles() const
 bool
 S9sOptions::backupDatadir() const
 {
-    return getBool("backupDatadir");
+    return getBool("backup_datadir");
 }
 
 /**
