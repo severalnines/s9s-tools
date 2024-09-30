@@ -3198,7 +3198,8 @@ S9sRpcClient::createCluster()
         return false;
     }
 
-    if (vendor == "perconapro" and (!options->hasPerconaProToken() or ! options->hasPerconaClientId()))
+    if (vendor == "perconapro" and !options->useInternalRepos()
+        and (!options->hasPerconaProToken() or ! options->hasPerconaClientId()))
     {
         PRINT_ERROR(
             "You have to provide both clientId and token for Percona Pro repository\n"
