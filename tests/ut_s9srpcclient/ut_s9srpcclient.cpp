@@ -147,6 +147,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateReplication,   retval);
     PERFORM_TEST(testCreateNdbCluster,    retval);
     PERFORM_TEST(testAddNode,             retval);
+    PERFORM_TEST(testRemoveNode,          retval);
     PERFORM_TEST(testCreateHaproxy,       retval);
     PERFORM_TEST(testComposeBackupJob,    retval);
     PERFORM_TEST(testBackup,              retval);
@@ -259,12 +260,11 @@ UtS9sRpcClient::testGetNextMaintenance()
     
     options->m_options["cluster_id"] = 42;
 
+    S9S_VERIFY(client.getNextMaintenance());
     payload = client.lastPayload();
     if (isVerbose())
         printDebug(payload);
 
-    S9S_VERIFY(client.getNextMaintenance());
-    
     S9S_COMPARE(payload.size(), 4);
     S9S_COMPARE(payload["cluster_id"].toInt(), 42);
     S9S_COMPARE(payload["operation"].toString(), "getNextMaintenance");
@@ -1672,6 +1672,54 @@ UtS9sRpcClient::testAddNode()
     S9S_VERIFY(payload.contains("\"hostname\": \"192.168.1.191\""));
     S9S_VERIFY(payload.contains("\"install_software\": true"));
     //S9S_VERIFY(payload.contains("\"user_name\": \"pipas\""));
+
+    return true;
+}
+
+/**
+ * This function tests the removeNode() method of the RPC client.
+ */
+bool
+UtS9sRpcClient::testRemoveNode()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+
+    for (int j = 0; j < 4; ++j)
+    {
+        bool const argUninstall      = (j & 1); // bit 01
+        bool const argUnregisterOnly = (j & 2); // bit 10
+
+        options->setNodes("node1:1234");
+        options->m_options["cluster_id"]      = 42;
+        options->m_options["uninstall"]       = argUninstall;
+        options->m_options["unregister_only"] = argUnregisterOnly;
+
+        S9S_VERIFY(client.removeNode());
+        S9sVariantMap payload = client.lastPayload();
+        if (isVerbose())
+            printDebug(payload);
+
+        S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+        S9S_COMPARE(payload.valueByPath("cluster_id"), 42);
+        S9S_COMPARE(
+                payload.valueByPath("/job/title").toString(),
+                "Remove 'node1' from the Cluster");
+        S9S_COMPARE(
+                payload.valueByPath("/job/job_spec/command").toString(),
+                "removenode");
+
+        bool const realUninstall = argUninstall;
+        bool const realUnregisterOnly
+                = (argUninstall) ? false : argUnregisterOnly;
+
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
+                realUninstall);
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "unregister_only").toBoolean(),
+                realUnregisterOnly);
+    }
 
     return true;
 }
