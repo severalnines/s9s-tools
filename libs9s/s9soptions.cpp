@@ -178,6 +178,7 @@ enum S9sOptionType
     OptionEnd,
     OptionReason,
     OptionUninstall,
+    OptionUnregisterOnly,
     OptionRemoveBackups,
     OptionUuid,
     OptionDateFormat,
@@ -3348,19 +3349,23 @@ S9sOptions::keepFirewall() const
     return retval;
 }
 
+/**
+ * \returns true if the --uninstall command line option was provided.
+ */
 bool
 S9sOptions::uninstall() const
 {
-    bool retval = false;
-
-    if (m_options.contains("uninstall"))
-    {
-        retval = m_options.at("uninstall").toBoolean();
-    }
-
-    return retval;
+    return getBool("uninstall");
 }
 
+/**
+ * \returns true if the --unregister-only command line option was provided.
+ */
+bool
+S9sOptions::unregisterOnly() const
+{
+    return getBool("unregister_only");
+}
 
 /**
  * \returns true if the --with-database command line option was provided.
@@ -13851,8 +13856,9 @@ S9sOptions::readOptionsCluster(
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
         // Options for remove cluster/node.
-        { "uninstall",           no_argument,    0,    OptionUninstall     },
-        { "remove-backups",      required_argument,0,  OptionRemoveBackups },
+        { "uninstall",           no_argument,       0,  OptionUninstall     },
+        { "unregister-only",     no_argument,       0,  OptionUnregisterOnly },
+        { "remove-backups",      required_argument, 0,  OptionRemoveBackups },
 
         // Options for mssql
         { "license",     required_argument, 0, OptionLicense     },
@@ -14668,6 +14674,11 @@ S9sOptions::readOptionsCluster(
             case OptionUninstall:
                 // --uninstall
                 m_options["uninstall"] = true;
+                break;
+
+            case OptionUnregisterOnly:
+                // --unregister-only
+                m_options["unregister_only"] = true;
                 break;
 
             case OptionRemoveBackups:

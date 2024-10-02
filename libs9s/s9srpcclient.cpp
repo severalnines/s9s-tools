@@ -6615,8 +6615,12 @@ S9sRpcClient::removeNode()
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));
 
     // The job_data...
-    jobData["nodes"]      = nodesField(hosts);
-    jobData["enable_uninstall"] = options->uninstall();
+    jobData["nodes"] = nodesField(hosts);
+
+    bool const doUninstall = options->uninstall();
+    jobData["enable_uninstall"] = doUninstall;
+    if (!doUninstall)
+        jobData["unregister_only"] = options->unregisterOnly();
 
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();

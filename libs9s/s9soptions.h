@@ -386,6 +386,7 @@ class S9sOptions
         bool keepFirewall() const;
 
         bool uninstall() const;
+        bool unregisterOnly() const;
 
         S9sString tempDirPath() const;
         bool keepTempDir() const;
