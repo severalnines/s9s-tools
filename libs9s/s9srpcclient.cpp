@@ -3801,7 +3801,7 @@ S9sRpcClient::registerHost()
         command = "registernode";
         title   = "Register Mongos Node";
     } else {
-        command = protocol;
+        command = protocol.empty() ? "registernode" : protocol;
         title   = "Register Node";
         registerAction = true;
     }
