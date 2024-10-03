@@ -4488,6 +4488,8 @@ S9sRpcClient::registerMongoDbCluster(
     jobData["db_user"] = options->dbAdminUserName();
     jobData["db_password"] = options->dbAdminPassword();
 
+    if (!options->configFile().empty())
+        jobData["config_file"] = options->configFile();
     // 
     // The jobspec describing the command.
     //
