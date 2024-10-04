@@ -324,9 +324,9 @@ s9s backup \\
 .fi
 
 .TP
-.B \-\^\-only-cloud
+.B \-\^\-cloud\-only
 Creates a job to generate a backup streaming it directly to cloud, without intermediate files
-\fB\-\^\-only\-cloud\fP option has to be set to indicate direct streaming of backup to cloud container
+\fB\-\^\-cloud\-only\fP option has to be set to indicate direct streaming of backup to cloud container
 
 .B EXAMPLE
 .nf
@@ -334,7 +334,7 @@ s9s backup \\
     --create \\
     --cluster-id=1 \\
     --nodes=192.168.0.209 \\
-    --only-cloud \\
+    --cloud-only \\
     --cloud-provider="aws" \\
     --s3-bucket="my-aws-bucket-eu-west-1" \\
     --credential-id=2 \\
