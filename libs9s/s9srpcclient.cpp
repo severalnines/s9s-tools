@@ -6617,9 +6617,9 @@ S9sRpcClient::removeNode()
     // The job_data...
     jobData["nodes"] = nodesField(hosts);
 
-    bool const doUninstall = options->uninstall();
-    jobData["enable_uninstall"] = doUninstall;
-    if (!doUninstall)
+    if (options->uninstall())
+        jobData["enable_uninstall"] = true;
+    else
         jobData["unregister_only"] = options->unregisterOnly();
 
     if (options->hasTimeout())

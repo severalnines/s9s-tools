@@ -428,8 +428,12 @@ s9s cluster \\
 .fi
 
 The \fB\-\-unregister-only\fR option removes the node from the cluster's node list without
-stopping or removing any running processes. If both \fB\-\-uninstall\fR and \fB\-\-unregister-only\fR
-are specified, \fB\-\-unregister-only\fR will be ignored.
+stopping or removing any running services. Removing the node using this option
+does not alter the node configuration, thus connections to other nodes in the DB cluster
+will remain intact, however it will no longer be managed by the ClusterControl (CC).
+Any failover or promotion performed outside of CC may cause CC to lose track of the current
+master node, leading to further errors. Be careful when using this option, as it can lead to
+potential error-prone scenarios.
 
 .B EXAMPLE
 .nf
