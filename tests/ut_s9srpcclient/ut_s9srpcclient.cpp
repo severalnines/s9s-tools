@@ -1687,13 +1687,21 @@ UtS9sRpcClient::testRemoveNode()
 
     for (int j = 0; j < 4; ++j)
     {
-        bool const argUninstall      = (j & 1); // bit 01
-        bool const argUnregisterOnly = (j & 2); // bit 10
+        bool const enableUninstall = (j & 1); // bit 01
+        bool const unregisterOnly  = (j & 2); // bit 10
+        bool const badOptions      = (enableUninstall && unregisterOnly);
 
         options->setNodes("node1:1234");
         options->m_options["cluster_id"]      = 42;
-        options->m_options["uninstall"]       = argUninstall;
-        options->m_options["unregister_only"] = argUnregisterOnly;
+        options->m_options["uninstall"]       = enableUninstall;
+        options->m_options["unregister_only"] = unregisterOnly;
+
+        if (badOptions)
+        {
+            // must fail.
+            S9S_VERIFY(!client.removeNode());
+            continue;
+        }
 
         S9S_VERIFY(client.removeNode());
         S9sVariantMap payload = client.lastPayload();
@@ -1709,16 +1717,12 @@ UtS9sRpcClient::testRemoveNode()
                 payload.valueByPath("/job/job_spec/command").toString(),
                 "removenode");
 
-        bool const realUninstall = argUninstall;
-        bool const realUnregisterOnly
-                = (argUninstall) ? false : argUnregisterOnly;
-
         S9S_COMPARE(
                 payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean(),
-                realUninstall);
+                enableUninstall);
         S9S_COMPARE(
                 payload.valueByPath(JOB_DATA "unregister_only").toBoolean(),
-                realUnregisterOnly);
+                unregisterOnly);
     }
 
     return true;

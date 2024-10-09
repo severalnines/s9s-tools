@@ -6582,8 +6582,10 @@ S9sRpcClient::reinstallPgBackRest(
 bool
 S9sRpcClient::removeNode()
 {
-    S9sOptions    *options   = S9sOptions::instance();
-    S9sVariantList hosts     = options->nodes();
+    S9sOptions    *options         = S9sOptions::instance();
+    S9sVariantList hosts           = options->nodes();
+    bool const     enableUninstall = options->uninstall();
+    bool const     unregisterOnly  = options->unregisterOnly();
     S9sNode        host;
     S9sString      hostName, title;
     S9sVariantMap  request   = composeRequest();
@@ -6603,28 +6605,27 @@ S9sRpcClient::removeNode()
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
-/*
-    if (hosts.size() != 1u)
+
+    if (enableUninstall && unregisterOnly)
     {
-        PRINT_ERROR("Remove node is currently implemented only for one node.");
+        PRINT_ERROR(
+                "Contradicting options specified.\n"
+                "Use either --uninstall or --unregister-only, but not both.");
+        options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
-*/
+
     host     = hosts[0].toNode();
     hostName = host.hostName();
     title.sprintf("Remove '%s' from the Cluster", STR(hostName));
 
     // The job_data...
-    jobData["nodes"] = nodesField(hosts);
-
-    if (options->uninstall())
-        jobData["enable_uninstall"] = true;
-    else
-        jobData["unregister_only"] = options->unregisterOnly();
-
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["enable_uninstall"] = enableUninstall;
+    jobData["unregister_only"]  = unregisterOnly;
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();
-     
+
     // The jobspec describing the command.
     jobSpec["command"]    = "removenode";
     jobSpec["job_data"]   = jobData;
