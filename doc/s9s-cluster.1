@@ -401,10 +401,9 @@ s9s cluster \\
 .fi
 
 .TP
-.B \-\-remove\-node 
-Removes a node from the cluster (creates a new job that will remove the node
-from the cluster). The name (or IP address) of the node should be specified 
-using the \fB\-\-nodes\fR command line option.
+.B \-\-remove\-node
+Removes a node from the cluster by creating a job that performs the removal.
+The node name or IP address should be specified using the \fB\-\-nodes\fR option.
 
 .B EXAMPLE
 .nf
@@ -415,13 +414,32 @@ s9s cluster \\
     --wait
 .fi
 
-To also uninstall software use \-\-uninstall option too.
+The \fB\-\-uninstall\fR option can be used to also remove the software installed
+on the node.
 
 .B EXAMPLE
 .nf
 s9s cluster \\
     --remove-node \\
     --uninstall \\
+    --cluster-id=1 \\
+    --nodes=192.168.0.245:9600 \\
+    --wait
+.fi
+
+The \fB\-\-unregister-only\fR option removes the node from the cluster's node list without
+stopping or removing any running services. Removing the node using this option
+does not alter the node configuration, thus connections to other nodes in the DB cluster
+will remain intact, however it will no longer be managed by the ClusterControl (CC).
+Any failover or promotion performed outside of CC may cause CC to lose track of the current
+master node, leading to further errors. Be careful when using this option, as it can lead to
+potential error-prone scenarios.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --remove-node \\
+    --unregister-only \\
     --cluster-id=1 \\
     --nodes=192.168.0.245:9600 \\
     --wait
