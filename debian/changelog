@@ -1,3 +1,10 @@
+s9s-tools (1.9.2024102114-release1) UNRELEASED; urgency=medium
+
+  [ Peter Csaszar ]
+  * Adding new cluster type postgresql_logical.
+  * Adding --cluster-id-list option for creating PostgreSql logical cluster
+    of existing PostgreSql streaming replication clusters.
+
 s9s-tools (1.9.2024101022-testing) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
