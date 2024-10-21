@@ -722,6 +722,11 @@ The name of the initial OS user defined in the image for the first login. Use
 this option to create containers based on custom images.
 
 .TP
+.BI --clusters= INTLIST
+
+Coma separated list of cluster identifiers.
+
+.TP
 .BI --nodes= NODELIST
 The list of nodes or hosts enumerated in a special string using a semicolon as
 field separator (e.g. "192.168.1.1;192.168.1.2"). 
@@ -908,8 +913,13 @@ on the remote hosts too.
 .TP
 .BI \-\^\-cluster-type= TYPENAME
 The name of the cluster type to be installed. Currently the following types are
-supported: \fBgalera\fP, \fBmysqlreplication\fP, \fBgroupreplication\fP (or 
-\fBgroup_replication\fP), \fBndb\fP (or \fBndbcluster\fP) and \fBpostgresql\fP.
+supported:
+\fBgalera\fP,
+\fBmysqlreplication\fP,
+\fBgroupreplication\fP (or \fBgroup_replication\fP),
+\fBndb\fP (or \fBndbcluster\fP),
+\fBpostgresql\fP
+and \fBpostgresql_logical\fP.
 
 .TP
 .BI --config-template= FILENAME

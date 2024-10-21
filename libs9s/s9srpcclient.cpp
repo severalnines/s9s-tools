@@ -3158,7 +3158,8 @@ S9sRpcClient::createCluster()
     }
 
     hosts = options->nodes();
-    if (hosts.empty())
+    if (options->clusterType() != "postgresql_logical"
+            && hosts.empty())
     {
         PRINT_ERROR(
             "Node list is empty while creating cluster.\n"
@@ -3248,6 +3249,10 @@ S9sRpcClient::createCluster()
     } else if (options->clusterType() == "postgresql")
     {
         success = createPostgreSql(
+                hosts, osUserName, dbVersion);
+    } else if (options->clusterType() == "postgresql_logical")
+    {
+        success = createLogicalPostgreSql(
                 hosts, osUserName, dbVersion);
     } else if (options->clusterType() == "mongodb")
     {
@@ -4451,6 +4456,91 @@ S9sRpcClient::registerPostgreSql(
     request["operation"]        = "createJobInstance";
     request["job"]              = job;
     
+    return executeRequest(uri, request);
+}
+
+/**
+ * \param hosts the hosts that will be the member of the cluster (variant list
+ *   with S9sNode elements).
+ * \param osUserName the user name to be used to SSH to the host.
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * This method will create a job that creates a logical PostgreSQL cluster of
+ * streaming PostgreSQL clusters.
+ */
+bool
+S9sRpcClient::createLogicalPostgreSql(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &psqlVersion)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u && !options->hasClustersOption())
+    {
+        PRINT_ERROR("Either node list or clusters list should be specified when creating PostgreSQL logical cluster.");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    //
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "postgresql_logical";
+    jobData["type"]             = "postgresql";
+    jobData["vendor"]           = options->vendor();
+    if (options->hasEnterpriseToken())
+        jobData["enterprise_token"] = options->enterpriseToken();
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["version"]          = psqlVersion;
+    jobData["postgre_user"]     = options->dbAdminUserName();
+    jobData["postgre_password"] = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = false;
+
+    if (options->withTimescaleDb())
+        jobData["install_timescaledb"] = true;
+
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = false;
+    }
+
+    if (options->hasClustersOption())
+        jobData["clusters"] = options->clusters();
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    //
+    // The jobspec describing the command.
+    //
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    //
+    // The job instance describing how the job will be executed.
+    //
+    job["title"]                = "Creating PostgreSQL Logical Cluster";
+    job["job_spec"]             = jobSpec;
+
+    //
+    // The request describing we want to register a job instance.
+    //
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+
     return executeRequest(uri, request);
 }
 
