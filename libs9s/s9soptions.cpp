@@ -62,6 +62,7 @@ enum S9sOptionType
     OptionBatch,
     OptionNoHeader,
     OptionNodes,
+    OptionClusters,
     OptionSlave,
     OptionFailStopSlave,
     OptionMaster,
@@ -2617,6 +2618,21 @@ bool
 S9sOptions::hasClusterNameOption()
 {
     return m_options.contains("cluster_name");
+}
+
+/**
+ * \returns the value set by the --clusters command line option.
+ */
+S9sString
+S9sOptions::clusters() const
+{
+    return getString("clusters");
+}
+
+bool
+S9sOptions::hasClustersOption()
+{
+    return m_options.contains("clusters");
 }
 
 bool
@@ -13778,6 +13794,7 @@ S9sOptions::readOptionsCluster(
         { "db-owner",         required_argument, 0, OptionDbOwner         },
         { "donor",            required_argument, 0, OptionDonor           },
         { "nodes",            required_argument, 0, OptionNodes           },
+        { "clusters",         required_argument, 0, OptionClusters        },
         { "no-install",       no_argument,       0, OptionNoInstall       },
         { "no-terminate",     no_argument,       0, OptionNoTerminate     },
         { "objects",          required_argument, 0, OptionObjects         },
@@ -14266,6 +14283,11 @@ S9sOptions::readOptionsCluster(
                 // --nodes=LIST
                 if (!setNodes(optarg))
                     return false;
+                break;
+
+            case OptionClusters:
+                // --clusters=LIST
+                m_options["clusters"] = optarg;
                 break;
 
             case OptionVendor:

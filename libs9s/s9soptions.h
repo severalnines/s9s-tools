@@ -283,6 +283,9 @@ class S9sOptions
         S9sString clusterName() const;
         bool hasClusterNameOption();
 
+        S9sString clusters() const;
+        bool hasClustersOption();
+
 
         bool hasClusterTypeOption() const;
         bool hasVendorOption() const;

@@ -561,6 +561,11 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &psqlVersion);
 
+        bool createLogicalPostgreSql(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &psqlVersion);
+
         bool createRedisOrValkeySharded(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
