@@ -1178,6 +1178,130 @@ cluster this option can be used to set tags for the newly created cluster.
 Install the TimescaleDB option when creating a new cluster. This is currently
 only supported on PostgreSQL systems.
 
+.TP
+.B \-\-add\-publication
+Creates a new PostgreSQL publication for logical replication cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-publication \\
+    --cluster-id=1 \\
+    --subcluster-id=2 \\
+    --pub-name=my_publication \\
+    --db-name=mydb \\
+    --include-all-tables
+
+s9s cluster \\
+    --add-publication \\
+    --cluster-id=1 \\
+    --subcluster-name=source_db \\
+    --pub-name=sales_pub \\
+    --db-name=sales_db \\
+    --db-tables="orders,customers,products"
+.fi
+
+The operation requires either \fB\-\-include\-all\-tables\fP to include all tables
+in the publication or \fB\-\-db\-tables\fP to specify a list of tables.
+
+.TP
+.B --drop-publication
+Drops an existing PostgreSQL publication.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --drop-publication \\
+    --cluster-id=1 \\
+    --subcluster-id=2 \\
+    --pub-name=my_publication \\
+    --db-name=mydb
+.fi
+
+.TP
+.B --list-publications
+Lists all publications in a PostgreSQL Logical Replication cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list-publications \\
+    --cluster-id=1 \\
+    --subcluster-name=source_db
+.fi
+
+.TP
+.B --add-subscription
+Creates a new PostgreSQL subscription for logical replication.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-subscription \\
+    --cluster-id=1 \\
+    --subcluster-id=3 \\
+    --sub-name=my_subscription \\
+    --pub-name=source_pub \\
+    --db-name=mydb
+.fi
+
+.TP
+.B --drop-subscription
+Drops an existing PostgreSQL subscription.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --drop-subscription \\
+    --cluster-id=1 \\
+    --subcluster-id=3 \\
+    --sub-name=my_subscription \\
+    --db-name=mydb
+.fi
+
+.TP
+.B --list-subscriptions
+Lists all subscriptions in a PostgreSQL Logical Replication cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list-subscriptions \\
+    --cluster-id=1 \\
+    --subcluster-name=target_db
+.fi
+
+\"
+\"
+\"
+.SH LOGICAL REPLICATION OPTIONS
+The following command line options are closely related to
+PostgreSQL Logical Replication clusters (\fBpostgresql_logical\fP).
+
+.TP
+.BI \-\-subcluster\-id= ID
+The PostgreSQL sub-cluster ID where the publication will be created.
+
+.TP
+.BI \-\-subcluster\-name= NAME
+The PostgreSQL sub-cluster name where the publication will be created.
+
+.TP
+.BI \-\-pub\-name =\fINAME\fP
+The name of the publication to create or manage.
+
+.TP
+.BI \-\-sub\-name =\fINAME\fP
+The name of the subscription to create or manage.
+
+.TP
+.BI \-\-include\-all\-tables
+Include all tables in the publication.
+
+.TP
+.BI \-\-db\-tables =\fILIST\fP
+Comma-separated list of tables to include in the publication.
+Not compatible with \fB\-\-include\-all\-tables\fP.
 
 \"
 \"
@@ -1196,7 +1320,7 @@ The password for the administrator of load balancers.
 
 .TP
 .BI --admin-user= USERNAME
-The username for the administrator of load balancers. 
+The username for the administrator of load balancers.
 
 .TP
 .B --dont-import-accounts
