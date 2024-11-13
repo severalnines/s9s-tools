@@ -717,7 +717,7 @@ S9sVariant::toInt(
             return defaultValue;
 
         case String:
-            return toString().empty() ? defaultValue : atoi(toString().c_str());
+            return toString().toInt(defaultValue);
 
         case Int:
             return m_union.iVal;

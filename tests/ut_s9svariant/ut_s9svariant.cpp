@@ -214,6 +214,18 @@ UtS9sVariant::testToInt()
     S9S_COMPARE(var1.toInt(), 42);
     S9S_COMPARE(var1.toInt(3), 42);
 
+    // With extra characters after the integer, the first field is only
+    // considered.
+    var1 = "24.42";
+    S9S_COMPARE(var1.toInt(), 24);
+    S9S_COMPARE(var1.toInt(3), 24);
+
+    // When no conversion is possible at all, the default value must be
+    // returned.
+    var1 = "xxx";
+    S9S_COMPARE(var1.toInt(), 0);
+    S9S_COMPARE(var1.toInt(25), 25);
+
     return true;
 }
 
