@@ -57,6 +57,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions07, retval);
     PERFORM_TEST(testSetNodes,      retval);
     PERFORM_TEST(testPerconaProCluster, retval);
+    PERFORM_TEST(testPostgreSqlReplication, retval);
 
     return retval;
 }
@@ -482,6 +483,122 @@ UtS9sOptions::testPerconaProCluster()
     return true;
 }
 
+bool
+UtS9sOptions::testPostgreSqlReplication()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // --add-publication
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-publication",
+                            "--cluster-id=42",
+                            "--db-name=mydb",
+                            "--include-all-tables",
+                            "--pub-name=mypub",
+                            "--subcluster-name=psql2",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddPublicationRequested());
+    S9S_VERIFY(options->hasClusterIdOption());
+    S9S_COMPARE(options->clusterId(), 42);
+    S9S_COMPARE(options->dbName(), "mydb");
+    S9S_COMPARE(options->publicationName(), "mypub");
+    S9S_COMPARE(options->subClusterName(), "psql2");
+    S9S_COMPARE(options->includeAllTables(), true);
+
+    // --drop-publication
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--drop-publication",
+                            "--cluster-id=42",
+                            "--pub-name=mypub",
+                            "--db-name=mydb",
+                            "--subcluster-id=44",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isDropPublicationRequested());
+    S9S_VERIFY(options->hasClusterIdOption());
+    S9S_COMPARE(options->clusterId(), 42);
+    S9S_COMPARE(options->dbName(), "mydb");
+    S9S_COMPARE(options->publicationName(), "mypub");
+    S9S_COMPARE(options->subClusterId(), 44);
+
+    // --list-publications
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--list-publications",
+                            nullptr };
+    int argc3 = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isListPublicationsRequested());
+
+    // --add-subscription
+    const char *argv4[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-subscription",
+                            "--cluster-id=43",
+                            "--db-name=mydb",
+                            "--pub-name=pub1",
+                            "--sub-name=sub1",
+                            "--subcluster-id=99",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc4, (char **)argv4));
+    S9S_VERIFY(options->isAddSubscriptionRequested());
+    S9S_VERIFY(options->hasClusterIdOption());
+    S9S_COMPARE(options->clusterId(), 43);
+    S9S_COMPARE(options->dbName(), "mydb");
+    S9S_COMPARE(options->publicationName(), "pub1");
+    S9S_COMPARE(options->subscriptionName(), "sub1");
+    S9S_COMPARE(options->subClusterId(), 99);
+
+    // --drop-subscription
+    const char *argv5[] = { "/bin/s9s",
+                            "cluster",
+                            "--drop-subscription",
+                            "--cluster-id=46",
+                            "--db-name=mydb",
+                            "--sub-name=mysub",
+                            nullptr };
+    int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
+    S9S_VERIFY(options->isDropSubscriptionRequested());
+    S9S_VERIFY(options->hasClusterIdOption());
+    S9S_COMPARE(options->clusterId(), 46);
+    S9S_COMPARE(options->dbName(), "mydb");
+    S9S_COMPARE(options->subscriptionName(), "mysub");
+
+    // --subcluster-id validation
+    const char *argv6[] = { "/bin/s9s",
+                            "cluster",
+                            "--drop-subscription",
+                            "--subcluster-id=xxx",
+                            nullptr };
+    int         argc6   = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc6, (char **)argv6));
+    S9S_COMPARE(options->subClusterId(), S9S_INVALID_CLUSTER_ID);
+
+    S9sOptions::uninit();
+    return true;
+}
+
 S9S_UNIT_TEST_MAIN(UtS9sOptions)
-
-
