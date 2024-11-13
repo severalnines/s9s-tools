@@ -267,7 +267,45 @@ S9sBusinessLogic::execute()
         } else if (options->isDeleteDatabaseRequested())
         {
             success = client.createDeleteDatabaseJob();
-            maybeJobRegistered(client, clusterId, success); 
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isAddPublicationRequested())
+        {
+            success = client.addPublication();
+            client.printMessages("Added.", success);
+            client.setExitStatus();
+        } else if (options->isDropPublicationRequested())
+        {
+            success = client.dropPublication();
+            client.printMessages("Removed.", success);
+            client.setExitStatus();
+        } else if (options->isListPublicationsRequested())
+        {
+            success = client.listPublications();
+            if (success)
+            {
+                S9sRpcReply reply = client.reply();
+                reply.printPublications();
+            }
+            client.setExitStatus();
+        } else if (options->isAddSubscriptionRequested())
+        {
+            success = client.addSubscription();
+            client.printMessages("Added.", success);
+            client.setExitStatus();
+        } else if (options->isDropSubscriptionRequested())
+        {
+            success = client.dropSubscription();
+            client.printMessages("Removed.", success);
+            client.setExitStatus();
+        } else if (options->isListSubscriptionsRequested())
+        {
+            success = client.listSubscriptions();
+            if (success)
+            {
+                S9sRpcReply reply = client.reply();
+                reply.printSubscriptions();
+            }
+            client.setExitStatus();
         } else if (options->isAvailableUpgradesRequested())
         {
             S9sRpcReply reply;
