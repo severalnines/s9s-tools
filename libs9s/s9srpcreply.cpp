@@ -7847,6 +7847,255 @@ S9sRpcReply::printObjectListBrief()
     printObjectListBrief(entry, 0, "", false);
 }
 
+/**
+ * Prints the publications list considering command line options.
+ */
+void
+S9sRpcReply::printPublications()
+{
+    S9sOptions const *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    printDebugMessages();
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
+        printPublicationsLong();
+    else
+        printPublicationsBrief();
+}
+
+void
+S9sRpcReply::printPublicationsBrief()
+{
+    S9sOptions const    *options = S9sOptions::instance();
+    S9sVariantList const publications
+            = operator[]("publications").toVariantList();
+    bool const  syntaxHighlight = options->useSyntaxHighlight();
+    char const *nameColorBegin  = syntaxHighlight ? XTERM_COLOR_BLUE : "";
+    char const *nameColorEnd    = syntaxHighlight ? TERM_NORMAL : "";
+
+    for (auto const &pub : publications)
+    {
+        S9sVariantMap pubMap = pub.toVariantMap();
+        S9sString     name   = pubMap["publication_name"].toString();
+
+        if (!options->isStringMatchExtraArguments(name))
+            continue;
+
+        printf("%s%s%s\n", nameColorBegin, STR(name), nameColorEnd);
+    }
+}
+
+void
+S9sRpcReply::printPublicationsLong()
+{
+    S9sOptions const    *options = S9sOptions::instance();
+    S9sVariantList const publications
+            = operator[]("publications").toVariantList();
+    S9sFormat         nameFormat;
+    S9sFormat         dbFormat;
+    int               nLines = 0;
+
+    // First pass to calculate column widths
+    for (auto const &pub : publications)
+    {
+        S9sVariantMap   pubMap   = pub.toVariantMap();
+        S9sString const name     = pubMap["publication_name"].toString();
+        S9sString const database = pubMap["database"].toString();
+
+        if (!options->isStringMatchExtraArguments(name))
+            continue;
+
+        nameFormat.widen(name);
+        dbFormat.widen(database);
+        ++nLines;
+    }
+
+    // Print header
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        nameFormat.printHeader("NAME");
+        dbFormat.printHeader("DATABASE");
+        printf("TABLES");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    // Print publications
+    for (auto const &pub : publications)
+    {
+        S9sVariantMap        pubMap    = pub.toVariantMap();
+        S9sString const      name      = pubMap["publication_name"].toString();
+        S9sString const      database  = pubMap["database"].toString();
+        bool const           allTables = pubMap["all_tables"].toBoolean();
+        S9sVariantList const tables    = pubMap["tables"].toVariantList();
+
+        if (!options->isStringMatchExtraArguments(name))
+            continue;
+
+        nameFormat.printf(name);
+        dbFormat.printf(database);
+
+        if (allTables)
+        {
+            printf("ALL");
+        }
+        else
+        {
+            for (uint i = 0; i < tables.size(); ++i)
+            {
+                if (i > 0)
+                    printf(",");
+                printf("%s", STR(tables[i].toString()));
+            }
+        }
+        printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+        printf("Total: %d publication(s)\n", nLines);
+}
+
+/**
+ * Prints the subscriptions list considering command line options.
+ */
+void
+S9sRpcReply::printSubscriptions()
+{
+    S9sOptions const *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    printDebugMessages();
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (options->isLongRequested())
+        printSubscriptionsLong();
+    else
+        printSubscriptionsBrief();
+}
+
+void
+S9sRpcReply::printSubscriptionsBrief()
+{
+    S9sOptions const    *options = S9sOptions::instance();
+    S9sVariantList const subscriptions
+            = operator[]("subscriptions").toVariantList();
+    bool const  syntaxHighlight = options->useSyntaxHighlight();
+    char const *nameColorBegin  = syntaxHighlight ? XTERM_COLOR_BLUE : "";
+    char const *nameColorEnd   = syntaxHighlight ? TERM_NORMAL : "";
+
+    for (auto const &sub : subscriptions)
+    {
+        S9sVariantMap   subMap = sub.toVariantMap();
+        S9sString const name   = subMap["subscription_name"].toString();
+
+        if (!options->isStringMatchExtraArguments(name))
+            continue;
+
+        printf("%s%s%s\n", nameColorBegin, STR(name), nameColorEnd);
+    }
+}
+
+void
+S9sRpcReply::printSubscriptionsLong()
+{
+    S9sOptions const    *options = S9sOptions::instance();
+    S9sVariantList const subscriptions
+            = operator[]("subscriptions").toVariantList();
+    S9sFormat nameFormat;
+    S9sFormat dbFormat;
+    S9sFormat pubFormat;
+    S9sFormat statusFormat;
+    int       nLines = 0;
+
+    // First pass to calculate column widths
+    for (auto const &sub : subscriptions)
+    {
+        S9sVariantMap   subMap      = sub.toVariantMap();
+        S9sString const name        = subMap["subscription_name"].toString();
+        S9sString const database    = subMap["database"].toString();
+        S9sString const publication = subMap["publication_name"].toString();
+        S9sString const status
+                = subMap["enabled"].toBoolean() ? "enabled" : "disabled";
+
+        if (!options->isStringMatchExtraArguments(name))
+            continue;
+
+        nameFormat.widen(name);
+        dbFormat.widen(database);
+        pubFormat.widen(publication);
+        statusFormat.widen(status);
+        ++nLines;
+    }
+
+    // Print header
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        nameFormat.printHeader("NAME");
+        dbFormat.printHeader("DATABASE");
+        pubFormat.printHeader("PUBLICATION");
+        statusFormat.printHeader("STATUS");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    // Print subscriptions
+    for (auto const &sub : subscriptions)
+    {
+        S9sVariantMap   subMap      = sub.toVariantMap();
+        S9sString const name        = subMap["subscription_name"].toString();
+        S9sString const database    = subMap["database"].toString();
+        S9sString const publication = subMap["publication_name"].toString();
+        bool const      enabled     = subMap["enabled"].toBoolean();
+        S9sString const status      = enabled ? "enabled" : "disabled";
+
+        if (!options->isStringMatchExtraArguments(name))
+            continue;
+
+        nameFormat.printf(name);
+        dbFormat.printf(database);
+        pubFormat.printf(publication);
+
+        if (options->useSyntaxHighlight())
+        {
+            printf("%s", enabled ? XTERM_COLOR_GREEN : XTERM_COLOR_RED);
+            statusFormat.printf(status);
+            printf("%s", TERM_NORMAL);
+        }
+        else
+        {
+            statusFormat.printf(status);
+        }
+        printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+        printf("Total: %d subscription(s)\n", nLines);
+}
+
 void
 S9sRpcReply::printScriptOutput()
 {
