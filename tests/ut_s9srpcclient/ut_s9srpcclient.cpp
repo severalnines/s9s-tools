@@ -158,6 +158,13 @@ UtS9sRpcClient::runTest(
 
     PERFORM_TEST(testDatetimeRegex, retval);
 
+    PERFORM_TEST(testAddPublication, retval);
+    PERFORM_TEST(testDropPublication, retval);
+    PERFORM_TEST(testListPublications, retval);
+    PERFORM_TEST(testAddSubscription, retval);
+    PERFORM_TEST(testDropSubscription, retval);
+    PERFORM_TEST(testListSubscriptions, retval);
+
     return retval;
 }
 
@@ -2259,6 +2266,289 @@ UtS9sRpcClient::testDatetimeRegex() {
     S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40-0220"), true);
     S9S_COMPARE(isValidDateTimeFormat("2020-12-31 14:27:40+0000"), true);
 
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddPublication()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    options->m_options["db_name"]            = "mydb";
+    options->m_options["pub_name"]           = "mypub";
+    options->m_options["include_all_tables"] = true;
+    S9S_VERIFY(!client.addPublication());
+
+    // Test with subcluster id and include all tables
+    options->m_options.clear();
+    options->m_options["db_name"]            = "mydb";
+    options->m_options["pub_name"]           = "mypub";
+    options->m_options["subcluster_id"]      = 42;
+    options->m_options["include_all_tables"] = true;
+    S9S_VERIFY(client.addPublication());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createPublication");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+    S9S_VERIFY(payload["include_all_tables"].toBoolean());
+
+    // Test with subcluster name and specific tables
+    options->m_options.clear();
+    options->m_options["db_name"]         = "mydb";
+    options->m_options["pub_name"]        = "mypub";
+    options->m_options["subcluster_name"] = "source";
+    options->m_options["db_tables"]       = "table1;table2";
+
+    S9S_VERIFY(client.addPublication());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createPublication");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["subcluster_name"], "source");
+    S9S_COMPARE(payload["db_tables"], "table1;table2");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDropPublication()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    options->m_options["db_name"]  = "mydb";
+    options->m_options["pub_name"] = "mypub";
+    S9S_VERIFY(!client.dropPublication());
+
+    // Test with subcluster id
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["pub_name"]      = "mypub";
+    options->m_options["subcluster_id"] = 42;
+
+    S9S_VERIFY(client.dropPublication());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "dropPublication");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with subcluster name
+    options->m_options.clear();
+    options->m_options["db_name"]         = "mydb";
+    options->m_options["pub_name"]        = "mypub";
+    options->m_options["subcluster_name"] = "source";
+
+    S9S_VERIFY(client.dropPublication());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "dropPublication");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["subcluster_name"], "source");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testListPublications()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    S9S_VERIFY(!client.listPublications());
+
+    // Test with subcluster id
+    options->m_options["subcluster_id"] = 42;
+    S9S_VERIFY(client.listPublications());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getPublications");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with subcluster name
+    options->m_options.clear();
+    options->m_options["subcluster_name"] = "source";
+    S9S_VERIFY(client.listPublications());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getPublications");
+    S9S_COMPARE(payload["subcluster_name"], "source");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddSubscription()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    options->m_options["db_name"]  = "mydb";
+    options->m_options["pub_name"] = "mypub";
+    options->m_options["sub_name"] = "mysub";
+    S9S_VERIFY(!client.addSubscription());
+
+    // Test with subcluster id
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["pub_name"]      = "mypub";
+    options->m_options["sub_name"]      = "mysub";
+    options->m_options["subcluster_id"] = 42;
+
+    S9S_VERIFY(client.addSubscription());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createSubscription");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["sub_name"], "mysub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with subcluster name
+    options->m_options.clear();
+    options->m_options["db_name"]         = "mydb";
+    options->m_options["pub_name"]        = "mypub";
+    options->m_options["sub_name"]        = "mysub";
+    options->m_options["subcluster_name"] = "target";
+
+    S9S_VERIFY(client.addSubscription());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createSubscription");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["sub_name"], "mysub");
+    S9S_COMPARE(payload["subcluster_name"], "target");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDropSubscription()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    options->m_options["db_name"]  = "mydb";
+    options->m_options["sub_name"] = "mysub";
+    S9S_VERIFY(!client.dropSubscription());
+
+    // Test with subcluster id
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["sub_name"]      = "mysub";
+    options->m_options["subcluster_id"] = 42;
+
+    S9S_VERIFY(client.dropSubscription());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "dropSubscription");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_name"], "mysub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with subcluster name
+    options->m_options.clear();
+    options->m_options["db_name"]         = "mydb";
+    options->m_options["sub_name"]        = "mysub";
+    options->m_options["subcluster_name"] = "target";
+
+    S9S_VERIFY(client.dropSubscription());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "dropSubscription");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_name"], "mysub");
+    S9S_COMPARE(payload["subcluster_name"], "target");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testListSubscriptions()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    S9S_VERIFY(!client.listSubscriptions());
+
+    // Test with subcluster id
+    options->m_options["subcluster_id"] = 42;
+    S9S_VERIFY(client.listSubscriptions());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getSubscriptions");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with subcluster name
+    options->m_options.clear();
+    options->m_options["subcluster_name"] = "target";
+    S9S_VERIFY(client.listSubscriptions());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getSubscriptions");
+    S9S_COMPARE(payload["subcluster_name"], "target");
 
     return true;
 }

@@ -97,6 +97,13 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testDeleteUserPreferences();
 
         bool testDatetimeRegex();
+
+        bool testAddPublication();
+        bool testDropPublication();
+        bool testListPublications();
+        bool testAddSubscription();
+        bool testDropSubscription();
+        bool testListSubscriptions();
 };
 
 class S9sRpcClientTester : public S9sRpcClient
