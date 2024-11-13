@@ -160,6 +160,17 @@ enum S9sOptionType
     OptionSchedule,
     OptionRecurrence,
     OptionTimeout,
+    OptionSubclusterId,
+    OptionSubclusterName,
+    OptionPublicationName,
+    OptionSubscriptionName,
+    OptionAddPublication,
+    OptionDropPublication,
+    OptionListPublications,
+    OptionAddSubscription,
+    OptionDropSubscription,
+    OptionListSubscriptions,
+    OptionIncludeAllTables,
     OptionPing,
     OptionGroup,
     OptionCreateGroup,
@@ -224,6 +235,7 @@ enum S9sOptionType
     OptionPrivileges,
     OptionDbName,
     OptionDbOwner,
+    OptionDbTables,
     OptionOptGroup,
     OptionOptName,
     OptionOptValue,
@@ -3448,6 +3460,12 @@ S9sOptions::dbOwner() const
     return getString("db_owner");
 }
 
+S9sString
+S9sOptions::dbTables() const
+{
+    return getString("db_tables");
+}
+
 /**
  * \returns The argument for the --backup-directory option or the
  *   backup_directory config value.
@@ -4954,6 +4972,111 @@ S9sOptions::isDeleteCloudCredential() const
 
 
 /**
+ * \returns true if the --add-publication command line option was provided.
+ */
+bool
+S9sOptions::isAddPublicationRequested() const
+{
+    return getBool("add_publication");
+}
+
+/**
+ * \returns true if the --drop-publication command line option was provided.
+ */
+bool
+S9sOptions::isDropPublicationRequested() const
+{
+    return getBool("drop_publication");
+}
+
+/**
+ * \returns true if the --list-publications command line option was provided.
+ */
+bool
+S9sOptions::isListPublicationsRequested() const
+{
+    return getBool("list_publications");
+}
+
+/**
+ * \returns true if the --add-subscription command line option was provided.
+ */
+bool
+S9sOptions::isAddSubscriptionRequested() const
+{
+    return getBool("add_subscription");
+}
+
+/**
+ * \returns true if the --drop-subscription command line option was provided.
+ */
+bool
+S9sOptions::isDropSubscriptionRequested() const
+{
+    return getBool("drop_subscription");
+}
+
+/**
+ * \returns true if the --list-subscriptions command line option was provided.
+ */
+bool
+S9sOptions::isListSubscriptionsRequested() const
+{
+    return getBool("list_subscriptions");
+}
+
+/**
+ * \returns The command line option argument for the --pub-name option.
+ */
+S9sString
+S9sOptions::publicationName() const
+{
+    return getString("pub_name");
+}
+
+/**
+ * \returns The command line option argument for the --sub-name option.
+ */
+S9sString
+S9sOptions::subscriptionName() const
+{
+    return getString("sub_name");
+}
+
+/**
+ * \returns The command line option argument for the --subcluster-id option.
+ */
+int
+S9sOptions::subClusterId() const
+{
+    int retval = S9S_INVALID_CLUSTER_ID;
+    if (m_options.contains("subcluster_id"))
+    {
+        retval = m_options.at("subcluster_id").toInt(S9S_INVALID_CLUSTER_ID);
+    }
+    return retval;
+}
+
+/**
+ * \returns The command line option argument for the --subcluster-name option.
+ */
+S9sString
+S9sOptions::subClusterName() const
+{
+    return getString("subcluster_name");
+}
+
+/**
+ * \returns The command line option argument for the --include-all-tables option.
+ */
+bool
+S9sOptions::includeAllTables() const
+{
+    return getBool("include_all_tables");
+}
+
+
+/**
  * \returns True if the --list-processors command line option is provided.
  */
 bool
@@ -6180,7 +6303,7 @@ S9sOptions::extraArgument(
  * \returns true if the program should use syntax highlighting in its output.
  */
 bool
-S9sOptions::useSyntaxHighlight() 
+S9sOptions::useSyntaxHighlight() const
 {
     S9sString configValue;
 
@@ -7382,6 +7505,19 @@ S9sOptions::printHelpCluster()
 "  --ssl-cert=STRING          The SSL certificate file path on controller.\n"
 "  --ssl-key=STRING           The SSL key file path on controller.\n"
 "  --move-certs-dir=PATH      Path to certificates directory to be moved on imported cluster\n"
+"\n"
+"PostgreSQL Logical Replication related options\n"
+"  --add-publication          Create a new publication for logical replication.\n"
+"  --drop-publication         Remove an existing publication.\n"
+"  --list-publications        List all publications in the cluster.\n"
+"  --add-subscription         Create a new subscription to a publication.\n"
+"  --drop-subscription        Remove an existing subscription.\n"
+"  --list-subscriptions       List all subscriptions in the cluster.\n"
+"  --subcluster-id=ID         The ID of the subcluster for logical replication.\n"
+"  --subcluster-name=NAME     The name of the subcluster for logical replication.\n"
+"  --pub-name=NAME    The name of the publication to create or manage.\n"
+"  --sub-name=NAME   The name of the subscription to create or manage.\n"
+"\n"
 "Microsoft SQL Server related options\n"
 "  --license=STRING           The license (Evaluation, Developer, etc).\n"
 "Elasticsearch related options\n"
@@ -11525,6 +11661,24 @@ S9sOptions::checkOptionsCluster()
     if (isUninstallCmonAgentsRequested())
         countOptions++;
 
+    if (isAddPublicationRequested())
+        countOptions++;
+
+    if (isDropPublicationRequested())
+        countOptions++;
+
+    if (isListPublicationsRequested())
+        countOptions++;
+
+    if (isAddSubscriptionRequested())
+        countOptions++;
+
+    if (isDropSubscriptionRequested())
+        countOptions++;
+
+    if (isListSubscriptionsRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -13792,6 +13946,7 @@ S9sOptions::readOptionsCluster(
         { "replica-validity-factor", required_argument, 0, OptionRedisOrValkeyReplicaValidityFactor},
         { "db-name",          required_argument, 0, OptionDbName          },
         { "db-owner",         required_argument, 0, OptionDbOwner         },
+        { "db-tables",        required_argument, 0, OptionDbTables         },
         { "donor",            required_argument, 0, OptionDonor           },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "clusters",         required_argument, 0, OptionClusters        },
@@ -13885,6 +14040,19 @@ S9sOptions::readOptionsCluster(
         { "snapshot-repo-type",  required_argument, 0, OptionSnapshotRepoType },
         { "snapshot-location",required_argument, 0, OptionSnapshotLocation},
         { "storage-host",     required_argument, 0, OptionStorageHost     },
+
+        // Options for logical replication
+        { "add-publication",    no_argument,       0, OptionAddPublication },
+        { "drop-publication",   no_argument,       0, OptionDropPublication },
+        { "list-publications",  no_argument,       0, OptionListPublications },
+        { "add-subscription",   no_argument,       0, OptionAddSubscription },
+        { "drop-subscription",  no_argument,       0, OptionDropSubscription },
+        { "list-subscriptions", no_argument,       0, OptionListSubscriptions },
+        { "include-all-tables", no_argument,       0, OptionIncludeAllTables },
+        { "pub-name",   required_argument, 0, OptionPublicationName },
+        { "sub-name",  required_argument, 0, OptionSubscriptionName },
+        { "subcluster-id",      required_argument, 0, OptionSubclusterId },
+        { "subcluster-name",    required_argument, 0, OptionSubclusterName },
 
         { 0, 0, 0, 0 }
     };
@@ -14447,6 +14615,11 @@ S9sOptions::readOptionsCluster(
                 m_options["db_owner"] = optarg;
                 break;
 
+            case OptionDbTables:
+                // --db-tables=t1;t2;t3
+                m_options["db_tables"] = optarg;
+                break;
+
             case OptionObjects:
                 // --objects=OBJECTS
                 m_options["objects"] = optarg;
@@ -14678,6 +14851,64 @@ S9sOptions::readOptionsCluster(
             case OptionVpcId:
                 // --vpc-id=ID
                 m_options["vpc_id"] = optarg;
+                break;
+
+            /*
+             * Options for PostgreSQL Logical Replication.
+             */
+            case OptionAddPublication:
+                // --add-publication
+                m_options["add_publication"] = true;
+                break;
+
+            case OptionDropPublication:
+                // --drop-publication
+                m_options["drop_publication"] = true;
+                break;
+
+            case OptionListPublications:
+                // --list-publications
+                m_options["list_publications"] = true;
+                break;
+
+            case OptionAddSubscription:
+                // --add-subscription
+                m_options["add_subscription"] = true;
+                break;
+
+            case OptionDropSubscription:
+                // --drop-subscription
+                m_options["drop_subscription"] = true;
+                break;
+
+            case OptionListSubscriptions:
+                // --list-subscriptions
+                m_options["list_subscriptions"] = true;
+                break;
+
+            case OptionPublicationName:
+                // --pub-name=NAME
+                m_options["pub_name"] = optarg;
+                break;
+
+            case OptionSubscriptionName:
+                // --sub-name=NAME
+                m_options["sub_name"] = optarg;
+                break;
+
+            case OptionSubclusterId:
+                // --subcluster-id=ID
+                m_options["subcluster_id"] = optarg;
+                break;
+
+            case OptionSubclusterName:
+                // --subcluster-name=NAME
+                m_options["subcluster_name"] = optarg;
+                break;
+
+            case OptionIncludeAllTables:
+                // --include-all-tables
+                m_options["include_all_tables"] = true;
                 break;
 
             /*
