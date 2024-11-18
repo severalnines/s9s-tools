@@ -34,3 +34,7 @@ Download and run the script as sudo (it will set up the repository, installs and
 ![Screenshot09](screenshots/screen-09.png)
 ![Screenshot10](screenshots/screen-10.png)
 
+# Dependencies for compilation on ubuntu24
+
+sudo apt-get install libssl-dev flex bison
+
