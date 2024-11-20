@@ -232,7 +232,14 @@ class S9sRpcReply : public S9sVariantMap
         void printObjectTreeBrief();
         void printObjectListLong();
         void printObjectListBrief();
-        
+
+        void printPublications();
+        void printPublicationsBrief();
+        void printPublicationsLong();
+        void printSubscriptions();
+        void printSubscriptionsBrief();
+        void printSubscriptionsLong();
+
         void saveConfig(S9sString outputDir);
 
 

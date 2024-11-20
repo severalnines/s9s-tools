@@ -328,10 +328,11 @@ S9sString::toInt(
     {
         char *endptr;
         int   base = 0;
-        long val = strtol(c_str(), &endptr, base);
+        long  val  = strtol(c_str(), &endptr, base);
 
-        if (val <= INT_MAX && val >= INT_MIN)
-            return val;
+        // Check if any characters were converted at all.
+        if (c_str() != endptr && val <= INT_MAX && val >= INT_MIN)
+            return (int)val;
     }
 
     return defaultVal;

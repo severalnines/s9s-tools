@@ -356,6 +356,7 @@ class S9sOptions
 
         S9sString dbName() const;
         S9sString dbOwner() const;
+        S9sString dbTables() const;
         S9sString privileges() const;
         
         S9sString optGroup() const;
@@ -561,6 +562,18 @@ class S9sOptions
         bool isCreateCloudCredential() const;
         bool isDeleteCloudCredential() const;
 
+        bool isAddPublicationRequested() const;
+        bool isDropPublicationRequested() const;
+        bool isListPublicationsRequested() const;
+        bool isAddSubscriptionRequested() const;
+        bool isDropSubscriptionRequested() const;
+        bool isListSubscriptionsRequested() const;
+        int subClusterId() const;
+        S9sString subClusterName() const;
+        S9sString publicationName() const;
+        S9sString subscriptionName() const;
+        bool includeAllTables() const;
+
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;
         bool isListDisksRequested() const;
@@ -690,7 +703,7 @@ class S9sOptions
         S9sVariantList extraArguments() const;
         S9sString extraArgument(uint idx);
 
-        bool useSyntaxHighlight();
+        bool useSyntaxHighlight() const;
         bool truncate();
         bool noWrap() const;
         bool humanReadable() const;

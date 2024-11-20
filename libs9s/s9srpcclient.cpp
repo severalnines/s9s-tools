@@ -10949,6 +10949,244 @@ S9sRpcClient::deleteCloudCredentials(const int & credentialId, const S9sString &
 }
 
 /**
+ * \returns true if the subcluster identification is valid and added to the
+ * request.
+ */
+bool
+S9sRpcClient::validateSubClusterRequestParams(
+        S9sVariantMap &request,
+        S9sOptions    *options) const
+{
+    const S9sString subClusterName = options->subClusterName();
+    const int       subClusterId   = options->subClusterId();
+
+    if (S9S_CLUSTER_ID_IS_VALID(subClusterId))
+        request["subcluster_id"] = subClusterId;
+    else if (!subClusterName.empty())
+        request["subcluster_name"] = subClusterName;
+    else
+    {
+        PRINT_ERROR(
+                "Either --subcluster-id or --subcluster-name must be "
+                "specified.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * \returns true if the publication parameters are valid and added to the
+ * request.
+ */
+bool
+S9sRpcClient::validatePublicationRequestParams(
+        S9sVariantMap &request,
+        S9sOptions    *options,
+        bool const    includePubName) const
+{
+    S9sString const dbName = options->dbName();
+    if (dbName.empty())
+    {
+        PRINT_ERROR(
+                "Missing database name. "
+                "Use the --db-name option to specify one.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (includePubName)
+    {
+        S9sString const pubName = options->publicationName();
+        if (pubName.empty())
+        {
+            PRINT_ERROR(
+                    "Missing publication name. "
+                    "Use the --pub-name option to specify one.");
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+        request["pub_name"] = pubName;
+    }
+
+    request["db_name"] = dbName;
+    return true;
+}
+
+/**
+ * \returns true if the subscription parameters are valid and added to the
+ * request.
+ */
+bool
+S9sRpcClient::validateSubscriptionRequestParams(
+        S9sVariantMap &request,
+        S9sOptions    *options,
+        bool const    includePubName) const
+{
+    S9sString const subName = options->subscriptionName();
+
+    if (subName.empty())
+    {
+        PRINT_ERROR(
+                "Missing subscription name. "
+                "Use the --sub-name option to specify one.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (!validatePublicationRequestParams(request, options, includePubName))
+        return false;
+
+    request["sub_name"] = subName;
+    return true;
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method creates a new PostgreSQL publication for logical replication.
+ */
+bool
+S9sRpcClient::addPublication()
+{
+    S9sOptions     *options        = S9sOptions::instance();
+    const S9sString uri            = "/v2/logical_replication/";
+    const S9sString dbTables       = options->dbTables();
+    S9sVariantMap   request        = composeRequest();
+
+    if (!validatePublicationRequestParams(request, options)
+        || !validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "createPublication";
+    if (options->includeAllTables())
+        request["include_all_tables"] = true;
+    else if (!dbTables.empty())
+        request["db_tables"] = dbTables;
+    else
+    {
+        PRINT_ERROR(
+                "Either --include-all-tables or --db-tables must specified.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method drops an existing PostgreSQL publication.
+ */
+bool
+S9sRpcClient::dropPublication()
+{
+    S9sOptions     *options        = S9sOptions::instance();
+    const S9sString uri            = "/v2/logical_replication/";
+    S9sVariantMap   request        = composeRequest();
+
+    if (!validatePublicationRequestParams(request, options)
+        || !validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "dropPublication";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method lists all publications in a PostgreSQL Logical Replication
+ * cluster.
+ */
+bool
+S9sRpcClient::listPublications()
+{
+    S9sOptions     *options        = S9sOptions::instance();
+    const S9sString uri            = "/v2/logical_replication/";
+    S9sVariantMap   request        = composeRequest();
+
+    if (!validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "getPublications";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method creates a new PostgreSQL subscription for logical replication.
+ */
+bool
+S9sRpcClient::addSubscription()
+{
+    S9sOptions     *options        = S9sOptions::instance();
+    const S9sString uri            = "/v2/logical_replication/";
+    S9sVariantMap   request        = composeRequest();
+
+    if (!validateSubscriptionRequestParams(request, options)
+        || !validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "createSubscription";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method drops an existing PostgreSQL subscription.
+ */
+bool
+S9sRpcClient::dropSubscription()
+{
+    S9sOptions     *options        = S9sOptions::instance();
+    const S9sString uri            = "/v2/logical_replication/";
+    S9sVariantMap   request        = composeRequest();
+
+    if (!validateSubscriptionRequestParams(request, options, false)
+        || !validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "dropSubscription";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method lists all subscriptions in a PostgreSQL Logical Replication
+ * cluster.
+ */
+bool
+S9sRpcClient::listSubscriptions()
+{
+    S9sOptions     *options        = S9sOptions::instance();
+    const S9sString uri            = "/v2/logical_replication/";
+    S9sVariantMap   request        = composeRequest();
+
+    if (!validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "getSubscriptions";
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns A prepared request that after further settings added can be sent to
  *   the controller.
  */

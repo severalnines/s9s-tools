@@ -351,6 +351,16 @@ class S9sRpcClient
         bool deleteCloudCredentials(const int & credentialId, const S9sString & provider);
 
         /*
+         * Requests related to logical replication
+         */
+        bool addPublication();
+        bool dropPublication();
+        bool listPublications();
+        bool addSubscription();
+        bool dropSubscription();
+        bool listSubscriptions();
+
+        /*
          *
          */
         bool getJobInstance(const int jobId);
@@ -622,6 +632,19 @@ class S9sRpcClient
         bool registerMongoDbCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName);
+
+        // Low level methods that validate logical replication requests.
+        bool validateSubClusterRequestParams(
+                S9sVariantMap        &request,
+                S9sOptions           *options) const;
+        bool validatePublicationRequestParams(
+                S9sVariantMap        &request,
+                S9sOptions           *options,
+                bool                 includePubName = true) const;
+        bool validateSubscriptionRequestParams(
+                S9sVariantMap        &request,
+                S9sOptions           *options,
+                bool                 includePubName = true) const;
         
         // Low level methods that create/install a new node and add it to a
         // cluster.
