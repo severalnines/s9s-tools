@@ -3258,10 +3258,14 @@ S9sRpcClient::createCluster()
     {
         success = createMongoCluster(
                 hosts, osUserName, vendor, dbVersion);
-    } else if (options->clusterType() == "redis")
+    }
+    else if (options->clusterType() == "redis" ||
+             options->clusterType() == "valkey" ||
+             options->clusterType() == "valkey_sentinel" ||
+             options->clusterType() == "valkey-sentinel")
     {
-        success = createRedisSentinel(
-            hosts, osUserName, dbVersion);
+        success = createRedisOrValkeySentinel(
+            hosts, osUserName, dbVersion, options->clusterType());
     } else if (options->clusterType() == "redis_sharded" ||
                options->clusterType() == "redis-sharded" ||
                options->clusterType() == "valkey_sharded" ||
@@ -3399,10 +3403,18 @@ S9sRpcClient::registerCluster()
                                                       osUserName,
                                                       options->providerVersion(),
                                                       options->clusterType());
-    } 
-    else if (options->clusterType() == "redis")
+    }
+    else if (
+            options->clusterType() == "redis" ||
+            options->clusterType() == "valkey" ||
+            options->clusterType() == "valkey-sentinel" ||
+            options->clusterType() == "valkey_sentinel")
     {
-        success = registerRedisCluster(hosts, osUserName, options->providerVersion());
+        success = registerRedisOrValkeyCluster(
+                hosts,
+                osUserName,
+                options->providerVersion(),
+                options->clusterType());
     } 
     else if (options->clusterType() == "elastic")
     {
@@ -4760,10 +4772,11 @@ S9sRpcClient::createRedisOrValkeySharded(
  * cluster.
  */
 bool
-S9sRpcClient::createRedisSentinel(
+S9sRpcClient::createRedisOrValkeySentinel(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &version)
+        const S9sString      &version,
+        const S9sString      &clusterType)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -4771,10 +4784,33 @@ S9sRpcClient::createRedisSentinel(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    S9sString       jobClusterType;
+    S9sString       jobTitle;
+
+    if (clusterType.contains("redis"))
+    {
+        jobClusterType = "redis";
+        jobTitle       = "Creating Redis Sentinel Cluster";
+        if (!redisSpecificJobData(options, jobData, version))
+            return false;
+    }
+    else if (clusterType.contains("valkey"))
+    {
+        jobClusterType = "valkey_sentinel";
+        jobTitle       = "Creating Valkey Sentinel Cluster";
+        if (!valkeySpecificJobData(options, jobData, version))
+            return false;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Invalid cluster type while creating Redis or Valkey Sentinel");
+        return false;
+    }
 
     if (hosts.size() < 1u)
     {
-        PRINT_ERROR("Missing node list while creating Redis Sentinel cluster.");
+        PRINT_ERROR("Missing node list while creating Redis or Valkey Sentinel");
         return false;
     }
 
@@ -4783,8 +4819,8 @@ S9sRpcClient::createRedisSentinel(
     // 
     // The job_data describing the cluster.
     //
-    jobData["cluster_type"]     = "redis";
-    jobData["type"]             = "redis";
+    jobData["cluster_type"]     = jobClusterType;
+    jobData["type"]             = jobClusterType;
     jobData["nodes"]            = nodesField(hosts);
     jobData["version"]          = version;
     jobData["db_user"]          = options->dbAdminUserName();
@@ -4813,7 +4849,7 @@ S9sRpcClient::createRedisSentinel(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Creating Redis Sentinel Cluster";
+    job["title"]                = jobTitle;
     job["job_spec"]             = jobSpec;
 
     // 
@@ -5138,7 +5174,8 @@ S9sRpcClient::createNode()
         {
         } else if (protocol == "postgresql")
         {
-        } else if (protocol == "redis" || protocol == "redis-sentinel")
+        } else if (protocol == "redis" || protocol == "redis-sentinel" ||
+                    protocol == "valkey" || protocol == "valkey-sentinel")
         {
         } else if (protocol == "redis-sharded" || protocol == "valkey-sharded")
         {
@@ -12669,10 +12706,11 @@ S9sRpcClient::registerRedisOrValkeyShardedCluster(
 }
 
 bool
-S9sRpcClient::registerRedisCluster(
+S9sRpcClient::registerRedisOrValkeyCluster(
         const S9sVariantList &hosts,
         const S9sString      &osUserName,
-        const S9sString      &redisVersion)
+        const S9sString      &providerVersion,
+        const S9sString      &clusterType)
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   request;
@@ -12680,6 +12718,7 @@ S9sRpcClient::registerRedisCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    bool            isValkeyCluster = clusterType.contains("valkey");
 
     if (hosts.size() < 1u)
     {
@@ -12693,8 +12732,8 @@ S9sRpcClient::registerRedisCluster(
     //
     // The job_data describing the cluster.
     //
-    jobData["cluster_type"]     = "redis";
-    jobData["type"]             = "redis";
+    jobData["cluster_type"]     = isValkeyCluster ? "valkey" : "redis";
+    jobData["type"]             = isValkeyCluster ? "valkey" : "redis";
     jobData["nodes"]            = nodesField(hosts);
 
     jobData["db_user"]          = options->dbAdminUserName();
@@ -12710,12 +12749,12 @@ S9sRpcClient::registerRedisCluster(
     else
     {
         PRINT_ERROR(
-                "Redis sentinel clusters requires '--sentinel-passwd' option");
+                "%s sentinel clusters requires '--sentinel-passwd' option");
         return false;
     }
 
-    if (!redisVersion.empty())
-        jobData["version"]      = redisVersion;
+    if (!providerVersion.empty())
+        jobData["version"] = providerVersion;
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -12729,7 +12768,8 @@ S9sRpcClient::registerRedisCluster(
     //
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register Redis Sentinel Cluster";
+    job["title"] = isValkeyCluster ? "Register Valkey Sentinel Cluster"
+                                   : "Register Redis Sentinel Cluster";
     job["job_spec"]             = jobSpec;
 
     //
