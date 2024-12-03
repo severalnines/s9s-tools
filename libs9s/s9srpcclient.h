@@ -589,15 +589,17 @@ class S9sRpcClient
                                    S9sVariantMap &jobData,
                                    const S9sString &version);
 
-        bool createRedisSentinel(
+        bool createRedisOrValkeySentinel(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &redisVersion);
+                const S9sString      &providerVersion,
+                const S9sString      &clusterType);
 
-        bool registerRedisCluster(
+        bool registerRedisOrValkeyCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
-                const S9sString      &redisVersion);
+                const S9sString      &providerVersion,
+                const S9sString      &clusterType);
 
         bool registerRedisOrValkeyShardedCluster(
                 const S9sVariantList &hosts,
