@@ -106,10 +106,11 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonMaxScaleHost";
         else if (m_url.protocol().toLower() == "keepalived")
             m_properties["class_name"] = "CmonKeepalivedHost";
-        else if (m_url.protocol().toLower() == "redis")
+        else if (m_url.protocol().toLower() == "redis" || m_url.protocol().toLower() == "valkey")
             m_properties["class_name"] = "CmonRedisHost";
-        else if (m_url.protocol().toLower() == "redis-sentinel" ||
-            m_url.protocol().toLower() == "sentinel")
+        else if (m_url.protocol().toLower() == "redis-sentinel"
+                || m_url.protocol().toLower() == "sentinel"
+                || m_url.protocol().toLower() == "valkey-sentinel")
             m_properties["class_name"] = "CmonRedisSentinelHost";
         else if (m_url.protocol().toLower() == "redis-primary" ||
             m_url.protocol().toLower() == "redis-sharded-primary" ||
