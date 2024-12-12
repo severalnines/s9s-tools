@@ -4657,6 +4657,9 @@ bool S9sRpcClient::valkeySpecificJobData(S9sOptions *options, S9sVariantMap &job
         return false;
     }
 
+    if(options->hasVendorOption())
+        jobData["vendor"] = options->vendor();
+
     if (options->valkeyShardedBusPort() != 0)
     {
         jobData["valkey_sharded_bus_port"] = options->valkeyShardedBusPort();
