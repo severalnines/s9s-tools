@@ -159,9 +159,11 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testDatetimeRegex, retval);
 
     PERFORM_TEST(testAddPublication, retval);
+    PERFORM_TEST(testModifyPublication, retval);
     PERFORM_TEST(testDropPublication, retval);
     PERFORM_TEST(testListPublications, retval);
     PERFORM_TEST(testAddSubscription, retval);
+    PERFORM_TEST(testModifySubscription, retval);
     PERFORM_TEST(testDropSubscription, retval);
     PERFORM_TEST(testListSubscriptions, retval);
 
@@ -2325,6 +2327,67 @@ UtS9sRpcClient::testAddPublication()
 }
 
 bool
+UtS9sRpcClient::testModifyPublication()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    options->m_options["db_name"]  = "mydb";
+    options->m_options["pub_name"] = "mypub";
+    S9S_VERIFY(!client.modifyPublication());
+
+    // Test invalid request - no changes specified
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["pub_name"]      = "mypub";
+    options->m_options["subcluster_id"] = 42;
+    S9S_VERIFY(!client.modifyPublication());
+
+    // Test with new name
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["pub_name"]      = "oldpub";
+    options->m_options["new_pub_name"]  = "newpub";
+    options->m_options["subcluster_id"] = 42;
+
+    S9S_VERIFY(client.modifyPublication());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "modifyPublication");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "oldpub");
+    S9S_COMPARE(payload["new_pub_name"], "newpub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with new table settings
+    options->m_options.clear();
+    options->m_options["db_name"]            = "mydb";
+    options->m_options["pub_name"]           = "mypub";
+    options->m_options["subcluster_id"]      = 42;
+    options->m_options["include_all_tables"] = true;
+
+    S9S_VERIFY(client.modifyPublication());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "modifyPublication");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_name"], "mypub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+    S9S_VERIFY(payload["include_all_tables"].toBoolean());
+
+    return true;
+}
+
+bool
 UtS9sRpcClient::testDropPublication()
 {
     S9sOptions        *options = S9sOptions::instance();
@@ -2462,6 +2525,69 @@ UtS9sRpcClient::testAddSubscription()
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["sub_name"], "mysub");
     S9S_COMPARE(payload["subcluster_name"], "target");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testModifySubscription()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantMap      payload;
+
+    // Test invalid request - missing subcluster id/name
+    options->m_options.clear();
+    options->m_options["db_name"]  = "mydb";
+    options->m_options["sub_name"] = "mysub";
+    S9S_VERIFY(!client.modifySubscription());
+
+    // Test invalid request - no changes specified
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["sub_name"]      = "mysub";
+    options->m_options["subcluster_id"] = 42;
+    S9S_VERIFY(!client.modifySubscription());
+
+    // Test with new name and publication
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["sub_name"]      = "oldsub";
+    options->m_options["new_sub_name"]  = "newsub";
+    options->m_options["pub_name"]      = "newpub";
+    options->m_options["subcluster_id"] = 42;
+
+    S9S_VERIFY(client.modifySubscription());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "modifySubscription");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_name"], "oldsub");
+    S9S_COMPARE(payload["new_sub_name"], "newsub");
+    S9S_COMPARE(payload["pub_name"], "newpub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+
+    // Test with enabled state change
+    options->m_options.clear();
+    options->m_options["db_name"]       = "mydb";
+    options->m_options["sub_name"]      = "mysub";
+    options->m_options["subcluster_id"] = 42;
+    options->m_options["disable"]       = true;
+
+    S9S_VERIFY(client.modifySubscription());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "modifySubscription");
+    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_name"], "mysub");
+    S9S_COMPARE(payload["subcluster_id"], 42);
+    S9S_VERIFY(!payload["enabled"].toBoolean());
 
     return true;
 }
