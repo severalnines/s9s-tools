@@ -165,12 +165,16 @@ enum S9sOptionType
     OptionPublicationName,
     OptionSubscriptionName,
     OptionAddPublication,
+    OptionModifyPublication,
     OptionDropPublication,
     OptionListPublications,
     OptionAddSubscription,
+    OptionModifySubscription,
     OptionDropSubscription,
     OptionListSubscriptions,
     OptionIncludeAllTables,
+    OptionNewPublicationName,
+    OptionNewSubscriptionName,
     OptionPing,
     OptionGroup,
     OptionCreateGroup,
@@ -4981,6 +4985,15 @@ S9sOptions::isAddPublicationRequested() const
 }
 
 /**
+ * \returns true if the --modify-publication command line option was provided.
+ */
+bool
+S9sOptions::isModifyPublicationRequested() const
+{
+    return m_options.contains("modify_publication");
+}
+
+/**
  * \returns true if the --drop-publication command line option was provided.
  */
 bool
@@ -5005,6 +5018,15 @@ bool
 S9sOptions::isAddSubscriptionRequested() const
 {
     return getBool("add_subscription");
+}
+
+/**
+ * \returns true if the --modify-subscription command line option was provided.
+ */
+bool
+S9sOptions::isModifySubscriptionRequested() const
+{
+    return m_options.contains("modify_subscription");
 }
 
 /**
@@ -5073,6 +5095,30 @@ bool
 S9sOptions::includeAllTables() const
 {
     return getBool("include_all_tables");
+}
+
+bool
+S9sOptions::hasNewPublicationName() const
+{
+    return m_options.contains("new_pub_name");
+}
+
+S9sString
+S9sOptions::newPublicationName() const
+{
+    return getString("new_pub_name");
+}
+
+bool
+S9sOptions::hasNewSubscriptionName() const
+{
+    return m_options.contains("new_sub_name");
+}
+
+S9sString
+S9sOptions::newSubscriptionName() const
+{
+    return getString("new_sub_name");
 }
 
 
@@ -11664,6 +11710,9 @@ S9sOptions::checkOptionsCluster()
     if (isAddPublicationRequested())
         countOptions++;
 
+    if (isModifyPublicationRequested())
+        countOptions++;
+
     if (isDropPublicationRequested())
         countOptions++;
 
@@ -11671,6 +11720,9 @@ S9sOptions::checkOptionsCluster()
         countOptions++;
 
     if (isAddSubscriptionRequested())
+        countOptions++;
+
+    if (isModifySubscriptionRequested())
         countOptions++;
 
     if (isDropSubscriptionRequested())
@@ -14043,16 +14095,22 @@ S9sOptions::readOptionsCluster(
 
         // Options for logical replication
         { "add-publication",    no_argument,       0, OptionAddPublication },
+        { "modify-publication", no_argument,       0, OptionModifyPublication },
         { "drop-publication",   no_argument,       0, OptionDropPublication },
         { "list-publications",  no_argument,       0, OptionListPublications },
         { "add-subscription",   no_argument,       0, OptionAddSubscription },
+        { "modify-subscription",no_argument,       0, OptionModifySubscription},
         { "drop-subscription",  no_argument,       0, OptionDropSubscription },
         { "list-subscriptions", no_argument,       0, OptionListSubscriptions },
         { "include-all-tables", no_argument,       0, OptionIncludeAllTables },
-        { "pub-name",   required_argument, 0, OptionPublicationName },
-        { "sub-name",  required_argument, 0, OptionSubscriptionName },
+        { "pub-name",           required_argument, 0, OptionPublicationName },
+        { "new-pub-name",       required_argument, 0, OptionNewPublicationName},
+        { "sub-name",           required_argument, 0, OptionSubscriptionName },
+        { "new-sub-name",       required_argument, 0, OptionNewSubscriptionName},
         { "subcluster-id",      required_argument, 0, OptionSubclusterId },
         { "subcluster-name",    required_argument, 0, OptionSubclusterName },
+        { "disable",            no_argument,       0, OptionDisable         },
+        { "enable",             no_argument,       0, OptionEnable          },
 
         { 0, 0, 0, 0 }
     };
@@ -14861,6 +14919,11 @@ S9sOptions::readOptionsCluster(
                 m_options["add_publication"] = true;
                 break;
 
+            case OptionModifyPublication:
+                // --modify-publication
+                m_options["modify_publication"] = true;
+                break;
+
             case OptionDropPublication:
                 // --drop-publication
                 m_options["drop_publication"] = true;
@@ -14874,6 +14937,11 @@ S9sOptions::readOptionsCluster(
             case OptionAddSubscription:
                 // --add-subscription
                 m_options["add_subscription"] = true;
+                break;
+
+            case OptionModifySubscription:
+                // --modify-subscription
+                m_options["modify_subscription"] = true;
                 break;
 
             case OptionDropSubscription:
@@ -14891,9 +14959,19 @@ S9sOptions::readOptionsCluster(
                 m_options["pub_name"] = optarg;
                 break;
 
+            case OptionNewPublicationName:
+                // --new-pub-name=NAME
+                m_options["new_pub_name"] = optarg;
+                break;
+
             case OptionSubscriptionName:
                 // --sub-name=NAME
                 m_options["sub_name"] = optarg;
+                break;
+
+            case OptionNewSubscriptionName:
+                // --new-sub-name=NAME
+                m_options["new_sub_name"] = optarg;
                 break;
 
             case OptionSubclusterId:
@@ -14909,6 +14987,16 @@ S9sOptions::readOptionsCluster(
             case OptionIncludeAllTables:
                 // --include-all-tables
                 m_options["include_all_tables"] = true;
+                break;
+
+            case OptionEnable:
+                // --enable
+                m_options["enable"] = true;
+                break;
+
+            case OptionDisable:
+                // --disable
+                m_options["disable"] = true;
                 break;
 
             /*

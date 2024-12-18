@@ -563,16 +563,22 @@ class S9sOptions
         bool isDeleteCloudCredential() const;
 
         bool isAddPublicationRequested() const;
+        bool isModifyPublicationRequested() const;
         bool isDropPublicationRequested() const;
         bool isListPublicationsRequested() const;
         bool isAddSubscriptionRequested() const;
         bool isDropSubscriptionRequested() const;
+        bool isModifySubscriptionRequested() const;
         bool isListSubscriptionsRequested() const;
         int subClusterId() const;
         S9sString subClusterName() const;
         S9sString publicationName() const;
         S9sString subscriptionName() const;
         bool includeAllTables() const;
+        bool hasNewPublicationName() const;
+        S9sString newPublicationName() const;
+        bool hasNewSubscriptionName() const;
+        S9sString newSubscriptionName() const;
 
         bool isListProcessorsRequested() const;
         bool isListNicsRequested() const;

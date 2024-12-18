@@ -273,6 +273,11 @@ S9sBusinessLogic::execute()
             success = client.addPublication();
             client.printMessages("Added.", success);
             client.setExitStatus();
+        } else if (options->isModifyPublicationRequested())
+        {
+            success = client.modifyPublication();
+            client.printMessages("Updated.", success);
+            client.setExitStatus();
         } else if (options->isDropPublicationRequested())
         {
             success = client.dropPublication();
@@ -291,6 +296,11 @@ S9sBusinessLogic::execute()
         {
             success = client.addSubscription();
             client.printMessages("Added.", success);
+            client.setExitStatus();
+        } else if (options->isModifySubscriptionRequested())
+        {
+            success = client.modifySubscription();
+            client.printMessages("Updated.", success);
             client.setExitStatus();
         } else if (options->isDropSubscriptionRequested())
         {

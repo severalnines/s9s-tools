@@ -1205,6 +1205,29 @@ The operation requires either \fB\-\-include\-all\-tables\fP to include all tabl
 in the publication or \fB\-\-db\-tables\fP to specify a list of tables.
 
 .TP
+.B --modify-publication
+Modifies an existing PostgreSQL publication.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --modify-publication \\
+    --cluster-id=1 \\
+    --subcluster-id=2 \\
+    --pub-name=old_pub_name \\
+    --new-pub-name=new_pub_name \\
+    --db-name=mydb
+
+s9s cluster \\
+    --modify-publication \\
+    --cluster-id=1 \\
+    --subcluster-name=source_db \\
+    --pub-name=sales_pub \\
+    --db-name=sales_db \\
+    --include-all-tables
+.fi
+
+.TP
 .B --drop-publication
 Drops an existing PostgreSQL publication.
 
@@ -1243,6 +1266,32 @@ s9s cluster \\
     --sub-name=my_subscription \\
     --pub-name=source_pub \\
     --db-name=mydb
+.fi
+
+.TP
+.B --modify-subscription
+Modifies an existing PostgreSQL subscription. The subscription can be enabled or
+disabled using the \fB--enable\fP and \fB--disable\fP options respectively.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --modify-subscription \\
+    --cluster-id=1 \\
+    --subcluster-id=3 \\
+    --sub-name=old_sub_name \\
+    --new-sub-name=new_sub_name \\
+    --pub-name=new_pub_name \\
+    --db-name=mydb \\
+    --enable
+
+s9s cluster \\
+    --modify-subscription \\
+    --cluster-id=1 \\
+    --subcluster-name=target_db \\
+    --sub-name=sales_sub \\
+    --db-name=sales_db \\
+    --disable
 .fi
 
 .TP
@@ -1291,8 +1340,16 @@ The PostgreSQL sub-cluster name where the publication will be created.
 The name of the publication to create or manage.
 
 .TP
+.BI \-\-new\-pub\-name =\fINAME\fP
+The new name for the publication when modifying an existing publication.
+
+.TP
 .BI \-\-sub\-name =\fINAME\fP
 The name of the subscription to create or manage.
+
+.TP
+.BI \-\-new\-sub\-name =\fINAME\fP
+The new name for the subscription when modifying an existing subscription.
 
 .TP
 .BI \-\-include\-all\-tables
