@@ -66,6 +66,10 @@ BUILD_DATE=$([LC_ALL=C TZ=UTC date --rfc-3339=seconds])
 AC_DEFINE_UNQUOTED([BUILD_DATE], ["$BUILD_DATE"], [The build date])
 AC_SUBST(BUILD_DATE)
 
+BUILD_YEAR=$([LC_ALL=C date +%Y])
+AC_DEFINE_UNQUOTED([BUILD_YEAR], ["$BUILD_YEAR"], [The build year])
+AC_SUBST(BUILD_YEAR)
+
 BUILD_VERSION=$([LC_ALL=C TZ=UTC head -n1 debian/changelog | cut -d'(' -f2 | cut -d'-' -f1])
 AC_DEFINE_UNQUOTED([BUILD_VERSION], ["$BUILD_VERSION"], [The build version])
 AC_SUBST(BUILD_VERSION)

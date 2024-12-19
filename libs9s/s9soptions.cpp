@@ -6895,7 +6895,7 @@ S9sOptions::executeInfoRequest()
         printf("BUILD (%s-%s) %s\n",
             BUILD_VERSION, GIT_VERSION, BUILD_DATE);
 
-        printf("Copyright (C) 2016-2022 Severalnines AB\n");
+        printf("Copyright (C) 2016-%s Severalnines AB\n", BUILD_YEAR);
         printf("\n");
         //printf("Written by ...\n");
         return true;
