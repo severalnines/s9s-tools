@@ -9286,18 +9286,33 @@ S9sRpcClient::deleteBackupRecord()
     S9sVariantMap  backupMap;
     bool           retval;
 
-    if (!options->hasBackupId())
+    if(options->hasBackupId() && options->hasBackupIdList())
+    {
+        PRINT_ERROR(
+                "The options --backup-id and --backup-id-list are exclusive"
+                " please provide one of them at a time");
+        return false;
+ 
+    }
+    if(options->hasBackupId())
+    {
+        backupMap["backup_id"]   = options->backupId();
+        request["operation"]     = "deleteBackupRecord";
+        request["backup_record"] = backupMap;
+    }
+    else if(options->hasBackupIdList())
+    {
+        request["operation"]     = "deleteBackupList";
+        request["backup_id_list"] = options->backupIdList();
+    }
+    else
     {
         PRINT_ERROR(
                 "To delete a backup a backup ID has to be provided "
-                "with the --backup-id command line option.");
+                "with the --backup-id command line option or a list "
+                "of backups with --backup-list=\"ID1, ID2, ID3\"");
         return false;
     }
-
-    backupMap["backup_id"]   = options->backupId();
-
-    request["operation"]     = "deleteBackupRecord";
-    request["backup_record"] = backupMap;
 
     retval = executeRequest(uri, request);
 
