@@ -260,6 +260,9 @@ class S9sOptions
         bool hasBackupId() const;
         int backupId() const;
 
+        bool hasBackupIdList() const;
+        S9sString backupIdList();
+
         S9sString backupUser() const;
         S9sString backupPassword() const;
 
