@@ -354,9 +354,11 @@ class S9sRpcClient
          * Requests related to logical replication
          */
         bool addPublication();
+        bool modifyPublication();
         bool dropPublication();
         bool listPublications();
         bool addSubscription();
+        bool modifySubscription();
         bool dropSubscription();
         bool listSubscriptions();
 

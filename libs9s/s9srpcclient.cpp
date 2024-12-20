@@ -11120,6 +11120,44 @@ S9sRpcClient::addPublication()
  * \returns true if the request sent and the reply received (even if the reply
  *   suggests an error happened in the controller).
  *
+ * This method modifies an existing PostgreSQL publication.
+ */
+bool
+S9sRpcClient::modifyPublication()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    const S9sString uri     = "/v2/logical_replication/";
+    S9sVariantMap   request = composeRequest();
+
+    if (!validatePublicationRequestParams(request, options, true)
+        || !validateSubClusterRequestParams(request, options))
+        return false;
+
+    request["operation"] = "modifyPublication";
+
+    if (options->hasNewPublicationName())
+        request["new_pub_name"] = options->newPublicationName();
+
+    if (options->includeAllTables())
+        request["include_all_tables"] = true;
+    else if (!options->dbTables().empty())
+        request["db_tables"] = options->dbTables();
+    else if (!options->hasNewPublicationName())
+    {
+        PRINT_ERROR(
+                "Either --include-all-tables or --db-tables or --new-pub-name "
+                "must be specified.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
  * This method drops an existing PostgreSQL publication.
  */
 bool
@@ -11178,6 +11216,49 @@ S9sRpcClient::addSubscription()
         return false;
 
     request["operation"] = "createSubscription";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request sent and the reply received (even if the reply
+ *   suggests an error happened in the controller).
+ *
+ * This method modifies an existing PostgreSQL subscription.
+ */
+bool
+S9sRpcClient::modifySubscription()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    const S9sString uri     = "/v2/logical_replication/";
+    S9sVariantMap   request = composeRequest();
+
+    if (!validateSubscriptionRequestParams(request, options, false)
+        || !validateSubClusterRequestParams(request, options))
+        return false;
+
+    if (!options->hasNewSubscriptionName() && options->publicationName().empty()
+        && !options->isEnableRequested() && !options->isDisableRequested())
+    {
+        PRINT_ERROR(
+                "At least one of --new-sub-name, --pub-name or "
+                "--enabled/--disable "
+                "must be specified.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    request["operation"] = "modifySubscription";
+
+    if (!options->publicationName().empty())
+        request["pub_name"] = options->publicationName();
+    if (options->hasNewSubscriptionName())
+        request["new_sub_name"] = options->newSubscriptionName();
+
+    if (options->isEnableRequested())
+        request["enabled"] = true;
+    else if (options->isDisableRequested())
+        request["enabled"] = false;
 
     return executeRequest(uri, request);
 }
