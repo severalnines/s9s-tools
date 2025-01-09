@@ -52,7 +52,7 @@ s9s backup \\
 
 .TP
 .B \-\^\-delete
-Delete an existing backup.
+Delete an existing backup or a list of backups.
 
 .B EXAMPLE
 .nf
@@ -60,6 +60,14 @@ s9s backup \\
     --delete \\
     --backup-id=1
 .fi
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --delete \\
+    --backup-list="1,2,3"
+.fi
+
 
 .TP
 .B \-\^\-delete\-old

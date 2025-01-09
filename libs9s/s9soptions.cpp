@@ -130,6 +130,7 @@ enum S9sOptionType
     OptionDeleteAll,
     OptionDbClusterId,
     OptionBackupId,
+    OptionBackupIdList,
     OptionBackupMethod,
     OptionBackupPath,
     OptionBackupSourceAddress,
@@ -2560,6 +2561,29 @@ S9sOptions::backupId() const
 
     return retval;
 }
+
+/**
+ * \returns True if the --backup-id-list command line option was provided.
+ */
+bool
+S9sOptions::hasBackupIdList() const
+{
+    return m_options.contains("backup_id_list");
+}
+
+/**
+ * \returns The command line option argument of the --backup-id-list option or
+ *  empty list if the option is not provided.
+ */
+S9sString
+S9sOptions::backupIdList()
+{
+    S9sString retval;
+    if (m_options.contains("backup_id_list"))
+        retval = m_options["backup_id_list"].toString();
+    return retval;
+}
+
 
 /**
  * \returns The option argument for the --backup-user option or the empty string
@@ -7244,6 +7268,7 @@ S9sOptions::printHelpBackup()
 "  --delete-snapshot-repository   Deletes a snapshot repository on elastisearch cluster.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
+"  --backup-list=\"ID1, ID2\"   The list of IDs of the backups.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "  --job-id=ID                The ID of the job of the backup schedule to delete.\n"
@@ -8504,6 +8529,7 @@ S9sOptions::readOptionsBackup(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "backup-id",        required_argument, 0, OptionBackupId        },
+        { "backup-list",      required_argument, 0, OptionBackupIdList    },
         { "nodes",            required_argument, 0, OptionNodes           },
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
@@ -8828,6 +8854,11 @@ S9sOptions::readOptionsBackup(
                 m_options["backup_id"] = atoi(optarg);
                 break;
            
+            case OptionBackupIdList:
+                // --backup-list="ID1, ID2, ID3"
+                m_options["backup_id_list"] = optarg;
+                break;
+
             case OptionBackupDatadir:
                 // --backup-datadir
                 m_options["backup_datadir"] = true;
