@@ -7222,7 +7222,7 @@ S9sOptions::printHelpBackup()
 "  --delete-snapshot-repository   Deletes a snapshot repository on elastisearch cluster.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
-"  --backup-list=\"ID1, ID2\" The list of IDs of the backups.\n"
+"  --backup-list=\"ID1, ID2\"   The list of IDs of the backups.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "  --job-id=ID                The ID of the job of the backup schedule to delete.\n"

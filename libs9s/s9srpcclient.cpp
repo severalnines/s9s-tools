@@ -9289,10 +9289,9 @@ S9sRpcClient::deleteBackupRecord()
     if(options->hasBackupId() && options->hasBackupIdList())
     {
         PRINT_ERROR(
-                "The options --backup-id and --backup-id-list are exclusive"
+                "The options --backup-id and --backup-list are exclusive"
                 " please provide one of them at a time");
         return false;
- 
     }
     if(options->hasBackupId())
     {
