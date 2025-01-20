@@ -448,6 +448,7 @@ class S9sRpcClient
         bool toggleSync();
 
         bool restartNode();
+        bool rebootHost();    
         bool promoteSlave();
         bool demoteNode();
 
