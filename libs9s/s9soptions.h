@@ -672,6 +672,7 @@ class S9sOptions
         bool isStartRequested() const;
         bool isFailoverRequested() const;
         bool isRestartRequested() const;
+        bool isRebootRequested() const;
         bool isResetRequested() const;
         bool isCreateAccountRequested() const; 
         bool isGrantRequested() const;

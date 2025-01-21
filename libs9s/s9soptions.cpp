@@ -192,6 +192,7 @@ enum S9sOptionType
     OptionStart,
     OptionFailover,
     OptionRestart,
+    OptionReboot,
     OptionEnd,
     OptionReason,
     OptionUninstall,
@@ -6090,6 +6091,16 @@ S9sOptions::isRestartRequested() const
 }
 
 /**
+ * \returns true if the --reboot command line option was provided when the
+ * program was started.
+ */
+bool
+S9sOptions::isRebootRequested() const
+{
+    return getBool("reboot");
+}
+
+/**
  * \returns true if the --create-account command line option was provided when
  *   the program was started.
  */
@@ -7648,6 +7659,7 @@ S9sOptions::printHelpNode()
 "  --push-config              Copy configuration files to a node.\n"
 "  --register                 Start managing an already installed node.\n"
 "  --restart                  Stop, then start the node.\n"
+"  --reboot                   Reboot the host.\n"
 "  --set                      Change the properties of a node.\n"
 "  --set-read-only            Set the node to read-only mode.\n"
 "  --set-read-write           Set the node to read-write mode.\n"
@@ -8039,6 +8051,7 @@ S9sOptions::readOptionsNode(
         { "inspect",          no_argument,       0, OptionInspect         },
         { "register",         no_argument,       0, OptionRegister        },
         { "restart",          no_argument,       0, OptionRestart         },
+        { "reboot",           no_argument,       0, OptionReboot          },
         { "set",              no_argument,       0, OptionSet             },
         { "set-read-only",    no_argument,       0, OptionSetReadOnly     },
         { "set-read-write",   no_argument,       0, OptionSetReadWrite    },
@@ -8190,6 +8203,11 @@ S9sOptions::readOptionsNode(
             case OptionRestart:
                 // --restart
                 m_options["restart"] = true;
+                break;
+
+            case OptionReboot:
+                // --reboot
+                m_options["reboot"] = true;
                 break;
 
             case OptionListConfig:
@@ -11906,7 +11924,10 @@ S9sOptions::checkOptionsNode()
     
     if (isRestartRequested())
         countOptions++;
-    
+
+    if (isRebootRequested())
+        countOptions++;
+
     if (isUnregisterRequested())
         countOptions++;
     

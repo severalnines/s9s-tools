@@ -448,6 +448,10 @@ S9sBusinessLogic::execute()
         } else if (options->isRestartRequested())
         {
             success = client.restartNode();
+            maybeJobRegistered(client, clusterId, success);
+        } else if (options->isRebootRequested())
+        {
+            success = client.rebootHost();
             maybeJobRegistered(client, clusterId, success); 
         } else if (options->isRegisterRequested())
         {

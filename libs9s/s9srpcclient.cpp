@@ -7479,6 +7479,59 @@ S9sRpcClient::restartNode()
 }
 
 /**
+ * This function will create and send a job to stop and then start a node of a
+ * cluster.
+ */
+bool
+S9sRpcClient::rebootHost()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobData = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    S9sNode        node;
+    bool           retval;
+    
+    if (hosts.size() != 1u)
+    {
+        PRINT_ERROR("To restart a node exactly one node must be specified.");
+        return false;
+    } else {
+        node = hosts[0].toNode();
+    }
+    
+    // The job_data describing the job itself.
+    jobData["clusterid"]  = clusterId;
+    jobData["node"] = hosts[0].toVariantMap();
+    
+    if (node.hasPort())
+        jobData["port"]   = node.port();
+     
+    if (options->force())
+        jobData["force_stop"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "reboot";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Rebooting Node";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * This function will create and send a job to stop a node of a cluster.
  */
 bool
