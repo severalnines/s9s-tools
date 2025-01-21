@@ -7506,11 +7506,7 @@ S9sRpcClient::rebootHost()
     
     // The job_data describing the job itself.
     jobData["clusterid"]  = clusterId;
-    #if 1
     jobData["node"] = hosts[0].toVariantMap();
-    #else
-    jobData["hostname"]   = node.hostName();
-    #endif
     
     if (node.hasPort())
         jobData["port"]   = node.port();
