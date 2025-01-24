@@ -4373,7 +4373,9 @@ S9sRpcClient::createPostgreSql(
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = true;
-
+    if (!options->extensions().empty())
+        jobData["pg_extensions"]     = options->extensions();
+    
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
     
