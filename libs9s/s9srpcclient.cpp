@@ -5486,6 +5486,9 @@ S9sRpcClient::addNode(
         
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["disable_selinux"]  = true;
+
+    if(!options->masterDelay().empty())
+        jobData["master_delay"] = options->masterDelay();
    
     // The jobspec describing the command.
     jobSpec["command"]    = "addnode";
@@ -5562,6 +5565,9 @@ S9sRpcClient::addReplicationSlave(
     // The job_data describing the cluster.
     jobData["master_address"]   = master.hostName();
     jobData["slave_address"]    = slave.hostName();
+
+    if(!options->masterDelay().empty())
+        jobData["master_delay"] = options->masterDelay();
 
     if (slave.hasPort())
         jobData["port"]         = slave.port();
