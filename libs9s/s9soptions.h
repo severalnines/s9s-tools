@@ -373,6 +373,7 @@ class S9sOptions
         S9sString token() const;
         bool noInstall() const;
         bool noTerminate() const;
+        S9sString masterDelay() const;
         
         S9sString cloudName() const;
         S9sString subnetId() const;

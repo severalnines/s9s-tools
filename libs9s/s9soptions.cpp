@@ -423,6 +423,7 @@ enum S9sOptionType
     OptionConfigTemplate,
     OptionHaProxyConfigTemplate,
     OptionNoInstall,
+    OptionMasterDelay,
     OptionNoTerminate,
     OptionWithTimescaleDb,
     OptionUpgradeToVersion,
@@ -3196,6 +3197,15 @@ S9sString
 S9sOptions::token() const
 {
     return getString("token");
+}
+
+
+S9sString
+S9sOptions::masterDelay() const
+{
+    if(m_options.contains("master_delay"))
+        return getString("master_delay");
+    return {};
 }
 
 
@@ -7561,6 +7571,9 @@ S9sOptions::printHelpCluster()
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "  --uninstall                Uninstall software when removing a node.\n"
 "\n"
+"Add replication node related options\n"
+"  --master-delay             Delay in seconds to be set on replica node\n"
+"\n"
 "Major upgrade related options\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
 "                             specified new version if implemented.\n"
@@ -8095,6 +8108,7 @@ S9sOptions::readOptionsNode(
         { "begin",            required_argument, 0, OptionBegin           },
         { "end",              required_argument, 0, OptionEnd             },
         
+        { "master-delay",     required_argument, 0, OptionMasterDelay     },
         { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
@@ -8452,6 +8466,12 @@ S9sOptions::readOptionsNode(
                 // --dont-import-accounts
                 m_options["dont_import_accounts"] = true;
                 break;
+
+            case OptionMasterDelay:
+                // --master-delay=SECONDS
+                m_options["master_delay"] = optarg;
+                break;
+ 
 
             case '?':
             default:
@@ -14131,6 +14151,9 @@ S9sOptions::readOptionsCluster(
         { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
 
+        // Options for add cluster/node.
+        { "master-delay",        required_argument, 0,  OptionMasterDelay  },
+
         // Options for remove cluster/node.
         { "uninstall",           no_argument,       0,  OptionUninstall     },
         { "unregister-only",     no_argument,       0,  OptionUnregisterOnly },
@@ -15145,6 +15168,11 @@ S9sOptions::readOptionsCluster(
             case OptionLogFile:
                 // --log-file=FILE
                 m_options["log_file"] = optarg;
+                break;
+
+            case OptionMasterDelay:
+                // --master-delay=SECONDS
+                m_options["master_delay"] = optarg;
                 break;
 
             case '?':
