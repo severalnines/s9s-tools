@@ -482,8 +482,10 @@ enum S9sOptionType
     OptionVendors,
     OptionCloudCredentialsList,
     OptionCloudCredentialsCreate,
-    OptionCloudCredentialsDelete
+    OptionCloudCredentialsDelete,
+    OptionExtensions
 };
+
 
 /**
  * The default constructor, nothing to see here.
@@ -3261,6 +3263,14 @@ S9sOptions::imageOsUser() const
     return getString("image_os_user");
 }
 
+/**
+ * \returns The value for the --extensions= command line option.
+ */
+S9sString
+S9sOptions::extensions() const
+{
+    return getString("extensions");
+}
 /**
  *
  * \code{.js}
@@ -7533,6 +7543,7 @@ S9sOptions::printHelpCluster()
 "  --db-name=NAME             The name of the database.\n"
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
+"  --extensions=LIST          PostgresSQL extensions (postgis, pgvector).\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -14131,6 +14142,7 @@ S9sOptions::readOptionsCluster(
 
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
+        { "extensions",       required_argument, 0, OptionExtensions       },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
         { "template",         required_argument, 0, OptionTemplate         },
         
@@ -14979,6 +14991,10 @@ S9sOptions::readOptionsCluster(
                     PRINT_ERROR("Invalid argument for --volumes.");
                     return false;
                 }
+                break;
+            case OptionExtensions:
+                    // --extensions=STRING
+                m_options["extensions"] = optarg;
                 break;
 
             case OptionVpcId:

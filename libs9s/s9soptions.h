@@ -392,6 +392,7 @@ class S9sOptions
         S9sString localRepoName() const;
         bool createLocalRepo() const;
         bool keepFirewall() const;
+        S9sString extensions() const;
 
         bool uninstall() const;
         bool unregisterOnly() const;
