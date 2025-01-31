@@ -7522,6 +7522,7 @@ S9sOptions::printHelpCluster()
 "  --db-name=NAME             The name of the database.\n"
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
+"  --extensions=LIST          PostgresSQL extensions (postgis, pgvector).\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
