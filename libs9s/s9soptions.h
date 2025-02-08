@@ -579,6 +579,10 @@ class S9sOptions
         S9sString subClusterName() const;
         S9sString publicationName() const;
         S9sString subscriptionName() const;
+        S9sString origin() const;
+        bool hasOrigin() const;
+        bool isCopyData() const;
+        bool hasCopyData() const;
         bool includeAllTables() const;
         bool hasNewPublicationName() const;
         S9sString newPublicationName() const;

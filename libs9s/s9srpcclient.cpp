@@ -11292,6 +11292,12 @@ S9sRpcClient::addSubscription()
 
     request["operation"] = "createSubscription";
 
+    if (options->hasCopyData())
+        request["copy_data"] = options->isCopyData();
+
+    if (options->hasOrigin())
+        request["pub_origin"] = options->origin();
+
     return executeRequest(uri, request);
 }
 
