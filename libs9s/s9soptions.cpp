@@ -176,6 +176,8 @@ enum S9sOptionType
     OptionIncludeAllTables,
     OptionNewPublicationName,
     OptionNewSubscriptionName,
+    OptionSubscriptionOrigin,
+    OptionSubscriptionCopyData,
     OptionPing,
     OptionGroup,
     OptionCreateGroup,
@@ -5108,6 +5110,52 @@ S9sString
 S9sOptions::subscriptionName() const
 {
     return getString("sub_name");
+}
+
+/**
+ * \returns The command line option argument for the --origin option.
+ */
+S9sString
+S9sOptions::origin() const
+{
+    if (!hasOrigin())
+        return "any";
+    if (hasOrigin() && getString("origin").empty())
+        return "any";
+
+    return getString("origin");
+}
+
+/**
+ * \returns if CLI has the --origin command line option
+ */
+bool
+S9sOptions::hasOrigin() const
+{
+    return m_options.contains("origin");
+}
+
+/**
+ * \returns The command line option argument for the --copy-data option.
+ */
+bool
+S9sOptions::isCopyData() const
+{
+    if (!hasCopyData())
+        return true;
+    if (hasCopyData() && getString("copy_data").empty())
+        return true;
+
+    return getBool("copy_data");
+}
+
+/**
+ * \returns if CLI has the --copy-data command line option
+ */
+bool
+S9sOptions::hasCopyData() const
+{
+    return m_options.contains("copy_data");
 }
 
 /**
@@ -14194,6 +14242,8 @@ S9sOptions::readOptionsCluster(
         { "new-pub-name",       required_argument, 0, OptionNewPublicationName},
         { "sub-name",           required_argument, 0, OptionSubscriptionName },
         { "new-sub-name",       required_argument, 0, OptionNewSubscriptionName},
+        { "origin",             required_argument, 0, OptionSubscriptionOrigin},
+        { "copy-data",          required_argument, 0, OptionSubscriptionCopyData},
         { "subcluster-id",      required_argument, 0, OptionSubclusterId },
         { "subcluster-name",    required_argument, 0, OptionSubclusterName },
         { "disable",            no_argument,       0, OptionDisable         },
@@ -15063,6 +15113,21 @@ S9sOptions::readOptionsCluster(
             case OptionNewSubscriptionName:
                 // --new-sub-name=NAME
                 m_options["new_sub_name"] = optarg;
+                break;
+
+            case OptionSubscriptionOrigin:
+                {
+                // --origin[=any||none]
+                    m_options["origin"] = optarg;
+                }
+                break;
+
+            case OptionSubscriptionCopyData:
+                {
+                // --copy-data[=BOOL]
+                    S9sString arg(optarg);
+                    m_options["copy_data"] = arg.toBoolean();
+                }
                 break;
 
             case OptionSubclusterId:
