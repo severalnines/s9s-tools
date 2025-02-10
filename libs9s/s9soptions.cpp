@@ -164,7 +164,9 @@ enum S9sOptionType
     OptionSubclusterId,
     OptionSubclusterName,
     OptionPublicationName,
+    OptionPublicationDbName,
     OptionSubscriptionName,
+    OptionSubscriptionDbName,
     OptionAddPublication,
     OptionModifyPublication,
     OptionDropPublication,
@@ -5104,12 +5106,30 @@ S9sOptions::publicationName() const
 }
 
 /**
+ * \returns The command line option argument for the --pub-db-name option.
+ */
+S9sString
+S9sOptions::publicationDbName() const
+{
+    return getString("pub_db_name");
+}
+
+/**
  * \returns The command line option argument for the --sub-name option.
  */
 S9sString
 S9sOptions::subscriptionName() const
 {
     return getString("sub_name");
+}
+
+/**
+ * \returns The command line option argument for the --sub-db-name option.
+ */
+S9sString
+S9sOptions::subscriptionDbName() const
+{
+    return getString("sub_db_name");
 }
 
 /**
@@ -14239,8 +14259,10 @@ S9sOptions::readOptionsCluster(
         { "list-subscriptions", no_argument,       0, OptionListSubscriptions },
         { "include-all-tables", no_argument,       0, OptionIncludeAllTables },
         { "pub-name",           required_argument, 0, OptionPublicationName },
+        { "pub-db-name",        required_argument, 0, OptionPublicationDbName },
         { "new-pub-name",       required_argument, 0, OptionNewPublicationName},
         { "sub-name",           required_argument, 0, OptionSubscriptionName },
+        { "sub-db-name",        required_argument, 0, OptionSubscriptionDbName },
         { "new-sub-name",       required_argument, 0, OptionNewSubscriptionName},
         { "origin",             required_argument, 0, OptionSubscriptionOrigin},
         { "copy-data",          required_argument, 0, OptionSubscriptionCopyData},
@@ -15100,6 +15122,11 @@ S9sOptions::readOptionsCluster(
                 m_options["pub_name"] = optarg;
                 break;
 
+            case OptionPublicationDbName:
+                // --pub-db-name=NAME
+                m_options["pub_db_name"] = optarg;
+                break;
+
             case OptionNewPublicationName:
                 // --new-pub-name=NAME
                 m_options["new_pub_name"] = optarg;
@@ -15108,6 +15135,11 @@ S9sOptions::readOptionsCluster(
             case OptionSubscriptionName:
                 // --sub-name=NAME
                 m_options["sub_name"] = optarg;
+                break;
+
+            case OptionSubscriptionDbName:
+                // --sub-db-name=NAME
+                m_options["sub_db_name"] = optarg;
                 break;
 
             case OptionNewSubscriptionName:
