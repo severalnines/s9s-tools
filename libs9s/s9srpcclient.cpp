@@ -11098,34 +11098,35 @@ S9sRpcClient::validateSubClusterRequestParams(
 bool
 S9sRpcClient::validatePublicationRequestParams(
         S9sVariantMap &request,
-        S9sOptions    *options,
-        bool const    includePubName) const
+        S9sOptions    *options) const
 {
-    S9sString const dbName = options->dbName();
-    if (dbName.empty())
+    S9sString pubDbName = options->publicationDbName();
+    if (pubDbName.empty())
+    {
+        pubDbName = options->dbName();
+    }
+
+    if (pubDbName.empty())
     {
         PRINT_ERROR(
-                "Missing database name. "
-                "Use the --db-name option to specify one.");
+                "Missing publication database name. "
+                "Use the --pub-db-name option to specify one.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+    request["pub_db_name"] = pubDbName;
 
-    if (includePubName)
+    S9sString const pubName = options->publicationName();
+    if (pubName.empty())
     {
-        S9sString const pubName = options->publicationName();
-        if (pubName.empty())
-        {
-            PRINT_ERROR(
+        PRINT_ERROR(
                     "Missing publication name. "
                     "Use the --pub-name option to specify one.");
-            options->setExitStatus(S9sOptions::BadOptions);
-            return false;
-        }
-        request["pub_name"] = pubName;
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
     }
+    request["pub_name"] = pubName;
 
-    request["db_name"] = dbName;
     return true;
 }
 
@@ -11137,9 +11138,23 @@ bool
 S9sRpcClient::validateSubscriptionRequestParams(
         S9sVariantMap &request,
         S9sOptions    *options,
-        bool const    includePubName) const
+        bool const    includePublicationParams) const
 {
     S9sString const subName = options->subscriptionName();
+    S9sString subDbName = options->subscriptionDbName();
+    if (subDbName.empty())
+    {
+        subDbName = options->dbName();
+    }
+
+    if (subDbName.empty())
+    {
+        PRINT_ERROR(
+                "Missing subscription database name. "
+                "Use the --sub-db-name option to specify one.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
 
     if (subName.empty())
     {
@@ -11150,10 +11165,12 @@ S9sRpcClient::validateSubscriptionRequestParams(
         return false;
     }
 
-    if (!validatePublicationRequestParams(request, options, includePubName))
-        return false;
+    if (includePublicationParams)
+        if (!validatePublicationRequestParams(request, options))
+            return false;
 
     request["sub_name"] = subName;
+    request["sub_db_name"] = subDbName;
     return true;
 }
 
@@ -11204,7 +11221,7 @@ S9sRpcClient::modifyPublication()
     const S9sString uri     = "/v2/logical_replication/";
     S9sVariantMap   request = composeRequest();
 
-    if (!validatePublicationRequestParams(request, options, true)
+    if (!validatePublicationRequestParams(request, options)
         || !validateSubClusterRequestParams(request, options))
         return false;
 
@@ -11318,12 +11335,12 @@ S9sRpcClient::modifySubscription()
         || !validateSubClusterRequestParams(request, options))
         return false;
 
-    if (!options->hasNewSubscriptionName() && options->publicationName().empty()
-        && !options->isEnableRequested() && !options->isDisableRequested())
+    if (!options->hasNewSubscriptionName()
+        && !options->isEnableRequested()
+        && !options->isDisableRequested())
     {
         PRINT_ERROR(
-                "At least one of --new-sub-name, --pub-name or "
-                "--enabled/--disable "
+                "At least one of --new-sub-name or --enabled/--disable "
                 "must be specified.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
@@ -11331,8 +11348,6 @@ S9sRpcClient::modifySubscription()
 
     request["operation"] = "modifySubscription";
 
-    if (!options->publicationName().empty())
-        request["pub_name"] = options->publicationName();
     if (options->hasNewSubscriptionName())
         request["new_sub_name"] = options->newSubscriptionName();
 

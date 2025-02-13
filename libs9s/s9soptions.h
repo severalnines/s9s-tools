@@ -578,7 +578,9 @@ class S9sOptions
         int subClusterId() const;
         S9sString subClusterName() const;
         S9sString publicationName() const;
+        S9sString publicationDbName() const;
         S9sString subscriptionName() const;
+        S9sString subscriptionDbName() const;
         S9sString origin() const;
         bool hasOrigin() const;
         bool isCopyData() const;

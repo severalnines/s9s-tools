@@ -644,12 +644,11 @@ class S9sRpcClient
                 S9sOptions           *options) const;
         bool validatePublicationRequestParams(
                 S9sVariantMap        &request,
-                S9sOptions           *options,
-                bool                 includePubName = true) const;
+                S9sOptions           *options) const;
         bool validateSubscriptionRequestParams(
                 S9sVariantMap        &request,
                 S9sOptions           *options,
-                bool                 includePubName = true) const;
+                bool                 includePublicationParams = true) const;
         
         // Low level methods that create/install a new node and add it to a
         // cluster.
