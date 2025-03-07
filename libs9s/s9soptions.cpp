@@ -393,6 +393,7 @@ enum S9sOptionType
     OptionNoMeasurements,
 
     OptionUseInternalRepos,
+    OptionDryRun,
     OptionCreateLocalRepo,
     OptionNewLocalRepo,
     OptionLocalRepoName,
@@ -1983,6 +1984,8 @@ S9sOptions::distroVersion(const S9sString &defaultValue) const
     return retval;
 }
 
+// ALVC
+
 
 /**
  * \returns True if the --minutes option is provided.
@@ -3410,6 +3413,27 @@ S9sOptions::useInternalRepos() const
 
     return retval;
 }
+
+bool
+S9sOptions::dryRun() const
+{
+    bool retval = false;
+
+    if (m_options.contains("dry_run"))
+    {
+        retval = m_options.at("dry_run").toBoolean();
+    } else {
+        retval = m_userConfig.variableValue("dry_run").toBoolean();
+        if (!retval)
+        {
+            retval = m_systemConfig.variableValue(
+                    "dry_run").toBoolean();
+        }
+    }
+
+    return retval;
+}
+
 
 bool
 S9sOptions::useLocalRepo() const
@@ -14252,6 +14276,7 @@ S9sOptions::readOptionsCluster(
         { "create-local-repository", no_argument,0, OptionCreateLocalRepo  },
         { "local-repository", required_argument, 0, OptionLocalRepoName    },
         { "distro-version",   required_argument, 0, OptionDistroVersion    },
+        { "dry-run",          no_argument,       0, OptionDryRun           },
 
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
@@ -15079,6 +15104,11 @@ S9sOptions::readOptionsCluster(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionDryRun:
+                // --dry-run
+                m_options["dry_run"] = true;
                 break;
 
             case OptionCreateLocalRepo:

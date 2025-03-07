@@ -340,7 +340,8 @@ S9sBusinessLogic::execute()
                     options->clusterType(),
                     options->vendor(),
                     options->providerVersion(),
-                    options->distroVersion());
+                    options->distroVersion(),
+                    options->dryRun());
             if (!success || !client.reply().isOk())
             {
                 PRINT_ERROR("Failed to create local repo: %s", STR(client.errorString()));
