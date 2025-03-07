@@ -410,7 +410,8 @@ class S9sRpcClient
                 const S9sString   &clusterType,
                 const S9sString   &vendor,
                 const S9sString   &dbVersion,
-                const S9sString   &osRelease);
+                const S9sString   &osRelease,
+                      bool         dryRun = false);
 
         bool createSnapshotJob();
         bool createCluster();
