@@ -81,6 +81,7 @@ enum S9sOptionType
     OptionOsPassword,
     OptionOsSudoPassword,
     OptionProviderVersion,
+    OptionDistroVersion,
     OptionProperties,
     OptionVendor,
     OptionEnterpriseToken,
@@ -393,6 +394,7 @@ enum S9sOptionType
 
     OptionUseInternalRepos,
     OptionCreateLocalRepo,
+    OptionNewLocalRepo,
     OptionLocalRepoName,
     OptionKeepFirewall,
     OptionWithSsl,
@@ -1958,6 +1960,29 @@ S9sOptions::providerVersion(
 
     return retval;
 }
+
+/**
+ * \returns the distribution version string as it is set by the --distro-version
+ *   command line option.
+ */
+S9sString
+S9sOptions::distroVersion(const S9sString &defaultValue) const
+{
+    S9sString retval = defaultValue;
+
+    if (m_options.contains("distro_version"))
+    {
+        retval = m_options.at("distro_version").toString();
+    } else {
+        retval = m_userConfig.variableValue("distro_version");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("distro_version");
+    }
+
+    return retval;
+}
+
 
 /**
  * \returns True if the --minutes option is provided.
@@ -5676,6 +5701,17 @@ S9sOptions::isKillRequested() const
 }
 
 /**
+ * \returns true if the --new-local-repo command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isNewLocalRepoRequested() const
+{
+    return getBool("new_local_repository");
+}
+
+
+/**
  * \returns true if the --system command line option was provided when the
  *   program was started.
  */
@@ -7627,12 +7663,14 @@ S9sOptions::printHelpCluster()
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --provider-version=VER     The version of the software.\n" 
+"  --distro-version=VER       The version of the distribution to consider.\n" 
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
 "  --db-cluster-id=ID         cluster ID when there is no cluster, only data on db.\n"
 "  --subnet-id=ID             The ID of the subnet for the new container(s).\n"
 "  --template=NAME            The name of the template for new container(s).\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
 "  --create-local-repository  Create local (APT/YUM) software repository during deploy.\n"
+"  --new-local-repository     Create a new local (APT/YUM) software repository.\n"
 "  --local-repository=NAME    Use a previously created local mirror for deploy.\n"
 "  --keep-firewall            Keep existing firewall settings.\n"
 "  --vendor=VENDOR            The name of the software vendor.\n"
@@ -11879,6 +11917,9 @@ S9sOptions::checkOptionsCluster()
     if (isListSubscriptionsRequested())
         countOptions++;
 
+    if (isNewLocalRepoRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -14107,6 +14148,7 @@ S9sOptions::readOptionsCluster(
         { "disable-recovery", no_argument,       0, OptionDisableRecovery },
         { "semi-sync",        required_argument, 0, OptionSemiSync        },
         { "setup-logrotate",  no_argument,       0, OptionSetupLogRotate  },
+        { "new-local-repository", no_argument,   0, OptionNewLocalRepo     },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -14204,9 +14246,12 @@ S9sOptions::readOptionsCluster(
         { "region",           required_argument, 0, OptionRegion           },
         { "servers",          required_argument, 0, OptionServers          },
         { "subnet-id",        required_argument, 0, OptionSubnetId         },
+
+        // Options for repositories
         { "use-internal-repos", no_argument,     0, OptionUseInternalRepos },
-        { "create-local-repository", no_argument,0, OptionCreateLocalRepo },
-        { "local-repository", required_argument, 0, OptionLocalRepoName },
+        { "create-local-repository", no_argument,0, OptionCreateLocalRepo  },
+        { "local-repository", required_argument, 0, OptionLocalRepoName    },
+        { "distro-version",   required_argument, 0, OptionDistroVersion    },
 
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
@@ -14700,6 +14745,11 @@ S9sOptions::readOptionsCluster(
                 m_options["provider_version"] = optarg;
                 break;
 
+            case OptionDistroVersion:
+                // --distro-version=STRING
+                m_options["distro_version"] = optarg;
+                break;
+
             case OptionOsSudoPassword:
                 // --os-sudo-password
                 m_options["os_sudo_password"] = optarg;
@@ -15034,6 +15084,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateLocalRepo:
                 // --create-local-repository
                 m_options["create_local_repository"] = true;
+                break;
+
+            case OptionNewLocalRepo:
+                // --new-local-repository
+                m_options["new_local_repository"] = true;
                 break;
 
             case OptionLocalRepoName:

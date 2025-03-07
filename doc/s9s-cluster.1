@@ -570,6 +570,23 @@ s9s cluster \\
     --nodes=PBMAgent://*?backup_dir=/my_new_shared_backupdir
 .fi
 
+.B \-\^\-new\-local\-repository
+Creates a new local repository on controller copying packages of specified
+repository (cluster type, vendor and distro)
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --new-local-repository \\
+    --cluster-id=14 \\
+    --cluster-type=galera \\
+    --vendor=percona \\
+    --provider-version=8.0 \\
+    --distro-version=jammy \\
+    --log
+.fi
+
+
 .\"
 .\" Generic options
 .\"
