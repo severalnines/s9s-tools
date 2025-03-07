@@ -3540,7 +3540,13 @@ S9sRpcClient::createGaleraCluster(
         jobData["install_software"] = true;
         jobData["enable_uninstall"] = false;
     }
-    
+
+    if (options->hasPerconaClientId() and options->hasPerconaProToken())
+    {
+        jobData["percona_client_id"] = options->perconaClientId();
+        jobData["percona_pro_token"] = options->perconaProToken();
+    }
+
     if (options->hasBackupId())
         jobData["backup_id"]        = options->backupId();
     
