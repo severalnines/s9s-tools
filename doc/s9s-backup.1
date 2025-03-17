@@ -467,6 +467,19 @@ configuration value). Providing the password is not mandatory, the user
 authentication can also be done using a private/public keypair automatically.
 
 .TP
+.BI \-\^\-databases=" DATABASE_NAME
+The database name to use in convination with --exclude-tables and --include-tables
+
+.TP
+.BI \-\^\-exclude-tables=" TABLE_LIST_COMMA_SEPARATED
+The string of tables to exclude on backup (to be set with --databases)
+
+.TP
+.BI \-\^\-include-tables=" TABLE_LIST_COMMA_SEPARATED
+The string of tables to include on backup (to be set with --databases)
+
+
+.TP
 .BI \-\^\-private\-key\-file= FILE
 The path to the private key file that will be used for the authentication. The
 default value for the private key is \fB~/.s9s/username.key\fP.
