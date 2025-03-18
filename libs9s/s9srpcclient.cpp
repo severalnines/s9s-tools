@@ -6187,7 +6187,6 @@ S9sRpcClient::addMongoNode(
 
     S9sNode node = hosts[0].toNode();
     S9sString protocol = node.protocol().toLower();
-    int port = node.port();
 
     // The job_data describing the cluster.
     #ifdef SEND_NODES
