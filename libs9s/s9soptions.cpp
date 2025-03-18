@@ -217,6 +217,8 @@ enum S9sOptionType
     OptionOnNode,
     OptionOnController,
     OptionDatabases,
+    OptionExcludeTables,
+    OptionIncludeTables,
     OptionParallellism,
     OptionBackupRetention,
     OptionCloudRetention,
@@ -4040,6 +4042,26 @@ S9sOptions::databases() const
 {
     return getString("databases");
 }
+
+/**
+ * \returns the value received for the --exclude-tables command line option.
+ */
+S9sString
+S9sOptions::excludeTables() const
+{
+    return getString("exclude_tables");
+}
+
+
+/**
+ * \returns the value received for the --include-tables command line option.
+ */
+S9sString
+S9sOptions::includeTables() const
+{
+    return getString("include_tables");
+}
+
 
 bool
 S9sOptions::setParallellism(
@@ -8664,6 +8686,8 @@ S9sOptions::readOptionsBackup(
         { "backup-user",      required_argument, 0, OptionBackupUser      },
         { "cloud-retention",  required_argument, 0, OptionCloudRetention  },
         { "databases",        required_argument, 0, OptionDatabases       },
+        { "exclude-tables",   required_argument, 0, OptionExcludeTables   },
+        { "include-tables",   required_argument, 0, OptionIncludeTables   },
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
@@ -9071,6 +9095,16 @@ S9sOptions::readOptionsBackup(
             case OptionDatabases:
                 // --databases=LIST
                 m_options["databases"] = optarg;
+                break;
+
+            case OptionExcludeTables:
+                // --exclude-tables=TABLES_LIST
+                m_options["exclude_tables"] = optarg;
+                break;
+
+            case OptionIncludeTables:
+                // --include-tables=TABLES_LIST
+                m_options["include_tables"] = optarg;
                 break;
 
             case OptionParallellism:

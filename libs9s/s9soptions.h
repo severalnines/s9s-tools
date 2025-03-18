@@ -438,6 +438,8 @@ class S9sOptions
         bool onNode() const;
         bool onController() const;
         S9sString databases() const;
+        S9sString excludeTables() const;
+        S9sString includeTables() const;
       
         bool hasFirewalls() const;
         S9sString firewalls() const;

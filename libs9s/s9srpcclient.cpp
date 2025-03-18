@@ -11456,6 +11456,8 @@ S9sRpcClient::composeBackupJob()
     int             backupRetention  = options->backupRetention();
     S9sString       storageHost      = options->storageHost();
     S9sString       databases        = options->databases();
+    S9sString       excludeTables    = options->excludeTables();
+    S9sString       includeTables    = options->includeTables();
     S9sNode         backupHost;
     S9sString       title;
 
@@ -11573,6 +11575,12 @@ S9sRpcClient::composeBackupJob()
 
     if (!databases.empty())
         jobData["include_databases"] = databases;
+
+    if (!excludeTables.empty())
+        jobData["exclude_tables"] = excludeTables;
+
+    if (!includeTables.empty())
+        jobData["include_tables"] = includeTables;
 
     if (options->pitrCompatible())
         jobData["pitr_compatible"] = true;
