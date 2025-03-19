@@ -214,6 +214,23 @@ s9s cluster \\
 
 .RE
 
+.TP
+.B --preserve-configuration
+When performing a major version upgrade, this option controls whether configuration
+settings are migrated from the old PostgreSQL instance to the new one. This includes
+performance, memory, and security parameters. Default value is false, allowing new
+PostgreSQL versions to use their version-specific default settings unless explicitly overridden.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --upgrade-cluster \\
+    --upgrade-to-version=15 \\
+    --upgrade-method=link \\
+    --preserve-configuration \\
+    --cluster-id=1 \\
+    --log
+.fi
 
 .TP
 .B --create-report

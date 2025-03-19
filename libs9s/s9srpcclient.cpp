@@ -7713,6 +7713,8 @@ S9sRpcClient::upgradeCluster()
         jobData["upgrade_tmp_port"] = upgradePort;
     if (ucsPort != 0)
         jobData["ucs_port"] = ucsPort;
+    if (options->preserveConfiguration())
+        jobData["preserve_configuration"] = true;
     if (options->force())
         jobData["force"] = true;
 

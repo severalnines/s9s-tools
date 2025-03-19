@@ -440,6 +440,7 @@ enum S9sOptionType
     OptionToken,
     OptionNoWrap,
     OptionRemoteClusterId,
+    OptionPreserveConfiguration,
 
     OptionReportId,
     OptionMessageId,
@@ -3499,6 +3500,12 @@ int
 S9sOptions::ucsPort() const
 {
     return getString("ucs_port").toInt();
+}
+
+bool
+S9sOptions::preserveConfiguration() const
+{
+    return getBool("preserve_configuration");
 }
 
 
@@ -7684,6 +7691,8 @@ S9sOptions::printHelpCluster()
 "                             connections.\n"
 "  --ucs-port=INT             During upgrade, use this port for upgrade\n"
 "                             candidate server nodes with new version.\n"
+"  --preserve-configuration   Migrate configuration settings (performance,\n"
+"                             memory, SSL) from old to new PostgreSQL version.\n"
 "\n"
 "Load balancer related options\n"
 "  --admin-password=USERNAME  Admin password for ProxySql or Maxscale.\n"
@@ -14209,6 +14218,7 @@ S9sOptions::readOptionsCluster(
         { "delete-old-node",  no_argument,       0, OptionDeleteOldNode   },
         { "upgrade-tmp-port", required_argument, 0, OptionUpgradeTmpPort  },
         { "ucs-port",         required_argument, 0, OptionUCSPort },
+        { "preserve-configuration", no_argument, 0, OptionPreserveConfiguration },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
 
@@ -14844,6 +14854,11 @@ S9sOptions::readOptionsCluster(
             case OptionUCSPort:
                 // --ucs-port
                 m_options["ucs_port"] = optarg;
+                break;
+
+            case OptionPreserveConfiguration:
+                // --preserve-configuration
+                m_options["preserve_configuration"] = true;
                 break;
 
             case OptionWithoutTags:
