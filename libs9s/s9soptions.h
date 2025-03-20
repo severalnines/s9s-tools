@@ -356,6 +356,7 @@ class S9sOptions
         bool deleteOldNode() const;
         int upgradeTmpPort() const;
         int ucsPort() const;
+        bool preserveConfiguration() const;
 
         S9sString dbName() const;
         S9sString dbOwner() const;
