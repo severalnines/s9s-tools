@@ -3986,6 +3986,8 @@ S9sOptions::onController() const
  *
  * The controller currently supports 'ndb', 'mysqldump', 'xtrabackupfull',
  * 'xtrabackupincr', 'mongodump', 'pg_dump' and 'mysqlpump'.
+ * Now that mariadb 11.4 has only 'mariadb-dump' binary backup method name is valid
+ * but will be programatically treated as 'mysqldump' and this is the value on property.
  */
 S9sString
 S9sOptions::backupMethod() const
@@ -4000,6 +4002,9 @@ S9sOptions::backupMethod() const
         if (retval.empty())
             retval = m_systemConfig.variableValue("backup_method");
     }
+
+    if(retval == "mariadb-dump")
+        retval = "mysqldump";
 
     return retval;
 }
