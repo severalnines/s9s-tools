@@ -146,6 +146,9 @@ class S9sRpcReply : public S9sVariantMap
 
         void printCloudCredentials();
         void printCloudCredentialsLong();
+
+        void printWatchlists();
+        void printWatchlistsLong();
         
         // Methods handling users.
         void printUserList();

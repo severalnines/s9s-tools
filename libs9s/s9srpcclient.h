@@ -351,6 +351,14 @@ class S9sRpcClient
         bool deleteCloudCredentials(const int & credentialId, const S9sString & provider);
 
         /*
+         * Requests related to watchlists operations
+         */
+        bool listWatchlists(S9sOptions *options);
+        bool createWatchlist(S9sOptions *options);
+        bool deleteWatchlist(const int & watchlistId);
+
+
+        /*
          * Requests related to logical replication
          */
         bool addPublication();

@@ -490,6 +490,18 @@ enum S9sOptionType
     OptionCloudCredentialsList,
     OptionCloudCredentialsCreate,
     OptionCloudCredentialsDelete,
+
+    OptionWatchlistsList,
+    OptionWatchlistCreate,
+    OptionWatchlistDelete,
+    OptionWatchlistId,
+    OptionWatchlistName,
+    OptionWatchlistTopics,
+    OptionWatchlistClusters,
+    OptionWatchlistPagedBy,
+    OptionWatchlistGrid,
+    OptionWatchlistOwnerId,
+
     OptionExtensions
 };
 
@@ -556,6 +568,7 @@ S9sOptions::S9sOptions() :
     m_modes["dbschema"]     = DbSchema;
     m_modes["dbversions"]   = DbVersions;
     m_modes["cloud-credentials"] = CloudCredentials;
+    m_modes["watchlists"]   = Watchlists;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2547,6 +2560,30 @@ S9sOptions::credentialName() const
     return getString("credential_name");
 }
 
+bool
+S9sOptions::hasWatchlistIdOption() const
+{
+    return m_options.contains("watchlist_id");
+}
+
+int
+S9sOptions::watchlistId() const
+{
+    return getInt("watchlist_id");
+}
+
+bool
+S9sOptions::hasWatchlistNameOption() const
+{
+    return m_options.contains("watchlist_name");
+}
+
+S9sString
+S9sOptions::watchlistName() const
+{
+    return getString("watchlist_name");
+}
+
 
 
 /**
@@ -2685,6 +2722,23 @@ S9sOptions::hasClustersOption()
 {
     return m_options.contains("clusters");
 }
+
+/**
+ * \returns the value set by the --topics command line option.
+ */
+S9sString
+S9sOptions::topics() const
+{
+    return getString("topics");
+}
+
+
+bool
+S9sOptions::hasTopicsOption()
+{
+    return m_options.contains("topics");
+}
+
 
 bool
 S9sOptions::hasClusterTypeOption() const
@@ -4586,6 +4640,16 @@ S9sOptions::isCloudCredentialsOperation() const
     return m_operationMode == CloudCredentials;
 }
 
+/**
+ * \returns true if the main operation is "watchlists".
+ */
+bool
+S9sOptions::isWatchlistsOperation() const
+{
+    return m_operationMode == Watchlists;
+}
+
+
 
 /**
  * \returns True if the --help command line option was provided.
@@ -5056,6 +5120,38 @@ S9sOptions::isDeleteCloudCredential() const
 {
     return getBool("delete_cloud_credential");
 }
+
+
+/**
+ * \returns true if the "list_watchlists" function is requested by providing the --list
+ *   command line option.
+ */
+bool
+S9sOptions::isListWatchlists() const
+{
+    return getBool("list_watchlistss");
+}
+
+/**
+ * \returns true if the "create_watchlist" function is requested by providing the --create
+ *   command line option.
+ */
+bool
+S9sOptions::isCreateWatchlist() const
+{
+    return getBool("create_watchlist");
+}
+
+/**
+ * \returns true if the "delete_watchlist" function is requested by providing the --delete
+ *   command line option.
+ */
+bool
+S9sOptions::isDeleteWatchlist() const
+{
+    return getBool("delete_watchlist");
+}
+
 
 
 /**
@@ -7061,6 +7157,13 @@ S9sOptions::readOptions(
                 retval = checkOptionsCloudCredentials();
 
             break;
+        case Watchlists:
+            retval = readOptionsWatchlists(*argc, argv);
+
+            if (retval)
+                retval = checkOptionsWatchlists();
+
+            break;
     }
 
     return retval;
@@ -7243,6 +7346,10 @@ S9sOptions::printHelp()
 
         case CloudCredentials:
             printHelpCloudCredentials();
+            break;
+
+        case Watchlists:
+            printHelpWatchlists();
             break;
     }
 }
@@ -8132,6 +8239,28 @@ S9sOptions::printHelpCloudCredentials()
 "\n"
     );
 }
+
+void
+S9sOptions::printHelpWatchlists()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"watchlists\" command:\n"
+"  --list                     To retrieve the list of stored watchlists.\n"
+"  --create                   To create watchlist and store on CC's DB.\n"
+"  --delete                   To delete watchlist stored on CC's DB.\n"
+"  --name                     To specify the name of the watchlist to create.\n"
+"  --topics                   To specify the topics to be used.\n"
+"  --clusters                 List of clusters (comma separated) to be visualized on watchlist.\n"
+"  --grid                     Grid value to specify watchlist layout.\n"
+"  --paged-by                 Type og paging to be used ('topics' or 'clusters').\n"
+"  --owner-id                 To specify the cmon user ID owner of the watchlist.\n"
+"  --comment                  To specify the command associated to credential to create.\n"
+"\n"
+    );
+}
+
 
 
 /**
@@ -18297,6 +18426,311 @@ S9sOptions::readOptionsCloudCredentials(
 
     return true;
 }
+
+/**
+ * Reads the command line options in "watchlists" subcommand
+ */
+bool
+S9sOptions::readOptionsWatchlists(
+        int argc,
+        char *argv[])
+{
+    int c;
+    struct option long_options[] =
+            {
+                    // Generic Options
+                    {"batch",            no_argument,       0, OptionBatch},
+                    {"cmon-user",        required_argument, 0, 'u'},
+                    {"password",         required_argument, 0, 'p'},
+                    {"color",            optional_argument, 0, OptionColor},
+                    {"debug",            no_argument,       0, OptionDebug},
+                    {"help",             no_argument,       0, OptionHelp},
+                    {"human-readable",   no_argument,       0, 'h'},
+                    {"long",             no_argument,       0, 'l'},
+                    {"no-header",        no_argument,       0, OptionNoHeader},
+                    {"controller-port",  required_argument, 0, 'P'},
+                    {"controller",       required_argument, 0, 'c'},
+                    {"print-json",       no_argument,       0, OptionPrintJson},
+                    {"print-request",    no_argument,       0, OptionPrintRequest},
+                    {"rpc-tls",          no_argument,       0, OptionRpcTls},
+                    {"verbose",          no_argument,       0, 'v'},
+                    {"version",          no_argument,       0, 'V'},
+
+                    // Main Options
+                    {"list",             no_argument, 0,       OptionWatchlistsList},
+                    {"create",           no_argument, 0,       OptionWatchlistCreate},
+                    {"delete",           no_argument, 0,       OptionWatchlistDelete},
+                    // Arguments when creating or updating watchlists
+                    {"watchlist-id",     required_argument, 0, OptionWatchlistId},
+                    {"name",             required_argument, 0, OptionWatchlistName},
+                    {"topics",           required_argument, 0, OptionWatchlistTopics},
+                    {"clusters",         required_argument, 0, OptionWatchlistClusters},
+                    {"paged-by",         required_argument, 0, OptionWatchlistPagedBy},
+                    {"grid",             required_argument, 0, OptionWatchlistGrid},
+                    {"owner-id",         required_argument, 0, OptionWatchlistOwnerId},
+
+                    // optionals
+                    {"comment",          required_argument, 0, OptionComment},
+
+                    {0, 0,                                  0, 0}
+            };
+
+    optind = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V",
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+
+            /*
+             * Options related to cloud credentials
+             */
+            case OptionWatchlistsList:
+                // --list
+                m_options["list_watchlists"] = true;
+                break;
+
+            case OptionWatchlistCreate:
+                // --create
+                m_options["create_watchlist"] = true;
+                break;
+
+            case OptionWatchlistDelete:
+                // --delete
+                m_options["delete_watchlist"] = true;
+                break;
+
+            case OptionWatchlistId:
+                // --watchlist-id
+                m_options["watchlist_id"] = optarg;
+                break;
+
+            case OptionWatchlistName:
+                // --name
+                m_options["watchlist_name"] = optarg;
+                break;
+
+            case OptionWatchlistTopics:
+                // --topics
+                m_options["topics"] = optarg;
+                break;
+
+            case OptionWatchlistClusters:
+                // --clusters
+                m_options["clusters"] = optarg;
+                break;
+
+            case OptionWatchlistPagedBy:
+                // --paged-by
+                m_options["paged_by"] = optarg;
+                break;
+
+            case OptionWatchlistGrid:
+                // --watchlist-name
+                m_options["grid"] = optarg;
+                break;
+
+            case OptionWatchlistOwnerId:
+                // --owner-id
+                m_options["owner_id"] = optarg;
+                break;
+
+            // optional
+            case OptionComment:
+                // --comment
+                m_options["comment"] = optarg;
+                break;
+
+
+            case '?':
+            default:
+            S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c))
+                    {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else
+                    {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsWatchlists()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListWatchlists())
+        countOptions++;
+    if (isDeleteWatchlist())
+        countOptions++;
+    if (isCreateWatchlist())
+        countOptions++;
+
+    if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+    if (countOptions > 1)
+    {
+        m_errorMessage = "Please provide only one of the main options.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if(isDeleteWatchlist())
+    {
+        /*
+         * The --watchlist-id option is required
+         */
+        if(!hasWatchlistIdOption())
+        {
+            m_errorMessage = "The --watchlist-id option must be used when using delete watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if(isCreateWatchlist() /*|| isUpdateWatchlist()*/)
+    {
+        /*
+         * The -name option is required
+         */
+        if(!hasWatchlistNameOption())
+        {
+            m_errorMessage = "The --name option must be used when creating watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        /*
+         * The --topics option is required
+         */
+        if(!hasClustersOption())
+        {
+            m_errorMessage = "The --cluster option must be used when creating watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        if(!hasTopicsOption())
+        {
+            m_errorMessage = "The --cluster option must be used when creating watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+    }
+
+    return true;
+}
+
 
 
 /**

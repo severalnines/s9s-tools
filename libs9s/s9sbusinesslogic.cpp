@@ -1403,6 +1403,30 @@ S9sBusinessLogic::execute()
         }
         else 
             PRINT_ERROR("Unknown cloud-credentials operation.");
+    } else if (options->isWatchlistsOperation())
+    {
+        if(options->isCreateWatchlist()) {
+            success = client.createWatchlist(options);
+            S9sRpcReply reply = client.reply();
+            reply.isOk() ? ::printf("watchlist '%s' saved.\n", STR(options->watchlistName())) :
+                           ::printf("Watchlist could not be saved. Error: %s.\n",
+                           STR(reply.errorString()));
+        }
+        else if(options->isListWatchlists()) {
+            success = client.listWatchlists(options);
+            S9sRpcReply reply = client.reply();
+            reply.printWatchlists();
+        }
+        else if(options->isDeleteWatchlist()) {
+            const int id = options->watchlistId();
+            success = client.deleteWatchlist(id);
+            S9sRpcReply reply = client.reply();
+            reply.isOk() ? ::printf("Watchlist %d deleted.\n", id) :
+                           ::printf("Watchlist could not be deleted. Error: %s.\n",
+                           STR(reply.errorString()));
+        }
+        else
+            PRINT_ERROR("Unknown watchlists operation.");
     }
     else {
         PRINT_ERROR("Unknown operation.");

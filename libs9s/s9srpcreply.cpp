@@ -1622,6 +1622,114 @@ S9sRpcReply::printCloudCredentialsLong()
    
 }
 
+
+void
+S9sRpcReply::printWatchlists()
+{
+
+    printDebugMessages();
+    if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else
+        printWatchlistsLong();
+}
+
+/**
+ * Lists the watchlists stored on the controller (excluding sensitive info)
+ *
+ * \code
+ * # s9s watchlists --list
+ * ID      NAME     TOPICS      CLUSTERS   PAGED_BY      GRID     OWNER_ID
+ * 2       watch1   tp1, tp3    12, 14     clusters      3x3      3
+ * 3       watch2   tp2, tp3    11, 14     topic         2x3      3
+ * \endcode
+ *
+ * The request looks like this:
+ * \begin{.js}
+ * {
+ *     "operation": "listWatchlists",
+ *     "request_created": "2024-09-12T17:33:31.127Z",
+ *     "request_id": 3
+ * }
+ * \end
+ */
+void
+S9sRpcReply::printWatchlistsLong()
+{
+    //  S9sOptions    *options = S9sOptions::instance();
+    //  S9sVariantMap  reqResults = operator[]("result").toVariantMap();
+    //  S9sFormat      idFormat("\033[95m", TERM_NORMAL);
+    //  S9sFormat      nameFormat("\033[93m", TERM_NORMAL);
+    //  S9sFormat      providerFormat("\033[94m", TERM_NORMAL);
+    //  S9sFormat      regionFormat("\033[33m", TERM_NORMAL);
+    //  S9sFormat      commentFormat("\033[1m\033[97m", TERM_NORMAL);
+    //  S9sFormat      endpointFormat("\033[1m\033[97m", TERM_NORMAL);
+
+    //  // set width
+    //  for (const auto & provider : reqResults)
+    //  {
+    //      S9sString     providerName = provider.first;
+    //      S9sVariantList providerResult = provider.second.toVariantList();
+
+    //      for (const auto & result : providerResult)
+    //      {
+    //          S9sVariantMap  resultMap = result.toVariantMap();
+    //          S9sString      id = resultMap["id"].toString();
+    //          S9sString      name = resultMap["name"].toString();
+    //          S9sString      comment = resultMap["comment"].toString();
+    //          S9sVariantMap  credentials = resultMap["credentials"].toVariantMap();
+    //          S9sString      endpoint = credentials["endpoint"].toString();
+
+    //          idFormat.widen(id);
+    //          nameFormat.widen(name);
+    //          providerFormat.widen(providerName);
+    //          regionFormat.widen(credentials["access_key_region"].toString());
+    //          commentFormat.widen(comment);
+    //          endpointFormat.widen(endpoint);
+    //      }
+    //  }
+    //  // print header
+    //  if (!options->isNoHeaderRequested())
+    //  {
+    //      ::printf("%s", headerColorBegin());
+    //      idFormat.printHeader("ID");
+    //      nameFormat.printHeader("NAME");
+    //      providerFormat.printHeader("PROVIDER");
+    //      regionFormat.printHeader("REGION");
+    //      endpointFormat.printHeader("ENDPOINT");
+    //      commentFormat.printHeader("COMMENT");
+    //      ::printf("%s", headerColorEnd());
+    //      ::printf("\n");
+    //  }
+    //  // print data
+    //  for (const auto & provider : reqResults)
+    //  {
+    //      S9sString     providerName = provider.first;
+    //      S9sVariantList providerResult = provider.second.toVariantList();
+
+    //      for (const auto & result : providerResult)
+    //      {
+    //          S9sVariantMap  resultMap = result.toVariantMap();
+    //          S9sString      id = resultMap["id"].toString();
+    //          S9sString      name = resultMap["name"].toString();
+    //          S9sString      comment = resultMap["comment"].toString();
+    //          S9sVariantMap  credentials = resultMap["credentials"].toVariantMap();
+
+    //          idFormat.printf(id);
+    //          nameFormat.printf(name);
+    //          providerFormat.printf(providerName);
+    //          regionFormat.printf(credentials["access_key_region"].toString());
+    //          if(providerName == "aws")
+    //              endpointFormat.printf("<default>");
+    //          else
+    //              endpointFormat.printf(credentials["endpoint"].toString());
+    //          commentFormat.printf(comment);
+    //          ::printf("\n");
+    //      }
+    //  }
+}
+
+
 /**
  * Lists the supported cluster types as it is returned by the controller.
  * Something like this:
