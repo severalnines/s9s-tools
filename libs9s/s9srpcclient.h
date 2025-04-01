@@ -355,6 +355,7 @@ class S9sRpcClient
          */
         bool listWatchlists(S9sOptions *options);
         bool createWatchlist(S9sOptions *options);
+        bool updateWatchlist(S9sOptions *options);
         bool deleteWatchlist(const int & watchlistId);
 
 

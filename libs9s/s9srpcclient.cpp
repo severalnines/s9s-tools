@@ -11081,7 +11081,6 @@ S9sRpcClient::createWatchlist(S9sOptions *options)
 {
     const S9sString uri = "/v2/watchlists/";
     S9sVariantMap  request;
-    const S9sString provider = options->cloudProvider();
     request["operation"] = "createWatchlist";
     S9sVariantMap watchlistMap;
     watchlistMap["name"] = options->watchlistName();
@@ -11099,6 +11098,35 @@ S9sRpcClient::createWatchlist(S9sOptions *options)
 
     return executeRequest(uri, request);
 }
+
+/**
+ * \returns updates a watchlist stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::updateWatchlist(S9sOptions *options)
+{
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    request["operation"] = "updateWatchlist";
+    S9sVariantMap watchlistMap;
+    watchlistMap["watchlist_id"] = options->watchlistId();
+    watchlistMap["name"] = options->watchlistName();
+    watchlistMap["topics"] = options->topics();
+    watchlistMap["clusters"] = options->clusters();
+    watchlistMap["paged_by"] = options->getString("paged_by");
+    watchlistMap["grid"] = options->getString("grid");
+    watchlistMap["owner_id"] = options->getString("owner_id");
+    watchlistMap["properties"] = options->getString("properties");
+
+
+    request["watchlist"] = watchlistMap;
+    if(options->hasCommentOption())
+        request["comment"] = options->comment();
+
+    return executeRequest(uri, request);
+}
+
 
 /**
  * \returns lists watchlists stored on controller DB

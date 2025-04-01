@@ -493,6 +493,7 @@ enum S9sOptionType
 
     OptionWatchlistsList,
     OptionWatchlistCreate,
+    OptionWatchlistUpdate,
     OptionWatchlistDelete,
     OptionWatchlistId,
     OptionWatchlistName,
@@ -5144,6 +5145,17 @@ S9sOptions::isCreateWatchlist() const
 {
     return getBool("create_watchlist");
 }
+
+/**
+ * \returns true if the "update_watchlist" function is requested by providing the --update
+ *   command line option.
+ */
+bool
+S9sOptions::isUpdateWatchlist() const
+{
+    return getBool("update_watchlist");
+}
+
 
 /**
  * \returns true if the "delete_watchlist" function is requested by providing the --delete
@@ -18462,6 +18474,7 @@ S9sOptions::readOptionsWatchlists(
                     // Main Options
                     {"list",             no_argument, 0,       OptionWatchlistsList},
                     {"create",           no_argument, 0,       OptionWatchlistCreate},
+                    {"update",           no_argument, 0,       OptionWatchlistUpdate},
                     {"delete",           no_argument, 0,       OptionWatchlistDelete},
                     // Arguments when creating or updating watchlists
                     {"watchlist-id",     required_argument, 0, OptionWatchlistId},
@@ -18589,6 +18602,11 @@ S9sOptions::readOptionsWatchlists(
                 m_options["create_watchlist"] = true;
                 break;
 
+            case OptionWatchlistUpdate:
+                // --update
+                m_options["update_watchlist"] = true;
+                break;
+
             case OptionWatchlistDelete:
                 // --delete
                 m_options["delete_watchlist"] = true;
@@ -18681,6 +18699,8 @@ S9sOptions::checkOptionsWatchlists()
         countOptions++;
     if (isCreateWatchlist())
         countOptions++;
+    if (isUpdateWatchlist())
+        countOptions++;
 
     if (countOptions == 0)
     {
@@ -18715,10 +18735,10 @@ S9sOptions::checkOptionsWatchlists()
 
     }
 
-    if(isCreateWatchlist() /*|| isUpdateWatchlist()*/)
+    if(isCreateWatchlist() || isUpdateWatchlist())
     {
         /*
-         * The -name option is required
+         * The -n-ame option is required
          */
         if(!hasWatchlistNameOption())
         {
@@ -18743,6 +18763,21 @@ S9sOptions::checkOptionsWatchlists()
         }
 
     }
+
+    if(isUpdateWatchlist())
+    {
+        /*
+         * The --watchlist-id option is required
+         */
+        if(!hasWatchlistIdOption())
+        {
+            m_errorMessage = "The --watchlist-id option must be used when update watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+    }
+
 
     if(isListWatchlists())
     {

@@ -1412,6 +1412,13 @@ S9sBusinessLogic::execute()
                            ::printf("Watchlist could not be saved. Error: %s.\n",
                            STR(reply.errorString()));
         }
+        else if(options->isUpdateWatchlist()) {
+            success = client.updateWatchlist(options);
+            S9sRpcReply reply = client.reply();
+            reply.isOk() ? ::printf("watchlist '%s' updated.\n", STR(options->watchlistName())) :
+                           ::printf("Watchlist could not be updated. Error: %s.\n",
+                           STR(reply.errorString()));
+        }
         else if(options->isListWatchlists()) {
             success = client.listWatchlists(options);
             S9sRpcReply reply = client.reply();

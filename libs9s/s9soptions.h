@@ -582,6 +582,7 @@ class S9sOptions
 
         bool isListWatchlists() const;
         bool isCreateWatchlist() const;
+        bool isUpdateWatchlist() const;
         bool isDeleteWatchlist() const;
 
         bool isAddPublicationRequested() const;
