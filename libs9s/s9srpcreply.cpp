@@ -1652,84 +1652,80 @@ S9sRpcReply::printWatchlists()
  * {
  *     "operation": "listWatchlists",
  *     "request_created": "2024-09-12T17:33:31.127Z",
- *     "request_id": 3
+ *     "request_id": 2
+ *     "watchlist_id": 2
  * }
  * \end
  */
 void
 S9sRpcReply::printWatchlistsLong()
 {
-    //  S9sOptions    *options = S9sOptions::instance();
-    //  S9sVariantMap  reqResults = operator[]("result").toVariantMap();
-    //  S9sFormat      idFormat("\033[95m", TERM_NORMAL);
-    //  S9sFormat      nameFormat("\033[93m", TERM_NORMAL);
-    //  S9sFormat      providerFormat("\033[94m", TERM_NORMAL);
-    //  S9sFormat      regionFormat("\033[33m", TERM_NORMAL);
-    //  S9sFormat      commentFormat("\033[1m\033[97m", TERM_NORMAL);
-    //  S9sFormat      endpointFormat("\033[1m\033[97m", TERM_NORMAL);
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList  watchlists = operator[]("watchlists").toVariantList();
+    S9sFormat      idFormat("\033[95m", TERM_NORMAL);
+    S9sFormat      nameFormat("\033[93m", TERM_NORMAL);
+    S9sFormat      topicsFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
+    S9sFormat      pagedByFormat("\033[1m\033[97m", TERM_NORMAL);
+    S9sFormat      gridFormat("\033[1m\033[97m", TERM_NORMAL);
+    S9sFormat      ownerIdFormat("\033[1m\033[97m", TERM_NORMAL);
 
-    //  // set width
-    //  for (const auto & provider : reqResults)
-    //  {
-    //      S9sString     providerName = provider.first;
-    //      S9sVariantList providerResult = provider.second.toVariantList();
+    // set width
+    for (const auto & wl : watchlists)
+    {
+        S9sVariantMap  w = wl.toVariantMap();
+        S9sString      id = w["watchlist_id"].toString();
+        S9sString      name = w["name"].toString();
+        S9sString      topics = w["topics"].toString();
+        S9sString      clusters = w["clusters"].toString();
+        S9sString      grid = w["grid"].toString();
+        S9sString      pagedBy = w["page_by"].toString();
+        S9sString      ownerId = w["owner_id"].toString();
 
-    //      for (const auto & result : providerResult)
-    //      {
-    //          S9sVariantMap  resultMap = result.toVariantMap();
-    //          S9sString      id = resultMap["id"].toString();
-    //          S9sString      name = resultMap["name"].toString();
-    //          S9sString      comment = resultMap["comment"].toString();
-    //          S9sVariantMap  credentials = resultMap["credentials"].toVariantMap();
-    //          S9sString      endpoint = credentials["endpoint"].toString();
+        idFormat.widen(id);
+        nameFormat.widen(name);
+        topicsFormat.widen(topics);
+        clustersFormat.widen(clusters);
+        pagedByFormat.widen(pagedBy);
+        gridFormat.widen(grid);
+        ownerIdFormat.widen(ownerId);
+    }
+    // print header
+    if (!options->isNoHeaderRequested())
+    {
+        ::printf("%s", headerColorBegin());
+        idFormat.printHeader("ID");
+        nameFormat.printHeader("NAME");
+        topicsFormat.printHeader("TOPICS");
+        clustersFormat.printHeader("CLUSTERS");
+        gridFormat.printHeader("GRID");
+        pagedByFormat.printHeader("PAGE_BY");
+        ownerIdFormat.printHeader("OWNER ID");
+        ::printf("%s", headerColorEnd());
+        ::printf("\n");
+    }
+    // print data
+    for (const auto & wl : watchlists)
+    {
+        S9sVariantMap  w = wl.toVariantMap();
+        S9sString      id = w["watchlist_id"].toString();
+        S9sString      name = w["name"].toString();
+        S9sString      topics = w["topics"].toString();
+        S9sString      clusters = w["clusters"].toString();
+        S9sString      grid = w["grid"].toString().trim();
+        S9sString      pagedBy = w["page_by"].toString().trim();
+        S9sString      ownerId = w["owner_id"].toString();
 
-    //          idFormat.widen(id);
-    //          nameFormat.widen(name);
-    //          providerFormat.widen(providerName);
-    //          regionFormat.widen(credentials["access_key_region"].toString());
-    //          commentFormat.widen(comment);
-    //          endpointFormat.widen(endpoint);
-    //      }
-    //  }
-    //  // print header
-    //  if (!options->isNoHeaderRequested())
-    //  {
-    //      ::printf("%s", headerColorBegin());
-    //      idFormat.printHeader("ID");
-    //      nameFormat.printHeader("NAME");
-    //      providerFormat.printHeader("PROVIDER");
-    //      regionFormat.printHeader("REGION");
-    //      endpointFormat.printHeader("ENDPOINT");
-    //      commentFormat.printHeader("COMMENT");
-    //      ::printf("%s", headerColorEnd());
-    //      ::printf("\n");
-    //  }
-    //  // print data
-    //  for (const auto & provider : reqResults)
-    //  {
-    //      S9sString     providerName = provider.first;
-    //      S9sVariantList providerResult = provider.second.toVariantList();
+        idFormat.printf(id);
+        nameFormat.printf(name);
+        topicsFormat.printf(topics);
+        clustersFormat.printf(clusters);
+        pagedByFormat.printf(pagedBy);
+        gridFormat.printf(grid);
+        ownerIdFormat.printf(ownerId);
+        ::printf("\n");
+    }
 
-    //      for (const auto & result : providerResult)
-    //      {
-    //          S9sVariantMap  resultMap = result.toVariantMap();
-    //          S9sString      id = resultMap["id"].toString();
-    //          S9sString      name = resultMap["name"].toString();
-    //          S9sString      comment = resultMap["comment"].toString();
-    //          S9sVariantMap  credentials = resultMap["credentials"].toVariantMap();
-
-    //          idFormat.printf(id);
-    //          nameFormat.printf(name);
-    //          providerFormat.printf(providerName);
-    //          regionFormat.printf(credentials["access_key_region"].toString());
-    //          if(providerName == "aws")
-    //              endpointFormat.printf("<default>");
-    //          else
-    //              endpointFormat.printf(credentials["endpoint"].toString());
-    //          commentFormat.printf(comment);
-    //          ::printf("\n");
-    //      }
-    //  }
 }
 
 

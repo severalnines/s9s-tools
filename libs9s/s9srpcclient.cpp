@@ -11090,6 +11090,7 @@ S9sRpcClient::createWatchlist(S9sOptions *options)
     watchlistMap["paged_by"] = options->getString("paged_by");
     watchlistMap["grid"] = options->getString("grid");
     watchlistMap["owner_id"] = options->getString("owner_id");
+    watchlistMap["properties"] = options->getString("properties");
 
 
     request["watchlist"] = watchlistMap;

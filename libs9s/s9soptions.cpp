@@ -501,6 +501,7 @@ enum S9sOptionType
     OptionWatchlistPagedBy,
     OptionWatchlistGrid,
     OptionWatchlistOwnerId,
+    OptionWatchlistProperties,
 
     OptionExtensions
 };
@@ -18470,6 +18471,7 @@ S9sOptions::readOptionsWatchlists(
                     {"paged-by",         required_argument, 0, OptionWatchlistPagedBy},
                     {"grid",             required_argument, 0, OptionWatchlistGrid},
                     {"owner-id",         required_argument, 0, OptionWatchlistOwnerId},
+                    {"properties",       required_argument, 0, OptionWatchlistProperties},
 
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -18625,6 +18627,11 @@ S9sOptions::readOptionsWatchlists(
             case OptionWatchlistOwnerId:
                 // --owner-id
                 m_options["owner_id"] = optarg;
+                break;
+
+            case OptionWatchlistProperties:
+                // --properties
+                m_options["properties"] = optarg;
                 break;
 
             // optional
