@@ -2569,7 +2569,9 @@ S9sOptions::hasWatchlistIdOption() const
 int
 S9sOptions::watchlistId() const
 {
-    return getInt("watchlist_id");
+    if(m_options.contains("watchlist_id"))
+        return getInt("watchlist_id");
+    return -1;
 }
 
 bool
@@ -5129,7 +5131,7 @@ S9sOptions::isDeleteCloudCredential() const
 bool
 S9sOptions::isListWatchlists() const
 {
-    return getBool("list_watchlistss");
+    return getBool("list_watchlists");
 }
 
 /**
@@ -18697,6 +18699,13 @@ S9sOptions::checkOptionsWatchlists()
             m_exitStatus = BadOptions;
             return false;
         }
+        if(watchlistId() < 0)
+        {
+            m_errorMessage = "The --watchlist-id option must be positive when using it on delete watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
     }
 
     if(isCreateWatchlist() /*|| isUpdateWatchlist()*/)
@@ -18726,6 +18735,19 @@ S9sOptions::checkOptionsWatchlists()
             return false;
         }
 
+    }
+
+    if(isListWatchlists())
+    {
+        /*
+         * The --watchlist-id option is required
+         */
+        if(hasWatchlistIdOption() && watchlistId() < 0)
+        {
+            m_errorMessage = "The --watchlist-id option must be positive when using it on list watchlist operation.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;

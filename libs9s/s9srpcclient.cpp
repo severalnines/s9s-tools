@@ -11106,7 +11106,18 @@ S9sRpcClient::createWatchlist(S9sOptions *options)
 bool
 S9sRpcClient::listWatchlists(S9sOptions *options)
 {
-    return true;
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    const S9sString provider = options->cloudProvider();
+    request["operation"] = "listWatchlists";
+    if(options->watchlistId() >= 0)
+        request["watchlist_id"] = options->watchlistId();
+    else if(!options->watchlistName().empty())
+        request["watchlist_name"] = options->watchlistName();
+    else
+        request["watchlist_id"] = 0;
+
+    return executeRequest(uri, request);
 }
 
 /**
@@ -11116,7 +11127,11 @@ S9sRpcClient::listWatchlists(S9sOptions *options)
 bool
 S9sRpcClient::deleteWatchlist(const int & watchlistId)
 {
-    return true;
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    request["operation"] = "deleteWatchlist";
+    request["watchlist_id"] = watchlistId;
+    return executeRequest(uri, request);
 }
 
 /**

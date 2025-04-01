@@ -1628,6 +1628,9 @@ S9sRpcReply::printWatchlists()
 {
 
     printDebugMessages();
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printJsonFormat();
     if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else
