@@ -233,6 +233,37 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-deploy-cmonagents
+Deploys CMON agents to all nodes in the specified cluster.
+This enables TopQuery Monitoring functionality for the cluster nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --deploy-cmonagents \\
+    --cluster-id=1 \\
+    --print-request \\
+    --log \\
+    --wait
+.fi
+
+.TP
+.B \-\-uninstall-cmonagents
+Uninstalls CMON agents from specified nodes in the cluster.
+If no node is specified, CMON agents will be uninstalled from all nodes in the cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --uninstall-cmonagents \\
+    --cluster-id=1 \\
+    --nodes=10.67.199.164 \\
+    --print-request \\
+    --log \\
+    --wait
+.fi
+
+.TP
 .B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
