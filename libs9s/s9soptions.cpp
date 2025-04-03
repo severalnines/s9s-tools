@@ -7601,6 +7601,7 @@ S9sOptions::printHelpCluster()
 "  --delete-database          Creating a job that will delete a database.\n"
 "  --demote-node              Demote a node to slave.\n"
 "  --deploy-agents            Starts a job to deploy agents to the nodes.\n"
+"  --deploy-cmonagents        Starts a job to deploy Cmon Agents (TopQuery Monitoring) to the nodes.\n"
 "  --disable-recovery         Disable automatic recovery from a job.\n"
 "  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
@@ -7624,6 +7625,7 @@ S9sOptions::printHelpCluster()
 "  --stat                     Print the details of a cluster.\n"
 "  --stop                     Stop the cluster.\n"
 "  --sync                     Synchronize cluster list with UI Frontend.\n"
+"  --uninstall-cmonagents     Starts a job to remove Cmon Agents (TopQuery Monitoring) from the nodes.\n"
 "  --upgrade-cluster          Upgrade database software on the cluster.\n"
 
 
@@ -14458,7 +14460,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionUninstallCmonAgents:
-                // --uninstalll-cmonagents
+                // --uninstall-cmonagents
                 m_options["uninstall_cmonagents"] = true;
                 break;
 
