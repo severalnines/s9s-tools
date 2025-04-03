@@ -10,7 +10,8 @@ s9s-watchlists\- Command-line client for the Severalnines ClusterControl server.
 
 .SH DESCRIPTION
 \fBs9s-watchlists\fP is a command-line tool for ClusterControl, which can be used to 
-perform CRUD operations on whatchlists elements stored on database
+perform create, read, update, delete operations on whatchlists elements stored on database.
+Wathclists are used to define visualize content when setting CCV2 on kiosk mode.
 
 .SH OPTIONS
 .SS "Main Option"
@@ -24,16 +25,16 @@ Optional fields are: owner-id, paged-by, properties.
 
 .B EXAMPLE
 .nf
-s9s watchlists --create --name="w1" --topics="topic1, topoc3" --clusters="11, 12, 15"
+s9s watchlists --create --name="w1" --topics="topic1, topic3" --clusters="11, 12, 15"
 OK
 .fi
 
 .TP
 .B --update
-Updates an existing watchlist on DB. Same arguments as '--create' subcommand but also required '--whatchlist-id'
+Updates an existing watchlist on DB. Same arguments as '--create' main option also requires '--whatchlist-id'
 .nf
 s9s watchlists --update --watchlist-id="2" --name="w1" --topics="topic1, topic3" --clusters="20, 12, 15" --grid="2x2" --owner-id=3
-OK
+watchlist 'w1' updated.
 .fi
 
 .TP
@@ -42,10 +43,8 @@ Gets existing watchlist on DB. When providing '--whatchlist-id' specific watchli
 Use 0 or ommit options to get all existing whatchlist. Also admits --name option as filter instead of id.
 .nf
 s9s watchlists --list --watchlist-id="2" 
-
-ID NAME   TOPICS       CLUSTERS  GRID    PAGE_BY OWNER ID 
-1  testW1 [t1, t2, t3] [1, 2, 3] cluster 2x2     9        
-2  testW2 [t1, t2, t3] [1, 2, 3] cluster 3x3     9  
+ID NAME   CLUSTERS  GRID PAGE_BY OWNER ID TOPICS       
+2  testW2 [1, 2, 3] 3x3  cluster 9        [t1, t2, t3] 
 .fi
 
 .TP
@@ -59,34 +58,33 @@ OK
 .\"
 .\" Arguments related to create and update operations
 .\"
-.SS Arguments related to create watchlist
+.SS Arguments related to create watchlist.
 The 'createWatchlist' or 'updateWatchlist' operations can use following options to define
 watchlists fields:
 
 .TP
 .B --name
-The name asigned by user to watchlist
-
+The name asigned by user to watchlist.
 
 .TP
 .B --topics
-String identifying the themes for the different information types to be visualized
+String identifying the themes for the different information types to be visualized.
 
 .TP
 .B --clusters
-The clusters to be displayed on watchlist
+The clusters to be displayed on watchlist.
 
 .TP
 .B --grids
-The possible layouts to be used on watchlist
+The possible layouts to be used on watchlist.
 
 .TP
 .B --owner-id
-The cmon user ID owner of the watchlist
+The cmon user ID owner of the watchlist.
 
 .TP
 .B --properties
-Some string to save watchlist properties
+Some string to save watchlist properties.
 
 
 .TP
@@ -108,13 +106,13 @@ The ID must be positive corresponding to an existing watchlist or zero to get al
 
 .TP
 .BI \-\^\-name=NAME
-This option can used on list operations to avoid retrieving all watchlists 
+This option can be used on list operations to avoid retrieving all watchlists 
 The NAME must be correspond to an existing/s watchlist.
 
 .B EXAMPLE
 .nf
 s9s watchlists --list --watchlist-name=testW1
 
-ID NAME   TOPICS       CLUSTERS  GRID    PAGE_BY OWNER ID 
-1  testW1 [t1, t2, t3] [1, 2, 3] cluster 2x2     9        
+ID NAME   CLUSTERS  GRID PAGE_BY OWNER ID TOPICS       
+1  testW1 [4, 6, 8] 2x2  cluster 8        [t1, t2, t3] 
 .fi

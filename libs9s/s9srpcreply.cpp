@@ -1675,7 +1675,7 @@ S9sRpcReply::printWatchlistsLong()
     {
         S9sVariantMap  w = wl.toVariantMap();
         S9sString      id = w["watchlist_id"].toString();
-        S9sString      name = w["name"].toString();
+        S9sString      name = w["watchlist_name"].toString();
         S9sString      topics = w["topics"].toString();
         S9sString      clusters = w["clusters"].toString();
         S9sString      grid = w["grid"].toString();
@@ -1696,11 +1696,11 @@ S9sRpcReply::printWatchlistsLong()
         ::printf("%s", headerColorBegin());
         idFormat.printHeader("ID");
         nameFormat.printHeader("NAME");
-        topicsFormat.printHeader("TOPICS");
         clustersFormat.printHeader("CLUSTERS");
         gridFormat.printHeader("GRID");
         pagedByFormat.printHeader("PAGE_BY");
-        ownerIdFormat.printHeader("OWNER ID");
+        ownerIdFormat.printHeader("OWNER_ID");
+        topicsFormat.printHeader("TOPICS");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
@@ -1709,7 +1709,7 @@ S9sRpcReply::printWatchlistsLong()
     {
         S9sVariantMap  w = wl.toVariantMap();
         S9sString      id = w["watchlist_id"].toString();
-        S9sString      name = w["name"].toString();
+        S9sString      name = w["watchlist_name"].toString();
         S9sString      topics = w["topics"].toString();
         S9sString      clusters = w["clusters"].toString();
         S9sString      grid = w["grid"].toString().trim();
@@ -1718,11 +1718,11 @@ S9sRpcReply::printWatchlistsLong()
 
         idFormat.printf(id);
         nameFormat.printf(name);
-        topicsFormat.printf(topics);
         clustersFormat.printf(clusters);
-        pagedByFormat.printf(pagedBy);
         gridFormat.printf(grid);
+        pagedByFormat.printf(pagedBy);
         ownerIdFormat.printf(ownerId);
+        topicsFormat.printf(topics);
         ::printf("\n");
     }
 

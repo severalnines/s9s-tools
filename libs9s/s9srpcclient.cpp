@@ -11083,7 +11083,7 @@ S9sRpcClient::createWatchlist(S9sOptions *options)
     S9sVariantMap  request;
     request["operation"] = "createWatchlist";
     S9sVariantMap watchlistMap;
-    watchlistMap["name"] = options->watchlistName();
+    watchlistMap["watchlist_name"] = options->watchlistName();
     watchlistMap["topics"] = options->topics();
     watchlistMap["clusters"] = options->clusters();
     watchlistMap["paged_by"] = options->getString("paged_by");
@@ -11111,7 +11111,7 @@ S9sRpcClient::updateWatchlist(S9sOptions *options)
     request["operation"] = "updateWatchlist";
     S9sVariantMap watchlistMap;
     watchlistMap["watchlist_id"] = options->watchlistId();
-    watchlistMap["name"] = options->watchlistName();
+    watchlistMap["watchlist_name"] = options->watchlistName();
     watchlistMap["topics"] = options->topics();
     watchlistMap["clusters"] = options->clusters();
     watchlistMap["paged_by"] = options->getString("paged_by");
