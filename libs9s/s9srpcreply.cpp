@@ -1622,6 +1622,113 @@ S9sRpcReply::printCloudCredentialsLong()
    
 }
 
+
+void
+S9sRpcReply::printWatchlists()
+{
+
+    printDebugMessages();
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printJsonFormat();
+    if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else
+        printWatchlistsLong();
+}
+
+/**
+ * Lists the watchlists stored on the controller (excluding sensitive info)
+ *
+ * \code
+ * # s9s watchlists --list
+ * ID      NAME     TOPICS      CLUSTERS   PAGED_BY      GRID     OWNER_ID
+ * 2       watch1   tp1, tp3    12, 14     clusters      3x3      3
+ * 3       watch2   tp2, tp3    11, 14     topic         2x3      3
+ * \endcode
+ *
+ * The request looks like this:
+ * \begin{.js}
+ * {
+ *     "operation": "listWatchlists",
+ *     "request_created": "2024-09-12T17:33:31.127Z",
+ *     "request_id": 2
+ *     "watchlist_id": 2
+ * }
+ * \end
+ */
+void
+S9sRpcReply::printWatchlistsLong()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList  watchlists = operator[]("watchlists").toVariantList();
+    S9sFormat      idFormat("\033[95m", TERM_NORMAL);
+    S9sFormat      nameFormat("\033[93m", TERM_NORMAL);
+    S9sFormat      topicsFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
+    S9sFormat      pagedByFormat("\033[1m\033[97m", TERM_NORMAL);
+    S9sFormat      gridFormat("\033[1m\033[97m", TERM_NORMAL);
+    S9sFormat      ownerIdFormat("\033[1m\033[97m", TERM_NORMAL);
+
+    // set width
+    for (const auto & wl : watchlists)
+    {
+        S9sVariantMap  w = wl.toVariantMap();
+        S9sString      id = w["watchlist_id"].toString();
+        S9sString      name = w["watchlist_name"].toString();
+        S9sString      topics = w["topics"].toString();
+        S9sString      clusters = w["clusters"].toString();
+        S9sString      grid = w["grid"].toString();
+        S9sString      pagedBy = w["page_by"].toString();
+        S9sString      ownerId = w["owner_id"].toString();
+
+        idFormat.widen(id);
+        nameFormat.widen(name);
+        topicsFormat.widen(topics);
+        clustersFormat.widen(clusters);
+        pagedByFormat.widen(pagedBy);
+        gridFormat.widen(grid);
+        ownerIdFormat.widen(ownerId);
+    }
+    // print header
+    if (!options->isNoHeaderRequested())
+    {
+        ::printf("%s", headerColorBegin());
+        idFormat.printHeader("ID");
+        nameFormat.printHeader("NAME");
+        clustersFormat.printHeader("CLUSTERS");
+        gridFormat.printHeader("GRID");
+        pagedByFormat.printHeader("PAGE_BY");
+        ownerIdFormat.printHeader("OWNER_ID");
+        topicsFormat.printHeader("TOPICS");
+        ::printf("%s", headerColorEnd());
+        ::printf("\n");
+    }
+    // print data
+    for (const auto & wl : watchlists)
+    {
+        S9sVariantMap  w = wl.toVariantMap();
+        S9sString      id = w["watchlist_id"].toString();
+        S9sString      name = w["watchlist_name"].toString();
+        S9sString      topics = w["topics"].toString();
+        S9sString      clusters = w["clusters"].toString();
+        S9sString      grid = w["grid"].toString().trim();
+        S9sString      pagedBy = w["page_by"].toString().trim();
+        S9sString      ownerId = w["owner_id"].toString();
+
+        idFormat.printf(id);
+        nameFormat.printf(name);
+        clustersFormat.printf(clusters);
+        gridFormat.printf(grid);
+        pagedByFormat.printf(pagedBy);
+        ownerIdFormat.printf(ownerId);
+        topicsFormat.printf(topics);
+        ::printf("\n");
+    }
+
+}
+
+
 /**
  * Lists the supported cluster types as it is returned by the controller.
  * Something like this:

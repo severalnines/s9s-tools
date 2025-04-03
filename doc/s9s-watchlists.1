@@ -1,0 +1,118 @@
+.TH S9S-WATCHLISTS 1 "December 31, 2025"
+
+.SH NAME
+s9s-watchlists\- Command-line client for the Severalnines ClusterControl server.
+
+.SH SYNOPSIS
+.B s9s-watchlists
+.RI [OPTION]... 
+.RI [PATH]...
+
+.SH DESCRIPTION
+\fBs9s-watchlists\fP is a command-line tool for ClusterControl, which can be used to 
+perform create, read, update, delete operations on whatchlists elements stored on database.
+Wathclists are used to define visualize content when setting CCV2 on kiosk mode.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what operation
+should be performed. This "main option" should be one of the following:
+
+.TP
+.B --create
+Creates a new watchlist on database. Mandatory fields for watchlist are: name, topic and clusters.
+Optional fields are: owner-id, paged-by, properties.
+
+.B EXAMPLE
+.nf
+s9s watchlists --create --name="w1" --topics="topic1, topic3" --clusters="11, 12, 15"
+OK
+.fi
+
+.TP
+.B --update
+Updates an existing watchlist on DB. Same arguments as '--create' main option also requires '--whatchlist-id'
+.nf
+s9s watchlists --update --watchlist-id="2" --name="w1" --topics="topic1, topic3" --clusters="20, 12, 15" --grid="2x2" --owner-id=3
+watchlist 'w1' updated.
+.fi
+
+.TP
+.B --list
+Gets existing watchlist on DB. When providing '--whatchlist-id' specific watchlist is returned. 
+Use 0 or ommit options to get all existing whatchlist. Also admits --name option as filter instead of id.
+.nf
+s9s watchlists --list --watchlist-id="2" 
+ID NAME   CLUSTERS  GRID PAGE_BY OWNER ID TOPICS       
+2  testW2 [1, 2, 3] 3x3  cluster 9        [t1, t2, t3] 
+.fi
+
+.TP
+.B --delete
+Deletes existing watchlist on DB. Option '--whatchlist-id' is mandatory.
+.nf
+s9s watchlists --delete --watchlist-id="2" 
+OK
+.fi
+
+.\"
+.\" Arguments related to create and update operations
+.\"
+.SS Arguments related to create watchlist.
+The 'createWatchlist' or 'updateWatchlist' operations can use following options to define
+watchlists fields:
+
+.TP
+.B --name
+The name asigned by user to watchlist.
+
+.TP
+.B --topics
+String identifying the themes for the different information types to be visualized.
+
+.TP
+.B --clusters
+The clusters to be displayed on watchlist.
+
+.TP
+.B --grids
+The possible layouts to be used on watchlist.
+
+.TP
+.B --owner-id
+The cmon user ID owner of the watchlist.
+
+.TP
+.B --properties
+Some string to save watchlist properties.
+
+
+.TP
+.B --use-vendor-api
+Lists the available 3 digits versions supported by ClusterControl for a given 
+cluster type and vendor by querying vendor's api (if exists). If vendor has no api
+field 'use_vendor_api' on reply will be false.
+This option must be used in combination with --list-3d.
+
+
+
+.\"
+.\" Arguments related to list operations
+.\"
+.TP
+.BI \-\^\-watchlist-id=ID
+This option can be used on list operations to avoid retrieving all watchlists 
+The ID must be positive corresponding to an existing watchlist or zero to get all watchlists.
+
+.TP
+.BI \-\^\-name=NAME
+This option can be used on list operations to avoid retrieving all watchlists 
+The NAME must be correspond to an existing/s watchlist.
+
+.B EXAMPLE
+.nf
+s9s watchlists --list --watchlist-name=testW1
+
+ID NAME   CLUSTERS  GRID PAGE_BY OWNER ID TOPICS       
+1  testW1 [4, 6, 8] 2x2  cluster 8        [t1, t2, t3] 
+.fi

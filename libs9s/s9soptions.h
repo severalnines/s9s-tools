@@ -77,6 +77,7 @@ class S9sOptions
             DbSchema,
             DbVersions,
             CloudCredentials,
+            Watchlists,
         };
 
         enum ExitCodes
@@ -256,6 +257,12 @@ class S9sOptions
 
         bool hasCredentialNameOption() const;
         S9sString credentialName() const;
+
+        bool hasWatchlistIdOption() const;
+        int watchlistId() const;
+
+        bool hasWatchlistNameOption() const;
+        S9sString watchlistName() const;
         
         bool hasBackupId() const;
         int backupId() const;
@@ -289,6 +296,8 @@ class S9sOptions
         S9sString clusters() const;
         bool hasClustersOption();
 
+        S9sString topics() const;
+        bool hasTopicsOption();
 
         bool hasClusterTypeOption() const;
         bool hasVendorOption() const;
@@ -496,6 +505,7 @@ class S9sOptions
         bool isDbSchemaOperation() const;
         bool isDbVersionsOperation() const;
         bool isCloudCredentialsOperation() const;
+        bool isWatchlistsOperation() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -569,6 +579,11 @@ class S9sOptions
         bool isListCloudCredentials() const;
         bool isCreateCloudCredential() const;
         bool isDeleteCloudCredential() const;
+
+        bool isListWatchlists() const;
+        bool isCreateWatchlist() const;
+        bool isUpdateWatchlist() const;
+        bool isDeleteWatchlist() const;
 
         bool isAddPublicationRequested() const;
         bool isModifyPublicationRequested() const;
@@ -812,6 +827,7 @@ class S9sOptions
         void printHelpDbSchema();
         void printHelpDbVersions();
         void printHelpCloudCredentials();
+        void printHelpWatchlists();
         void printHelpProcess();
         void printHelpBackup();
         void printHelpMaintenance();
@@ -895,6 +911,9 @@ class S9sOptions
 
         bool readOptionsCloudCredentials(int argc, char *argv[]);
         bool checkOptionsCloudCredentials();
+
+        bool readOptionsWatchlists(int argc, char *argv[]);
+        bool checkOptionsWatchlists();
 
         bool setMode(const S9sString &modeName);
 

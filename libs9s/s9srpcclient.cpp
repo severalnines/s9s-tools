@@ -11071,6 +11071,98 @@ S9sRpcClient::deleteCloudCredentials(const int & credentialId, const S9sString &
     return executeRequest(uri, request);
 }
 
+
+/**
+ * \returns creates a watchlist stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::createWatchlist(S9sOptions *options)
+{
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    request["operation"] = "createWatchlist";
+    S9sVariantMap watchlistMap;
+    watchlistMap["watchlist_name"] = options->watchlistName();
+    watchlistMap["topics"] = options->topics();
+    watchlistMap["clusters"] = options->clusters();
+    watchlistMap["paged_by"] = options->getString("paged_by");
+    watchlistMap["grid"] = options->getString("grid");
+    watchlistMap["owner_id"] = options->getString("owner_id");
+    watchlistMap["properties"] = options->getString("properties");
+
+
+    request["watchlist"] = watchlistMap;
+    if(options->hasCommentOption())
+        request["comment"] = options->comment();
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns updates a watchlist stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::updateWatchlist(S9sOptions *options)
+{
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    request["operation"] = "updateWatchlist";
+    S9sVariantMap watchlistMap;
+    watchlistMap["watchlist_id"] = options->watchlistId();
+    watchlistMap["watchlist_name"] = options->watchlistName();
+    watchlistMap["topics"] = options->topics();
+    watchlistMap["clusters"] = options->clusters();
+    watchlistMap["paged_by"] = options->getString("paged_by");
+    watchlistMap["grid"] = options->getString("grid");
+    watchlistMap["owner_id"] = options->getString("owner_id");
+    watchlistMap["properties"] = options->getString("properties");
+
+
+    request["watchlist"] = watchlistMap;
+    if(options->hasCommentOption())
+        request["comment"] = options->comment();
+
+    return executeRequest(uri, request);
+}
+
+
+/**
+ * \returns lists watchlists stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::listWatchlists(S9sOptions *options)
+{
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    const S9sString provider = options->cloudProvider();
+    request["operation"] = "listWatchlists";
+    if(options->watchlistId() >= 0)
+        request["watchlist_id"] = options->watchlistId();
+    else if(!options->watchlistName().empty())
+        request["watchlist_name"] = options->watchlistName();
+    else
+        request["watchlist_id"] = 0;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns delete watchlists stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::deleteWatchlist(const int & watchlistId)
+{
+    const S9sString uri = "/v2/watchlists/";
+    S9sVariantMap  request;
+    request["operation"] = "deleteWatchlist";
+    request["watchlist_id"] = watchlistId;
+    return executeRequest(uri, request);
+}
+
 /**
  * \returns true if the subcluster identification is valid and added to the
  * request.
