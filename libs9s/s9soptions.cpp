@@ -499,7 +499,7 @@ enum S9sOptionType
     OptionWatchlistName,
     OptionWatchlistTopics,
     OptionWatchlistClusters,
-    OptionWatchlistPagedBy,
+    OptionWatchlistPageBy,
     OptionWatchlistGrid,
     OptionWatchlistOwnerId,
     OptionWatchlistProperties,
@@ -8269,7 +8269,7 @@ S9sOptions::printHelpWatchlists()
 "  --topics                   To specify the topics to be used.\n"
 "  --clusters                 List of clusters (comma separated) to be visualized on watchlist.\n"
 "  --grid                     Grid value to specify watchlist layout.\n"
-"  --paged-by                 Type og paging to be used ('topics' or 'clusters').\n"
+"  --page-by                 Type og paging to be used ('topics' or 'clusters').\n"
 "  --owner-id                 To specify the cmon user ID owner of the watchlist.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "\n"
@@ -18481,7 +18481,7 @@ S9sOptions::readOptionsWatchlists(
                     {"name",             required_argument, 0, OptionWatchlistName},
                     {"topics",           required_argument, 0, OptionWatchlistTopics},
                     {"clusters",         required_argument, 0, OptionWatchlistClusters},
-                    {"paged-by",         required_argument, 0, OptionWatchlistPagedBy},
+                    {"page-by",         required_argument, 0, OptionWatchlistPageBy},
                     {"grid",             required_argument, 0, OptionWatchlistGrid},
                     {"owner-id",         required_argument, 0, OptionWatchlistOwnerId},
                     {"properties",       required_argument, 0, OptionWatchlistProperties},
@@ -18632,9 +18632,9 @@ S9sOptions::readOptionsWatchlists(
                 m_options["clusters"] = optarg;
                 break;
 
-            case OptionWatchlistPagedBy:
-                // --paged-by
-                m_options["paged_by"] = optarg;
+            case OptionWatchlistPageBy:
+                // --page-by
+                m_options["page_by"] = optarg;
                 break;
 
             case OptionWatchlistGrid:

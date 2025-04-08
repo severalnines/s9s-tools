@@ -11086,7 +11086,7 @@ S9sRpcClient::createWatchlist(S9sOptions *options)
     watchlistMap["watchlist_name"] = options->watchlistName();
     watchlistMap["topics"] = options->topics();
     watchlistMap["clusters"] = options->clusters();
-    watchlistMap["paged_by"] = options->getString("paged_by");
+    watchlistMap["page_by"] = options->getString("page_by");
     watchlistMap["grid"] = options->getString("grid");
     watchlistMap["owner_id"] = options->getString("owner_id");
     watchlistMap["properties"] = options->getString("properties");
@@ -11114,7 +11114,7 @@ S9sRpcClient::updateWatchlist(S9sOptions *options)
     watchlistMap["watchlist_name"] = options->watchlistName();
     watchlistMap["topics"] = options->topics();
     watchlistMap["clusters"] = options->clusters();
-    watchlistMap["paged_by"] = options->getString("paged_by");
+    watchlistMap["page_by"] = options->getString("page_by");
     watchlistMap["grid"] = options->getString("grid");
     watchlistMap["owner_id"] = options->getString("owner_id");
     watchlistMap["properties"] = options->getString("properties");
