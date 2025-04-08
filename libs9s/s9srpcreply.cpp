@@ -1642,7 +1642,7 @@ S9sRpcReply::printWatchlists()
  *
  * \code
  * # s9s watchlists --list
- * ID      NAME     TOPICS      CLUSTERS   PAGED_BY      GRID     OWNER_ID
+ * ID      NAME     TOPICS      CLUSTERS   PAGE_BY      GRID     OWNER_ID
  * 2       watch1   tp1, tp3    12, 14     clusters      3x3      3
  * 3       watch2   tp2, tp3    11, 14     topic         2x3      3
  * \endcode

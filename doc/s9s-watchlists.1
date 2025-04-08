@@ -21,7 +21,7 @@ should be performed. This "main option" should be one of the following:
 .TP
 .B --create
 Creates a new watchlist on database. Mandatory fields for watchlist are: name, topic and clusters.
-Optional fields are: owner-id, paged-by, properties.
+Optional fields are: owner-id, page-by, properties.
 
 .B EXAMPLE
 .nf
@@ -73,6 +73,11 @@ String identifying the themes for the different information types to be visualiz
 .TP
 .B --clusters
 The clusters to be displayed on watchlist.
+
+
+.TP
+.B --page-by
+The type of pagination to be used on watchlist.
 
 .TP
 .B --grids
