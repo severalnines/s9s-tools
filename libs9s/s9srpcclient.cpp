@@ -6193,7 +6193,7 @@ S9sRpcClient::addMongoNode(
     jobData["nodes"] = nodesField(hosts);
     #else
     if(!node.hostName().empty())
-        jobData["hostname"] = hosts[0].toNode().hostName();
+        jobData["hostname"] = node.hostName();
     else
         jobData["hostname"] = hosts[0].toString();
     if (node.hasPort())
