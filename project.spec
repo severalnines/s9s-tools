@@ -54,6 +54,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %{_sysconfdir}/bash_completion.d/s9s_completion
 
 %changelog
+* Fri Apr 11 2025 Severalnines <support@severalnines.com> 1.9.2025041118
+- Testing release 1.9.2025041118.
 * Thu Apr 10 2025 Severalnines <support@severalnines.com> 1.9.2025041017
 - Release 1.9.2025041017.
 * Thu Apr 10 2025 Severalnines <support@severalnines.com> 1.9.2025041017
