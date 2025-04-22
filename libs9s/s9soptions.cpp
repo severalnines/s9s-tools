@@ -4061,9 +4061,6 @@ S9sOptions::backupMethod() const
             retval = m_systemConfig.variableValue("backup_method");
     }
 
-    if(retval == "mariadb-dump")
-        retval = "mysqldump";
-
     return retval;
 }
 
