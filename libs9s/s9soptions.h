@@ -191,6 +191,7 @@ class S9sOptions
         int minutes() const;
         
         S9sString osSudoPassword() const;
+        S9sString osSudoUser() const;
 
         bool hasSshCredentials();
         S9sSshCredentials

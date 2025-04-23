@@ -80,6 +80,7 @@ enum S9sOptionType
     OptionOsKeyFile,
     OptionOsPassword,
     OptionOsSudoPassword,
+    OptionOsSudoUser,
     OptionProviderVersion,
     OptionProperties,
     OptionVendor,
@@ -2016,6 +2017,31 @@ S9sOptions::osSudoPassword() const
 
         if (retval.empty())
             retval = m_systemConfig.variableValue("os_sudo_password");
+    }
+
+    return retval;
+}
+
+/**
+ * \returns the value of the --os-sudo-password command line option or the 
+ *   "os_sudo_password" configuration value.
+ *
+ * The --os-sudo-password is used for executing certain commands with root
+ * os privileges.
+ */
+S9sString
+S9sOptions::osSudoUser() const
+{
+    S9sString retval;
+
+    if (m_options.contains("os_sudo_user"))
+    {
+        retval = m_options.at("os_sudo_user").toString();
+    } else {
+        retval = m_userConfig.variableValue("os_sudo_user");
+
+        if (retval.empty())
+            retval = m_systemConfig.variableValue("os_sudo_user");
     }
 
     return retval;
@@ -14351,6 +14377,7 @@ S9sOptions::readOptionsCluster(
         { "opt-name",         required_argument, 0, OptionOptName         },
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
+        { "os-sudo-user",     required_argument, 0, OptionOsSudoUser      },
         { "os-user",          required_argument, 0, OptionOsUser          },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "provider-version", required_argument, 0, OptionProviderVersion },
@@ -14895,6 +14922,11 @@ S9sOptions::readOptionsCluster(
             case OptionOsSudoPassword:
                 // --os-sudo-password
                 m_options["os_sudo_password"] = optarg;
+                break;
+
+            case OptionOsSudoUser:
+                // --os-sudo-user
+                m_options["os_sudo_user"] = optarg;
                 break;
 
             case OptionClusterType:
