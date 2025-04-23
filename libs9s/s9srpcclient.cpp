@@ -4371,6 +4371,7 @@ S9sRpcClient::createPostgreSql(
     jobData["cluster_type"]     = "postgresql_single";
     jobData["type"]             = "postgresql";
     jobData["vendor"]           = options->vendor();
+            
     if (options->hasEnterpriseToken())
         jobData["enterprise_token"] = options->enterpriseToken();
     jobData["nodes"]            = nodesField(hosts);
@@ -11967,6 +11968,10 @@ S9sRpcClient::composeJobData(
     if (!options->storageHost().empty())
         jobData["storage_host"] = options->storageHost();
 
+    if (!options->osSudoUser().empty())
+        jobData["sudo_user"] = options->osSudoUser();
+    
+        
     /*
      * If the command line options has a proxysql node we add a number of
      * options the proxysql jobs use. I hope this logic is airtight.
