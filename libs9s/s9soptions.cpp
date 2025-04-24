@@ -81,6 +81,7 @@ enum S9sOptionType
     OptionOsPassword,
     OptionOsSudoPassword,
     OptionOsSudoUser,
+    OptionOsElevationOption,
     OptionProviderVersion,
     OptionProperties,
     OptionVendor,
@@ -2023,10 +2024,10 @@ S9sOptions::osSudoPassword() const
 }
 
 /**
- * \returns the value of the --os-sudo-password command line option or the 
- *   "os_sudo_password" configuration value.
+ * \returns the value of the --os-sudo-user command line option or the 
+ *   "os_sudo_user" configuration value.
  *
- * The --os-sudo-password is used for executing certain commands with root
+ * The --os-sudo-user is used for executing certain commands with root
  * os privileges.
  */
 S9sString
@@ -2045,6 +2046,18 @@ S9sOptions::osSudoUser() const
     }
 
     return retval;
+}
+
+/**
+ * \returns the value of the --os-elevation-option command line option.
+ *
+ * The --os-elevation-option specifies what should be used to execure certain
+ * commands with root os privileges.
+ */
+S9sString
+S9sOptions::osElevationOption() const
+{
+    return getString("os_elevation_option").toLower();
 }
 
 /**
@@ -14378,6 +14391,7 @@ S9sOptions::readOptionsCluster(
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
         { "os-sudo-user",     required_argument, 0, OptionOsSudoUser      },
+        { "os-elevation-option", required_argument, 0, OptionOsElevationOption },
         { "os-user",          required_argument, 0, OptionOsUser          },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "provider-version", required_argument, 0, OptionProviderVersion },
@@ -14927,6 +14941,11 @@ S9sOptions::readOptionsCluster(
             case OptionOsSudoUser:
                 // --os-sudo-user
                 m_options["os_sudo_user"] = optarg;
+                break;
+
+            case OptionOsElevationOption:
+                // --os-elevation-option
+                m_options["os_elevation_option"] = optarg;
                 break;
 
             case OptionClusterType:

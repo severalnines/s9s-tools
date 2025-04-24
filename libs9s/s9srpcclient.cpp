@@ -21,6 +21,7 @@
 #include "s9srpcclient_p.h"
 
 #include "s9soptions.h"
+#include "s9sstring.h"
 #include "s9suser.h"
 #include "s9snode.h"
 #include "s9saccount.h"
@@ -7842,11 +7843,12 @@ S9sRpcClient::dropCluster()
 bool
 S9sRpcClient::checkHosts()
 {
-    S9sString      uri         = "/v2/discovery/";
-    S9sVariantMap  request     = composeRequest();
-    S9sOptions    *options     = S9sOptions::instance();
-    S9sVariantList hosts       = options->nodes();
-    S9sString      clusterType = options->clusterType();
+    S9sString       uri          = "/v2/discovery/";
+    S9sVariantMap   request      = composeRequest();
+    S9sOptions     *options      = S9sOptions::instance();
+    S9sVariantList  hosts        = options->nodes();
+    S9sString       clusterType  = options->clusterType();
+    S9sString const elevationOpt = options->osElevationOption();
 
     if (hosts.empty())
         return true;
@@ -7855,6 +7857,8 @@ S9sRpcClient::checkHosts()
     request["nodes"]          = nodesField(hosts);
     request["check_if_already_registered"] = true;
     request["check_ssh_sudo"] = true;
+    if (!elevationOpt.empty())
+        request["elevation_option"] = elevationOpt;
 
     if (!clusterType.empty())
     {
@@ -11970,8 +11974,10 @@ S9sRpcClient::composeJobData(
 
     if (!options->osSudoUser().empty())
         jobData["sudo_user"] = options->osSudoUser();
-    
-        
+
+    if (!options->osElevationOption().empty())
+        jobData["elevation_option"] = options->osElevationOption();
+
     /*
      * If the command line options has a proxysql node we add a number of
      * options the proxysql jobs use. I hope this logic is airtight.
