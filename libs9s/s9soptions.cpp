@@ -7819,6 +7819,7 @@ S9sOptions::printHelpCluster()
 "  --os-key-file=PATH         The key file to register on the container.\n"
 "  --os-password=PASSWORD     The password to set on the container.\n"
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
+"  --os-elevation-option=NAME The method for authorizing superuser access (options: sudo, doas, pbrun).\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --provider-version=VER     The version of the software.\n" 
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
