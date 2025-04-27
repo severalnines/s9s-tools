@@ -2060,9 +2060,12 @@ S9sOptions::osElevation() const
     return getString("os_elevation").toLower();
 }
 
-/**
- * I am working on this.
- */
+bool
+S9sOptions::hasOsElevation() const
+{
+    return m_options.contains("os_elevation");
+}
+
 bool
 S9sOptions::hasSshCredentials() 
 {
@@ -12134,6 +12137,21 @@ S9sOptions::checkOptionsCluster()
                 "The --databases option can only be used while creating "
                 "backups.";
         
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if (hasOsElevation())
+    {
+        const auto elevation = osElevation();
+        if (!elevation.empty() && elevation != "sudo" && elevation != "doas"
+            && elevation != "pbrun")
+        {
+            m_errorMessage.sprintf(
+                    "Unrecognized elevation option \"%s\". Valid "
+                    "--os-elevation options are: sudo, doas, pbrun.",
+                    STR(elevation));
             m_exitStatus = BadOptions;
             return false;
         }
