@@ -81,7 +81,7 @@ enum S9sOptionType
     OptionOsPassword,
     OptionOsSudoPassword,
     OptionOsSudoUser,
-    OptionOsElevationOption,
+    OptionOsElevation,
     OptionProviderVersion,
     OptionProperties,
     OptionVendor,
@@ -2049,15 +2049,15 @@ S9sOptions::osSudoUser() const
 }
 
 /**
- * \returns the value of the --os-elevation-option command line option.
+ * \returns the value of the --os-elevation command line option.
  *
- * The --os-elevation-option specifies what should be used to execure certain
+ * The --os-elevation specifies what should be used to execute certain
  * commands with root os privileges.
  */
 S9sString
-S9sOptions::osElevationOption() const
+S9sOptions::osElevation() const
 {
-    return getString("os_elevation_option").toLower();
+    return getString("os_elevation").toLower();
 }
 
 /**
@@ -7819,7 +7819,7 @@ S9sOptions::printHelpCluster()
 "  --os-key-file=PATH         The key file to register on the container.\n"
 "  --os-password=PASSWORD     The password to set on the container.\n"
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
-"  --os-elevation-option=NAME The method for authorizing superuser access (options: sudo, doas, pbrun).\n"
+"  --os-elevation=NAME        The method for authorizing superuser access (options: sudo, doas, pbrun).\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --provider-version=VER     The version of the software.\n" 
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
@@ -14392,7 +14392,7 @@ S9sOptions::readOptionsCluster(
         { "opt-value",        required_argument, 0, OptionOptValue        }, 
         { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
         { "os-sudo-user",     required_argument, 0, OptionOsSudoUser      },
-        { "os-elevation-option", required_argument, 0, OptionOsElevationOption },
+        { "os-elevation",     required_argument, 0, OptionOsElevation     },
         { "os-user",          required_argument, 0, OptionOsUser          },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "provider-version", required_argument, 0, OptionProviderVersion },
@@ -14944,9 +14944,9 @@ S9sOptions::readOptionsCluster(
                 m_options["os_sudo_user"] = optarg;
                 break;
 
-            case OptionOsElevationOption:
-                // --os-elevation-option
-                m_options["os_elevation_option"] = optarg;
+            case OptionOsElevation:
+                // --os-elevation
+                m_options["os_elevation"] = optarg;
                 break;
 
             case OptionClusterType:

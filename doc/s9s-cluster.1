@@ -67,7 +67,7 @@ s9s cluster \\
 s9s cluster \\
     --check-hosts \\
     --nodes=192.168.0.102 \\
-    --os-elevation-option="pbrun" \\
+    --os-elevation="pbrun" \\
     --print-json
 .fi
 
@@ -853,7 +853,7 @@ cmon user will also be registered (if the user has an associated public key) so
 the user can actually log in.
 
 .TP
-.BI \-\^\-os\-elevation\-option= NAME
+.BI \-\^\-os\-elevation= NAME
 The method for authorizing superuser access on the node, allowing the execution
 of commands with elevated privileges. Supported options include \fBsudo\fP (default) for
 traditional Unix-like systems, \fBdoas\fP for a simpler alternative, and \fBpbrun\fP
