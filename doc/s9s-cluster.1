@@ -63,6 +63,12 @@ s9s cluster \\
     --check-hosts \\
     --nodes=192.168.0.102 \\
     --print-json
+
+s9s cluster \\
+    --check-hosts \\
+    --nodes=192.168.0.102 \\
+    --os-elevation="pbrun" \\
+    --print-json
 .fi
 
 .TP
@@ -845,6 +851,13 @@ not mandatory, because the controller will create an account whose name is the
 same as the name of the cmon user creating the container. The public key of the
 cmon user will also be registered (if the user has an associated public key) so
 the user can actually log in.
+
+.TP
+.BI \-\^\-os\-elevation= NAME
+The method for authorizing superuser access on the node, allowing the execution
+of commands with elevated privileges. Supported options include \fBsudo\fP (default) for
+traditional Unix-like systems, \fBdoas\fP for a simpler alternative, and \fBpbrun\fP
+for privilege escalation in specific environments.
 
 .TP
 .BI \-\^\-subnet\-id= ID

@@ -2,9 +2,11 @@
 *.a
 aclocal.m4
 autom4te.cache/
+.cache/
 *.bak
 callgrind.out.*
 compile
+compile_commands.json
 config.guess
 config.h
 config.h.in

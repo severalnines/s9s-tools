@@ -192,6 +192,8 @@ class S9sOptions
         
         S9sString osSudoPassword() const;
         S9sString osSudoUser() const;
+        S9sString osElevation() const;
+        bool hasOsElevation() const;
 
         bool hasSshCredentials();
         S9sSshCredentials
