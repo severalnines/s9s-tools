@@ -360,6 +360,11 @@ class S9sRpcClient
 
 
         /*
+         * Requests related to controllers operations
+         */
+        bool listControllers(S9sOptions *options);
+
+        /*
          * Requests related to logical replication
          */
         bool addPublication();

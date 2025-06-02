@@ -506,6 +506,9 @@ enum S9sOptionType
     OptionWatchlistOwnerId,
     OptionWatchlistProperties,
 
+    OptionControllersList,
+    OptionControllerId,
+
     OptionExtensions
 };
 
@@ -573,6 +576,7 @@ S9sOptions::S9sOptions() :
     m_modes["dbversions"]   = DbVersions;
     m_modes["cloud-credentials"] = CloudCredentials;
     m_modes["watchlists"]   = Watchlists;
+    m_modes["pool-controllers"] = Controllers;
 
     /*
      * Reading environment variables and storing them as settings.
@@ -2628,6 +2632,21 @@ S9sString
 S9sOptions::watchlistName() const
 {
     return getString("watchlist_name");
+}
+
+
+bool
+S9sOptions::hasControllerIdOption() const
+{
+    return m_options.contains("controller_id");
+}
+
+int
+S9sOptions::controllerId() const
+{
+    if(!hasControllerIdOption())
+        return 0;
+    return m_options.at("controller_id").toInt();
 }
 
 
@@ -4692,6 +4711,16 @@ S9sOptions::isWatchlistsOperation() const
     return m_operationMode == Watchlists;
 }
 
+/**
+ * \returns true if the main operation is "watchlists".
+ */
+bool
+S9sOptions::isPoolControllersOperation() const
+{
+    return m_operationMode == Controllers;
+}
+
+
 
 
 /**
@@ -5204,6 +5233,16 @@ bool
 S9sOptions::isDeleteWatchlist() const
 {
     return getBool("delete_watchlist");
+}
+
+/**
+ * \returns true if the "list_controllers" function is requested by providing the --list
+ *   command line option.
+ */
+bool
+S9sOptions::isListControllers() const
+{
+    return getBool("list_controllers");
 }
 
 
@@ -7218,6 +7257,14 @@ S9sOptions::readOptions(
                 retval = checkOptionsWatchlists();
 
             break;
+
+        case Controllers:
+            retval = readOptionsControllers(*argc, argv);
+
+            if (retval)
+                retval = checkOptionsControllers();
+
+            break;
     }
 
     return retval;
@@ -7404,6 +7451,10 @@ S9sOptions::printHelp()
 
         case Watchlists:
             printHelpWatchlists();
+            break;
+
+        case Controllers:
+            printHelpControllers();
             break;
     }
 }
@@ -8313,6 +8364,20 @@ S9sOptions::printHelpWatchlists()
 "  --grid                     Grid value to specify watchlist layout.\n"
 "  --page-by                 Type og paging to be used ('topics' or 'clusters').\n"
 "  --owner-id                 To specify the cmon user ID owner of the watchlist.\n"
+"  --comment                  To specify the command associated to credential to create.\n"
+"\n"
+    );
+}
+
+void
+S9sOptions::printHelpControllers()
+{
+    printHelpGeneric();
+
+    printf(
+"Options for the \"controllers\" command:\n"
+"  --list                     To retrieve the list of stored controllers.\n"
+"  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "\n"
     );
@@ -18859,6 +18924,218 @@ S9sOptions::checkOptionsWatchlists()
             m_exitStatus = BadOptions;
             return false;
         }
+    }
+
+    return true;
+}
+
+
+
+/**
+ * Reads the command line options in "controllers" subcommand
+ */
+bool
+S9sOptions::readOptionsControllers(
+        int argc,
+        char *argv[])
+{
+    int c;
+    struct option long_options[] =
+            {
+                    // Generic Options
+                    {"batch",            no_argument,       0, OptionBatch},
+                    {"cmon-user",        required_argument, 0, 'u'},
+                    {"password",         required_argument, 0, 'p'},
+                    {"color",            optional_argument, 0, OptionColor},
+                    {"debug",            no_argument,       0, OptionDebug},
+                    {"help",             no_argument,       0, OptionHelp},
+                    {"human-readable",   no_argument,       0, 'h'},
+                    {"long",             no_argument,       0, 'l'},
+                    {"no-header",        no_argument,       0, OptionNoHeader},
+                    {"controller-port",  required_argument, 0, 'P'},
+                    {"controller",       required_argument, 0, 'c'},
+                    {"print-json",       no_argument,       0, OptionPrintJson},
+                    {"print-request",    no_argument,       0, OptionPrintRequest},
+                    {"rpc-tls",          no_argument,       0, OptionRpcTls},
+                    {"verbose",          no_argument,       0, 'v'},
+                    {"version",          no_argument,       0, 'V'},
+
+                    // Main Options
+                    {"list",             no_argument, 0,       OptionControllersList},
+                    // Arguments when creating or updating controllers
+                    {"controller-id",    required_argument, 0, OptionControllerId},
+
+                    // optionals
+                    {"comment",          required_argument, 0, OptionComment},
+
+                    {0, 0,                                  0, 0}
+            };
+
+    optind = 0;
+    for (;;)
+    {
+        int option_index = 0;
+        c = getopt_long(
+                argc, argv, "hvc:P:t:V",
+                long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case OptionHelp:
+                // --help
+                m_options["help"] = true;
+                break;
+
+            case OptionDebug:
+                // --debug
+                m_options["debug"] = true;
+                break;
+
+            case 'v':
+                // -v, --verbose
+                m_options["verbose"] = true;
+                break;
+
+            case 'V':
+                // -V, --version
+                m_options["print-version"] = true;
+                break;
+
+            case 'u':
+                // --cmon-user=USERNAME
+                m_options["cmon_user"] = optarg;
+                break;
+
+            case 'p':
+                // --password=PASSWORD
+                m_options["password"] = optarg;
+                break;
+
+            case 'c':
+                // -c, --controller
+                setController(optarg);
+                break;
+
+            case 'P':
+                // -P, --controller-port=PORT
+                m_options["controller_port"] = atoi(optarg);
+                break;
+
+            case 'l':
+                // -l, --long
+                m_options["long"] = true;
+                break;
+
+            case OptionBatch:
+                // --batch
+                m_options["batch"] = true;
+                break;
+
+            case OptionNoHeader:
+                // --no-header
+                m_options["no_header"] = true;
+                break;
+
+            case OptionColor:
+                // --color=COLOR
+                if (optarg)
+                    m_options["color"] = optarg;
+                else
+                    m_options["color"] = "always";
+                break;
+
+            case 'h':
+                // -h, --human-readable
+                m_options["human_readable"] = true;
+                break;
+
+            case OptionPrintJson:
+                // --print-json
+                m_options["print_json"] = true;
+                break;
+
+            case OptionPrintRequest:
+                // --print-request
+                m_options["print_request"] = true;
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
+
+            /*
+             * Options related to cloud credentials
+             */
+            case OptionControllersList:
+                // --list
+                m_options["list_controllers"] = true;
+                break;
+
+            case OptionControllerId:
+                // --controller-id
+                m_options["controller_id"] = optarg;
+                break;
+
+            // optional
+            case OptionComment:
+                // --comment
+                m_options["comment"] = optarg;
+                break;
+
+
+            case '?':
+            default:
+            S9S_WARNING("Unrecognized command line option.");
+                {
+                    if (isascii(c))
+                    {
+                        m_errorMessage.sprintf("Unknown option '%c'.", c);
+                    } else
+                    {
+                        m_errorMessage.sprintf("Unkown option %d.", c);
+                    }
+                }
+                m_exitStatus = BadOptions;
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * \returns True if the command line options seem to be ok.
+ */
+bool
+S9sOptions::checkOptionsControllers()
+{
+    int countOptions = 0;
+
+    if (isHelpRequested())
+        return true;
+
+    /*
+     * Checking if multiple operations are requested.
+     */
+    if (isListControllers())
+        countOptions++;
+
+    if (countOptions == 0)
+    {
+        m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+    if (countOptions > 1)
+    {
+        m_errorMessage = "Please provide only one of the main options.";
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;

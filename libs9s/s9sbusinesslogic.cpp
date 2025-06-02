@@ -1435,6 +1435,15 @@ S9sBusinessLogic::execute()
         else
             PRINT_ERROR("Unknown watchlists operation.");
     }
+    else if (options->isPoolControllersOperation()) {
+        if (options->isListControllers()) {
+            client.listControllers(options);
+            S9sRpcReply reply = client.reply();
+            reply.printPoolControllers();
+        }
+        else
+            PRINT_ERROR("Unknown controllers operation.");
+    }
     else {
         PRINT_ERROR("Unknown operation.");
     }

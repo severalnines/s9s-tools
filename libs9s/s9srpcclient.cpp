@@ -11156,6 +11156,26 @@ S9sRpcClient::listWatchlists(S9sOptions *options)
     return executeRequest(uri, request);
 }
 
+
+/**
+ * \returns lists controllers stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::listControllers(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "listControllers";
+    if(options->controllerId() >= 0)
+        request["controller_id"] = options->controllerId();
+    else
+        request["controller_id"] = 0;
+
+    return executeRequest(uri, request);
+}
+
+
 /**
  * \returns delete watchlists stored on controller DB
  *
