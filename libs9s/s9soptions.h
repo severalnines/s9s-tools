@@ -515,6 +515,7 @@ class S9sOptions
         bool isWatchlistsOperation() const;
         bool isPoolControllersOperation() const;
         bool isListControllers() const;
+        bool isAssignedController() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;

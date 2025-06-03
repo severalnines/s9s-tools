@@ -1659,8 +1659,11 @@ S9sRpcReply::printPoolControllers()
 void
 S9sRpcReply::printPoolControllersLong()
 {
+
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList  controllers = operator[]("controllers").toVariantList();
+    if(controllers.size() == 0)
+        controllers << operator[]("controller").toVariantMap();
     S9sFormat      idFormat("\033[95m", TERM_NORMAL);
     S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);

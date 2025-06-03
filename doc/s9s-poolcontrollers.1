@@ -20,13 +20,23 @@ should be performed. This "main option" should be one of the following:
 
 .TP
 .B --list
-Gets existing controllers on pool. When providing '--controllrt-id' specific controller is returned. 
+Gets existing controllers on pool. When providing '--controller-id' specific controller is returned.
 Use 0 or ommit options to get all existing whatchlist.
 .nf
 s9s pool-controllers --list --controller-id="2" 
 ID HOSTNAME  POTRT STATUS CLUSTERS
 2  localhost 9500  active 1, 2, 3
 .fi
+
+.TP
+.B --assigned-controller
+Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory
+.nf
+s9s pool-controllers --assignment --cluster-id="2"
+ID HOSTNAME  POTRT STATUS CLUSTERS
+2  localhost 9500  active 1, 2, 3
+.fi
+
 
 
 

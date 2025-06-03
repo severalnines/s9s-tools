@@ -507,6 +507,7 @@ enum S9sOptionType
     OptionWatchlistProperties,
 
     OptionControllersList,
+    OptionAssignedController,
     OptionControllerId,
 
     OptionExtensions
@@ -5245,6 +5246,15 @@ S9sOptions::isListControllers() const
     return getBool("list_controllers");
 }
 
+/**
+ * \returns true if the "assigned_controller" function is requested by providing the --assigned-controller
+ *   command line option.
+ */
+bool
+S9sOptions::isAssignedController() const
+{
+    return getBool("assigned_controller");
+}
 
 
 /**
@@ -8377,7 +8387,9 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
+"  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
+"  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "\n"
     );
@@ -18962,8 +18974,10 @@ S9sOptions::readOptionsControllers(
 
                     // Main Options
                     {"list",             no_argument, 0,       OptionControllersList},
+                    {"assignment",       no_argument, 0,       OptionAssignedController},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
+                    {"cluster-id",       required_argument, 0, OptionDbClusterId},
 
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -19069,17 +19083,30 @@ S9sOptions::readOptionsControllers(
 
 
             /*
-             * Options related to cloud credentials
+             * Main options
              */
             case OptionControllersList:
                 // --list
                 m_options["list_controllers"] = true;
                 break;
 
+            case OptionAssignedController:
+                // --assignment
+                m_options["assigned_controller"] = true;
+
+            /*
+             * Other options
+             */
             case OptionControllerId:
                 // --controller-id
                 m_options["controller_id"] = optarg;
                 break;
+
+            case OptionDbClusterId:
+                // --cluster-id
+                m_options["cluster_id"] = optarg;
+                break;
+
 
             // optional
             case OptionComment:
@@ -19123,6 +19150,9 @@ S9sOptions::checkOptionsControllers()
      * Checking if multiple operations are requested.
      */
     if (isListControllers())
+        countOptions++;
+
+    if (isAssignedController())
         countOptions++;
 
     if (countOptions == 0)

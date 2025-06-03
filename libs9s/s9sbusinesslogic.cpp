@@ -1441,6 +1441,11 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printPoolControllers();
         }
+        else if (options->isAssignedController()) {
+            client.assignedController(options);
+            S9sRpcReply reply = client.reply();
+            reply.printPoolControllers();
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }
