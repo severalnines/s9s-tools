@@ -1622,6 +1622,104 @@ S9sRpcReply::printCloudCredentialsLong()
    
 }
 
+void
+S9sRpcReply::printPoolControllers()
+{
+
+    printDebugMessages();
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printJsonFormat();
+    if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else
+        printPoolControllersLong();
+}
+
+/**
+ * Lists the controllers stored on the controller (excluding sensitive info)
+ *
+ * \code
+ * s9s controllers --list --controller-id="2"
+ * ID HOSTNAME  POTRT STATUS CLUSTERS
+ * 2  localhost 9500  active 1, 2, 3
+ *
+ * \endcode
+ *
+ * The request looks like this:
+ * \begin{.js}
+ * {
+ *     "operation": "listControllers",
+ *     "request_created": "2024-09-12T17:33:31.127Z",
+ *     "request_id": 2
+ *     "controller_id": 2
+ * }
+ * \end
+ */
+void
+S9sRpcReply::printPoolControllersLong()
+{
+
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList  controllers = operator[]("controllers").toVariantList();
+    if(controllers.size() == 0)
+        controllers << operator[]("controller").toVariantMap();
+    S9sFormat      idFormat("\033[95m", TERM_NORMAL);
+    S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
+    S9sFormat      portFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      statusFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
+
+
+    // set width
+    for (const auto & c : controllers)
+    {
+        S9sVariantMap  w = c.toVariantMap();
+        S9sString      id = w["controller_id"].toString();
+        S9sString      hostname = w["hostname"].toString();
+        S9sString      port = w["port"].toString();
+        S9sString      status = w["status"].toString();
+        S9sString      clusters = w["clusters"].toString();
+
+        idFormat.widen(id);
+        hostnameFormat.widen(hostname);
+        portFormat.widen(port);
+        statusFormat.widen(status);
+        clustersFormat.widen(clusters);
+    }
+    // print header
+    if (!options->isNoHeaderRequested())
+    {
+        ::printf("%s", headerColorBegin());
+        idFormat.printHeader("ID");
+        hostnameFormat.printHeader("HOSTNAME");
+        portFormat.printHeader("PORT");
+        statusFormat.printHeader("STATUS");
+        clustersFormat.printHeader("CLUSTERS");
+        ::printf("%s", headerColorEnd());
+        ::printf("\n");
+    }
+    // print data
+    for (const auto & cl : controllers)
+    {
+        S9sVariantMap  c = cl.toVariantMap();
+        S9sString      id = c["controller_id"].toString();
+        S9sString      hostname = c["hostname"].toString();
+        S9sString      port = c["port"].toString();
+        S9sString      status = c["status"].toString();
+        S9sString      clusters = c["clusters"].toString();
+
+        idFormat.printf(id);
+        hostnameFormat.printf(hostname);
+        portFormat.printf(port);
+        statusFormat.printf(status);
+        clustersFormat.printf(clusters);
+        ::printf("\n");
+    }
+
+}
+
+
 
 void
 S9sRpcReply::printWatchlists()

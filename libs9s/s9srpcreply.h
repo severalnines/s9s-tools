@@ -149,6 +149,9 @@ class S9sRpcReply : public S9sVariantMap
 
         void printWatchlists();
         void printWatchlistsLong();
+
+        void printPoolControllers();
+        void printPoolControllersLong();
         
         // Methods handling users.
         void printUserList();

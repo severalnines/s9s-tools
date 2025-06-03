@@ -11156,6 +11156,48 @@ S9sRpcClient::listWatchlists(S9sOptions *options)
     return executeRequest(uri, request);
 }
 
+
+/**
+ * \returns lists controllers stored on controller DB
+ *
+ */
+bool
+S9sRpcClient::listControllers(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "listControllers";
+    if(options->controllerId() >= 0)
+        request["controller_id"] = options->controllerId();
+    else
+        request["controller_id"] = 0;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns assigned controller for specified cluster
+ *
+ */
+bool
+S9sRpcClient::assignedController(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "assignedController";
+    if(options->clusterId() > 0)
+        request["cluster_id"] = options->clusterId();
+    else
+    {
+        PRINT_ERROR("The --cluster-id option must be specified for assignedController operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    return executeRequest(uri, request);
+}
+
+
+
 /**
  * \returns delete watchlists stored on controller DB
  *

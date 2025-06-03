@@ -1,0 +1,49 @@
+.TH S9S-pool-controllerS 1 "june 1, 2025"
+
+.SH NAME
+s9s-pool-controllers\- Command-line client for the Severalnines ClusterControl server.
+
+.SH SYNOPSIS
+.B s9s-pool-controllers
+.RI [OPTION]... 
+.RI [PATH]...
+
+.SH DESCRIPTION
+\fBs9s-pool-controllers\fP is a command-line tool for ClusterControl, which can be used to 
+read controllers pool information stored on database.
+Controllers pool is a set of ClusterControl instances pointing to the same db and using same configuration so existing clusters are assigned among available controllers in pool.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what operation
+should be performed. This "main option" should be one of the following:
+
+.TP
+.B --list
+Gets existing controllers on pool. When providing '--controller-id' specific controller is returned.
+Use 0 or ommit options to get all existing whatchlist.
+.nf
+s9s pool-controllers --list --controller-id="2" 
+ID HOSTNAME  POTRT STATUS CLUSTERS
+2  localhost 9500  active 1, 2, 3
+.fi
+
+.TP
+.B --assigned-controller
+Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory
+.nf
+s9s pool-controllers --assignment --cluster-id="2"
+ID HOSTNAME  POTRT STATUS CLUSTERS
+2  localhost 9500  active 1, 2, 3
+.fi
+
+
+
+
+.\"
+.\" Arguments related to list operations
+.\"
+.TP
+.BI \-\^\-controller-id=ID
+This option can be used on list operations to avoid retrieving all controllers 
+The ID must be positive corresponding to an existing controller or zero to get all controllers.
