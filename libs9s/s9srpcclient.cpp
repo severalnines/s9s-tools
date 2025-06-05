@@ -7849,6 +7849,7 @@ S9sRpcClient::checkHosts()
     S9sVariantList  hosts        = options->nodes();
     S9sString       clusterType  = options->clusterType();
     S9sString const elevation    = options->osElevation();
+    S9sString const accessCmd    = options->accessCheckCmd();
 
     if (hosts.empty())
         return true;
@@ -7859,6 +7860,8 @@ S9sRpcClient::checkHosts()
     request["check_ssh_sudo"] = true;
     if (!elevation.empty())
         request["elevation_option"] = elevation;
+    if (!accessCmd.empty())
+        request["access_check_cmd"] = accessCmd;
 
     if (!clusterType.empty())
     {
@@ -11977,6 +11980,9 @@ S9sRpcClient::composeJobData(
 
     if (!options->osElevation().empty())
         jobData["elevation_option"] = options->osElevation();
+
+    if (!options->accessCheckCmd().empty())
+        jobData["access_check_cmd"] = options->accessCheckCmd();
 
     /*
      * If the command line options has a proxysql node we add a number of

@@ -71,6 +71,14 @@ s9s cluster \\
     --print-json
 .fi
 
+s9s cluster \\
+    --check-hosts \\
+    --nodes=192.168.0.102 \\
+    --os-elevation="pbrun" \\
+    --access_check_cmd="true" \\
+    --print-json
+.fi
+
 .TP
 .B \-\^\-collect\-logs
 This option will create a job that will collect the log files from the nodes of
@@ -858,6 +866,12 @@ The method for authorizing superuser access on the node, allowing the execution
 of commands with elevated privileges. Supported options include \fBsudo\fP (default) for
 traditional Unix-like systems, \fBdoas\fP for a simpler alternative, and \fBpbrun\fP
 for privilege escalation in specific environments.
+
+.TP
+.BI \-\^\-access\-check\-cmd= NAME
+The command that will be called on hosts to confirm ability to
+execute commands on the node. The command specified must return 0 on successfull
+execution.
 
 .TP
 .BI \-\^\-subnet\-id= ID
