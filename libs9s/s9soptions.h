@@ -196,6 +196,9 @@ class S9sOptions
         S9sString osElevation() const;
         bool hasOsElevation() const;
 
+        S9sString accessCheckCmd() const;
+        bool      hasAccessCheckCmd() const;
+
         bool hasSshCredentials();
         S9sSshCredentials
             sshCredentials(

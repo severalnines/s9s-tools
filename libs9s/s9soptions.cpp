@@ -52,7 +52,7 @@ S9sString   S9sOptions::sm_defaultSystemConfigFileName;
 
 enum S9sOptionType
 {
-    OptionRpcTls     = 1000,
+    OptionRpcTls = 1000,
     OptionPrintJson,
     OptionPrintRequest,
     OptionColor,
@@ -82,6 +82,7 @@ enum S9sOptionType
     OptionOsSudoPassword,
     OptionOsSudoUser,
     OptionOsElevation,
+    OptionAccessCheckCmd,
     OptionProviderVersion,
     OptionProperties,
     OptionVendor,
@@ -356,7 +357,7 @@ enum S9sOptionType
     OptionTestServer,
     OptionDatadir,
     OptionBackupDatadir,
-    
+
     OptionListImages,
     OptionListRegions,
     OptionListSubnets,
@@ -383,7 +384,7 @@ enum S9sOptionType
     OptionWithUserMessage,
     OptionWithLogMessage,
     OptionWithMeasurements,
-    
+
     OptionNoNoName,
     OptionNoCreated,
     OptionNoDestroyed,
@@ -401,7 +402,7 @@ enum S9sOptionType
     OptionKeepFirewall,
     OptionWithSsl,
     OptionWithoutSsl,
-    
+
     OptionJobTags,
     OptionWithTags,
     OptionWithoutTags,
@@ -427,7 +428,7 @@ enum S9sOptionType
     OptionCreateSnaphotRepository,
     OptionListSnaphotRepository,
     OptionDeleteSnaphotRepository,
-    
+
     OptionConfigTemplate,
     OptionHaProxyConfigTemplate,
     OptionNoInstall,
@@ -512,7 +513,6 @@ enum S9sOptionType
 
     OptionExtensions
 };
-
 
 /**
  * The default constructor, nothing to see here.
@@ -2069,6 +2069,24 @@ bool
 S9sOptions::hasOsElevation() const
 {
     return m_options.contains("os_elevation");
+}
+
+/**
+ * \returns the value of the --access-check-cmd command line option.
+ *
+ * The --access-check-cmd specifies what command should be used to
+ * verify that commands can be executed on hosts.
+ */
+S9sString
+S9sOptions::accessCheckCmd() const
+{
+    return getString("access_check_cmd").toLower();
+}
+
+bool
+S9sOptions::hasAccessCheckCmd() const
+{
+    return m_options.contains("access_check_cmd");
 }
 
 bool
@@ -7884,6 +7902,7 @@ S9sOptions::printHelpCluster()
 "  --os-password=PASSWORD     The password to set on the container.\n"
 "  --os-user=USERNAME         The name of the user for the SSH commands.\n"
 "  --os-elevation=NAME        The method for authorizing superuser access (options: sudo, doas, pbrun).\n"
+"  --access-check-cmd=NAME    The command that will be called to verify that commands can be executed on hosts.\n"
 "  --output-dir=DIR           The directory where the files are created.\n"
 "  --provider-version=VER     The version of the software.\n" 
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
@@ -14488,6 +14507,7 @@ S9sOptions::readOptionsCluster(
         { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
         { "os-sudo-user",     required_argument, 0, OptionOsSudoUser      },
         { "os-elevation",     required_argument, 0, OptionOsElevation     },
+        { "access-check-cmd", required_argument, 0, OptionAccessCheckCmd  },
         { "os-user",          required_argument, 0, OptionOsUser          },
         { "privileges",       required_argument, 0, OptionPrivileges      },
         { "provider-version", required_argument, 0, OptionProviderVersion },
@@ -15042,6 +15062,11 @@ S9sOptions::readOptionsCluster(
             case OptionOsElevation:
                 // --os-elevation
                 m_options["os_elevation"] = optarg;
+                break;
+
+            case OptionAccessCheckCmd:
+                // --access-check-cmd
+                m_options["access_check_cmd"] = optarg;
                 break;
 
             case OptionClusterType:

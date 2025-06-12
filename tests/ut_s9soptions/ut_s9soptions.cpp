@@ -270,7 +270,7 @@ UtS9sOptions::testReadOptions03()
         "--cluster-type=Galera", 
         "--nodes=10.10.2.2;10.10.2.3;10.10.2.4;10.10.2.5",
         "--vendor=codership", "--provider-version=5.6", "--os-user=14j",
-        "--os-elevation=pbrun", "--wait", NULL 
+        "--os-elevation=pbrun", "--access-check-cmd=/bin/true", "--wait", NULL 
     };
     int   argc   = sizeof(argv) / sizeof(char *) - 1;
 
@@ -287,6 +287,7 @@ UtS9sOptions::testReadOptions03()
     S9S_COMPARE(options->providerVersion(),      "5.6");
     S9S_COMPARE(options->osUser(),               "14j");
     S9S_COMPARE(options->osElevation(),          "pbrun");
+    S9S_COMPARE(options->accessCheckCmd(),       "/bin/true");
 
     S9S_VERIFY(options->hasOsElevation());
     S9S_VERIFY(options->isWaitRequested());
