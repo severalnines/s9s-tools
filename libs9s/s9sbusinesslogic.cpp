@@ -332,7 +332,24 @@ S9sBusinessLogic::execute()
         {
             success = client.checkPkgUpgrades();
             maybeJobRegistered(client, clusterId, success); 
-        } else {
+        }
+        else if (options->isNewLocalRepoRequested())
+        {
+            // createLocalRepository(1, "galera", "percona", "5.6", "precise");
+            success = client.createLocalRepository(options->clusterId(),
+                    options->clusterType(),
+                    options->vendor(),
+                    options->providerVersion(),
+                    options->distroVersion(),
+                    options->dryRun());
+            if (!success || !client.reply().isOk())
+            {
+                PRINT_ERROR("Failed to create local repo: %s", STR(client.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+                success = false;
+            }
+        }
+        else {
             PRINT_ERROR("Operation is not specified.");
         }
     } else if (options->isLogOperation())
