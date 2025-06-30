@@ -659,6 +659,7 @@ class S9sOptions
         bool isRegisterRequested() const;
         bool isRefreshRequested() const;
         bool isAllRequested() const;
+        bool isAllPoolRequested() const;
         bool isRecursiveRequested() const;
         bool isDirectoryRequested() const;
         bool isUnregisterRequested() const;
