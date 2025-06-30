@@ -343,6 +343,7 @@ enum S9sOptionType
     OptionDonor,
     OptionRefresh,
     OptionAll,
+    OptionAllPool,
     OptionFail,
     OptionSuccess,
     OptionAccess,
@@ -5851,6 +5852,15 @@ S9sOptions::isAllRequested() const
 }
 
 /**
+ * \returns True if the --all-pool command line option was provided.
+ */
+bool
+S9sOptions::isAllPoolRequested() const
+{
+    return getBool("all_pool");
+}
+
+/**
  * \returns True if the --recursive command line option was provided.
  */
 bool
@@ -7876,6 +7886,7 @@ S9sOptions::printHelpCluster()
 "  --cluster-id=ID            The ID of the cluster to manipulate.\n"
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
+"  --all-pool                 Include all pool cluster information.\n"
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
@@ -14407,6 +14418,9 @@ S9sOptions::readOptionsCluster(
         { "extended",         no_argument,       0, OptionExtended        },
         { "log-file",         required_argument, 0, OptionLogFile         },
 
+        // Other options
+        { "all-pool",         no_argument,       0, OptionAllPool         },
+
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
@@ -15012,6 +15026,12 @@ S9sOptions::readOptionsCluster(
                 // -n, --cluster-name=NAME
                 m_options["cluster_name"] = optarg;
                 break;
+
+            case OptionAllPool:
+                // --all-pool
+                m_options["all_pool"] = true;
+                break;
+
 
             case OptionNodes:
                 // --nodes=LIST
