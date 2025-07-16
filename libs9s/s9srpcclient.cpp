@@ -2920,7 +2920,7 @@ S9sRpcClient::setupAuditLogging(
     if (!hosts.empty())
         jobData["nodes"] = nodesField(hosts);
 
-    // Add audit_events field if audit-log-event-data option is provided
+    // Add audit_events field if audit-log-events-data option is provided
     S9sString auditEventData = options->auditLogEventData();
     if (!auditEventData.empty())
         jobData["audit_events"] = auditEventData;

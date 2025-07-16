@@ -615,7 +615,7 @@ UtS9sOptions::testAuditLogEventData()
     const char *argv1[] = { "/bin/s9s",
                             "cluster",
                             "--setup-audit-logging",
-                            "--audit-log-event-data=SELECT,INSERT,UPDATE,DELETE",
+                            "--audit-log-events-data=SELECT,INSERT,UPDATE,DELETE",
                             "--cluster-id=1",
                             nullptr };
     int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
@@ -644,7 +644,7 @@ UtS9sOptions::testAuditLogEventData()
     const char *argv3[] = { "/bin/s9s",
                             "cluster",
                             "--setup-audit-logging",
-                            "--audit-log-event-data=",
+                            "--audit-log-events-data=",
                             "--cluster-id=1",
                             nullptr };
     int         argc3   = sizeof(argv3) / sizeof(char *) - 1;

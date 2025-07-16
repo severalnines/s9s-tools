@@ -6276,7 +6276,7 @@ S9sOptions::isSetupAuditLoggingRequested() const
 }
 
 /**
- * \returns the value of the --audit-log-event-data command line option.
+ * \returns the value of the --audit-log-events-data command line option.
  */
 S9sString
 S9sOptions::auditLogEventData() const
@@ -7880,7 +7880,7 @@ S9sOptions::printHelpCluster()
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --set-read-only            Set the entire cluster into read-only mode.\n"
 "  --setup-audit-logging      Set up the audit logging on the nodes.\n"
-"  --audit-log-event-data=STR Set the audit events data for PostgreSQL audit logging.\n"
+"  --audit-log-events-data=STR Set the audit events data for PostgreSQL audit logging.\n"
 "  --setup-logrotate          Starts a job to setup logrotate on the nodes.\n"
 "  --start                    Start the cluster.\n"
 "  --stat                     Print the details of a cluster.\n"
@@ -14469,7 +14469,7 @@ S9sOptions::readOptionsCluster(
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
         { "set-read-only",    no_argument,       0, OptionSetReadOnly     },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
-        { "audit-log-event-data", required_argument, 0, OptionAuditLogEventData },
+        { "audit-log-events-data", required_argument, 0, OptionAuditLogEventData },
         { "start",            no_argument,       0, OptionStart           },
         { "stat",             no_argument,       0, OptionStat            },
         { "stop",             no_argument,       0, OptionStop            },
@@ -14759,7 +14759,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionAuditLogEventData:
-                // --audit-log-event-data
+                // --audit-log-events-data
                 m_options["audit_log_event_data"] = optarg;
                 break;
 
