@@ -6281,7 +6281,7 @@ S9sOptions::isSetupAuditLoggingRequested() const
 S9sString
 S9sOptions::auditLogEventData() const
 {
-    return getString("audit_log_event_data");
+    return getString("audit_log_events_data");
 }
 
 /**
@@ -14760,7 +14760,7 @@ S9sOptions::readOptionsCluster(
 
             case OptionAuditLogEventData:
                 // --audit-log-events-data
-                m_options["audit_log_event_data"] = optarg;
+                m_options["audit_log_events_data"] = optarg;
                 break;
 
             case OptionSetupLogRotate:
