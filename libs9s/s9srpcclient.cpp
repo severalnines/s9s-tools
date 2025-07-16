@@ -3625,6 +3625,9 @@ S9sRpcClient::createMySqlSingleCluster(
         jobData["enable_uninstall"] = false;
     }
 
+    if (options->hasBackupId())
+        jobData["backup_id"] = options->backupId();
+
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
     
@@ -3923,6 +3926,8 @@ S9sRpcClient::createMySqlReplication(
         jobData["percona_pro_token"] = options->perconaProToken();
     }
 
+    if (options->hasBackupId())
+        jobData["backup_id"] = options->backupId();
     //
     // The jobspec describing the command.
     //
@@ -4076,7 +4081,10 @@ S9sRpcClient::createGroupReplication(
         jobData["install_software"] = true;
         jobData["enable_uninstall"] = false;
     }
-   
+
+    if (options->hasBackupId())
+        jobData["backup_id"] = options->backupId();
+
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
 
