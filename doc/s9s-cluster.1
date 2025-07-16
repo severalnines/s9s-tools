@@ -732,6 +732,20 @@ An SQL account with optional password and hostname. This command line argument
 is used when a new account is created.
 
 .TP
+.B \-\^\-all\-pool
+Include all cluster pool information when listing clusters. This option is used
+with the \fB\-\-list\fP operation to retrieve extended cluster pool details
+from all controllers in pool. This option is mutually exclusive with \fB\-\-cluster\-id\fP
+when using the \fB\-\-list\fP operation.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --all-pool
+.fi
+
+.TP
 .BI \-\^\-cloud= PROVIDER
 This option can be used when new container(s) created. The name of the cloud
 provider where the new container will be created. 
