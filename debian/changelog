@@ -99,8 +99,9 @@ s9s-tools (1.9.2024101022-testing) UNRELEASED; urgency=medium
   * Release 1.9.2025071619.
   * Testing release 1.9.2025071619.
   * Release 1.9.2025071623.
+  * Release 1.9.2025071623.
 
- -- Severalnines <support@severalnines.com>  Wed, 16 Jul 2025 23:38:34 +0900
+ -- Severalnines <support@severalnines.com>  Wed, 16 Jul 2025 23:38:37 +0900
 
 s9s-tools (1.9.2023112922-release1) UNRELEASED; urgency=medium
 
