@@ -58,6 +58,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testSetNodes,      retval);
     PERFORM_TEST(testPerconaProCluster, retval);
     PERFORM_TEST(testPostgreSqlReplication, retval);
+    PERFORM_TEST(testAuditLogEventData, retval);
 
     return retval;
 }
@@ -600,6 +601,59 @@ UtS9sOptions::testPostgreSqlReplication()
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc6, (char **)argv6));
     S9S_COMPARE(options->subClusterId(), S9S_INVALID_CLUSTER_ID);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testAuditLogEventData()
+{
+    S9sOptions *options = S9sOptions::instance();
+    
+    // Test with audit log event data
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--setup-audit-logging",
+                            "--audit-log-events-data=SELECT,INSERT,UPDATE,DELETE",
+                            "--cluster-id=1",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isSetupAuditLoggingRequested());
+    S9S_COMPARE(options->auditLogEventData(), "SELECT,INSERT,UPDATE,DELETE");
+
+    // Test without audit log event data
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--setup-audit-logging",
+                            "--cluster-id=1",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isSetupAuditLoggingRequested());
+    S9S_COMPARE(options->auditLogEventData(), "");
+
+    // Test with empty audit log event data
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--setup-audit-logging",
+                            "--audit-log-events-data=",
+                            "--cluster-id=1",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isSetupAuditLoggingRequested());
+    S9S_COMPARE(options->auditLogEventData(), "");
 
     S9sOptions::uninit();
     return true;

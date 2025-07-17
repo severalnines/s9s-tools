@@ -537,6 +537,22 @@ s9s cluster \\
 .fi
 
 .TP
+.B --setup-audit-logging
+Creates a job that will set up audit logging on the cluster nodes. This
+option is used to configure audit logging for database clusters, particularly
+PostgreSQL clusters. Additional audit event data can be specified using the
+\fB\-\-audit-log-events-data\fR option.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --setup-audit-logging \\
+    --audit-log-events-data="SELECT,INSERT,UPDATE,DELETE" \\
+    --cluster-id=1 \\
+    --wait
+.fi
+
+.TP
 .B \-\-start
 Creates a new job to start the cluster.
 
@@ -726,6 +742,13 @@ related to newly created jobs.
 .\"
 .\"
 .SS Other Options
+
+.TP
+.BI \-\^\-audit-log-events-data= STR
+Set the audit events data for PostgreSQL audit logging. This option is used
+in conjunction with the \fB\-\-setup-audit-logging\fR main option to specify
+which database events should be audited. The value is passed as-is to the
+audit logging configuration.
 
 .TP \-\^\-account= NAME[:PASSWD][@HOST]
 An SQL account with optional password and hostname. This command line argument

@@ -698,6 +698,7 @@ class S9sOptions
         bool isEnableBinaryLogging() const;
         bool isDisableSslRequested() const;
         bool isSetupAuditLoggingRequested() const;
+        S9sString auditLogEventData() const;
         bool isSetupLogRotateRequested() const;
         bool isCreateReportRequested() const;
         bool isDeployAgentsRequested() const;
