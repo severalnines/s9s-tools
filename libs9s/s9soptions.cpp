@@ -8390,6 +8390,7 @@ S9sOptions::printHelpCloudCredentials()
 "  --create                   To create cloud credential and store on CC.\n"
 "  --delete                   To delete cloud credential stored on CC.\n"
 "  --provider                 To specify the cloud provider of credential create.\n"
+"  --credential-id            To specify the cloud credential ID to delete.\n"
 "  --s3-region                To specify the region (as in cloud provider) of credential to create.\n"
 "  --s3-access-key-id         To specify the access key id (as in cloud provider) of credential to create.\n"
 "  --s3-secret-key            To specify the secret key (as in cloud provider) of credential to create.\n"
