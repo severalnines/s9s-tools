@@ -4047,7 +4047,7 @@ S9sRpcClient::createGroupReplication(
     
     if (hosts.size() < 1u)
     {
-        PRINT_ERROR("Missing node list while creating Galera cluster.");
+        PRINT_ERROR("Missing node list while creating MySql Group Replication cluster.");
         return false;
     }
 
@@ -4098,7 +4098,7 @@ S9sRpcClient::createGroupReplication(
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["title"]          = "Create MySQL Replication Cluster";
+    job["title"]          = "Create MySQL Group Replication Cluster";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
@@ -4162,7 +4162,7 @@ S9sRpcClient::registerGroupReplication(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register MySql Replication";
+    job["title"]                = "Register MySql Group Replication";
     job["job_spec"]             = jobSpec;
     
     // 
