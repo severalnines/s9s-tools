@@ -1550,12 +1550,14 @@ S9sRpcReply::printCloudCredentialsLong()
 {
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantMap  reqResults = operator[]("result").toVariantMap();
-    S9sFormat      idFormat("\033[95m", TERM_NORMAL);
-    S9sFormat      nameFormat("\033[93m", TERM_NORMAL);
-    S9sFormat      providerFormat("\033[94m", TERM_NORMAL);
-    S9sFormat      regionFormat("\033[33m", TERM_NORMAL);
-    S9sFormat      commentFormat("\033[1m\033[97m", TERM_NORMAL);
-    S9sFormat      endpointFormat("\033[1m\033[97m", TERM_NORMAL);
+    // Initialize formats with colors based on syntax highlighting setting
+    bool useColors = options->useSyntaxHighlight();
+    S9sFormat      idFormat(useColors ? "\033[95m" : "", useColors ? TERM_NORMAL : "");
+    S9sFormat      nameFormat(useColors ? "\033[93m" : "", useColors ? TERM_NORMAL : "");
+    S9sFormat      providerFormat(useColors ? "\033[94m" : "", useColors ? TERM_NORMAL : "");
+    S9sFormat      regionFormat(useColors ? "\033[33m" : "", useColors ? TERM_NORMAL : "");
+    S9sFormat      commentFormat(useColors ? "\033[1m\033[97m" : "", useColors ? TERM_NORMAL : "");
+    S9sFormat      endpointFormat(useColors ? "\033[1m\033[97m" : "", useColors ? TERM_NORMAL : "");
 
     // set width
     for (const auto & provider : reqResults)
