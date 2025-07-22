@@ -6,8 +6,8 @@ The repository contains the following tools:
 
 # Important
 
-This git repository contains the sources of a development version of s9s-tools,
-this might doesn't work with the current publicly avaible
+This git repository contains s9s-tools development version sources,
+this might not work with the current publicly available
 clustercontrol-controller version, please check relevant versioned branches
 (1.4.2_release).
 
