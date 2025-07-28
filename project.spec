@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT/usr/include/s9s
 %changelog
 * Mon Jul 28 2025 Severalnines <support@severalnines.com> 1.9.2025072816
 - Release 1.9.2025072816.
+* Mon Jul 28 2025 Severalnines <support@severalnines.com> 1.9.2025072816
+- Release 1.9.2025072816.
 * Mon Jul 21 2025 Severalnines <support@severalnines.com> 1.9.2025072122
 - Testing release 1.9.2025072122.
 * Mon Jul 21 2025 Severalnines <support@severalnines.com> 1.9.2025072116
