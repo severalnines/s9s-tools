@@ -7662,6 +7662,8 @@ S9sOptions::printHelpBackup()
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
 "  --backup-list=\"ID1, ID2\"   The list of IDs of the backups.\n"
+"  --backup-source-address=ADDRESS    The address of host where external backup is stored.\n"
+"  --backup-path=STRING       The path where external backup is stored.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --nodes=NODELIST           The list of nodes involved in the backup.\n"
 "  --job-id=ID                The ID of the job of the backup schedule to delete.\n"
@@ -9038,6 +9040,8 @@ S9sOptions::readOptionsBackup(
         { "no-terminate",     no_argument,       0, OptionNoTerminate     },
         { "pitr-stop-time",   required_argument, 0, OptionPitrStopTime    },
         { "cluster-decryption-key", required_argument, 0, OptionClusterDecryptionKey},
+        { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
+        { "db-admin",         required_argument, 0, OptionDbAdmin         },
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -9575,6 +9579,16 @@ S9sOptions::readOptionsBackup(
             case OptionClusterDecryptionKey:
                 // --cluster-decryption-key=12
                 m_options["cluster_decryption_key"] = atoi(optarg);
+                break;
+
+            case OptionDbAdmin:
+                // --db-admin=USERNAME
+                m_options["db_admin_user_name"] = optarg;
+                break;
+
+            case OptionDbAdminPassword:
+                // --db-admin-passwd=PASSWD
+                m_options["db_admin_password"] = optarg;
                 break;
 
             case '?':
