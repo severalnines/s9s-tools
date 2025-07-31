@@ -426,6 +426,19 @@ List of one of more strings separated by either ',' or ';' to be used as a
 filter when printing information about jobs. When this command line option is
 provided the jobs that has any of the tags will not be printed.
 
+.TP
+.B --not-all-pool
+When this option is provided, the job list request will be sent with 
+'not_all_pool' set to true. This can be used to exclude certain pool-related
+jobs from the job listing.
+
+.B EXAMPLE
+.nf
+s9s job \\
+    --list \\
+    --not-all-pool
+.fi
+
 
 .\"
 .\"

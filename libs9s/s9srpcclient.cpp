@@ -1521,6 +1521,9 @@ S9sRpcClient::getJobInstances(
 
     if (!options->withTags().empty())
         request["tags"] = options->withTags();
+    
+    if (options->isNotAllPoolRequested())
+        request["not_all_pool"] = true;
 
     retval = executeRequest(uri, request, false);
     return retval;
