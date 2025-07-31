@@ -408,6 +408,7 @@ enum S9sOptionType
     OptionJobTags,
     OptionWithTags,
     OptionWithoutTags,
+    OptionNotAllPool,
 
     OptionShowDefined,
     OptionShowRunning,
@@ -5859,6 +5860,15 @@ bool
 S9sOptions::isAllPoolRequested() const
 {
     return getBool("all_pool");
+}
+
+/**
+ * \returns True if the --not-all-pool command line option was provided.
+ */
+bool
+S9sOptions::isNotAllPoolRequested() const
+{
+    return getBool("not_all_pool");
 }
 
 /**
@@ -16153,6 +16163,7 @@ S9sOptions::readOptionsJob(
         { "show-scheduled",   no_argument,       0, OptionShowScheduled   },
         { "without-tags",     required_argument, 0, OptionWithoutTags     },
         { "with-tags",        required_argument, 0, OptionWithTags        },
+        { "not-all-pool",     no_argument,       0, OptionNotAllPool      },
 
         { 0, 0, 0, 0 }
     };
@@ -16408,6 +16419,11 @@ S9sOptions::readOptionsJob(
             case OptionWithoutTags:
                 // --without-tags=one;two
                 setWithoutTags(optarg);
+                break;
+            
+            case OptionNotAllPool:
+                // --not-all-pool
+                m_options["not_all_pool"] = true;
                 break;
 
             case '?':
