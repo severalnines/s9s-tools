@@ -42,6 +42,5 @@ class UtS9sOptions : public S9sUnitTest
         bool testPerconaProCluster();
         bool testPostgreSqlReplication();
         bool testAuditLogEventData();
+        bool testExternalBackup();
 };
-
-

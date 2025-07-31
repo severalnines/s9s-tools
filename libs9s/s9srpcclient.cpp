@@ -9250,6 +9250,15 @@ S9sRpcClient::restoreBackup()
         jobData["pitr_stop_time"] = pitrStopTime;
     }
 
+    if(!options->dbAdminUserName().empty())
+    {
+        jobData["db_user"] = options->dbAdminUserName();
+    }
+    if (!options->dbAdminPassword().empty())
+    {
+        jobData["db_password"] = options->dbAdminPassword();
+    }
+
     if (!options->nodes().empty())
     {
         // on which node we want to restore the backup
