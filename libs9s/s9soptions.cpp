@@ -356,7 +356,7 @@ enum S9sOptionType
     OptionImageOsUser,
     OptionIndividualFiles,
     OptionTestServer,
-    OptionDatadir,
+    OptionDataDir,
     OptionBackupDatadir,
 
     OptionListImages,
@@ -7672,6 +7672,7 @@ S9sOptions::printHelpBackup()
 "  --backup-directory=DIR     The directory where the backup is placed.\n"
 "  --temp-dir-path=DIR        The directory where the temporary backup is placed (default goes to /var/tmp/cmon-%%).\n"
 "  --keep-temp-dir            If this option is specified, the temporary backup directory is retained and not deleted after the backup.\n"
+"  --datadir=DIRECTORY        Data directory to be used on a new backup verification node.\n"
 "  --backup-format=STRING     The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
@@ -9021,6 +9022,7 @@ S9sOptions::readOptionsBackup(
         { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
         { "temp-dir-path",    required_argument, 0, OptionTempDirPath     },
         { "keep-temp-dir",    no_argument,       0, OptionKeepTempDir     },
+        { "datadir",          required_argument, 0, OptionDataDir         },
         { "subdirectory",     required_argument, 0, OptionSubDirectory    },
         { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
         { "snapshot-repo-type",required_argument,0, OptionSnapshotRepoType},
@@ -9450,6 +9452,11 @@ S9sOptions::readOptionsBackup(
             case OptionTempDirPath:
                 // --temp-dir-path
                 m_options["temp_dir_path"] = optarg;
+                break;
+
+            case OptionDataDir:
+                // --datadir=DIRECTORY
+                m_options["datadir"] = optarg;
                 break;
 
             case OptionSnapshotRepo:
@@ -14521,7 +14528,7 @@ S9sOptions::readOptionsCluster(
         { "cluster-type",     required_argument, 0, OptionClusterType     },
         { "config-template",  required_argument, 0, OptionConfigTemplate  },
         { "haproxy-config-template", required_argument, 0, OptionHaProxyConfigTemplate  },
-        { "datadir",          required_argument, 0, OptionDatadir         },
+        { "datadir",          required_argument, 0, OptionDataDir         },
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "repl-user",        required_argument, 0, OptionReplUser        },
@@ -15308,7 +15315,7 @@ S9sOptions::readOptionsCluster(
                 m_options["haproxy_config_template"] = optarg;
                 break;
 
-            case OptionDatadir:
+            case OptionDataDir:
                 // --datadir=DIRECTORY
                 m_options["datadir"] = optarg;
                 break;
