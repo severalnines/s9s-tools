@@ -138,6 +138,12 @@ enum S9sOptionType
     OptionBackupPath,
     OptionBackupSourceAddress,
     OptionBackupDirectory,
+    OptionIncludeSchemas,
+    OptionExcludeSchemas,
+    OptionSchemaOnly,
+    OptionDataOnly,
+    OptionNoOwner,
+    OptionNoPrivileges,
     OptionPitrStopTime,
     OptionClusterDecryptionKey,
     OptionKeepTempDir,
@@ -4211,6 +4217,59 @@ S9sOptions::includeTables() const
     return getString("include_tables");
 }
 
+/**
+ * \returns the value received for the --schemas command line option.
+ */
+S9sString
+S9sOptions::schemas() const
+{
+    return getString("include_schemas");
+}
+
+/**
+ * \returns the value received for the --exclude-schemas command line option.
+ */
+S9sString
+S9sOptions::excludeSchemas() const
+{
+    return getString("exclude_schemas");
+}
+
+/**
+ * \returns true if the --schema-only command line option was provided.
+ */
+bool
+S9sOptions::schemaOnly() const
+{
+    return getBool("schema_only");
+}
+
+/**
+ * \returns true if the --data-only command line option was provided.
+ */
+bool
+S9sOptions::dataOnly() const
+{
+    return getBool("data_only");
+}
+
+/**
+ * \returns true if the --no-owner command line option was provided.
+ */
+bool
+S9sOptions::noOwner() const
+{
+    return getBool("no_owner");
+}
+
+/**
+ * \returns true if the --no-privileges command line option was provided.
+ */
+bool
+S9sOptions::noPrivileges() const
+{
+    return getBool("no_privileges");
+}
 
 bool
 S9sOptions::setParallellism(
@@ -7680,6 +7739,12 @@ S9sOptions::printHelpBackup()
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
 "  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
+"  --schemas=LIST             Include specific schemas (PostgreSQL only).\n"
+"  --exclude-schemas=LIST     Exclude specific schemas (PostgreSQL only).\n"
+"  --schema-only              Backup structure only, no data (PostgreSQL).\n"
+"  --data-only                Backup data only, no structure (PostgreSQL).\n"
+"  --no-owner                 Skip ownership information (PostgreSQL).\n"
+"  --no-privileges            Skip privilege information (PostgreSQL).\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --compression-level        Backup compress level value to use (between 1 and 9).\n"
@@ -9010,6 +9075,12 @@ S9sOptions::readOptionsBackup(
         { "databases",        required_argument, 0, OptionDatabases       },
         { "exclude-tables",   required_argument, 0, OptionExcludeTables   },
         { "include-tables",   required_argument, 0, OptionIncludeTables   },
+        { "schemas",          required_argument, 0, OptionIncludeSchemas  },
+        { "exclude-schemas",  required_argument, 0, OptionExcludeSchemas  },
+        { "schema-only",      no_argument,       0, OptionSchemaOnly      },
+        { "data-only",        no_argument,       0, OptionDataOnly        },
+        { "no-owner",         no_argument,       0, OptionNoOwner         },
+        { "no-privileges",    no_argument,       0, OptionNoPrivileges    },
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
@@ -9430,6 +9501,36 @@ S9sOptions::readOptionsBackup(
             case OptionIncludeTables:
                 // --include-tables=TABLES_LIST
                 m_options["include_tables"] = optarg;
+                break;
+
+            case OptionIncludeSchemas:
+                // --schemas=LIST
+                m_options["include_schemas"] = optarg;
+                break;
+
+            case OptionExcludeSchemas:
+                // --exclude-schemas=LIST
+                m_options["exclude_schemas"] = optarg;
+                break;
+
+            case OptionSchemaOnly:
+                // --schema-only
+                m_options["schema_only"] = true;
+                break;
+
+            case OptionDataOnly:
+                // --data-only
+                m_options["data_only"] = true;
+                break;
+
+            case OptionNoOwner:
+                // --no-owner
+                m_options["no_owner"] = true;
+                break;
+
+            case OptionNoPrivileges:
+                // --no-privileges
+                m_options["no_privileges"] = true;
                 break;
 
             case OptionParallellism:
