@@ -58,6 +58,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testSetNodes,      retval);
     PERFORM_TEST(testPerconaProCluster, retval);
     PERFORM_TEST(testPostgreSqlReplication, retval);
+    PERFORM_TEST(testPostgreSqlBackupOptions, retval);
     PERFORM_TEST(testAuditLogEventData, retval);
     PERFORM_TEST(testExternalBackup, retval);
 
@@ -655,6 +656,132 @@ UtS9sOptions::testAuditLogEventData()
     S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
     S9S_VERIFY(options->isSetupAuditLoggingRequested());
     S9S_COMPARE(options->auditLogEventData(), "");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testPostgreSqlBackupOptions()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // Test all PostgreSQL backup options
+    const char *argv1[] = { "/bin/s9s",
+                            "backup",
+                            "--create",
+                            "--cluster-id=1",
+                            "--backup-method=pgdump",
+                            "--databases=app_db",
+                            "--schemas=public,app_data",
+                            "--exclude-schemas=temp,audit",
+                            "--schema-only",
+                            "--data-only",
+                            "--no-owner",
+                            "--no-privileges",
+                            "--backup-format=custom",
+                            nullptr };
+    int argc1 = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    
+    // Check basic operation
+    S9S_COMPARE(options->m_operationMode, S9sOptions::Backup);
+    S9S_VERIFY(options->isCreateRequested());
+    
+    // Check PostgreSQL-specific options
+    S9S_COMPARE(options->backupMethod(), "pgdump");
+    S9S_COMPARE(options->databases(), "app_db");
+    S9S_COMPARE(options->schemas(), "public,app_data");
+    S9S_COMPARE(options->excludeSchemas(), "temp,audit");
+    S9S_VERIFY(options->schemaOnly());
+    S9S_VERIFY(options->dataOnly());
+    S9S_VERIFY(options->noOwner());
+    S9S_VERIFY(options->noPrivileges());
+    S9S_COMPARE(options->backupFormat(), "custom");
+
+    // Test with only schema inclusion
+    const char *argv2[] = { "/bin/s9s",
+                            "backup",
+                            "--create",
+                            "--cluster-id=1",
+                            "--backup-method=pgdump",
+                            "--databases=test_db",
+                            "--schemas=schema1,schema2",
+                            nullptr };
+    int argc2 = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    
+    S9S_COMPARE(options->schemas(), "schema1,schema2");
+    S9S_COMPARE(options->excludeSchemas(), "");
+    S9S_VERIFY(!options->schemaOnly());
+    S9S_VERIFY(!options->dataOnly());
+    
+    // Test with only schema exclusion
+    const char *argv3[] = { "/bin/s9s",
+                            "backup",
+                            "--create",
+                            "--cluster-id=1",
+                            "--backup-method=pgdump",
+                            "--databases=prod_db",
+                            "--exclude-schemas=temp,logs",
+                            "--no-owner",
+                            nullptr };
+    int argc3 = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    
+    S9S_COMPARE(options->schemas(), "");
+    S9S_COMPARE(options->excludeSchemas(), "temp,logs");
+    S9S_VERIFY(options->noOwner());
+    S9S_VERIFY(!options->noPrivileges());
+    
+    // Test structure-only backup
+    const char *argv4[] = { "/bin/s9s",
+                            "backup",
+                            "--create",
+                            "--cluster-id=1",
+                            "--backup-method=pgdump",
+                            "--databases=dev_db",
+                            "--schema-only",
+                            "--backup-format=plain",
+                            nullptr };
+    int argc4 = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc4, (char **)argv4));
+    
+    S9S_VERIFY(options->schemaOnly());
+    S9S_VERIFY(!options->dataOnly());
+    S9S_COMPARE(options->backupFormat(), "plain");
+    
+    // Test data-only backup
+    const char *argv5[] = { "/bin/s9s",
+                            "backup",
+                            "--create",
+                            "--cluster-id=1",
+                            "--backup-method=pgdump",
+                            "--databases=staging_db",
+                            "--data-only",
+                            "--backup-format=directory",
+                            nullptr };
+    int argc5 = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
+    
+    S9S_VERIFY(!options->schemaOnly());
+    S9S_VERIFY(options->dataOnly());
+    S9S_COMPARE(options->backupFormat(), "directory");
 
     S9sOptions::uninit();
     return true;
