@@ -460,6 +460,12 @@ class S9sOptions
         S9sString databases() const;
         S9sString excludeTables() const;
         S9sString includeTables() const;
+        S9sString schemas() const;
+        S9sString excludeSchemas() const;
+        bool schemaOnly() const;
+        bool dataOnly() const;
+        bool noOwner() const;
+        bool noPrivileges() const;
       
         bool hasFirewalls() const;
         S9sString firewalls() const;

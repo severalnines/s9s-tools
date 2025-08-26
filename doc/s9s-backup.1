@@ -34,6 +34,41 @@ s9s backup \\
     --wait
 .fi
 
+.B EXAMPLE (PostgreSQL partial backup)
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --backup-method=pgdump \\
+    --databases="app_db" \\
+    --schemas="public,app_data" \\
+    --backup-dir=/tmp
+.fi
+
+.B EXAMPLE (PostgreSQL schema exclusion)
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --backup-method=pgdump \\
+    --databases="app_db" \\
+    --exclude-schemas="temp,audit" \\
+    --backup-dir=/tmp
+.fi
+
+.B EXAMPLE (PostgreSQL structure-only backup)
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --backup-method=pgdump \\
+    --databases="app_db" \\
+    --schema-only \\
+    --no-owner \\
+    --backup-format=custom \\
+    --backup-dir=/tmp
+.fi
+
 .TP
 .B --create-schedule
 This command line option will create a backup schedule, a backup that is
@@ -477,6 +512,42 @@ The string of tables to exclude on backup (to be set with --databases).
 .TP
 .BI \-\^\-include-tables= TABLE_LIST_COMMA_SEPARATED
 The string of tables to include on backup (to be set with --databases).
+
+.TP
+.BI \-\^\-schemas= SCHEMA_LIST
+Comma-separated list of schemas to include in the backup (PostgreSQL only). 
+When using this option with a database selection, only the specified schemas 
+within that database will be backed up using pg_dump instead of pg_dumpall.
+
+.TP
+.BI \-\^\-exclude-schemas= SCHEMA_LIST
+Comma-separated list of schemas to exclude from the backup (PostgreSQL only).
+All schemas except the specified ones will be included in the backup.
+Cannot be used together with --schemas.
+
+.TP
+.B \-\^\-schema-only
+Create a structure-only backup without any data (PostgreSQL only). 
+This option will backup all CREATE statements but no INSERT statements.
+Cannot be used together with --data-only.
+
+.TP
+.B \-\^\-data-only
+Create a data-only backup without any structure (PostgreSQL only).
+This option will backup only the data (INSERT statements) without any 
+CREATE statements. Cannot be used together with --schema-only.
+
+.TP
+.B \-\^\-no-owner
+Skip ownership information in the backup (PostgreSQL only).
+This is useful when restoring to a different environment where the 
+original users may not exist.
+
+.TP
+.B \-\^\-no-privileges
+Skip privilege/grant information in the backup (PostgreSQL only).
+This is useful when restoring to a different environment with different 
+security requirements.
 
 
 .TP

@@ -11627,6 +11627,13 @@ S9sRpcClient::composeBackupJob()
     S9sString       databases        = options->databases();
     S9sString       excludeTables    = options->excludeTables();
     S9sString       includeTables    = options->includeTables();
+    S9sString       schemas          = options->schemas();
+    S9sString       excludeSchemas   = options->excludeSchemas();
+    bool            schemaOnly       = options->schemaOnly();
+    bool            dataOnly         = options->dataOnly();
+    bool            noOwner          = options->noOwner();
+    bool            noPrivileges     = options->noPrivileges();
+    S9sString       backupFormat     = options->backupFormat();
     S9sNode         backupHost;
     S9sString       title;
 
@@ -11750,6 +11757,27 @@ S9sRpcClient::composeBackupJob()
 
     if (!includeTables.empty())
         jobData["include_tables"] = includeTables;
+
+    if (!schemas.empty())
+        jobData["include_schemas"] = schemas;
+
+    if (!excludeSchemas.empty())
+        jobData["exclude_schemas"] = excludeSchemas;
+
+    if (schemaOnly)
+        jobData["schema_only"] = true;
+
+    if (dataOnly)
+        jobData["data_only"] = true;
+
+    if (noOwner)
+        jobData["no_owner"] = true;
+
+    if (noPrivileges)
+        jobData["no_privileges"] = true;
+
+    if (!backupFormat.empty() && backupFormat != "plain")
+        jobData["backup_format"] = backupFormat;
 
     if (options->pitrCompatible())
         jobData["pitr_compatible"] = true;
