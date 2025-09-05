@@ -8500,6 +8500,7 @@ S9sOptions::printHelpControllers()
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
+"  --all                      Print also the hidden entries.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "\n"
     );
@@ -19165,6 +19166,7 @@ S9sOptions::readOptionsControllers(
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
 
                     // optionals
+                    {"all",              no_argument,       0, 'a'},
                     {"comment",          required_argument, 0, OptionComment},
 
                     {0, 0,                                  0, 0}
@@ -19175,7 +19177,7 @@ S9sOptions::readOptionsControllers(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V",
+                argc, argv, "ahvc:P:t:V",
                 long_options, &option_index);
 
         if (c == -1)
@@ -19251,6 +19253,10 @@ S9sOptions::readOptionsControllers(
                 m_options["human_readable"] = true;
                 break;
 
+            case 'a':
+                // -a, --all
+                m_options["all"] = true;
+                break;
             case OptionPrintJson:
                 // --print-json
                 m_options["print_json"] = true;

@@ -11197,6 +11197,9 @@ S9sRpcClient::listControllers(S9sOptions *options)
         request["controller_id"] = options->controllerId();
     else
         request["controller_id"] = 0;
+    
+    if (options->isAllRequested())
+        request["all"] = true;
 
     return executeRequest(uri, request);
 }
