@@ -11199,7 +11199,7 @@ S9sRpcClient::listControllers(S9sOptions *options)
         request["controller_id"] = 0;
     
     if (options->isAllRequested())
-        request["all"] = true;
+        request["all_controllers"] = true;
 
     return executeRequest(uri, request);
 }
