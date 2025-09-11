@@ -8,7 +8,7 @@ function elementExists()
 {
     opts_with_equal=(\
         --config-file \
-        --controller --controller-port \
+        --controller \
         --color \
         --cluster-id --remote-cluster-id --cluster-name --nodes \
         --properties \
@@ -104,7 +104,7 @@ function _s9s()
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--date-format= --cmon-user= --password= "
@@ -126,7 +126,7 @@ function _s9s()
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--date-format= --cmon-user= --password= "
@@ -175,7 +175,7 @@ function _s9s()
                 opts=$(s9s cluster --list)
                 opts+="--help --verbose --version " 
                 opts+="--config-file= "
-                opts+="--controller= --controller-port= "
+                opts+="--controller= "
                 opts+="--rpc-tls --cmon-user= --password= "
                 opts+="--long --print-json --color= --batch --no-header "
                 opts+="--only-ascii "
@@ -240,7 +240,7 @@ function _s9s()
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--cmon-user= --password= "
@@ -264,7 +264,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --servers= "
                 opts+="--cmon-user= --password= "
@@ -284,7 +284,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= "
                 opts+="--cmon-user= --password= "
@@ -321,7 +321,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --servers= "
                 opts+="--cmon-user= --password= "
@@ -381,7 +381,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
@@ -404,7 +404,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
@@ -431,7 +431,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii "
                 opts+="--cluster-id= --cluster-name= --nodes= "
 
@@ -459,7 +459,7 @@ function _s9s()
                 opts=$(s9s user --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait "
                 opts+="--cluster-id= --cluster-name= "
 
@@ -496,7 +496,7 @@ function _s9s()
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--cmon-user= --password= "
@@ -521,7 +521,7 @@ function _s9s()
                 opts=$(s9s cluster --list -l --batch --cluster-format="%I ")
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--cmon-user= --password= "
@@ -553,7 +553,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version " 
                 opts+="--config-file= "
-                opts+="--controller= --controller-port= "
+                opts+="--controller= "
                 opts+="--rpc-tls "
                 opts+="--long --print-json --color= --batch --no-header "
                 opts+="--group= --create-group --first-name= --last-name= "
@@ -577,7 +577,7 @@ function _s9s()
             else
                 opts+="--help --verbose --version " 
                 opts+="--config-file= "
-                opts+="--controller= --controller-port= "
+                opts+="--controller= "
                 opts+="--rpc-tls "
                 opts+="--long --print-json --color= --batch --no-header "
                 opts+="--cmon-user= --password= "
@@ -600,7 +600,7 @@ function _s9s()
                 opts=$(s9s metatype --list)
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--no-header --only-ascii --wait --log --schedule= "
                 opts+="--cluster-id= --cluster-name= --nodes= "
                 opts+="--cmon-user= --password= "
@@ -614,7 +614,7 @@ function _s9s()
                 opts=$main_opt
             else
                 opts+="--help --verbose --version --config-file= --controller= "
-                opts+="--controller-port= --long --print-json --color= --batch "
+                opts+="--long --print-json --color= --batch "
                 opts+="--cmon-user= --password= "
                 opts+="--cluster-id= --cluster-name= "
                 # This is bogus, this has cluster id
