@@ -7596,7 +7596,6 @@ S9sOptions::printHelpGeneric()
 "  -c, --controller=URL       The URL where the controller is found.\n"
 "  --config-file=PATH         Specify the configuration file for the program.\n"
 "  --help                     Show help message and exit.\n" 
-"  -P, --controller-port INT  The port of the controller.\n"
 "  -p, --password=PASSWORD    The password for the Cmon user.\n"
 "  --private-key-file=FILE    The name of the file for authentication.\n"
 "  --rpc-tls                  Use TLS encryption to controller.\n"
@@ -8527,7 +8526,6 @@ S9sOptions::readOptionsNode(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -8609,7 +8607,7 @@ S9sOptions::readOptionsNode(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -8657,11 +8655,6 @@ S9sOptions::readOptionsNode(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -9003,7 +8996,6 @@ S9sOptions::readOptionsBackup(
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0, OptionConfigFile      },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "controller",       required_argument, 0, 'c'                   },
         { "date-format",      required_argument, 0, OptionDateFormat      },
         { "debug",            no_argument,       0, OptionDebug           },
@@ -9129,7 +9121,7 @@ S9sOptions::readOptionsBackup(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -9182,11 +9174,6 @@ S9sOptions::readOptionsBackup(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -9967,7 +9954,6 @@ S9sOptions::readOptionsLog(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -10008,7 +9994,7 @@ S9sOptions::readOptionsLog(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -10061,11 +10047,6 @@ S9sOptions::readOptionsLog(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -10211,7 +10192,6 @@ S9sOptions::readOptionsEvent(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -10275,7 +10255,7 @@ S9sOptions::readOptionsEvent(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -10323,11 +10303,6 @@ S9sOptions::readOptionsEvent(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -10589,7 +10564,6 @@ S9sOptions::readOptionsAlarm(
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "color",            optional_argument, 0, OptionColor           },
         { "config-file",      required_argument, 0,  4                    },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "controller",       required_argument, 0, 'c'                   },
         { "debug",            no_argument,       0, OptionDebug           },
         { "help",             no_argument,       0, OptionHelp            },
@@ -10628,7 +10602,7 @@ S9sOptions::readOptionsAlarm(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -10676,11 +10650,6 @@ S9sOptions::readOptionsAlarm(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -10812,7 +10781,6 @@ S9sOptions::readOptionsReport(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -10847,7 +10815,7 @@ S9sOptions::readOptionsReport(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -10895,11 +10863,6 @@ S9sOptions::readOptionsReport(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -11043,7 +11006,6 @@ S9sOptions::readOptionsReplication(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -11096,7 +11058,7 @@ S9sOptions::readOptionsReplication(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -11144,11 +11106,6 @@ S9sOptions::readOptionsReplication(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -11374,7 +11331,6 @@ S9sOptions::readOptionsDbSchema(
                     {"cmon-user",        required_argument, 0, 'u'},
                     {"color",            optional_argument, 0, OptionColor},
                     {"config-file",      required_argument, 0, 4},
-                    {"controller-port",  required_argument, 0, 'P'},
                     {"controller",       required_argument, 0, 'c'},
                     {"debug",            no_argument,       0, OptionDebug},
                     {"help",             no_argument,       0, OptionHelp},
@@ -11408,7 +11364,7 @@ S9sOptions::readOptionsDbSchema(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V",
+                argc, argv, "hvc:t:V",
                 long_options, &option_index);
 
         if (c == -1)
@@ -11454,11 +11410,6 @@ S9sOptions::readOptionsDbSchema(
             case 'c':
                 // -c, --controller
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -11626,7 +11577,6 @@ S9sOptions::readOptionsDbVersions(
                     {"human-readable",   no_argument,       0, 'h'},
                     {"long",             no_argument,       0, 'l'},
                     {"no-header",        no_argument,       0, OptionNoHeader},
-                    {"controller-port",  required_argument, 0, 'P'},
                     {"controller",       required_argument, 0, 'c'},
                     {"print-json",       no_argument,       0, OptionPrintJson},
                     {"print-request",    no_argument,       0, OptionPrintRequest},
@@ -11652,7 +11602,7 @@ S9sOptions::readOptionsDbVersions(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V",
+                argc, argv, "hvc:t:V",
                 long_options, &option_index);
 
         if (c == -1)
@@ -11693,11 +11643,6 @@ S9sOptions::readOptionsDbVersions(
             case 'c':
                 // -c, --controller
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -12864,7 +12809,6 @@ S9sOptions::readOptionsProcess(
         { "cmon-user",        required_argument, 0, 'u'                   }, 
         { "color",            optional_argument, 0,  OptionColor          },
         { "config-file",      required_argument, 0,  OptionConfigFile     },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "controller",       required_argument, 0, 'c'                   },
         { "debug",            no_argument,       0, OptionDebug           },
         { "help",             no_argument,       0, OptionHelp            },
@@ -12906,7 +12850,7 @@ S9sOptions::readOptionsProcess(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V", 
+                argc, argv, "hvc:t:V", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -12959,11 +12903,6 @@ S9sOptions::readOptionsProcess(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -13132,7 +13071,6 @@ S9sOptions::readOptionsUser(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -13194,7 +13132,7 @@ S9sOptions::readOptionsUser(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:Vgu:", 
+                argc, argv, "hvc:t:Vgu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -13227,11 +13165,6 @@ S9sOptions::readOptionsUser(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -13517,7 +13450,6 @@ S9sOptions::readOptionsGroup(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -13544,7 +13476,7 @@ S9sOptions::readOptionsGroup(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:Vgu:", 
+                argc, argv, "hvc:t:Vgu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -13577,11 +13509,6 @@ S9sOptions::readOptionsGroup(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -13705,7 +13632,6 @@ S9sOptions::readOptionsAccount(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -13746,7 +13672,7 @@ S9sOptions::readOptionsAccount(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:Vgu:", 
+                argc, argv, "hvc:t:Vgu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -13779,11 +13705,6 @@ S9sOptions::readOptionsAccount(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -14003,7 +13924,6 @@ S9sOptions::readOptionsMaintenance(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -14050,7 +13970,7 @@ S9sOptions::readOptionsMaintenance(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:t:VgGu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -14098,11 +14018,6 @@ S9sOptions::readOptionsMaintenance(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -14301,7 +14216,6 @@ S9sOptions::readOptionsMetaType(
         { "verbose",          no_argument,       0, 'v'                   },
         { "version",          no_argument,       0, 'V'                   },
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "rpc-tls",          no_argument,       0, OptionRpcTls          },
@@ -14328,7 +14242,7 @@ S9sOptions::readOptionsMetaType(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:t:VgGu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -14366,11 +14280,6 @@ S9sOptions::readOptionsMetaType(
                 setController(optarg);
                 break;
 
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
-                break;
-            
             case 'p':
                 // --password=PASSWORD
                 m_options["password"] = optarg;
@@ -14540,7 +14449,6 @@ S9sOptions::readOptionsCluster(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -14778,7 +14686,7 @@ S9sOptions::readOptionsCluster(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLli:", 
+                argc, argv, "hvc:t:VLli:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -14824,11 +14732,6 @@ S9sOptions::readOptionsCluster(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -15864,7 +15767,6 @@ S9sOptions::readOptionsContainer(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  OptionRpcTls         },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
@@ -15920,7 +15822,7 @@ S9sOptions::readOptionsContainer(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLli:", 
+                argc, argv, "hvc:t:VLli:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -15966,11 +15868,6 @@ S9sOptions::readOptionsContainer(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -16230,7 +16127,6 @@ S9sOptions::readOptionsJob(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "rpc-tls",          no_argument,       0,  6                    },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0,  OptionPrintJson      },
@@ -16286,7 +16182,7 @@ S9sOptions::readOptionsJob(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VLlGf", 
+                argc, argv, "hvc:t:VLlGf", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -16332,11 +16228,6 @@ S9sOptions::readOptionsJob(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -16571,7 +16462,6 @@ S9sOptions::readOptionsScript(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "print-request",    no_argument,       0, OptionPrintRequest    },
@@ -16610,7 +16500,7 @@ S9sOptions::readOptionsScript(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:t:VgGu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -16656,11 +16546,6 @@ S9sOptions::readOptionsScript(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -16841,7 +16726,6 @@ S9sOptions::readOptionsSheet(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "print-request",    no_argument,       0, OptionPrintRequest    },
@@ -16879,7 +16763,7 @@ S9sOptions::readOptionsSheet(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:t:VgGu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -16925,11 +16809,6 @@ S9sOptions::readOptionsSheet(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -17099,7 +16978,6 @@ S9sOptions::readOptionsServer(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "print-request",    no_argument,       0, OptionPrintRequest    },
@@ -17162,7 +17040,7 @@ S9sOptions::readOptionsServer(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:t:VgGu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -17208,11 +17086,6 @@ S9sOptions::readOptionsServer(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -17499,7 +17372,6 @@ S9sOptions::readOptionsController(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "print-request",    no_argument,       0, OptionPrintRequest    },
@@ -17551,7 +17423,7 @@ S9sOptions::readOptionsController(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:", 
+                argc, argv, "hvc:t:VgGu:", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -17597,11 +17469,6 @@ S9sOptions::readOptionsController(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -17798,7 +17665,6 @@ S9sOptions::readOptionsTree(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
-        { "controller-port",  required_argument, 0, 'P'                   },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "print-request",    no_argument,       0, OptionPrintRequest    },
@@ -17852,7 +17718,7 @@ S9sOptions::readOptionsTree(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:VgGu:Rd", 
+                argc, argv, "hvc:t:VgGu:Rd", 
                 long_options, &option_index);
 
         if (c == -1)
@@ -17898,11 +17764,6 @@ S9sOptions::readOptionsTree(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -18558,7 +18419,6 @@ S9sOptions::readOptionsCloudCredentials(
                     {"human-readable",   no_argument,       0, 'h'},
                     {"long",             no_argument,       0, 'l'},
                     {"no-header",        no_argument,       0, OptionNoHeader},
-                    {"controller-port",  required_argument, 0, 'P'},
                     {"controller",       required_argument, 0, 'c'},
                     {"print-json",       no_argument,       0, OptionPrintJson},
                     {"print-request",    no_argument,       0, OptionPrintRequest},
@@ -18591,7 +18451,7 @@ S9sOptions::readOptionsCloudCredentials(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V",
+                argc, argv, "hvc:t:V",
                 long_options, &option_index);
 
         if (c == -1)
@@ -18632,11 +18492,6 @@ S9sOptions::readOptionsCloudCredentials(
             case 'c':
                 // -c, --controller
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -18794,7 +18649,6 @@ S9sOptions::readOptionsWatchlists(
                     {"human-readable",   no_argument,       0, 'h'},
                     {"long",             no_argument,       0, 'l'},
                     {"no-header",        no_argument,       0, OptionNoHeader},
-                    {"controller-port",  required_argument, 0, 'P'},
                     {"controller",       required_argument, 0, 'c'},
                     {"print-json",       no_argument,       0, OptionPrintJson},
                     {"print-request",    no_argument,       0, OptionPrintRequest},
@@ -18828,7 +18682,7 @@ S9sOptions::readOptionsWatchlists(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V",
+                argc, argv, "hvc:t:V",
                 long_options, &option_index);
 
         if (c == -1)
@@ -18869,11 +18723,6 @@ S9sOptions::readOptionsWatchlists(
             case 'c':
                 // -c, --controller
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
@@ -19175,7 +19024,7 @@ S9sOptions::readOptionsControllers(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:P:t:V",
+                argc, argv, "hvc:t:V",
                 long_options, &option_index);
 
         if (c == -1)
@@ -19216,11 +19065,6 @@ S9sOptions::readOptionsControllers(
             case 'c':
                 // -c, --controller
                 setController(optarg);
-                break;
-
-            case 'P':
-                // -P, --controller-port=PORT
-                m_options["controller_port"] = atoi(optarg);
                 break;
 
             case 'l':
