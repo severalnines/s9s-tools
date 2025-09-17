@@ -573,6 +573,7 @@ class S9sOptions
         bool isRemoveTagRequested() const;
 
         bool isDbGrowthRequested() const;
+        bool isCalculateDbGrowthRequested() const;
         bool isListDbVersionsRequested() const;
         bool isListDb3dVersionsRequested() const;
         bool isUseVendorApiRequested() const;

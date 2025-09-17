@@ -496,6 +496,7 @@ class S9sRpcClient
         bool createFailJob();
         bool createSuccessJob();
 
+        bool calculateDbGrowth();
         bool getDbGrowth();
 
     protected:

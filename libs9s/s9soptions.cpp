@@ -489,6 +489,7 @@ enum S9sOptionType
     OptionEthInterface,
     OptionLicense,
 
+    OptionDbSchemaCalculateDbGrowth,
     OptionDbSchemaDbGrowth,
     OptionDbSchemaDate,
     OptionDbSchemaName,
@@ -558,6 +559,7 @@ S9sOptions::S9sOptions() :
     m_modes["alarm"]        = Alarm;
     m_modes["report"]       = Report;
     m_modes["replication"]  = Replication;
+    m_modes["dbschema"]     = DbSchema;
     
     // This helps to fix some typos I always had in the command line.
     m_modes["backups"]      = Backup;
@@ -581,7 +583,6 @@ S9sOptions::S9sOptions() :
     m_modes["alarms"]       = Alarm;
     m_modes["reports"]      = Report;
     m_modes["replications"] = Replication;
-    m_modes["dbschema"]     = DbSchema;
     m_modes["dbversions"]   = DbVersions;
     m_modes["cloud-credentials"] = CloudCredentials;
     m_modes["watchlists"]   = Watchlists;
@@ -5098,6 +5099,16 @@ S9sOptions::isRemoveTagRequested() const
 
 
 /**
+ * \returns true if the "dbgrowth" function is requested by providing the --calculate-dbgrowth
+ *   command line option.
+ */
+bool
+S9sOptions::isCalculateDbGrowthRequested() const
+{
+    return getBool("calculate_dbgrowth");
+}
+
+/**
  * \returns true if the "dbgrowth" function is requested by providing the --dbgrowth
  *   command line option.
  */
@@ -8420,7 +8431,8 @@ S9sOptions::printHelpDbSchema()
 
     printf(
 "Options for the \"dbschema\" command:\n"
-"  --dbgrowth                 Tells to retrieve the database growth.\n"
+"  --calculate-dbgrowth       Job to collect data growth stats from the cluster.\n"
+"  --dbgrowth                 Tells to retrieve the cached database growth stats.\n"
 "  --cluster-id=ID            The ID of the cluster.\n"
 "  --date=DATE                The date of getting the database information.\n"
 "  --name=STRING              The name of a database.\n"
@@ -11345,8 +11357,18 @@ S9sOptions::readOptionsDbSchema(
                     {"verbose",          no_argument,       0, 'v'},
                     {"version",          no_argument,       0, 'V'},
 
+                    // Job related options.
+                    { "force",            no_argument,       0, OptionForce           },
+                    { "job-tags",         required_argument, 0, OptionJobTags         },
+                    { "log",              no_argument,       0, 'G'                   },
+                    { "recurrence",       required_argument, 0, OptionRecurrence      },
+                    { "schedule",         required_argument, 0, OptionSchedule        },
+                    { "timeout",          required_argument, 0, OptionTimeout         },
+                    { "wait",             no_argument,       0, OptionWait            },
+
                     // Main Options
-                    {"dbgrowth",         no_argument, 0, OptionDbSchemaDbGrowth},
+                    {"calculate-dbgrowth", no_argument,     0, OptionDbSchemaCalculateDbGrowth},
+                    {"dbgrowth",         no_argument,       0, OptionDbSchemaDbGrowth},
                     {"cluster-id",       required_argument, 0, 'i'},
 
                     // Date related options.
@@ -11471,8 +11493,51 @@ S9sOptions::readOptionsDbSchema(
                 break;
 
             /*
+             * Job related options.
+             */
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
+                break;
+
+            case OptionJobTags:
+                // --job-tags=LIST
+                setJobTags(optarg);
+                break;
+            
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+            
+            case OptionRecurrence:
+                // --recurrence=CRONTABSTRING
+                m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionSchedule:
+                // --schedule=DATETIME
+                m_options["schedule"] = optarg;
+                break;
+            
+            case OptionTimeout:
+                // --timeout=SECONDS
+                m_options["timeout"] = optarg;
+                break;
+            
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
+                break;
+
+            /*
              * Options related to dbgrowth.
              */
+            case OptionDbSchemaCalculateDbGrowth:
+                // --calculate-dbgrowth
+                m_options["calculate_dbgrowth"] = true;
+                break;
+
             case OptionDbSchemaDbGrowth:
                 // --dbgrowth
                 m_options["dbgrowth"] = true;
@@ -11531,10 +11596,18 @@ S9sOptions::checkOptionsDbSchema()
     /*
      * Checking if multiple operations are requested.
      */
+    if (isCalculateDbGrowthRequested())
+        countOptions++;
     if (isDbGrowthRequested())
         countOptions++;
 
-    if (countOptions == 0)
+    if (countOptions > 1)
+    {
+        m_errorMessage = "The main options are mutually exclusive.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+    else if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
         m_exitStatus = BadOptions;
