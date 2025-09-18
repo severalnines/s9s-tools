@@ -10947,6 +10947,46 @@ S9sRpcClient::getNextMaintenance()
 }
 
 /**
+ * Requests collection of the database growth information from db cluster nodes.
+ *
+ * @return True if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply), false if the request was
+ *   not even sent.
+ */
+bool
+S9sRpcClient::calculateDbGrowth()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    S9sVariantMap  request;
+    S9sVariantMap  job = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+    bool           retval;
+    
+    // The jobspec describing the command.
+    jobSpec["command"]    = "calculate_db_growth";
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Collect database growth information from the cluster nodes";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = 0;
+
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    }
+    
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * Requests the database growth information
  * @return The result of the executed request
  */

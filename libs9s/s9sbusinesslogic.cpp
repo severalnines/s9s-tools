@@ -1343,7 +1343,11 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isDbSchemaOperation())
     {
-        if(options->isDbGrowthRequested()) {
+        if(options->isCalculateDbGrowthRequested()) {
+            success = client.calculateDbGrowth();
+            maybeJobRegistered(client, 0, success);
+        }
+        else if(options->isDbGrowthRequested()) {
             success = client.getDbGrowth();
             S9sRpcReply reply = client.reply();
             reply.printDbGrowthList();
