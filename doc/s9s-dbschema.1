@@ -1,0 +1,71 @@
+.TH S9S-DBSCHEMA 1 "July 26, 2018"
+
+.SH NAME
+s9s dbschema \- Command line client for the Severalnines Clustercontrol server.
+.SH SYNOPSIS
+.B s9s dbschema
+.RI [OPTION]...
+.SH DESCRIPTION
+\fBs9s\fP is a command line tool for ClusterControl, which can be used to
+deploy and operate MySQL, MariaDB, MongoDB and PostgreSQL.
+
+.SH OPTIONS
+.SS "Main Option"
+The application should always be started using a main option that sets what
+operation should be performed. This "main option" should be one of the
+following:
+
+.TP
+.B \-\-calculate-dbgrowth
+Starts a job to collect datbase stats from database nodes and caclulate
+growth information.
+This operation is also run by internal cron feature of cmon.
+
+.B EXAMPLE
+.nf
+s9s dbschema --caculate-dbgrowth
+.fi
+
+.TP
+.B \-\-dbgrowth
+Queries previously collected and calculated database growth information.
+
+.B EXAMPLE
+.nf
+s9s dbschema --dbgrowth
+.fi
+
+.\"
+.\" 
+.\"
+.SS Other Options
+
+.TP
+.BI \-\^\-cluster\-id= ID
+The numeric identifier of the cluster to work with.
+
+.B EXAMPLE
+.nf
+s9s dbschema \\
+    --cluster-id 1 \\
+    --calculate-dbgrowth
+
+s9s dbschema \\
+    --cluster-id 1 \\
+    --dbgrowth
+.fi
+
+
+.TP
+.BI \-\^\-name= NAME
+Specifyíing the name of the database the growth information should be queried about.
+
+.B EXAMPLE
+.nf
+s9s dbschema \\
+    --cluster-id 1 \\
+    --dbgrowth \\
+    --name my_database
+.fi
+
+

@@ -10960,16 +10960,12 @@ S9sRpcClient::calculateDbGrowth()
     S9sRpcReply    reply;
     S9sVariantMap  request;
     S9sVariantMap  job = composeJob();
-    S9sVariantMap  jobData = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    //addCredentialsToJobData(jobData);
-    
     // The jobspec describing the command.
     jobSpec["command"]    = "calculate_db_growth";
-    //jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Collect database growth information from the cluster nodes";
