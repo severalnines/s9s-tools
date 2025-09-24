@@ -187,6 +187,7 @@ class S9sOptions
 
         bool hasProviderVersion() const;
         S9sString providerVersion(const S9sString &defaultValue = "") const;
+        S9sString distroVersion(const S9sString &defaultValue = "") const;
 
         bool hasMinutes() const;
         int minutes() const;
@@ -408,6 +409,7 @@ class S9sOptions
         bool extended() const;
 
         bool useInternalRepos() const;
+        bool dryRun() const;
         bool useLocalRepo() const;
         S9sString localRepoName() const;
         bool createLocalRepo() const;
@@ -738,6 +740,7 @@ class S9sOptions
         bool isExecuteRequested() const;
         bool isRunRequested() const;
         bool isKillRequested() const;
+        bool isNewLocalRepoRequested() const;
         bool isSystemRequested() const;
         bool isTreeRequested() const;
         bool isSyncRequested() const;

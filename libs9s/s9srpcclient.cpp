@@ -2234,7 +2234,8 @@ S9sRpcClient::createLocalRepository(
         const S9sString   &clusterType,
         const S9sString   &vendor,
         const S9sString   &dbVersion,
-        const S9sString   &osRelease)
+        const S9sString   &osRelease,
+        bool               dryRun)
 {
     S9sVariantMap  request;
     S9sVariantMap  job     = composeJob();
@@ -2246,7 +2247,7 @@ S9sRpcClient::createLocalRepository(
     jobData["vendor"]     = vendor;
     jobData["db_version"] = dbVersion;
     jobData["os_release"] = osRelease;
-    //jobData["dry_run"]    = true;
+    jobData["dry_run"]    = dryRun;
 
     jobSpec["command"]    = "create_local_repository";
     jobSpec["job_data"]   = jobData;
