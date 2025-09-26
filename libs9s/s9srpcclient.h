@@ -750,6 +750,8 @@ class S9sRpcClient
 
         static S9sString timeStampString();
 
+        void setClassNameForMsSqlNodes(S9sVariantList &hosts);
+
     private:
         S9sRpcClientPrivate *m_priv;
 

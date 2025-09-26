@@ -5304,6 +5304,9 @@ S9sRpcClient::createNode()
         int nSlaves  = 0;
         int nMasters = 0;
 
+        // Check if we need to set class_name for MSSQL nodes
+        setClassNameForMsSqlNodes(hosts);
+
         for (uint idx = 0; idx < hosts.size(); ++idx)
         {
             const S9sNode &node = hosts[idx].toNode();
@@ -13219,6 +13222,71 @@ S9sRpcClient::registerRedisOrValkeyCluster(
     request["job"]              = job;
 
     return executeRequest(uri, request);
+}
+
+/**
+ * Sets the class_name property for nodes that don't have one when adding to MSSQL clusters.
+ * This method checks if we're adding nodes to an MSSQL cluster and sets the appropriate
+ * class_name for nodes that don't have a protocol or class_name specified.
+ */
+void
+S9sRpcClient::setClassNameForMsSqlNodes(S9sVariantList &hosts)
+{
+    S9sOptions *options = S9sOptions::instance();
+    int clusterId = options->clusterId();
+    
+    // Only proceed if we have a valid cluster ID (adding to existing cluster)
+    if (!S9S_CLUSTER_ID_IS_VALID(clusterId))
+        return;
+    
+    // Check if any nodes need class_name to be set
+    bool needsClassNameSet = false;
+    for (uint idx = 0; idx < hosts.size(); ++idx)
+    {
+        S9sNode node = hosts[idx].toNode();
+        if (node.className().empty() && node.protocol().empty())
+        {
+            needsClassNameSet = true;
+            break;
+        }
+    }
+    
+    if (!needsClassNameSet)
+        return;
+    
+    // Make a lightweight cluster info request to get cluster type
+    S9sString uri = "/v2/clusters/";
+    S9sVariantMap request;
+    request["operation"] = "getClusterInfo";
+    request["cluster_id"] = clusterId;
+    request["with_hosts"] = false;  // We only need basic cluster info
+    
+    if (executeRequest(uri, request))
+    {
+        S9sRpcReply reply = this->reply();
+        if (reply.isOk())
+        {
+            S9sVariantMap cluster = reply.clusters()[0].toVariantMap();
+            S9sString clusterType = cluster["cluster_type"].toString().toLower();
+            
+            // Check if this is an MSSQL cluster type
+            if (clusterType == "mssql_single" || 
+                clusterType == "mssql_ao_async" || 
+                clusterType == "mssql_ao_sync")
+            {
+                // Set class_name for nodes that don't have one
+                for (uint idx = 0; idx < hosts.size(); ++idx)
+                {
+                    S9sNode node = hosts[idx].toNode();
+                    if (node.className().empty() && node.protocol().empty())
+                    {
+                        node.setProperty("class_name", S9sString("CmonMsSqlHost"));
+                        hosts[idx] = node;  // Update the node in the list
+                    }
+                }
+            }
+        }
+    }
 }
 
 bool
