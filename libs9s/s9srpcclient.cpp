@@ -6873,6 +6873,9 @@ S9sRpcClient::startCluster()
     if (!options->donor().empty())
         jobData["donor_address"] = options->donor();
 
+    if (options->hasBootstrapOption())
+        jobData["bootstrap"]  = options->bootstrapOption();
+
     // The jobspec describing the command.
     jobSpec["command"]    = "start_cluster";
     jobSpec["job_data"]   = jobData;
@@ -6922,6 +6925,9 @@ S9sRpcClient::startNode()
     #else
     jobData["hostname"]   = node.hostName();
     #endif
+
+    if (options->hasBootstrapOption())
+        jobData["bootstrap"]  = options->bootstrapOption();
     
     if (node.hasPort())
         jobData["port"]   = node.port();

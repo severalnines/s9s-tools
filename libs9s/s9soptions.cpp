@@ -278,6 +278,7 @@ enum S9sOptionType
     OptionFrom,
     OptionUntil,
     OptionForce,
+    OptionBootstrap,
     OptionExtended,
     OptionDry,
     OptionDebug,
@@ -2592,6 +2593,24 @@ bool
 S9sOptions::hasForceOption() const
 {
     return m_options.contains("force");
+}
+
+/**
+ * \return True if the --bootstrap command line option is provided.
+ */
+bool
+S9sOptions::bootstrapOption() const
+{
+    if (m_options.contains("bootstrap"))
+        return m_options.at("bootstrap").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::hasBootstrapOption() const
+{
+    return m_options.contains("bootstrap");
 }
 
 bool
@@ -8578,13 +8597,16 @@ S9sOptions::readOptionsNode(
         { "batch",            no_argument,       0, OptionBatch           },
         
         // Job Related Options
-        { "force",            no_argument,       0, OptionForce           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "log",              no_argument,       0, 'G'                   },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
+
+        // Special job options.
+        { "force",            no_argument,       0, OptionForce           },
+        { "bootstrap",        no_argument,       0, OptionBootstrap       },
 
         // Node options. 
         { "properties",       required_argument, 0, OptionProperties      },
@@ -8884,6 +8906,11 @@ S9sOptions::readOptionsNode(
             case OptionForce:
                 // --force
                 m_options["force"] = true;
+                break;
+
+            case OptionBootstrap:
+                // --bootstrap
+                m_options["bootstrap"] = true;
                 break;
             
             case OptionNodeFormat:
@@ -14588,7 +14615,6 @@ S9sOptions::readOptionsCluster(
         { "output-dir",       required_argument, 0, OptionOutputDir       },
 
         // Job Related Options
-        { "backup-id",        required_argument, 0, OptionBackupId        },
         { "batch",            no_argument,       0, OptionBatch           },
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "job-title",        required_argument, 0, OptionJobTitle        },
@@ -14599,6 +14625,11 @@ S9sOptions::readOptionsCluster(
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
+
+        // Special job options.
+        { "backup-id",        required_argument, 0, OptionBackupId        },
+        { "force",            no_argument,       0, OptionForce           },
+        { "bootstrap",        no_argument,       0, OptionBootstrap       },
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
@@ -15033,6 +15064,11 @@ S9sOptions::readOptionsCluster(
             case OptionForce:
                 // --force
                 m_options["force"] = true;
+                break;
+
+            case OptionBootstrap:
+                // --bootstrap
+                m_options["bootstrap"] = true;
                 break;
 
             case OptionColor:

@@ -252,9 +252,12 @@ class S9sOptions
 
         bool removeBackups() const;
         bool hasRemoveBackupsOption() const;
-        
+
         bool forceOption() const;
         bool hasForceOption() const;
+
+        bool bootstrapOption() const;
+        bool hasBootstrapOption() const;
 
         int alarmId() const;
         bool hasAlarmIdOption() const;
