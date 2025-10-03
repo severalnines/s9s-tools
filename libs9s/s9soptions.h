@@ -259,6 +259,9 @@ class S9sOptions
         bool bootstrapOption() const;
         bool hasBootstrapOption() const;
 
+        bool initialStartOption() const;
+        bool hasInitialStartOption() const;
+
         int alarmId() const;
         bool hasAlarmIdOption() const;
 
