@@ -2544,6 +2544,9 @@ S9sRpcClient::rollingRestart()
     if (options->hasTimeout())
         jobData["stop_timeout"] = options->timeout();
 
+    if (options->hasInitialStartOption())
+        jobData["initial_start"]  = options->initialStartOption();
+
     jobSpec["command"]    = "rolling_restart";
     jobSpec["job_data"]   = jobData;
 
@@ -6926,9 +6929,19 @@ S9sRpcClient::startNode()
     jobData["hostname"]   = node.hostName();
     #endif
 
+    if (options->hasBootstrapOption()
+        && options->hasInitialStartOption())
+    {
+        PRINT_ERROR("Cannot use both --bootstrap and --initial-start options.");
+        return false;
+    }
+
     if (options->hasBootstrapOption())
         jobData["bootstrap"]  = options->bootstrapOption();
-    
+
+    if (options->hasInitialStartOption())
+        jobData["initial_start"]  = options->initialStartOption();
+
     if (node.hasPort())
         jobData["port"]   = node.port();
      
@@ -7499,12 +7512,17 @@ S9sRpcClient::restartNode()
     if (options->force())
         jobData["force_stop"] = true;
 
+    if (options->hasInitialStartOption())
+        jobData["initial_start"]  = options->initialStartOption();
+
     // The jobspec describing the command.
     jobSpec["command"]    = "restart";
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
     job["title"]          = "Restarting Node";
+    if (options->hasInitialStartOption())
+        job["title"]      = "Restarting Node to Resync";
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
