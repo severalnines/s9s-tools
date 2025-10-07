@@ -279,6 +279,7 @@ enum S9sOptionType
     OptionUntil,
     OptionForce,
     OptionBootstrap,
+    OptionInitialStart,
     OptionExtended,
     OptionDry,
     OptionDebug,
@@ -2611,6 +2612,24 @@ bool
 S9sOptions::hasBootstrapOption() const
 {
     return m_options.contains("bootstrap");
+}
+
+/**
+ * \return True if the --initial-start command line option is provided.
+ */
+bool
+S9sOptions::initialStartOption() const
+{
+    if (m_options.contains("initial_start"))
+        return m_options.at("initial_start").toBoolean();
+
+    return false;
+}
+
+bool
+S9sOptions::hasInitialStartOption() const
+{
+    return m_options.contains("initial_start");
 }
 
 bool
@@ -8036,6 +8055,9 @@ S9sOptions::printHelpCluster()
 "  --enterprise-token=TOKEN   The customer's Repo/Download Token for an Enterprise Database.\n"
 "  --percona-client-id=CLIENTID The client ID for Percona Pro Repository\n"
 "  --percona-pro-token=TOKEN  The token for Percona Pro Repository\n"
+"  --bootstrap                Bootstrap the cluster while starting it.\n"
+"  --initial-start            Resynch joining nodes during rolling restart,\n"
+"                             or galera cluster startup.\n"
 
 "  --volumes=LIST             List the volumes for the new container(s).\n"
 "  --vpc-id=ID                The ID of the virtual private cloud.\n"
@@ -8167,6 +8189,8 @@ S9sOptions::printHelpNode()
 "  --begin=TIMESTAMP          The start of the graph interval.\n"
 "  --end=TIMESTAMP            The end of the graph interval.\n"
 "  --force                    Force to execute dangerous operations.\n"
+"  --bootstrap                Bootstrap starting (first) node in cluster.\n"
+"  --initial-start            Resynch node while starting or restarting it.\n"
 "  --graph=NAME               The name of the graph to show.\n"
 "  --node-format=FORMAT       The format string used to print nodes.\n"
 "  --opt-group=GROUP          The configuration option group.\n"
@@ -8607,6 +8631,7 @@ S9sOptions::readOptionsNode(
         // Special job options.
         { "force",            no_argument,       0, OptionForce           },
         { "bootstrap",        no_argument,       0, OptionBootstrap       },
+        { "initial-start",    no_argument,       0, OptionInitialStart    },
 
         // Node options. 
         { "properties",       required_argument, 0, OptionProperties      },
@@ -8911,6 +8936,11 @@ S9sOptions::readOptionsNode(
             case OptionBootstrap:
                 // --bootstrap
                 m_options["bootstrap"] = true;
+                break;
+
+            case OptionInitialStart:
+                // --initial-start
+                m_options["initial_start"] = true;
                 break;
             
             case OptionNodeFormat:
@@ -14630,6 +14660,7 @@ S9sOptions::readOptionsCluster(
         { "backup-id",        required_argument, 0, OptionBackupId        },
         { "force",            no_argument,       0, OptionForce           },
         { "bootstrap",        no_argument,       0, OptionBootstrap       },
+        { "initial-start",    no_argument,       0, OptionInitialStart    },
 
         // Cluster information.
         // http://52.58.107.236/cmon-docs/current/cmonjobs.html#mysql
@@ -15069,6 +15100,11 @@ S9sOptions::readOptionsCluster(
             case OptionBootstrap:
                 // --bootstrap
                 m_options["bootstrap"] = true;
+                break;
+
+            case OptionInitialStart:
+                // --initial-start
+                m_options["initial_start"] = true;
                 break;
 
             case OptionColor:
