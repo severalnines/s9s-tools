@@ -1,4 +1,4 @@
-s9s-tools (1.9.2025100319-testing) UNRELEASED; urgency=medium
+s9s-tools (1.9.2025100816-testing) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
   * Adding new cluster type postgresql_logical.
@@ -108,8 +108,9 @@ s9s-tools (1.9.2024101022-testing) UNRELEASED; urgency=medium
   * Release 1.9.2025072816.
   * Testing release 1.9.2025073017.
   * Testing release 1.9.2025100319.
+  * Testing release 1.9.2025100816.
 
- -- Severalnines <support@severalnines.com>  Fri, 03 Oct 2025 19:56:04 +0900
+ -- Severalnines <support@severalnines.com>  Wed, 08 Oct 2025 16:17:40 +0900
 
 s9s-tools (1.9.2023112922-release1) UNRELEASED; urgency=medium
 
