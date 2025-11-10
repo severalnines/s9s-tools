@@ -7396,6 +7396,9 @@ S9sRpcClient::stageSlave()
     jobData["clusterid"]  = clusterId;
     jobData["replication_slave"] = node.toVariantMap();
     
+    if(options->hasBackupId())
+        jobData["backupid"] = options->backupId();
+
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
 

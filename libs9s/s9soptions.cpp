@@ -8458,6 +8458,7 @@ S9sOptions::printHelpReplication()
 "\n"
 "  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
+"  --backup-id=ID             The ID of the backup to be used for replica rebuild.\n"
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
 "  --replication-master=NODE  The same as --master.\n"
 "  --replication-slave=NODE   The same as --slave.\n"
@@ -11110,6 +11111,7 @@ S9sOptions::readOptionsReplication(
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
         { "remote-cluster-id",required_argument, 0, OptionRemoteClusterId },
+        { "backup-id",        required_argument, 0, OptionBackupId        },
 
         { "link-format",      required_argument, 0, OptionLinkFormat      },
         { "master",           required_argument, 0, OptionMaster          },
@@ -11236,6 +11238,11 @@ S9sOptions::readOptionsReplication(
             case OptionRemoteClusterId:
                 // --remote-cluster-id=ID
                 m_options["remote_cluster_id"] = optarg;
+                break;
+
+            case OptionBackupId:
+                // --backup-id=ID
+                m_options["backup_id"] = optarg;
                 break;
 
             case OptionReportId:
