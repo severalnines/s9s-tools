@@ -7844,7 +7844,6 @@ S9sRpcClient::dropCluster()
     S9sString      uri = "/v2/jobs/";
     bool           retval;
     
-    title = "Remove Cluster";
 
     // The job_data describing the cluster that will be deleted. The drop
     // cluster can only be executed in cluster 0, so we can't put this into the
@@ -7869,7 +7868,8 @@ S9sRpcClient::dropCluster()
     jobSpec["job_data"]   = jobData;
 
     // The job instance describing how the job will be executed.
-    job["title"]          = title;
+    if(!options->title().empty())
+        job["title"] = options->title();
     job["job_spec"]       = jobSpec;
 
     // The request describing we want to register a job instance.
