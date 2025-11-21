@@ -471,6 +471,8 @@ class S9sRpcClient
         bool upgradeCluster();
         bool checkPkgUpgrades();
 
+        bool renewCert();
+
         bool createMaintenance();
 
         bool createMaintenance(

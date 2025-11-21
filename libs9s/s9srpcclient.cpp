@@ -7826,6 +7826,34 @@ S9sRpcClient::checkPkgUpgrades()
 }
 
 /**
+ * This function will create and send a job to
+ * renew certificates used by mssql cluster.
+ */
+bool
+S9sRpcClient::renewCert()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobData["clusterid"] = clusterId;
+
+    jobSpec["command"] = "renew_mssql_certificate";
+
+    job["title"]    = "Renew mssql certificate.";
+    job["job_spec"] = jobSpec;
+
+    request["operation"] = "createJobInstance";
+    request["job"] = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns true if the request was sent and the reply was received (even if the
  *   reply is an error notification).
  *

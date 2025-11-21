@@ -738,6 +738,7 @@ class S9sOptions
         bool isAvailableUpgradesRequested() const; 
         bool isUpgradeClusterRequested() const; 
         bool isCheckPkgUpgradesRequested() const; 
+        bool isRenewCertRequested() const;
         bool isListDatabasesRequested() const; 
         bool isListFilesRequested() const; 
         bool isDropRequested() const;

@@ -490,6 +490,7 @@ enum S9sOptionType
     OptionVirtualIp,
     OptionEthInterface,
     OptionLicense,
+    OptionRenewCert,
 
     OptionDbSchemaCalculateDbGrowth,
     OptionDbSchemaDbGrowth,
@@ -6669,6 +6670,16 @@ S9sOptions::isCheckPkgUpgradesRequested() const
 }
 
 /**
+ * \returns true if the --renew-cert command line option was provided
+ * when the program was started.
+ */
+bool
+S9sOptions::isRenewCertRequested() const
+{
+    return getBool("renew_cert");
+}
+
+/**
  * \returns true if the --list-databases command line option was provided when
  *   the program was started.
  */
@@ -8115,6 +8126,7 @@ S9sOptions::printHelpCluster()
 "\n"
 "Microsoft SQL Server related options\n"
 "  --license=STRING           The license (Evaluation, Developer, etc).\n"
+"  --renew-cert               Renew cluster certificate.\n"
 "Elasticsearch related options\n"
 "  --snapshot-repository=NAME The name of the default snapshot repository to create.\n"
 "  --snapshot-repo-type=TYPE  The type of the snapshot repository to create (fs or fs-nfs).\n"
@@ -12436,6 +12448,9 @@ S9sOptions::checkOptionsCluster()
     if (isListSubscriptionsRequested())
         countOptions++;
 
+    if(isRenewCertRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -14789,6 +14804,8 @@ S9sOptions::readOptionsCluster(
 
         // Options for mssql
         { "license",     required_argument, 0, OptionLicense     },
+        { "renew-cert",  no_argument, 0, OptionRenewCert     },
+
 
         // Opttions for elasticsearch
         { "snapshot-repository", required_argument, 0, OptionSnapshotRepo },
@@ -15838,6 +15855,11 @@ S9sOptions::readOptionsCluster(
             case OptionLicense: 
                 // --license=STRING
                 m_options["license"] = optarg;
+                break;
+
+            case OptionRenewCert:
+                // --renew-cert
+                m_options["renew_cert"] = true;
                 break;
 
             case OptionSnapshotRepo:
