@@ -11317,6 +11317,20 @@ S9sRpcClient::assignedController(S9sOptions *options)
     return executeRequest(uri, request);
 }
 
+/**
+ * \returns set or unset pool mode on a specific controller
+ */
+bool
+S9sRpcClient::setPoolMode(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "setPoolMode";
+    const bool poolMode = options->isSetPoolModeRequested();
+    request["pool_mode"] = poolMode;
+    return executeRequest(uri, request);
+}
+
 
 
 /**

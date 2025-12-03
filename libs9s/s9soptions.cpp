@@ -522,6 +522,8 @@ enum S9sOptionType
     OptionControllersList,
     OptionAssignedController,
     OptionControllerId,
+    OptionSetPoolMode,
+    OptionUnsetPoolMode,
 
     OptionExtensions
 };
@@ -5383,6 +5385,18 @@ bool
 S9sOptions::isAssignedController() const
 {
     return getBool("assigned_controller");
+}
+
+bool
+S9sOptions::isSetPoolModeRequested() const
+{
+    return getBool("set_pool_mode");
+}
+
+bool
+S9sOptions::isUnsetPoolModeRequested() const
+{
+    return getBool("unset_pool_mode");
 }
 
 
@@ -19183,6 +19197,8 @@ S9sOptions::readOptionsControllers(
                     // Main Options
                     {"list",             no_argument, 0,       OptionControllersList},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
+                    {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
+                    {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
@@ -19296,6 +19312,17 @@ S9sOptions::readOptionsControllers(
             case OptionAssignedController:
                 // --assignment
                 m_options["assigned_controller"] = true;
+                break;
+
+            case OptionSetPoolMode:
+                // --set-pool-mode
+                m_options["set_pool_mode"] = true;
+                break;
+
+            case OptionUnsetPoolMode:
+                // --unset-pool-mode
+                m_options["unset_pool_mode"] = true;
+                break;
 
             /*
              * Other options
@@ -19356,6 +19383,12 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isAssignedController())
+        countOptions++;
+
+    if (isSetPoolModeRequested())
+        countOptions++;
+
+    if (isUnsetPoolModeRequested())
         countOptions++;
 
     if (countOptions == 0)

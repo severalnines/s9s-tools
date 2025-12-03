@@ -37,6 +37,25 @@ ID HOSTNAME  POTRT STATUS CLUSTERS
 2  localhost 9500  active 1, 2, 3
 .fi
 
+.TP
+.B --set-pool-mode
+Sets existing controller on pool mode (EXTRA_OPTS=--pool on /etc/default/cmon) and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
+No controller_id is required as affected controller is the one receiving the rpc request
+.nf
+s9s pool-controllers --set-pool-mode
+ID HOSTNAME  POTRT STATUS     CLUSTERS
+2  localhost 9500  restarting 1, 2, 3
+.fi
+
+.TP
+.B --unset-pool-mode
+Removes existing controller on pool mode and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
+No controller_id is required as affected controller is the one receiving the rpc request
+.nf
+s9s pool-controllers --set-pool-mode
+ID HOSTNAME  POTRT STATUS     CLUSTERS
+2  localhost 9500  restarting 1, 2, 3
+.fi
 
 
 

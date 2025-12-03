@@ -1454,6 +1454,11 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printPoolControllers();
         }
+        else if (options->isSetPoolModeRequested() || options->isUnsetPoolModeRequested()) {
+            client.setPoolMode(options);
+            S9sRpcReply reply = client.reply();
+            reply.printPoolControllers();
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }
