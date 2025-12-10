@@ -205,7 +205,7 @@ The investigation was conducted by:
 
 ### s9s process
 
-**Expected:** `/v2/process` or `/v2/processs`
+**Expected:** `/v2/process` or `/v2/processes`
 
 **Violations:**
 - Uses `/v2/clusters` for:
