@@ -106,6 +106,8 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testModifySubscription();
         bool testDropSubscription();
         bool testListSubscriptions();
+
+        bool testAddController();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

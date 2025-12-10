@@ -56,12 +56,21 @@ s9s pool-controllers --unset-pool-mode
 Pool mode unset successfully.
 .fi
 
-
+.B --add-controller
+Installs and sets up new controller instance running in pool mode.
+Providing node hostname with '--nodes' is mandatory.
+.nf
+s9s pool-controllers --add-controller --nodes=10.16.186.189 --provider-version=2.3.4-17176
+.fi
 
 .\"
 .\" Arguments related to list operations
 .\"
 .TP
 .BI \-\^\-controller-id=ID
-This option can be used on list operations to avoid retrieving all controllers 
+This option can be used on list operations to avoid retrieving all controllers
 The ID must be positive corresponding to an existing controller or zero to get all controllers.
+
+.TP
+.BI \-\^\-provider-version=VERSION
+Controller version to be installed.

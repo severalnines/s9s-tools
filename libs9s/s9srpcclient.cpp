@@ -11331,7 +11331,53 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
     return executeRequest(uri, request);
 }
 
+/**
+ * @brief add new controller instance
+ */
+bool
+S9sRpcClient::addNewController(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
 
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+        jobData["port"] = hosts[0].toNode().port();
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "addController operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["disable_selinux"]  = true;
+
+    if (!options->providerVersion().empty())
+        jobData["version"] = options->providerVersion();
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "addController";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Add new controller";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
 
 /**
  * \returns delete watchlists stored on controller DB

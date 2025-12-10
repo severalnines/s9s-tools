@@ -61,6 +61,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testPostgreSqlBackupOptions, retval);
     PERFORM_TEST(testAuditLogEventData, retval);
     PERFORM_TEST(testExternalBackup, retval);
+    PERFORM_TEST(testAddController, retval);
 
     return retval;
 }
@@ -811,6 +812,30 @@ UtS9sOptions::testExternalBackup()
     S9S_COMPARE(options->backupMethod(), "xtrabackupfull");
     S9S_COMPARE(options->backupSourceAddress(), "10.16.186.1");
     S9S_COMPARE(options->backupPath(), "/backup/backup-full.xbstream.gz");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testAddController()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-controller",
+                            "--nodes=10.16.186.1",
+                            "--provider-version=2.3.4-17176",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
+    S9S_COMPARE(options->providerVersion(), "2.3.4-17176");
 
     S9sOptions::uninit();
     return true;

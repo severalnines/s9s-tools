@@ -44,4 +44,5 @@ class UtS9sOptions : public S9sUnitTest
         bool testPostgreSqlBackupOptions();
         bool testAuditLogEventData();
         bool testExternalBackup();
+        bool testAddController();
 };
