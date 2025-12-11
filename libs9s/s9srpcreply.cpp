@@ -1643,8 +1643,8 @@ S9sRpcReply::printPoolControllers()
  *
  * \code
  * s9s controllers --list --controller-id="2"
- * ID HOSTNAME  POTRT STATUS CLUSTERS
- * 2  localhost 9500  active 1, 2, 3
+ * ID HOSTNAME  POTRT STATUS ROLE  CLUSTERS
+ * 2  localhost 9500  active main  1, 2, 3
  *
  * \endcode
  *
@@ -1670,6 +1670,7 @@ S9sRpcReply::printPoolControllersLong()
     S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);
     S9sFormat      statusFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      roleFormat("\033[94m", TERM_NORMAL);
     S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
 
 
@@ -1682,11 +1683,27 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      port = w["port"].toString();
         S9sString      status = w["status"].toString();
         S9sString      clusters = w["clusters"].toString();
+        S9sString      role;
+
+        if (w.contains("properties"))
+        {
+            S9sVariantMap props = w["properties"].toVariantMap();
+            S9sString roleRaw = props["role"].toString();
+            if (roleRaw == "full_controller")
+                role = "member";
+            else if (roleRaw == "main_controller")
+                role = "main";
+            else
+                role = roleRaw;
+        }
+        else
+            role = "";
 
         idFormat.widen(id);
         hostnameFormat.widen(hostname);
         portFormat.widen(port);
         statusFormat.widen(status);
+        roleFormat.widen(role);
         clustersFormat.widen(clusters);
     }
     // print header
@@ -1697,6 +1714,7 @@ S9sRpcReply::printPoolControllersLong()
         hostnameFormat.printHeader("HOSTNAME");
         portFormat.printHeader("PORT");
         statusFormat.printHeader("STATUS");
+        roleFormat.printHeader("ROLE");
         clustersFormat.printHeader("CLUSTERS");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
@@ -1711,10 +1729,27 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      status = c["status"].toString();
         S9sString      clusters = c["clusters"].toString();
 
+        // role
+        S9sString      role;
+        if (c.contains("properties"))
+        {
+            S9sVariantMap props = c["properties"].toVariantMap();
+            S9sString roleRaw = props["role"].toString();
+            if (roleRaw == "full_controller")
+                role = "member";
+            else if (roleRaw == "main_controller")
+                role = "main";
+            else
+                role = roleRaw;
+        }
+        else
+            role = "";
+
         idFormat.printf(id);
         hostnameFormat.printf(hostname);
         portFormat.printf(port);
         statusFormat.printf(status);
+        roleFormat.printf(role);
         clustersFormat.printf(clusters);
         ::printf("\n");
     }
