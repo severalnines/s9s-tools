@@ -1454,6 +1454,19 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printPoolControllers();
         }
+        else if (options->isSetPoolModeRequested() || options->isUnsetPoolModeRequested()) {
+            client.setPoolMode(options);
+            S9sRpcReply reply = client.reply();
+            // check invalid request error on reply
+            if (!reply.isOk()) {
+                PRINT_ERROR("Failed to set pool mode: %s", STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                const S9sString mode = options->isSetPoolModeRequested() ? "set" : "unset";
+                ::printf("Pool mode %s successfully.\n", STR(mode));
+            }
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }

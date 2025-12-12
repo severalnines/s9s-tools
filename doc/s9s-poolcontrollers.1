@@ -22,10 +22,11 @@ should be performed. This "main option" should be one of the following:
 .B --list
 Gets existing controllers on pool. When providing '--controller-id' specific controller is returned.
 Use 0 or ommit options to get all existing whatchlist.
+Role 'member' is a controller in pool while 'main' means that it also stores configuration and cmon db.
 .nf
 s9s pool-controllers --list --controller-id="2" 
-ID HOSTNAME  POTRT STATUS CLUSTERS
-2  localhost 9500  active 1, 2, 3
+ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
+2   kaitoserver 9500 active main 481,480,479,477,473,472,471
 .fi
 
 .TP
@@ -33,10 +34,27 @@ ID HOSTNAME  POTRT STATUS CLUSTERS
 Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory
 .nf
 s9s pool-controllers --assignment --cluster-id="2"
-ID HOSTNAME  POTRT STATUS CLUSTERS
-2  localhost 9500  active 1, 2, 3
+ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
+2   kaitoserver 9500 active main 481,480,479,477,473,472,471
 .fi
 
+.TP
+.B --set-pool-mode
+Sets existing controller on pool mode (EXTRA_OPTS=--pool on /etc/default/cmon) and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
+No controller_id is required as affected controller is the one receiving the rpc request
+.nf
+s9s pool-controllers --set-pool-mode
+Pool mode set successfully.
+.fi
+
+.TP
+.B --unset-pool-mode
+Removes existing controller on pool mode and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
+No controller_id is required as affected controller is the one receiving the rpc request
+.nf
+s9s pool-controllers --unset-pool-mode
+Pool mode unset successfully.
+.fi
 
 
 

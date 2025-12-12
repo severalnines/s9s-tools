@@ -364,6 +364,7 @@ class S9sRpcClient
          */
         bool listControllers(S9sOptions *options);
         bool assignedController(S9sOptions *options);
+        bool setPoolMode(S9sOptions *options);
 
         /*
          * Requests related to logical replication

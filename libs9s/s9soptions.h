@@ -531,6 +531,8 @@ class S9sOptions
         bool isPoolControllersOperation() const;
         bool isListControllers() const;
         bool isAssignedController() const;
+        bool isSetPoolModeRequested() const;
+        bool isUnsetPoolModeRequested() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
