@@ -1467,6 +1467,12 @@ S9sBusinessLogic::execute()
                 ::printf("Pool mode %s successfully.\n", STR(mode));
             }
         }
+        else if (options->isAddController())
+        {
+            success = client.addNewController(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }

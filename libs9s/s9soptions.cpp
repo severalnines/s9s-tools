@@ -519,6 +519,7 @@ enum S9sOptionType
     OptionWatchlistOwnerId,
     OptionWatchlistProperties,
 
+    OptionAddController,
     OptionControllersList,
     OptionAssignedController,
     OptionControllerId,
@@ -5399,6 +5400,15 @@ S9sOptions::isUnsetPoolModeRequested() const
     return getBool("unset_pool_mode");
 }
 
+/**
+ * \returns true if the "add-controller" function is requested by providing
+ * the --add-controller command line option.
+ */
+bool
+S9sOptions::isAddController() const
+{
+    return getBool("add_controller");
+}
 
 /**
  * \returns true if the --add-publication command line option was provided.
@@ -8578,10 +8588,12 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
+"  --add-controller           To create a new controller instance on specified host.\n"
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
+"  --nodes=NODELIST           The nodes for the controller operation.\n"
 "\n"
     );
 }
@@ -14775,6 +14787,11 @@ S9sOptions::readOptionsCluster(
         { "generate-key",     no_argument,       0, 'g'                   }, 
         { "image",            required_argument, 0, OptionImage           },
         { "image-os-user",    required_argument, 0, OptionImageOsUser     },
+           { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
+        { "os-sudo-user",     required_argument, 0, OptionOsSudoUser      },
+        { "os-elevation",     required_argument, 0, OptionOsElevation     },
+        { "access-check-cmd", required_argument, 0, OptionAccessCheckCmd  },
+        { "os-user",          required_argument, 0, OptionOsUser          },
         { "os-key-file",      required_argument, 0, OptionOsKeyFile        },
         { "os-password",      required_argument, 0, OptionOsPassword       },
         { "os-user",          required_argument, 0, OptionOsUser           },
@@ -19194,17 +19211,28 @@ S9sOptions::readOptionsControllers(
                     {"verbose",          no_argument,       0, 'v'},
                     {"version",          no_argument,       0, 'V'},
 
+                    { "os-sudo-password",   required_argument, 0, OptionOsSudoPassword },
+                    { "os-sudo-user",       required_argument, 0, OptionOsSudoUser },
+                    { "os-elevation",       required_argument, 0, OptionOsElevation },
+                    { "access-check-cmd",   required_argument, 0, OptionAccessCheckCmd },
+                    { "os-user",            required_argument, 0, OptionOsUser },
+                    { "os-key-file",        required_argument, 0, OptionOsKeyFile },
+                    { "os-password",        required_argument, 0, OptionOsPassword },
+                    
                     // Main Options
                     {"list",             no_argument, 0,       OptionControllersList},
+                    {"add-controller",   no_argument, 0,       OptionAddController},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
-
+                    {"provider-version", required_argument, 0, OptionProviderVersion},
+                    
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
+                    {"nodes",            required_argument, 0, OptionNodes},
 
                     {0, 0,                                  0, 0}
             };
@@ -19300,6 +19328,40 @@ S9sOptions::readOptionsControllers(
                 m_options["rpc_tls"] = true;
                 break;
 
+            case OptionOsSudoPassword:
+                // --os-sudo-password
+                m_options["os_sudo_password"] = optarg;
+                break;
+
+            case OptionOsSudoUser:
+                // --os-sudo-user
+                m_options["os_sudo_user"] = optarg;
+                break;
+
+            case OptionOsElevation:
+                // --os-elevation
+                m_options["os_elevation"] = optarg;
+                break;
+
+            case OptionAccessCheckCmd:
+                // --access-check-cmd
+                m_options["access_check_cmd"] = optarg;
+                break;
+
+            case OptionOsKeyFile:
+                // --os-key-file=PATH
+                m_options["os_key_file"] = optarg;
+                break;
+
+            case OptionOsPassword:
+                // --os-password=PASSWORD
+                m_options["os_password"] = optarg;
+                break;
+
+            case OptionOsUser:
+                // --os-user=USERNAME
+                m_options["os_user"] = optarg;
+                break;
 
             /*
              * Main options
@@ -19324,6 +19386,11 @@ S9sOptions::readOptionsControllers(
                 m_options["unset_pool_mode"] = true;
                 break;
 
+            case OptionAddController:
+                // --add-controller
+                m_options["add_controller"] = true;
+                break;
+
             /*
              * Other options
              */
@@ -19344,6 +19411,16 @@ S9sOptions::readOptionsControllers(
                 m_options["comment"] = optarg;
                 break;
 
+            case OptionNodes:
+                // --nodes=LIST
+                if (!setNodes(optarg))
+                    return false;
+                break;
+
+            case OptionProviderVersion:
+                // --provider-version=STRING
+                m_options["provider_version"] = optarg;
+                break;
 
             case '?':
             default:
@@ -19389,6 +19466,9 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isUnsetPoolModeRequested())
+        countOptions++;
+
+    if (isAddController())
         countOptions++;
 
     if (countOptions == 0)

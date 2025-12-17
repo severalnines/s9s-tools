@@ -167,6 +167,8 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testDropSubscription, retval);
     PERFORM_TEST(testListSubscriptions, retval);
 
+    PERFORM_TEST(testAddController, retval);
+
     return retval;
 }
 
@@ -2675,6 +2677,36 @@ UtS9sRpcClient::testListSubscriptions()
 
     S9S_COMPARE(payload["operation"], "getSubscriptions");
     S9S_COMPARE(payload["subcluster_name"], "target");
+
+    return true;
+}
+
+
+bool
+UtS9sRpcClient::testAddController()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->setNodes("10.16.186.1:9500");
+    options->m_options["provider_version"] = "2.3.4-17176";
+
+    S9S_VERIFY(client.addNewController(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "addController");
+
+    auto jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["version"], "2.3.4-17176");
+    S9S_COMPARE(jobData["server_address"], "10.16.186.1");
+    S9S_COMPARE(jobData["port"], 9500);
 
     return true;
 }
