@@ -525,6 +525,8 @@ enum S9sOptionType
     OptionControllerId,
     OptionSetPoolMode,
     OptionUnsetPoolMode,
+    OptionStartController,
+    OptionStopController,
 
     OptionExtensions
 };
@@ -5411,6 +5413,24 @@ S9sOptions::isAddController() const
 }
 
 /**
+ * \returns true if the --start command line option was provided for controllers
+ */
+bool
+S9sOptions::isStartController() const
+{
+    return getBool("start_controller");
+}
+
+/**
+ * \returns true if the --stop command line option was provided for controllers
+ */
+bool
+S9sOptions::isStopController() const
+{
+    return getBool("stop_controller");
+}
+
+/**
  * \returns true if the --add-publication command line option was provided.
  */
 bool
@@ -8590,6 +8610,8 @@ S9sOptions::printHelpControllers()
 "  --list                     To retrieve the list of stored controllers.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
+"  --start                    To start a controller (requires --controller-id).\n"
+"  --stop                     To stop a controller (requires --controller-id).\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
@@ -19225,6 +19247,8 @@ S9sOptions::readOptionsControllers(
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
+                    {"start",            no_argument, 0,       OptionStartController},
+                    {"stop",             no_argument, 0,       OptionStopController},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
@@ -19391,6 +19415,16 @@ S9sOptions::readOptionsControllers(
                 m_options["add_controller"] = true;
                 break;
 
+            case OptionStartController:
+                // --start
+                m_options["start_controller"] = true;
+                break;
+
+            case OptionStopController:
+                // --stop
+                m_options["stop_controller"] = true;
+                break;
+
             /*
              * Other options
              */
@@ -19471,6 +19505,12 @@ S9sOptions::checkOptionsControllers()
     if (isAddController())
         countOptions++;
 
+    if (isStartController())
+        countOptions++;
+
+    if (isStopController())
+        countOptions++;
+
     if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
@@ -19482,6 +19522,19 @@ S9sOptions::checkOptionsControllers()
         m_errorMessage = "Please provide only one of the main options.";
         m_exitStatus = BadOptions;
         return false;
+    }
+
+    /*
+     * Validate that --controller-id is provided for start/stop operations
+     */
+    if (isStartController() || isStopController())
+    {
+        if (controllerId() <= 0)
+        {
+            m_errorMessage = "The --controller-id option is required for start/stop operations.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;

@@ -1473,6 +1473,30 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
+        else if (options->isStartController())
+        {
+            client.startController(options);
+            S9sRpcReply reply = client.reply();
+            if (!reply.isOk()) {
+                PRINT_ERROR("Failed to start controller: %s", STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                ::printf("Controller started successfully.\n");
+            }
+        }
+        else if (options->isStopController())
+        {
+            client.stopController(options);
+            S9sRpcReply reply = client.reply();
+            if (!reply.isOk()) {
+                PRINT_ERROR("Failed to stop controller: %s", STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                ::printf("Controller stopped successfully.\n");
+            }
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }
