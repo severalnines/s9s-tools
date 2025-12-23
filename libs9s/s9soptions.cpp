@@ -521,6 +521,7 @@ enum S9sOptionType
 
     OptionAddController,
     OptionControllersList,
+    OptionPrintDeploymentInfo,
     OptionAssignedController,
     OptionControllerId,
     OptionSetPoolMode,
@@ -5381,6 +5382,15 @@ S9sOptions::isListControllers() const
 }
 
 /**
+ * \returns true if the --print-deployment-info option was provided for controllers listing.
+ */
+bool
+S9sOptions::isPrintDeploymentInfoRequested() const
+{
+    return getBool("print_deployment_info");
+}
+
+/**
  * \returns true if the "assigned_controller" function is requested by providing the --assigned-controller
  *   command line option.
  */
@@ -8608,6 +8618,7 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
+"  --print-deployment-info    Print all controllers, including deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
 "  --start                    To start a controller (requires --controller-id).\n"
@@ -19243,6 +19254,7 @@ S9sOptions::readOptionsControllers(
                     
                     // Main Options
                     {"list",             no_argument, 0,       OptionControllersList},
+                    {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
@@ -19393,6 +19405,11 @@ S9sOptions::readOptionsControllers(
             case OptionControllersList:
                 // --list
                 m_options["list_controllers"] = true;
+                break;
+
+            case OptionPrintDeploymentInfo:
+                // --print-deployment-info
+                m_options["print_deployment_info"] = true;
                 break;
 
             case OptionAssignedController:

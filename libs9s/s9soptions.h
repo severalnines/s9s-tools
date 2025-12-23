@@ -530,6 +530,7 @@ class S9sOptions
         bool isWatchlistsOperation() const;
         bool isPoolControllersOperation() const;
         bool isListControllers() const;
+        bool isPrintDeploymentInfoRequested() const;
         bool isAssignedController() const;
         bool isSetPoolModeRequested() const;
         bool isUnsetPoolModeRequested() const;

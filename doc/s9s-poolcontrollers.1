@@ -90,5 +90,10 @@ The ID must be positive corresponding to an existing controller or zero to get a
 For start and stop operations, this option is mandatory and must specify a valid controller ID.
 
 .TP
+.B --print-deployment-info
+When listing controllers, print all controllers including those without dynamic status.
+By default only controllers with dynamic status ('stopped', 'starting', 'active', 'standalone') are shown.
+
+.TP
 .BI \-\^\-provider-version=VERSION
 Controller version to be installed.
