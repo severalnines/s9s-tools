@@ -8594,6 +8594,7 @@ S9sOptions::printHelpControllers()
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
+"  --use-internal-repos       Use local repos when installing software.\n"
 "\n"
     );
 }
@@ -19219,6 +19220,7 @@ S9sOptions::readOptionsControllers(
                     { "os-key-file",        required_argument, 0, OptionOsKeyFile },
                     { "os-password",        required_argument, 0, OptionOsPassword },
                     
+                    
                     // Main Options
                     {"list",             no_argument, 0,       OptionControllersList},
                     {"add-controller",   no_argument, 0,       OptionAddController},
@@ -19229,6 +19231,7 @@ S9sOptions::readOptionsControllers(
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
+                    {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -19420,6 +19423,11 @@ S9sOptions::readOptionsControllers(
             case OptionProviderVersion:
                 // --provider-version=STRING
                 m_options["provider_version"] = optarg;
+                break;
+
+            case OptionUseInternalRepos:
+                // --use-internal-repos
+                m_options["use_internal_repos"] = true;
                 break;
 
             case '?':
