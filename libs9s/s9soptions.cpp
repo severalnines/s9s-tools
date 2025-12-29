@@ -8630,6 +8630,10 @@ S9sOptions::printHelpControllers()
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
 "\n"
+"Job related options:\n"
+"  --log                      Wait and monitor job messages.\n"
+"  --wait                     Wait for job completion.\n"
+"\n"
     );
 }
 
@@ -19271,6 +19275,10 @@ S9sOptions::readOptionsControllers(
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     
+                    // Job Related Options
+                    {"log",              no_argument,       0, 'G'},
+                    {"wait",             no_argument,       0, OptionWait},
+                    
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
                     {"nodes",            required_argument, 0, OptionNodes},
@@ -19283,7 +19291,7 @@ S9sOptions::readOptionsControllers(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:t:V",
+                argc, argv, "hvc:t:VG",
                 long_options, &option_index);
 
         if (c == -1)
@@ -19506,6 +19514,19 @@ S9sOptions::readOptionsControllers(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            /*
+             * Job related options.
+             */
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
                 break;
 
             case '?':
