@@ -42,6 +42,11 @@ ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 .B --set-pool-mode
 Sets existing controller on pool mode (EXTRA_OPTS=--pool on /etc/default/cmon) and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
 No controller_id is required as affected controller is the one receiving the rpc request
+.RS
+.TP
+.B --conf-storage=MODE
+Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'nfs' or 'k8s'. If omitted, no 'conf_storage' is set on the operation.
+.RE
 .nf
 s9s pool-controllers --set-pool-mode
 Pool mode set successfully.

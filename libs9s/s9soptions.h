@@ -552,6 +552,7 @@ class S9sOptions
 
         S9sString userPreferencesToSet() const;
         S9sString userPreferencesToDelete() const;
+        S9sString confStorage() const;
 
         bool isHelpRequested() const;
         bool isListRequested() const;

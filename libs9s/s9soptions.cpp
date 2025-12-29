@@ -526,6 +526,7 @@ enum S9sOptionType
     OptionControllerId,
     OptionSetPoolMode,
     OptionUnsetPoolMode,
+    OptionConfStorage,
     OptionStartController,
     OptionStopController,
 
@@ -8618,7 +8619,7 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
-"  --print-deployment-info    Print all controllers, including deployment info.\n"
+"  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
 "  --start                    To start a controller (requires --controller-id).\n"
@@ -19265,6 +19266,7 @@ S9sOptions::readOptionsControllers(
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
+                    {"conf-storage",     required_argument, 0, OptionConfStorage},
                     
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -19427,6 +19429,31 @@ S9sOptions::readOptionsControllers(
                 m_options["unset_pool_mode"] = true;
                 break;
 
+            case OptionConfStorage:
+                // --conf-storage=<nfs|k8s>
+                if (optarg)
+                {
+                    S9sString val = optarg;
+                    val = val.toLower();
+                    if (val == "nfs" || val == "k8s")
+                    {
+                        m_options["conf_storage"] = val;
+                    }
+                    else
+                    {
+                        m_errorMessage = "Invalid value for --conf-storage. Allowed: 'nfs' or 'k8s'.";
+                        m_exitStatus = BadOptions;
+                        return false;
+                    }
+                }
+                else
+                {
+                    m_errorMessage = "Missing value for --conf-storage.";
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
             case OptionAddController:
                 // --add-controller
                 m_options["add_controller"] = true;
@@ -19541,6 +19568,24 @@ S9sOptions::checkOptionsControllers()
         return false;
     }
 
+    // Validate conf-storage only when relevant
+    if (!getString("conf_storage").empty())
+    {
+        if (!isSetPoolModeRequested())
+        {
+            m_errorMessage = "--conf-storage can only be used with --set-pool-mode.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        S9sString val = getString("conf_storage").toLower();
+        if (!(val == "nfs" || val == "k8s"))
+        {
+            m_errorMessage = "Invalid value for --conf-storage. Allowed: 'nfs' or 'k8s'.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
     /*
      * Validate that --controller-id is provided for start/stop operations
      */
@@ -19584,6 +19629,12 @@ S9sOptions::privateKeyPath() const
         authKey.sprintf("~/.s9s/%s.key", STR(userName()));
 
     return authKey;
+}
+
+S9sString
+S9sOptions::confStorage() const
+{
+    return getString("conf_storage");
 }
 
 S9sString

@@ -11328,6 +11328,9 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
     request["operation"] = "setPoolMode";
     const bool poolMode = options->isSetPoolModeRequested();
     request["pool_mode"] = poolMode;
+    const S9sString confStorage = options->confStorage();
+    if (!confStorage.empty())
+        request["conf_storage"] = confStorage;
     return executeRequest(uri, request);
 }
 
