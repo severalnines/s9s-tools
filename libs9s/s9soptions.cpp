@@ -521,10 +521,14 @@ enum S9sOptionType
 
     OptionAddController,
     OptionControllersList,
+    OptionPrintDeploymentInfo,
     OptionAssignedController,
     OptionControllerId,
     OptionSetPoolMode,
     OptionUnsetPoolMode,
+    OptionConfStorage,
+    OptionStartController,
+    OptionStopController,
 
     OptionExtensions
 };
@@ -5379,6 +5383,15 @@ S9sOptions::isListControllers() const
 }
 
 /**
+ * \returns true if the --print-deployment-info option was provided for controllers listing.
+ */
+bool
+S9sOptions::isPrintDeploymentInfoRequested() const
+{
+    return getBool("print_deployment_info");
+}
+
+/**
  * \returns true if the "assigned_controller" function is requested by providing the --assigned-controller
  *   command line option.
  */
@@ -5408,6 +5421,24 @@ bool
 S9sOptions::isAddController() const
 {
     return getBool("add_controller");
+}
+
+/**
+ * \returns true if the --start command line option was provided for controllers
+ */
+bool
+S9sOptions::isStartController() const
+{
+    return getBool("start_controller");
+}
+
+/**
+ * \returns true if the --stop command line option was provided for controllers
+ */
+bool
+S9sOptions::isStopController() const
+{
+    return getBool("stop_controller");
 }
 
 /**
@@ -8588,13 +8619,20 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
+"  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
+"  --start                    To start a controller (requires --controller-id).\n"
+"  --stop                     To stop a controller (requires --controller-id).\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"\n"
+"Job related options:\n"
+"  --log                      Wait and monitor job messages.\n"
+"  --wait                     Wait for job completion.\n"
 "\n"
     );
 }
@@ -19223,15 +19261,23 @@ S9sOptions::readOptionsControllers(
                     
                     // Main Options
                     {"list",             no_argument, 0,       OptionControllersList},
+                    {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
+                    {"start",            no_argument, 0,       OptionStartController},
+                    {"stop",             no_argument, 0,       OptionStopController},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
+                    {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+                    
+                    // Job Related Options
+                    {"log",              no_argument,       0, 'G'},
+                    {"wait",             no_argument,       0, OptionWait},
                     
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -19245,7 +19291,7 @@ S9sOptions::readOptionsControllers(
     {
         int option_index = 0;
         c = getopt_long(
-                argc, argv, "hvc:t:V",
+                argc, argv, "hvc:t:VG",
                 long_options, &option_index);
 
         if (c == -1)
@@ -19374,6 +19420,11 @@ S9sOptions::readOptionsControllers(
                 m_options["list_controllers"] = true;
                 break;
 
+            case OptionPrintDeploymentInfo:
+                // --print-deployment-info
+                m_options["print_deployment_info"] = true;
+                break;
+
             case OptionAssignedController:
                 // --assignment
                 m_options["assigned_controller"] = true;
@@ -19389,9 +19440,44 @@ S9sOptions::readOptionsControllers(
                 m_options["unset_pool_mode"] = true;
                 break;
 
+            case OptionConfStorage:
+                // --conf-storage=<nfs|k8s>
+                if (optarg)
+                {
+                    S9sString val = optarg;
+                    val = val.toLower();
+                    if (val == "nfs" || val == "k8s")
+                    {
+                        m_options["conf_storage"] = val;
+                    }
+                    else
+                    {
+                        m_errorMessage = "Invalid value for --conf-storage. Allowed: 'nfs' or 'k8s'.";
+                        m_exitStatus = BadOptions;
+                        return false;
+                    }
+                }
+                else
+                {
+                    m_errorMessage = "Missing value for --conf-storage.";
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
             case OptionAddController:
                 // --add-controller
                 m_options["add_controller"] = true;
+                break;
+
+            case OptionStartController:
+                // --start
+                m_options["start_controller"] = true;
+                break;
+
+            case OptionStopController:
+                // --stop
+                m_options["stop_controller"] = true;
                 break;
 
             /*
@@ -19428,6 +19514,19 @@ S9sOptions::readOptionsControllers(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            /*
+             * Job related options.
+             */
+            case 'G':
+                // -G, --log
+                m_options["log"] = true;
+                break;
+
+            case OptionWait:
+                // --wait
+                m_options["wait"] = true;
                 break;
 
             case '?':
@@ -19479,6 +19578,12 @@ S9sOptions::checkOptionsControllers()
     if (isAddController())
         countOptions++;
 
+    if (isStartController())
+        countOptions++;
+
+    if (isStopController())
+        countOptions++;
+
     if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
@@ -19490,6 +19595,37 @@ S9sOptions::checkOptionsControllers()
         m_errorMessage = "Please provide only one of the main options.";
         m_exitStatus = BadOptions;
         return false;
+    }
+
+    // Validate conf-storage only when relevant
+    if (!getString("conf_storage").empty())
+    {
+        if (!isSetPoolModeRequested())
+        {
+            m_errorMessage = "--conf-storage can only be used with --set-pool-mode.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+        S9sString val = getString("conf_storage").toLower();
+        if (!(val == "nfs" || val == "k8s"))
+        {
+            m_errorMessage = "Invalid value for --conf-storage. Allowed: 'nfs' or 'k8s'.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    /*
+     * Validate that --controller-id is provided for start/stop operations
+     */
+    if (isStartController() || isStopController())
+    {
+        if (controllerId() <= 0)
+        {
+            m_errorMessage = "The --controller-id option is required for start/stop operations.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;
@@ -19522,6 +19658,12 @@ S9sOptions::privateKeyPath() const
         authKey.sprintf("~/.s9s/%s.key", STR(userName()));
 
     return authKey;
+}
+
+S9sString
+S9sOptions::confStorage() const
+{
+    return getString("conf_storage");
 }
 
 S9sString

@@ -42,6 +42,11 @@ ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 .B --set-pool-mode
 Sets existing controller on pool mode (EXTRA_OPTS=--pool on /etc/default/cmon) and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
 No controller_id is required as affected controller is the one receiving the rpc request
+.RS
+.TP
+.B --conf-storage=MODE
+Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'nfs' or 'k8s'. If omitted, no 'conf_storage' is set on the operation.
+.RE
 .nf
 s9s pool-controllers --set-pool-mode
 Pool mode set successfully.
@@ -56,11 +61,28 @@ s9s pool-controllers --unset-pool-mode
 Pool mode unset successfully.
 .fi
 
+.TP
 .B --add-controller
 Installs and sets up new controller instance running in pool mode.
 Providing node hostname with '--nodes' is mandatory.
 .nf
 s9s pool-controllers --add-controller --nodes=10.16.186.189 --provider-version=2.3.4-17176
+.fi
+
+.TP
+.B --start
+Starts a controller instance. The '--controller-id' option is mandatory.
+.nf
+s9s pool-controllers --start --controller-id=2
+Controller started successfully.
+.fi
+
+.TP
+.B --stop
+Stops a controller instance. The '--controller-id' option is mandatory.
+.nf
+s9s pool-controllers --stop --controller-id=2
+Controller stopped successfully.
 .fi
 
 .\"
@@ -70,6 +92,12 @@ s9s pool-controllers --add-controller --nodes=10.16.186.189 --provider-version=2
 .BI \-\^\-controller-id=ID
 This option can be used on list operations to avoid retrieving all controllers
 The ID must be positive corresponding to an existing controller or zero to get all controllers.
+For start and stop operations, this option is mandatory and must specify a valid controller ID.
+
+.TP
+.B --print-deployment-info
+When listing controllers, print all controllers including those without dynamic status.
+By default only controllers with dynamic status ('stopped', 'starting', 'active', 'standalone') are shown.
 
 .TP
 .BI \-\^\-provider-version=VERSION

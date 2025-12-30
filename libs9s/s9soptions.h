@@ -530,10 +530,13 @@ class S9sOptions
         bool isWatchlistsOperation() const;
         bool isPoolControllersOperation() const;
         bool isListControllers() const;
+        bool isPrintDeploymentInfoRequested() const;
         bool isAssignedController() const;
         bool isSetPoolModeRequested() const;
         bool isUnsetPoolModeRequested() const;
         bool isAddController() const;
+        bool isStartController() const;
+        bool isStopController() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -549,6 +552,7 @@ class S9sOptions
 
         S9sString userPreferencesToSet() const;
         S9sString userPreferencesToDelete() const;
+        S9sString confStorage() const;
 
         bool isHelpRequested() const;
         bool isListRequested() const;

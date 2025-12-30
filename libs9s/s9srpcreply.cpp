@@ -445,9 +445,6 @@ S9sRpcReply::printLdapConfig()
       "host": "",
       "hostId": 1,
       "hostname": "192.168.0.227",
-      "info": "",
-      "innodb_status": "",
-      "innodb_trx_id": "",
       "instance": "192.168.0.227:3306",
       "lastseen": 139929287899184,
       "message": "",
@@ -458,7 +455,6 @@ S9sRpcReply::printLdapConfig()
       "sql": "",
       "state": "WSREP aborter idle",
       "time": 2292,
-      "user": "system user"
     },
  */
 void 
@@ -1674,8 +1670,32 @@ S9sRpcReply::printPoolControllersLong()
     S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
 
 
+    // Filter controllers depending on requested output mode (only for list operation)
+    const bool printAll = options->isPrintDeploymentInfoRequested();
+    const bool isListOperation = contains("controllers");
+    S9sVariantList filtered;
+    if (isListOperation)
+    {
+        for (const auto & c : controllers)
+        {
+            S9sVariantMap  w = c.toVariantMap();
+            S9sString      status = w["status"].toString();
+            const bool isDynamic =
+                    status == "stopped" ||
+                    status == "starting" ||
+                    status == "active" ||
+                    status == "standalone";
+            if (printAll || isDynamic)
+                filtered << w;
+        }
+    }
+    else
+    {
+        filtered = controllers;
+    }
+
     // set width
-    for (const auto & c : controllers)
+    for (const auto & c : filtered)
     {
         S9sVariantMap  w = c.toVariantMap();
         S9sString      id = w["controller_id"].toString();
@@ -1720,7 +1740,7 @@ S9sRpcReply::printPoolControllersLong()
         ::printf("\n");
     }
     // print data
-    for (const auto & cl : controllers)
+    for (const auto & cl : filtered)
     {
         S9sVariantMap  c = cl.toVariantMap();
         S9sString      id = c["controller_id"].toString();

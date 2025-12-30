@@ -11328,6 +11328,9 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
     request["operation"] = "setPoolMode";
     const bool poolMode = options->isSetPoolModeRequested();
     request["pool_mode"] = poolMode;
+    const S9sString confStorage = options->confStorage();
+    if (!confStorage.empty())
+        request["conf_storage"] = confStorage;
     return executeRequest(uri, request);
 }
 
@@ -11376,6 +11379,54 @@ S9sRpcClient::addNewController(S9sOptions *options)
     request["operation"] = "createJobInstance";
     request["job"]       = job;
 
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Starts a controller instance
+ */
+bool
+S9sRpcClient::startController(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "startController";
+    
+    if (options->controllerId() > 0)
+        request["controller_id"] = options->controllerId();
+    else
+    {
+        PRINT_ERROR("The --controller-id option must be specified for startController operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Stops a controller instance
+ */
+bool
+S9sRpcClient::stopController(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "stopController";
+    
+    if (options->controllerId() > 0)
+        request["controller_id"] = options->controllerId();
+    else
+    {
+        PRINT_ERROR("The --controller-id option must be specified for stopController operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    
     return executeRequest(uri, request);
 }
 
