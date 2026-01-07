@@ -11431,6 +11431,30 @@ S9sRpcClient::stopController(S9sOptions *options)
 }
 
 /**
+ * \returns true if the request was successfully sent
+ *
+ * Removes a controller instance
+ */
+bool
+S9sRpcClient::removeController(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "removeController";
+
+    if (options->controllerId() > 0)
+        request["controller_id"] = options->controllerId();
+    else
+    {
+        PRINT_ERROR("The --controller-id option must be specified for removeController operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns delete watchlists stored on controller DB
  *
  */
