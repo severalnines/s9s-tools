@@ -1505,15 +1505,9 @@ S9sBusinessLogic::execute()
         }
         else if (options->isRemoveController())
         {
-            client.removeController(options);
+            success = client.removeController(options);
             S9sRpcReply reply = client.reply();
-            if (!reply.isOk()) {
-                PRINT_ERROR("Failed to remove controller: %s", STR(reply.errorString()));
-                options->setExitStatus(S9sOptions::Failed);
-            }
-            else {
-                ::printf("Controller removed successfully.\n");
-            }
+            maybeJobRegistered(client, clusterId, success);
         }
         else
             PRINT_ERROR("Unknown controllers operation.");

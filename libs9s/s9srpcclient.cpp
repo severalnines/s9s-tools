@@ -11374,7 +11374,7 @@ S9sRpcClient::addNewController(S9sOptions *options)
 
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
-    job["title"]    = "Add new controller";
+    job["title"]    = "Create Controller";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
@@ -11454,13 +11454,16 @@ S9sRpcClient::removeController(S9sOptions *options)
         return false;
     }
 
+    if (options->uninstall())
+        jobData["uninstall"] = true;
+
     // The jobspec describing the command.
     jobSpec["command"]  = "removeController";
     jobSpec["job_data"] = jobData;
 
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
-    job["title"]    = "Remove controller";
+    job["title"]    = "Remove Controller";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;

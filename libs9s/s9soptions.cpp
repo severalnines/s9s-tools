@@ -8640,6 +8640,7 @@ S9sOptions::printHelpControllers()
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --uninstall                Uninstall software when removing controller.\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -19286,6 +19287,7 @@ S9sOptions::readOptionsControllers(
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+                    {"uninstall",        no_argument,       0, OptionUninstall},
                     
                     // Job Related Options
                     {"log",              no_argument,       0, 'G'},
@@ -19531,6 +19533,11 @@ S9sOptions::readOptionsControllers(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionUninstall:
+                // --uninstall
+                m_options["uninstall"] = true;
                 break;
 
             /*
