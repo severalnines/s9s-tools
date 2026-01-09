@@ -11438,18 +11438,32 @@ S9sRpcClient::stopController(S9sOptions *options)
 bool
 S9sRpcClient::removeController(S9sOptions *options)
 {
-    const S9sString uri = "/v2/poolcontrollers/";
-    S9sVariantMap  request;
-    request["operation"] = "removeController";
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
 
     if (options->controllerId() > 0)
-        request["controller_id"] = options->controllerId();
+        jobData["controller_id"] = options->controllerId();
     else
     {
         PRINT_ERROR("The --controller-id option must be specified for removeController operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "removeController";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Remove controller";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
 
     return executeRequest(uri, request);
 }
