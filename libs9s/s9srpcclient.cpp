@@ -3533,7 +3533,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3615,7 +3615,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3911,7 +3911,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4075,7 +4075,7 @@ S9sRpcClient::createGroupReplication(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4235,7 +4235,7 @@ S9sRpcClient::createNdbCluster(
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
@@ -4396,7 +4396,7 @@ S9sRpcClient::createPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
     
@@ -4541,6 +4541,8 @@ S9sRpcClient::createLogicalPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    // This must always be no agents. Agents are installed for
+    // base streaming clusters and not for the combination of them.
     jobData["deploy_agents"]    = false;
 
     if (options->withTimescaleDb())
@@ -4761,7 +4763,7 @@ S9sRpcClient::createRedisOrValkeySharded(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -4855,7 +4857,7 @@ S9sRpcClient::createRedisOrValkeySentinel(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -4931,7 +4933,7 @@ S9sRpcClient::createElasticsearch(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -5008,7 +5010,7 @@ S9sRpcClient::createMsSqlSingle(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -5090,7 +5092,7 @@ S9sRpcClient::createMongoCluster(
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
    
     if (options->noInstall())
     {
@@ -7939,7 +7941,7 @@ S9sRpcClient::checkHosts()
         jobData["nodes"]          = nodesField(hosts);
         jobData["vendor"]         = options->vendor();
         jobData["version"]        = options->providerVersion();
-        jobData["deploy_agents"]  = true;
+        jobData["deploy_agents"]  = !options->noAgent();
     
         jobSpec["command"]        = "create_cluster";
         jobSpec["job_data"]       = jobData;

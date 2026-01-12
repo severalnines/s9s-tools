@@ -278,6 +278,22 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-no-agent
+When creating a new cluster or adding new nodes to an existing cluster this
+option can be used to skip the installation of the agents on the nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=galera \\
+    --nodes="10.67.199.164" \\
+    --vendor=percona \\
+    --provider-version=5.7 \\
+    --no-agent
+.fi
+
+.TP
 .B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
