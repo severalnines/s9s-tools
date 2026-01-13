@@ -642,9 +642,7 @@ S9sRpcClient::getTopQueries()
  * reply.
  */
 bool
-S9sRpcClient::getClusters(
-        bool withHosts,
-        bool withSheetInfo)
+S9sRpcClient::getClusters()
 {
     S9sOptions    *options     = S9sOptions::instance();
     S9sString      clusterName = options->clusterName();
@@ -660,9 +658,10 @@ S9sRpcClient::getClusters(
 
     request["operation"]       = "getAllClusterInfo";
     request["all_pool"]        = options->isAllPoolRequested();
-    request["with_hosts"]      = withHosts;
-    //request["with_containers"] = true;
-    request["with_sheet_info"] = withSheetInfo;
+    request["with_hosts"]      = !options->excludeHostsInfo();
+    request["with_sheet_info"] = !options->excludeSheetInfo();
+    request["with_containers"] = options->includeContainerInfo();
+    request["with_databases"]  = options->includeDatabasesInfo();
 
     retval = executeRequest(uri, request);
 

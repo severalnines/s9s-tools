@@ -765,6 +765,58 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\^\-exclude\-hosts\-info[=BOOL]
+When listing clusters, exclude detailed host information. By default, host
+information is included. Use this option to reduce response time and data size
+for clusters with many nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --exclude-hosts-info
+.fi
+
+.TP
+.B \-\^\-exclude\-sheet\-info[=BOOL]
+When listing clusters, exclude sheet information. By default, sheet information
+is included. Use this option to reduce response time when sheet data is not
+needed.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --exclude-sheet-info
+.fi
+
+.TP
+.B \-\^\-include\-container\-info[=BOOL]
+When listing clusters, include information about containers created by the 
+ClusterControl backend (cmon). By default, container information is excluded.
+Note that including this information may increase response time.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --include-container-info
+.fi
+
+.TP
+.B \-\^\-include\-databases\-info[=BOOL]
+When listing clusters, include database information. By default, database
+information is excluded. Use this option to get a list of databases on each
+cluster. Note that including this information may increase response time.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --include-databases-info
+.fi
+
+.TP
 .BI \-\^\-cloud= PROVIDER
 This option can be used when new container(s) created. The name of the cloud
 provider where the new container will be created. 

@@ -680,6 +680,14 @@ class S9sOptions
         bool isRefreshRequested() const;
         bool isAllRequested() const;
         bool isAllPoolRequested() const;
+        bool excludeHostsInfo() const;
+        void setExcludeHostsInfo(bool value);
+        bool excludeSheetInfo() const;
+        void setExcludeSheetInfo(bool value);
+        bool includeContainerInfo() const;
+        void setIncludeContainerInfo(bool value);
+        bool includeDatabasesInfo() const;
+        void setIncludeDatabasesInfo(bool value);
         bool isRecursiveRequested() const;
         bool isDirectoryRequested() const;
         bool isUnregisterRequested() const;

@@ -1311,7 +1311,9 @@ S9sBusinessLogic::execute()
         {
             S9sRpcReply reply;
             
-            client.getClusters(true, false);
+            options->setExcludeHostsInfo(false);
+            options->setExcludeSheetInfo(true);
+            client.getClusters();
             reply = client.reply();
             reply.printReplicationList();
         } else if (options->isStopRequested())
