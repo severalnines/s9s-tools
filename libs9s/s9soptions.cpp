@@ -305,6 +305,7 @@ enum S9sOptionType
     OptionEnableSsl,
     OptionDisableSsl,
     OptionCreateReport,
+    OptionNoAgent,
     OptionMaskPasswords,
     OptionDeployAgents,
     OptionDeployCmonAgents,
@@ -3327,6 +3328,16 @@ S9sString
 S9sOptions::outputDir() const
 {
     return getString("output_dir");
+}
+
+
+/**
+ * \returns true if the --no-agent command line option was provided.
+ */
+bool
+S9sOptions::noAgent() const
+{
+    return getBool("no_agent");
 }
 
 /**
@@ -8214,6 +8225,10 @@ S9sOptions::printHelpCluster()
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "  --uninstall                Uninstall software when removing a node.\n"
+
+"\n"
+" Options for cluster creation\n"
+"  --no-agent                 Do not install prometheus agents during create cluster.\n"
 "\n"
 "Add replication node related options\n"
 "  --master-delay             Delay in seconds to be set on replica node\n"
@@ -14811,6 +14826,9 @@ S9sOptions::readOptionsCluster(
         { "semi-sync",        required_argument, 0, OptionSemiSync        },
         { "setup-logrotate",  no_argument,       0, OptionSetupLogRotate  },
 
+        // Options for cluster creation
+        { "no-agent",         no_argument,    0, OptionNoAgent            },
+
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
         { "output-dir",       required_argument, 0, OptionOutputDir       },
@@ -15110,6 +15128,11 @@ S9sOptions::readOptionsCluster(
             case OptionCreateReport:
                 // --create-report
                 m_options["create_report"] = true;
+                break;
+
+            case OptionNoAgent:
+                // --no-agent
+                m_options["no_agent"] = true;
                 break;
 
             case OptionMaskPasswords:
@@ -19892,6 +19915,11 @@ S9sOptions::userPreferencesToDelete() const
     return getString("preferences_to_delete");
 }
 
+/**
+ * \returns boolean interpretation of the value provided by the command line
+ *          option identified by the key.
+ *          Default value is false.
+ */
 bool 
 S9sOptions::getBool(
         const char *key) const

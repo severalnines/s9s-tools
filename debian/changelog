@@ -9,6 +9,8 @@ s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
     container details.
   * Added --include-databases-info option for cluster listing to include
     database information.
+  * CLUS-6902: Added --no-agent option for create cluster jobs to skip
+    agent installation on nodes.
 
  -- Peter Csaszar <peter@severalnines.com>  Tue, 13 Jan 2026 15:21:55 +0100
 
