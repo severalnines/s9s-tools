@@ -59,6 +59,7 @@ class S9sNode : public S9sObject
         int clusterId() const;
         virtual S9sString name() const;
         S9sString hostName() const;
+        S9sString internalHostName() const;
         S9sString fullCdtPath() const;
 
         S9sString ipAddress() const;
