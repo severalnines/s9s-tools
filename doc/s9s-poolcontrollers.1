@@ -24,9 +24,9 @@ Gets existing controllers on pool. When providing '--controller-id' specific con
 Use 0 or ommit options to get all existing whatchlist.
 Role 'member' is a controller in pool while 'main' means that it also stores configuration and cmon db.
 .nf
-s9s pool-controllers --list --controller-id="2" 
-ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
-2   kaitoserver 9500 active main 481,480,479,477,473,472,471
+s9s pool-controllers --list --controller-id="3" 
+SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
+2   3   kaitoserver 9500 active main 481,480,479,477,473,472,471
 .fi
 
 .TP
@@ -34,8 +34,8 @@ ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory
 .nf
 s9s pool-controllers --assignment --cluster-id="2"
-ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
-2   kaitoserver 9500 active main 481,480,479,477,473,472,471
+SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
+2   3   kaitoserver 9500 active main 481,480,479,477,473,472,471
 .fi
 
 .TP
@@ -90,9 +90,14 @@ Controller stopped successfully.
 .\"
 .TP
 .BI \-\^\-controller-id=ID
-This option can be used on list operations to avoid retrieving all controllers
+This option specifies which controller to operate on. For operations that not only list but modifies controller state
+(--start, --stop, --remove-controller), you should use the SID (Static ID) value from the list output,
+which represents the controller's persistent configuration identifier. The SID ensures the operation
+targets the correct controller configuration even if the dynamic instance is not currently running.
+
+For list operations, this option can be used to avoid retrieving all controllers.
 The ID must be positive corresponding to an existing controller or zero to get all controllers.
-For start and stop operations, this option is mandatory and must specify a valid controller ID.
+For start and stop operations, this option is mandatory and must specify a valid controller SID.
 
 .TP
 .B --print-deployment-info
