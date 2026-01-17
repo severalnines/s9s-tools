@@ -534,6 +534,7 @@ enum S9sOptionType
     OptionConfStorage,
     OptionStartController,
     OptionStopController,
+    OptionRemoveController,
 
     OptionExtensions
 };
@@ -5457,6 +5458,15 @@ S9sOptions::isStopController() const
 }
 
 /**
+ * \returns true if the --remove-controller command line option was provided for controllers
+ */
+bool
+S9sOptions::isRemoveController() const
+{
+    return getBool("remove_controller");
+}
+
+/**
  * \returns true if the --add-publication command line option was provided.
  */
 bool
@@ -8719,11 +8729,13 @@ S9sOptions::printHelpControllers()
 "  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
+"  --remove-controller        To remove a controller (requires --controller-id).\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
+"  --uninstall                Uninstall software when removing controller.\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -19395,12 +19407,14 @@ S9sOptions::readOptionsControllers(
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
                     {"start",            no_argument, 0,       OptionStartController},
                     {"stop",             no_argument, 0,       OptionStopController},
+                    {"remove-controller", no_argument, 0,      OptionRemoveController},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
+                    {"uninstall",        no_argument,       0, OptionUninstall},
                     
                     // Job Related Options
                     {"log",              no_argument,       0, 'G'},
@@ -19607,6 +19621,11 @@ S9sOptions::readOptionsControllers(
                 m_options["stop_controller"] = true;
                 break;
 
+            case OptionRemoveController:
+                // --remove-controller
+                m_options["remove_controller"] = true;
+                break;
+
             /*
              * Other options
              */
@@ -19641,6 +19660,11 @@ S9sOptions::readOptionsControllers(
             case OptionUseInternalRepos:
                 // --use-internal-repos
                 m_options["use_internal_repos"] = true;
+                break;
+
+            case OptionUninstall:
+                // --uninstall
+                m_options["uninstall"] = true;
                 break;
 
             /*
@@ -19711,6 +19735,9 @@ S9sOptions::checkOptionsControllers()
     if (isStopController())
         countOptions++;
 
+    if (isRemoveController())
+        countOptions++;
+
     if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
@@ -19743,13 +19770,13 @@ S9sOptions::checkOptionsControllers()
     }
 
     /*
-     * Validate that --controller-id is provided for start/stop operations
+     * Validate that --controller-id is provided for start/stop/remove operations
      */
-    if (isStartController() || isStopController())
+    if (isStartController() || isStopController() || isRemoveController())
     {
         if (controllerId() <= 0)
         {
-            m_errorMessage = "The --controller-id option is required for start/stop operations.";
+            m_errorMessage = "The --controller-id option is required for start/stop/remove operations.";
             m_exitStatus = BadOptions;
             return false;
         }
