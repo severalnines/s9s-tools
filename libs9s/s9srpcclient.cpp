@@ -5662,8 +5662,14 @@ S9sRpcClient::addHaProxy(
 
         node = otherNodes[idx].toNode();
         port = node.hasPort() ? node.port() : 3306;
+        if (node.hasPort())
+            port = node.port();
+        else if (node.protocol().toLower() == "postgresql")
+            port = 5432;
+        else
+            port = 3306;
 
-        tmp.sprintf("%s:%d:%s", STR(node.internalHostName()), port, "active");
+        tmp.sprintf("%s:%d:%s", STR(node.hostName()), port, "active");
 
         if (!nodeAddresses.empty())
             nodeAddresses += ";";
