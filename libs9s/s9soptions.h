@@ -652,6 +652,7 @@ class S9sOptions
         bool isEditRequested() const;
         bool isGetLdapConfigRequested() const;
         bool isSetLdapConfigRequested() const;
+        bool isGetClusterInfoCacheStatisticsRequested() const;
         bool isListConfigRequested() const;
         bool isChangeConfigRequested() const;
         bool isUnsetConfigRequested() const;

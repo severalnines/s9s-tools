@@ -822,6 +822,16 @@ S9sRpcClient::setLdapConfig()
 
 }
 
+bool
+S9sRpcClient::getClusterInfoCacheStatistics()
+{
+    S9sString      uri      = "/v2/clusters/";
+    S9sVariantMap  request  = composeRequest();
+
+    request["operation"]  = "getClusterInfoCacheStatistics";
+    return executeRequest(uri, request);
+}
+
 
 /**
  * This function is for changing the configuration through the controller for 

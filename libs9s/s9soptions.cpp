@@ -262,6 +262,7 @@ enum S9sOptionType
     OptionOptValue,
     OptionListConfig,
     OptionGetLdapConfig,
+    OptionGetClusterInfoCacheStatistics,
     OptionSetLdapConfig,
     OptionChangeConfig,
     OptionUnsetConfig,
@@ -5739,6 +5740,12 @@ S9sOptions::isGetLdapConfigRequested() const
 }
 
 bool
+S9sOptions::isGetClusterInfoCacheStatisticsRequested() const
+{
+    return getBool("get_cluster_info_cache_statistics");
+}
+
+bool
 S9sOptions::isSetLdapConfigRequested() const
 {
     return getBool("set_ldap_config");
@@ -8449,6 +8456,8 @@ S9sOptions::printHelpController()
 "Options for the \"controller\" command:\n"
 "  --create-snapshot          Creates a controller to controller snapshot.\n"
 "  --enable-cmon-ha           Enables the Cmon HA mode.\n"
+"  --get-cluster-info-cache-statistics\n"
+"                             Gets cluster info cache statistics.\n"
 "  --get-ldap-config          Gets the LDAP configuration of the controller.\n"
 "  --list                     List the registered controllers.\n"
 "  --ping                     Pings the controller, prints status.\n"
@@ -17765,6 +17774,7 @@ S9sOptions::readOptionsController(
         // Main Option
         { "create-snapshot",  no_argument,       0, OptionCreateSnapshot  },
         { "enable-cmon-ha",   no_argument,       0, OptionEnableCmonHa    },
+        { "get-cluster-info-cache-statistics", no_argument, 0, OptionGetClusterInfoCacheStatistics },
         { "get-ldap-config",  no_argument,       0, OptionGetLdapConfig   },
         { "list",             no_argument,       0, 'L'                   },
         { "ping",             no_argument,       0, OptionPing            },
@@ -17926,6 +17936,11 @@ S9sOptions::readOptionsController(
             case OptionGetLdapConfig:
                 // --get-ldap-config
                 m_options["get_ldap_config"] = true;
+                break;
+
+            case OptionGetClusterInfoCacheStatistics:
+                // --get-cluster-info-cache-statistics
+                m_options["get_cluster_info_cache_statistics"] = true;
                 break;
 
             case 'L': 
@@ -18590,6 +18605,9 @@ S9sOptions::checkOptionsController()
         countOptions++;
     
     if (isGetLdapConfigRequested())
+        countOptions++;
+    
+    if (isGetClusterInfoCacheStatisticsRequested())
         countOptions++;
     
     if (isSetLdapConfigRequested())

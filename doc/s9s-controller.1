@@ -110,6 +110,24 @@ s9s controller \\
 .fi
 
 .TP
+.B --get-cluster-info-cache-statistics
+Gets performance statistics about the cluster information cache from the 
+controller. The cache is used to improve response times for cluster information 
+requests by maintaining pre-computed, security-filtered cluster data per user.
+
+Returns cache metrics including cache size, hit/miss counts, refresh statistics,
+and performance timings useful for monitoring and tuning.
+
+.B EXAMPLE
+.nf
+s9s controller \\
+    --cmon-user="system" \\
+    --password="XXXXXXX" \\
+    --get-cluster-info-cache-statistics \\
+    --print-json
+.fi
+
+.TP
 .B --list
 Lists the CmonController type objects known to the controller. If the Cmon HA is
 not enabled there will be no such objects, if it is enabled one or more
