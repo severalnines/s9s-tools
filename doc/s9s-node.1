@@ -276,6 +276,19 @@ and exit. If the command prints data do not use syntax highlight, headers,
 totals, only the pure table to be processed using filters.
 
 .TP
+.B \-\^\-refresh
+Do not use cached data, collect fresh information from the nodes. When this
+command line option is provided with the \fB\-\-list\fP operation, the controller
+will refresh the node information before sending it back.
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --list \\
+    --refresh
+.fi
+
+.TP
 .B \-\-no\-header
 Do not print headers for tables.
 

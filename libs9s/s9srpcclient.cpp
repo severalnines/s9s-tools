@@ -663,6 +663,9 @@ S9sRpcClient::getClusters()
     request["with_containers"] = options->includeContainerInfo();
     request["with_databases"]  = options->includeDatabasesInfo();
 
+    if (options->isRefreshRequested())
+        request["refresh_now"] = true;
+
     retval = executeRequest(uri, request);
 
     return retval;

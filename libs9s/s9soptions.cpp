@@ -7827,6 +7827,7 @@ S9sOptions::printHelpGeneric()
 "  --job-tags=LIST            Set job tags when creating a new job.\n"
 "  --log                      Wait and monitor job messages.\n"
 "  --recurrence=CRONTABSTRING Timing information for recurring jobs.\n"
+"  --refresh                  Do not use cached data, collect fresh information.\n"
 "  --schedule=DATE&TIME       Run the job at the specified time.\n"
 "  --timeout=SECONDS          Timeout value for the entire job.\n"
 "  --wait                     Wait until the job ends.\n"
@@ -8806,6 +8807,7 @@ S9sOptions::readOptionsNode(
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "log",              no_argument,       0, 'G'                   },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "refresh",          no_argument,       0, OptionRefresh         },
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
@@ -9034,6 +9036,11 @@ S9sOptions::readOptionsNode(
             case OptionRecurrence:
                 // --recurrence=CRONTABSTRING
                 m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
                 break;
             
             case OptionJobTags:
