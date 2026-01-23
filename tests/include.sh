@@ -2243,7 +2243,7 @@ function emit_s9s_configuration_file()
     local hostname="localhost"
     local cmon_port="$OPTION_CMON_PORT"
 
-    [ -z "$cmon_port" ] && cmon_port="9501"
+    [ -z "$cmon_port" ] && cmon_port="9500"
     
 
     while [ -n "$1" ]; do
@@ -2453,7 +2453,7 @@ function grant_user()
     local cmon_port="$OPTION_CMON_PORT"
     local s9stest_user_group="users"
 
-    [ -z "$cmon_port" ] && cmon_port="9501"
+    [ -z "$cmon_port" ] && cmon_port="9500"
 
     while [ "$1" ]; do
         case "$1" in 

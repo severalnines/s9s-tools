@@ -12,7 +12,7 @@ Description=pip-test-daemon service
 
 [Service]
 Environment=LC_ALL=C
-#Environment=RPC_PORT=9501
+#Environment=RPC_PORT=9500
 #Environment=DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"
 
 ExecStart=bash -c 'pip-test-daemon --continuous --verbose'

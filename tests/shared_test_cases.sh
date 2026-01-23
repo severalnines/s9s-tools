@@ -42,7 +42,7 @@ EOF
     begin_verbatim
     node_ip=$(create_node --autodestroy --template "ubuntu-s9s" "$node_name") 
     SECONDARY_CONTROLLER_IP="$node_ip"
-    SECONDARY_CONTROLLER_URL="https://$SECONDARY_CONTROLLER_IP:9501"
+    SECONDARY_CONTROLLER_URL="https://$SECONDARY_CONTROLLER_IP:9500"
     end_verbatim
 
 
