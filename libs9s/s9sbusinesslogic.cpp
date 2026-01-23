@@ -1505,6 +1505,12 @@ S9sBusinessLogic::execute()
                 ::printf("Controller stopped successfully.\n");
             }
         }
+        else if (options->isUpdateCmon())
+        {
+            success = client.updateCmon(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }
