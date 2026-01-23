@@ -749,6 +749,15 @@ S9sNode::hostName() const
 }
 
 S9sString
+S9sNode::internalHostName() const
+{
+    if (m_properties.contains("hostname_internal"))
+        return m_properties.at("hostname_internal").toString();
+
+    return hostName();
+}
+
+S9sString
 S9sNode::fullCdtPath() const
 {
     S9sString retval;

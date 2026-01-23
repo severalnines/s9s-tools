@@ -278,6 +278,22 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-no-agent
+When creating a new cluster or adding new nodes to an existing cluster this
+option can be used to skip the installation of the agents on the nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=galera \\
+    --nodes="10.67.199.164" \\
+    --vendor=percona \\
+    --provider-version=5.7 \\
+    --no-agent
+.fi
+
+.TP
 .B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
@@ -762,6 +778,58 @@ when using the \fB\-\-list\fP operation.
 s9s cluster \\
     --list \\
     --all-pool
+.fi
+
+.TP
+.B \-\^\-exclude\-hosts\-info[=BOOL]
+When listing clusters, exclude detailed host information. By default, host
+information is included. Use this option to reduce response time and data size
+for clusters with many nodes.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --exclude-hosts-info
+.fi
+
+.TP
+.B \-\^\-exclude\-sheet\-info[=BOOL]
+When listing clusters, exclude sheet information. By default, sheet information
+is included. Use this option to reduce response time when sheet data is not
+needed.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --exclude-sheet-info
+.fi
+
+.TP
+.B \-\^\-include\-container\-info[=BOOL]
+When listing clusters, include information about containers created by the 
+ClusterControl backend (cmon). By default, container information is excluded.
+Note that including this information may increase response time.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --include-container-info
+.fi
+
+.TP
+.B \-\^\-include\-databases\-info[=BOOL]
+When listing clusters, include database information. By default, database
+information is excluded. Use this option to get a list of databases on each
+cluster. Note that including this information may increase response time.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --include-databases-info
 .fi
 
 .TP

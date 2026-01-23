@@ -305,6 +305,7 @@ enum S9sOptionType
     OptionEnableSsl,
     OptionDisableSsl,
     OptionCreateReport,
+    OptionNoAgent,
     OptionMaskPasswords,
     OptionDeployAgents,
     OptionDeployCmonAgents,
@@ -352,6 +353,10 @@ enum S9sOptionType
     OptionRefresh,
     OptionAll,
     OptionAllPool,
+    OptionExcludeHostsInfo,
+    OptionExcludeSheetInfo,
+    OptionIncludeContainerInfo,
+    OptionIncludeDatabasesInfo,
     OptionFail,
     OptionSuccess,
     OptionAccess,
@@ -530,6 +535,7 @@ enum S9sOptionType
     OptionStartController,
     OptionStopController,
     OptionRemoveController,
+    OptionUpdateCmon,
 
     OptionExtensions
 };
@@ -3326,6 +3332,16 @@ S9sOptions::outputDir() const
     return getString("output_dir");
 }
 
+
+/**
+ * \returns true if the --no-agent command line option was provided.
+ */
+bool
+S9sOptions::noAgent() const
+{
+    return getBool("no_agent");
+}
+
 /**
  * \returns the presence of the command line option --mask-passwords.
  */
@@ -5451,6 +5467,15 @@ S9sOptions::isRemoveController() const
     return getBool("remove_controller");
 }
 
+/*  
+ * \returns true if the --update-cmon command line option was provided for controllers
+ */
+bool
+S9sOptions::isUpdateCmon() const
+{
+    return getBool("update_cmon");
+}
+
 /**
  * \returns true if the --add-publication command line option was provided.
  */
@@ -6033,6 +6058,78 @@ bool
 S9sOptions::isAllPoolRequested() const
 {
     return getBool("all_pool");
+}
+
+/**
+ * \returns True if the --exclude-hosts-info command line option was provided.
+ */
+bool
+S9sOptions::excludeHostsInfo() const
+{
+    return getBool("exclude_hosts_info");
+}
+
+/**
+ * Sets the exclude hosts info option programmatically.
+ */
+void
+S9sOptions::setExcludeHostsInfo(bool value)
+{
+    m_options["exclude_hosts_info"] = value;
+}
+
+/**
+ * \returns True if the --exclude-sheet-info command line option was provided.
+ */
+bool
+S9sOptions::excludeSheetInfo() const
+{
+    return getBool("exclude_sheet_info");
+}
+
+/**
+ * Sets the exclude sheet info option programmatically.
+ */
+void
+S9sOptions::setExcludeSheetInfo(bool value)
+{
+    m_options["exclude_sheet_info"] = value;
+}
+
+/**
+ * \returns True if the --include-container-info command line option was provided.
+ */
+bool
+S9sOptions::includeContainerInfo() const
+{
+    return getBool("include_container_info");
+}
+
+/**
+ * Sets the include container info option programmatically.
+ */
+void
+S9sOptions::setIncludeContainerInfo(bool value)
+{
+    m_options["include_container_info"] = value;
+}
+
+/**
+ * \returns True if the --include-databases-info command line option was provided.
+ */
+bool
+S9sOptions::includeDatabasesInfo() const
+{
+    return getBool("include_databases_info");
+}
+
+/**
+ * Sets the include databases info option programmatically.
+ */
+void
+S9sOptions::setIncludeDatabasesInfo(bool value)
+{
+    m_options["include_databases_info"] = value;
 }
 
 /**
@@ -8090,6 +8187,10 @@ S9sOptions::printHelpCluster()
 "  --cluster-name=NAME        Name of the cluster to manipulate or create.\n"
 "  --cluster-type=TYPE        The type of the cluster to install. Currently\n"
 "  --all-pool                 Include all pool cluster information.\n"
+"  --exclude-hosts-info[=BOOL] Exclude host information from cluster list.\n"
+"  --exclude-sheet-info[=BOOL] Exclude sheet information from cluster list.\n"
+"  --include-container-info[=BOOL] Include container information in cluster list.\n"
+"  --include-databases-info[=BOOL] Include database information in cluster list.\n"
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
@@ -8144,6 +8245,10 @@ S9sOptions::printHelpCluster()
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
 "  --uninstall                Uninstall software when removing a node.\n"
+
+"\n"
+" Options for cluster creation\n"
+"  --no-agent                 Do not install prometheus agents during create cluster.\n"
 "\n"
 "Add replication node related options\n"
 "  --master-delay             Delay in seconds to be set on replica node\n"
@@ -8635,6 +8740,7 @@ S9sOptions::printHelpControllers()
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
+"  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
@@ -14691,6 +14797,10 @@ S9sOptions::readOptionsCluster(
 
         // Other options
         { "all-pool",         no_argument,       0, OptionAllPool         },
+        { "exclude-hosts-info", optional_argument, 0, OptionExcludeHostsInfo },
+        { "exclude-sheet-info", optional_argument, 0, OptionExcludeSheetInfo },
+        { "include-container-info", optional_argument, 0, OptionIncludeContainerInfo },
+        { "include-databases-info", optional_argument, 0, OptionIncludeDatabasesInfo },
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -14738,6 +14848,9 @@ S9sOptions::readOptionsCluster(
         { "disable-recovery", no_argument,       0, OptionDisableRecovery },
         { "semi-sync",        required_argument, 0, OptionSemiSync        },
         { "setup-logrotate",  no_argument,       0, OptionSetupLogRotate  },
+
+        // Options for cluster creation
+        { "no-agent",         no_argument,    0, OptionNoAgent            },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -15040,6 +15153,11 @@ S9sOptions::readOptionsCluster(
                 m_options["create_report"] = true;
                 break;
 
+            case OptionNoAgent:
+                // --no-agent
+                m_options["no_agent"] = true;
+                break;
+
             case OptionMaskPasswords:
                 // --mask-passwords
                 m_options["mask_passwords"] = true;
@@ -15324,6 +15442,26 @@ S9sOptions::readOptionsCluster(
             case OptionAllPool:
                 // --all-pool
                 m_options["all_pool"] = true;
+                break;
+
+            case OptionExcludeHostsInfo:
+                // --exclude-hosts-info[=BOOLEAN]
+                setExcludeHostsInfo(optarg ? S9sString(optarg).toBoolean() : true);
+                break;
+
+            case OptionExcludeSheetInfo:
+                // --exclude-sheet-info[=BOOLEAN]
+                setExcludeSheetInfo(optarg ? S9sString(optarg).toBoolean() : true);
+                break;
+
+            case OptionIncludeContainerInfo:
+                // --include-container-info[=BOOLEAN]
+                setIncludeContainerInfo(optarg ? S9sString(optarg).toBoolean() : true);
+                break;
+
+            case OptionIncludeDatabasesInfo:
+                // --include-databases-info[=BOOLEAN]
+                setIncludeDatabasesInfo(optarg ? S9sString(optarg).toBoolean() : true);
                 break;
 
 
@@ -19281,6 +19419,7 @@ S9sOptions::readOptionsControllers(
                     {"start",            no_argument, 0,       OptionStartController},
                     {"stop",             no_argument, 0,       OptionStopController},
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
+                    {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
@@ -19498,6 +19637,10 @@ S9sOptions::readOptionsControllers(
                 // --remove-controller
                 m_options["remove_controller"] = true;
                 break;
+            case OptionUpdateCmon:
+                // --update-cmon
+                m_options["update_cmon"] = true;
+                break;
 
             /*
              * Other options
@@ -19610,6 +19753,9 @@ S9sOptions::checkOptionsControllers()
 
     if (isRemoveController())
         countOptions++;
+  
+    if (isUpdateCmon())
+        countOptions++;
 
     if (countOptions == 0)
     {
@@ -19645,7 +19791,7 @@ S9sOptions::checkOptionsControllers()
     /*
      * Validate that --controller-id is provided for start/stop/remove operations
      */
-    if (isStartController() || isStopController() || isRemoveController())
+    if (isStartController() || isStopController() || isRemoveController() || isUpdateCmon())
     {
         if (controllerId() <= 0)
         {
@@ -19815,6 +19961,11 @@ S9sOptions::userPreferencesToDelete() const
     return getString("preferences_to_delete");
 }
 
+/**
+ * \returns boolean interpretation of the value provided by the command line
+ *          option identified by the key.
+ *          Default value is false.
+ */
 bool 
 S9sOptions::getBool(
         const char *key) const

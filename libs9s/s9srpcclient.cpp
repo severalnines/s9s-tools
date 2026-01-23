@@ -642,9 +642,7 @@ S9sRpcClient::getTopQueries()
  * reply.
  */
 bool
-S9sRpcClient::getClusters(
-        bool withHosts,
-        bool withSheetInfo)
+S9sRpcClient::getClusters()
 {
     S9sOptions    *options     = S9sOptions::instance();
     S9sString      clusterName = options->clusterName();
@@ -660,9 +658,10 @@ S9sRpcClient::getClusters(
 
     request["operation"]       = "getAllClusterInfo";
     request["all_pool"]        = options->isAllPoolRequested();
-    request["with_hosts"]      = withHosts;
-    //request["with_containers"] = true;
-    request["with_sheet_info"] = withSheetInfo;
+    request["with_hosts"]      = !options->excludeHostsInfo();
+    request["with_sheet_info"] = !options->excludeSheetInfo();
+    request["with_containers"] = options->includeContainerInfo();
+    request["with_databases"]  = options->includeDatabasesInfo();
 
     retval = executeRequest(uri, request);
 
@@ -3534,7 +3533,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3616,7 +3615,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3912,7 +3911,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4076,7 +4075,7 @@ S9sRpcClient::createGroupReplication(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4236,7 +4235,7 @@ S9sRpcClient::createNdbCluster(
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
@@ -4397,7 +4396,7 @@ S9sRpcClient::createPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
     
@@ -4542,6 +4541,8 @@ S9sRpcClient::createLogicalPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
+    // This must always be no agents. Agents are installed for
+    // base streaming clusters and not for the combination of them.
     jobData["deploy_agents"]    = false;
 
     if (options->withTimescaleDb())
@@ -4762,7 +4763,7 @@ S9sRpcClient::createRedisOrValkeySharded(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -4856,7 +4857,7 @@ S9sRpcClient::createRedisOrValkeySentinel(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -4932,7 +4933,7 @@ S9sRpcClient::createElasticsearch(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -5009,7 +5010,7 @@ S9sRpcClient::createMsSqlSingle(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
 
     if (options->noInstall())
     {
@@ -5091,7 +5092,7 @@ S9sRpcClient::createMongoCluster(
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = true;
+    jobData["deploy_agents"]    = !options->noAgent();
    
     if (options->noInstall())
     {
@@ -5661,6 +5662,12 @@ S9sRpcClient::addHaProxy(
 
         node = otherNodes[idx].toNode();
         port = node.hasPort() ? node.port() : 3306;
+        if (node.hasPort())
+            port = node.port();
+        else if (node.protocol().toLower() == "postgresql")
+            port = 5432;
+        else
+            port = 3306;
 
         tmp.sprintf("%s:%d:%s", STR(node.hostName()), port, "active");
 
@@ -7940,7 +7947,7 @@ S9sRpcClient::checkHosts()
         jobData["nodes"]          = nodesField(hosts);
         jobData["vendor"]         = options->vendor();
         jobData["version"]        = options->providerVersion();
-        jobData["deploy_agents"]  = true;
+        jobData["deploy_agents"]  = !options->noAgent();
     
         jobSpec["command"]        = "create_cluster";
         jobSpec["job_data"]       = jobData;
@@ -11450,6 +11457,39 @@ S9sRpcClient::removeController(S9sOptions *options)
     else
     {
         PRINT_ERROR("The --controller-id option must be specified for removeController operation.");
+    }
+  
+    // The jobspec describing the command.
+    jobSpec["command"]  = "removeController";
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Remove Controller";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+  
+    return executeRequest(uri, request);
+}
+  /* 
+ * Updates cmon package on a controller instance
+ */
+bool
+S9sRpcClient::updateCmon(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+    
+    if (options->controllerId() > 0)
+    {
+        jobData["controller_id"] = options->controllerId();
+    }
+    else
+    {
+        PRINT_ERROR("The --controller-id option must be specified for updateCmon operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
@@ -11458,16 +11498,14 @@ S9sRpcClient::removeController(S9sOptions *options)
         jobData["uninstall"] = true;
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "removeController";
+    jobSpec["command"]  = "updateCmonVersion";
     jobSpec["job_data"] = jobData;
 
-    // The job instance describing how the job will be executed.
-    job["job_spec"] = jobSpec;
-    job["title"]    = "Remove Controller";
+    job["title"]    = "Update Cmon";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
-
+    
     return executeRequest(uri, request);
 }
 

@@ -1662,6 +1662,7 @@ S9sRpcReply::printPoolControllersLong()
     S9sVariantList  controllers = operator[]("controllers").toVariantList();
     if(controllers.size() == 0)
         controllers << operator[]("controller").toVariantMap();
+    S9sFormat      sidFormat("\033[96m", TERM_NORMAL);
     S9sFormat      idFormat("\033[95m", TERM_NORMAL);
     S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);
@@ -1699,6 +1700,7 @@ S9sRpcReply::printPoolControllersLong()
     {
         S9sVariantMap  w = c.toVariantMap();
         S9sString      id = w["controller_id"].toString();
+        S9sString      sid = id;
         S9sString      hostname = w["hostname"].toString();
         S9sString      port = w["port"].toString();
         S9sString      status = w["status"].toString();
@@ -1708,6 +1710,8 @@ S9sRpcReply::printPoolControllersLong()
         if (w.contains("properties"))
         {
             S9sVariantMap props = w["properties"].toVariantMap();
+            if (props.contains("static_id") && !props["static_id"].toString().empty())
+                sid = props["static_id"].toString();
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1719,6 +1723,7 @@ S9sRpcReply::printPoolControllersLong()
         else
             role = "";
 
+        sidFormat.widen(sid);
         idFormat.widen(id);
         hostnameFormat.widen(hostname);
         portFormat.widen(port);
@@ -1730,6 +1735,7 @@ S9sRpcReply::printPoolControllersLong()
     if (!options->isNoHeaderRequested())
     {
         ::printf("%s", headerColorBegin());
+        sidFormat.printHeader("SID");
         idFormat.printHeader("ID");
         hostnameFormat.printHeader("HOSTNAME");
         portFormat.printHeader("PORT");
@@ -1744,6 +1750,7 @@ S9sRpcReply::printPoolControllersLong()
     {
         S9sVariantMap  c = cl.toVariantMap();
         S9sString      id = c["controller_id"].toString();
+        S9sString      sid = id;
         S9sString      hostname = c["hostname"].toString();
         S9sString      port = c["port"].toString();
         S9sString      status = c["status"].toString();
@@ -1754,6 +1761,8 @@ S9sRpcReply::printPoolControllersLong()
         if (c.contains("properties"))
         {
             S9sVariantMap props = c["properties"].toVariantMap();
+            if (props.contains("static_id") && !props["static_id"].toString().empty())
+                sid = props["static_id"].toString();
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1765,6 +1774,7 @@ S9sRpcReply::printPoolControllersLong()
         else
             role = "";
 
+        sidFormat.printf(sid);
         idFormat.printf(id);
         hostnameFormat.printf(hostname);
         portFormat.printf(port);

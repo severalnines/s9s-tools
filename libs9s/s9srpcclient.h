@@ -75,9 +75,7 @@ class S9sRpcClient
          * The executers that send an RPC request and receive an RPC reply from
          * the server.
          */
-        bool getClusters(
-                bool withHosts      = true,
-                bool withSheetInfo  = true);
+        bool getClusters();
 
         bool getCluster(const S9sString &clusterName, const int clusterId);
         bool getSqlProcesses();
@@ -369,6 +367,7 @@ class S9sRpcClient
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);
+        bool updateCmon(S9sOptions *options);
 
         /*
          * Requests related to logical replication

@@ -1311,7 +1311,9 @@ S9sBusinessLogic::execute()
         {
             S9sRpcReply reply;
             
-            client.getClusters(true, false);
+            options->setExcludeHostsInfo(false);
+            options->setExcludeSheetInfo(true);
+            client.getClusters();
             reply = client.reply();
             reply.printReplicationList();
         } else if (options->isStopRequested())
@@ -1506,6 +1508,10 @@ S9sBusinessLogic::execute()
         else if (options->isRemoveController())
         {
             success = client.removeController(options);
+        }
+        else if (options->isUpdateCmon())
+        {
+            success = client.updateCmon(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }

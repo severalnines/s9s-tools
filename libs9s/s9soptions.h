@@ -392,6 +392,7 @@ class S9sOptions
         S9sString optName() const;
         S9sString optValue() const;
         S9sString outputDir() const;
+        bool noAgent() const;
         bool maskPasswords() const;
         S9sString donor() const;
         S9sString templateName() const;
@@ -538,6 +539,7 @@ class S9sOptions
         bool isStartController() const;
         bool isStopController() const;
         bool isRemoveController() const;
+        bool isUpdateCmon() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -681,6 +683,14 @@ class S9sOptions
         bool isRefreshRequested() const;
         bool isAllRequested() const;
         bool isAllPoolRequested() const;
+        bool excludeHostsInfo() const;
+        void setExcludeHostsInfo(bool value);
+        bool excludeSheetInfo() const;
+        void setExcludeSheetInfo(bool value);
+        bool includeContainerInfo() const;
+        void setIncludeContainerInfo(bool value);
+        bool includeDatabasesInfo() const;
+        void setIncludeDatabasesInfo(bool value);
         bool isRecursiveRequested() const;
         bool isDirectoryRequested() const;
         bool isUnregisterRequested() const;
