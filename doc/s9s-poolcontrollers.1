@@ -85,6 +85,19 @@ s9s pool-controllers --stop --controller-id=2
 Controller stopped successfully.
 .fi
 
+.TP
+.B --remove-controller
+Removes a controller instance. The '--controller-id' option is mandatory.
+.nf
+s9s pool-controllers --remove-controller --controller-id=2
+Controller removed successfully.
+.fi
+
+To remove a controller and uninstall its software:
+.nf
+s9s pool-controllers --remove-controller --controller-id=2 --uninstall --log
+.fi
+
 
 .TP
 .B --update-cmon
@@ -114,3 +127,7 @@ By default only controllers with dynamic status ('stopped', 'starting', 'active'
 .TP
 .BI \-\^\-provider-version=VERSION
 Controller version to be installed.
+
+.TP
+.B \-\^\-uninstall
+When used with \fB--remove-controller\fP, this option will also uninstall the controller software from the host. Without this option, the controller is only unregistered from the pool but the software remains installed.

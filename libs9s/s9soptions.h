@@ -538,6 +538,7 @@ class S9sOptions
         bool isAddController() const;
         bool isStartController() const;
         bool isStopController() const;
+        bool isRemoveController() const;
         bool isUpdateCmon() const;
 
         bool isGenerateKeyRequested() const;

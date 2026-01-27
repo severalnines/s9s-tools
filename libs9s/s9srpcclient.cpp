@@ -11381,7 +11381,7 @@ S9sRpcClient::addNewController(S9sOptions *options)
 
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
-    job["title"]    = "Add new controller";
+    job["title"]    = "Create Controller";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
@@ -11440,6 +11440,38 @@ S9sRpcClient::stopController(S9sOptions *options)
 /**
  * \returns true if the request was successfully sent
  *
+ * Removes a controller instance
+ */
+bool
+S9sRpcClient::removeController(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (options->controllerId() > 0)
+        jobData["controller_id"] = options->controllerId();
+    else
+    {
+        PRINT_ERROR("The --controller-id option must be specified for removeController operation.");
+    }
+  
+    // The jobspec describing the command.
+    jobSpec["command"]  = "removeController";
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Remove Controller";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+  
+    return executeRequest(uri, request);
+}
+  /* 
  * Updates cmon package on a controller instance
  */
 bool
@@ -11462,12 +11494,13 @@ S9sRpcClient::updateCmon(S9sOptions *options)
         return false;
     }
 
+    if (options->uninstall())
+        jobData["uninstall"] = true;
+
     // The jobspec describing the command.
     jobSpec["command"]  = "updateCmonVersion";
     jobSpec["job_data"] = jobData;
 
-    // The job instance describing how the job will be executed.
-    job["job_spec"] = jobSpec;
     job["title"]    = "Update Cmon";
 
     request["operation"] = "createJobInstance";

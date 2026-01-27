@@ -366,6 +366,7 @@ class S9sRpcClient
         bool addNewController(S9sOptions *options);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
+        bool removeController(S9sOptions *options);
         bool updateCmon(S9sOptions *options);
 
         /*

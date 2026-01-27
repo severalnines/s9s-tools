@@ -1505,6 +1505,10 @@ S9sBusinessLogic::execute()
                 ::printf("Controller stopped successfully.\n");
             }
         }
+        else if (options->isRemoveController())
+        {
+            success = client.removeController(options);
+        }
         else if (options->isUpdateCmon())
         {
             success = client.updateCmon(options);
