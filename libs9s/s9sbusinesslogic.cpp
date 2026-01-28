@@ -1516,6 +1516,8 @@ S9sBusinessLogic::execute()
         else if (options->isRemoveController())
         {
             success = client.removeController(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
         }
         else if (options->isUpdateCmon())
         {

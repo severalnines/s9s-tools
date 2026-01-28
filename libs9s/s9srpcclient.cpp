@@ -11474,6 +11474,7 @@ S9sRpcClient::removeController(S9sOptions *options)
   
     // The jobspec describing the command.
     jobSpec["command"]  = "removeController";
+    jobSpec["job_data"] = jobData;
 
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
