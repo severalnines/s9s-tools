@@ -556,6 +556,7 @@ class S9sOptions
         S9sString userPreferencesToSet() const;
         S9sString userPreferencesToDelete() const;
         S9sString confStorage() const;
+        S9sString grantedNetworkMask() const;
 
         bool isHelpRequested() const;
         bool isListRequested() const;
