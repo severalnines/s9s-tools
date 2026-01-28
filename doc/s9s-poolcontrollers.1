@@ -48,7 +48,7 @@ No controller_id is required as affected controller is the one receiving the rpc
 Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'nfs' or 'k8s'. If omitted, no 'conf_storage' is set on the operation.
 .TP
 .B --granted-network-mask=MASK
-Optional network mask to grant access to controllers in the pool. This value is passed as 'controllers_network_mask' in the job data when enabling pool mode. If omitted, no network mask restriction is set.
+Optional network mask to grant access to controllers in the pool. This value is passed as 'controllers_network_mask' in the job data when enabling pool mode. If omitted, main controllers local network mask will be used
 .RE
 .nf
 s9s pool-controllers --set-pool-mode
