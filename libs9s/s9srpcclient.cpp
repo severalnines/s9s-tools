@@ -11351,6 +11351,15 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
     const S9sString confStorage = options->confStorage();
     if (!confStorage.empty())
         request["conf_storage"] = confStorage;
+    
+    // Only pass granted_network_mask when enabling pool mode
+    if (poolMode)
+    {
+        const S9sString grantedNetworkMask = options->grantedNetworkMask();
+        if (!grantedNetworkMask.empty())
+            request["controllers_network_mask"] = grantedNetworkMask;
+    }
+    
     return executeRequest(uri, request);
 }
 
