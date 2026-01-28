@@ -153,6 +153,9 @@ class S9sRpcClient
         bool getLdapConfig();
         bool setLdapConfig();
 
+        /* Returns cache statistics for cluster info cache. */
+        bool getClusterInfoCacheStatistics();
+
         bool pingCluster();
         bool pingController();
 

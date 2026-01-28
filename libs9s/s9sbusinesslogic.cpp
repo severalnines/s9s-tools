@@ -651,6 +651,14 @@ S9sBusinessLogic::execute()
             reply = client.reply();
             reply.printControllers();
             client.setExitStatus();
+        } else if (options->isGetClusterInfoCacheStatisticsRequested())
+        {
+            S9sRpcReply reply;
+
+            success = client.getClusterInfoCacheStatistics();
+            reply = client.reply();
+            reply.printClusterInfoCacheStatistics();
+            client.setExitStatus();
         } else if (options->isGetLdapConfigRequested())
         {
             S9sRpcReply reply;

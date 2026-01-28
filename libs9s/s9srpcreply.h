@@ -101,6 +101,7 @@ class S9sRpcReply : public S9sVariantMap
         void printSqlProcesses();
 
         void printLdapConfig();
+        void printClusterInfoCacheStatistics();
         
         void printAcl();
         

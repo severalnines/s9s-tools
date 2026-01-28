@@ -431,6 +431,67 @@ S9sRpcReply::printLdapConfig()
     }
 }
 
+void
+S9sRpcReply::printClusterInfoCacheStatistics()
+{
+    S9sOptions     *options  = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        S9sVariantMap stats = operator[]("cache_statistics").toVariantMap();
+        bool syntaxHighlight = options->useSyntaxHighlight();
+        
+        const char *labelBegin = "";
+        const char *labelEnd = "";
+        const char *numberBegin = "";
+        const char *numberEnd = "";
+        
+        if (syntaxHighlight)
+        {
+            labelBegin  = XTERM_COLOR_BLUE;
+            labelEnd    = TERM_NORMAL;
+            numberBegin = XTERM_COLOR_GREEN;
+            numberEnd   = TERM_NORMAL;
+        }
+        
+        printf("%sCluster Info Cache Statistics:%s\n", labelBegin, labelEnd);
+        printf("  %-30s %s%d%s\n", 
+            "Cache Size:", 
+            numberBegin, stats["cache_size"].toInt(), numberEnd);
+        printf("  %-30s %s%llu%s\n", 
+            "Total Hits:", 
+            numberBegin, stats["total_hits"].toULongLong(), numberEnd);
+        printf("  %-30s %s%llu%s\n", 
+            "Total Misses:", 
+            numberBegin, stats["total_misses"].toULongLong(), numberEnd);
+        printf("  %-30s %s%llu%s\n", 
+            "Total Refreshes:", 
+            numberBegin, stats["total_refreshes"].toULongLong(), numberEnd);
+        printf("  %-30s %s%d%s seconds\n", 
+            "Refresh Interval:", 
+            numberBegin, stats["refresh_interval_seconds"].toInt(), numberEnd);
+        
+        if (stats.contains("hit_rate_percent"))
+        {
+            printf("  %-30s %s%.2f%%%s\n", 
+                "Hit Rate:", 
+                numberBegin, stats["hit_rate_percent"].toDouble(), numberEnd);
+        }
+        
+        printf("  %-30s %s%llu%s ms\n", 
+            "Last Refresh Duration:", 
+            numberBegin, stats["last_refresh_duration_ms"].toULongLong(), numberEnd);
+        printf("  %-30s %s%llu%s ms\n", 
+            "Max Refresh Duration:", 
+            numberBegin, stats["max_refresh_duration_ms"].toULongLong(), numberEnd);
+    }
+}
+
 
 /**
  *

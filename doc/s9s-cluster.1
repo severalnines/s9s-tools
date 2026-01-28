@@ -833,6 +833,19 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\^\-refresh
+Do not use cached data, collect fresh information from the cluster. When this
+command line option is provided with the \fB\-\-list\fP operation, the controller
+will refresh the cluster and node information before sending it back.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --list \\
+    --refresh
+.fi
+
+.TP
 .BI \-\^\-cloud= PROVIDER
 This option can be used when new container(s) created. The name of the cloud
 provider where the new container will be created. 

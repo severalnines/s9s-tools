@@ -663,6 +663,9 @@ S9sRpcClient::getClusters()
     request["with_containers"] = options->includeContainerInfo();
     request["with_databases"]  = options->includeDatabasesInfo();
 
+    if (options->isRefreshRequested())
+        request["refresh_now"] = true;
+
     retval = executeRequest(uri, request);
 
     return retval;
@@ -820,6 +823,16 @@ S9sRpcClient::setLdapConfig()
 
     return executeRequest(uri, request);
 
+}
+
+bool
+S9sRpcClient::getClusterInfoCacheStatistics()
+{
+    S9sString      uri      = "/v2/clusters/";
+    S9sVariantMap  request  = composeRequest();
+
+    request["operation"]  = "getClusterInfoCacheStatistics";
+    return executeRequest(uri, request);
 }
 
 
