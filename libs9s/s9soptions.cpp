@@ -8631,6 +8631,7 @@ S9sOptions::printHelpReplication()
 "  --link-format=FORMATSTRING Sets the format of the printed lines.\n"
 "  --master=NODE              The replication master.\n"
 "  --backup-id=ID             The ID of the backup to be used for replica rebuild.\n"
+"  --refresh                  Force bypass cluster info cache and get live data.\n"
 "  --remote-cluster-id=ID     Remote cluster ID for the c2c replication.\n"
 "  --replication-master=NODE  The same as --master.\n"
 "  --replication-slave=NODE   The same as --slave.\n"
@@ -11280,6 +11281,7 @@ S9sOptions::readOptionsReplication(
         { "job-tags",         required_argument, 0, OptionJobTags         },
         { "log",              no_argument,       0, 'G'                   },
         { "recurrence",       required_argument, 0, OptionRecurrence      },
+        { "refresh",          no_argument,       0, OptionRefresh         },
         { "schedule",         required_argument, 0, OptionSchedule        },
         { "timeout",          required_argument, 0, OptionTimeout         },
         { "wait",             no_argument,       0, OptionWait            },
@@ -11510,6 +11512,11 @@ S9sOptions::readOptionsReplication(
             case OptionRecurrence:
                 // --recurrence=CRONTABSTRING
                 m_options["recurrence"] = optarg;
+                break;
+            
+            case OptionRefresh:
+                // --refresh
+                m_options["refresh"] = true;
                 break;
             
             case OptionSchedule:
