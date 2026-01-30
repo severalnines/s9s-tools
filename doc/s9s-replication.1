@@ -187,6 +187,13 @@ The replication master.
 The ID of the backup to be used for replica rebuild.
 
 .TP
+.B --refresh
+Force bypass the cluster info cache and retrieve live data directly from the
+controller. This option is useful when immediate, up-to-date information is
+required, particularly after cluster changes. Without this flag, the command
+may use cached data that is periodically refreshed.
+
+.TP
 .BI --remote-cluster-id= ID
 Remote cluster ID for the c2c replication.
 

@@ -1094,7 +1094,7 @@ S9sNode::hostStatus() const
     if (m_properties.contains("hoststatus"))
         return m_properties.at("hoststatus").toString();
 
-    return S9sString();
+    return S9sString("Unknown");
 }
 
 S9sString
