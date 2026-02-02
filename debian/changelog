@@ -13,6 +13,8 @@ s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
     agent installation on nodes.
   * Added --refresh option to cluster and node operations to force fresh
     data collection instead of using cached information.
+  * CLUS-6878: Added --refresh option to replication command to bypass
+    cluster info cache and get live data.
 
  -- Peter Csaszar <peter@severalnines.com>  Tue, 13 Jan 2026 15:21:55 +0100
 
