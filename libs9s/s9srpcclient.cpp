@@ -11480,6 +11480,9 @@ S9sRpcClient::removeController(S9sOptions *options)
     {
         PRINT_ERROR("The --controller-id option must be specified for removeController operation.");
     }
+
+    if (options->uninstall())
+        jobData["enable_uninstall"] = true;
   
     // The jobspec describing the command.
     jobSpec["command"]  = "removeController";
@@ -11518,7 +11521,7 @@ S9sRpcClient::updateCmon(S9sOptions *options)
     }
 
     if (options->uninstall())
-        jobData["uninstall"] = true;
+        jobData["enable_uninstall"] = true;
 
     // The jobspec describing the command.
     jobSpec["command"]  = "updateCmonVersion";
