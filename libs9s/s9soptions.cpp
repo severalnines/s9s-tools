@@ -533,6 +533,7 @@ enum S9sOptionType
     OptionSetPoolMode,
     OptionUnsetPoolMode,
     OptionConfStorage,
+    OptionGrantedNetworkMask,
     OptionStartController,
     OptionStopController,
     OptionRemoveController,
@@ -19457,6 +19458,7 @@ S9sOptions::readOptionsControllers(
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
+                    {"granted-network-mask", required_argument, 0, OptionGrantedNetworkMask},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     {"uninstall",        no_argument,       0, OptionUninstall},
                     
@@ -19645,6 +19647,20 @@ S9sOptions::readOptionsControllers(
                 else
                 {
                     m_errorMessage = "Missing value for --conf-storage.";
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
+            case OptionGrantedNetworkMask:
+                // --granted-network-mask
+                if (optarg)
+                {
+                    m_options["granted_network_mask"] = optarg;
+                }
+                else
+                {
+                    m_errorMessage = "Missing value for --granted-network-mask.";
                     m_exitStatus = BadOptions;
                     return false;
                 }
@@ -19869,6 +19885,12 @@ S9sString
 S9sOptions::confStorage() const
 {
     return getString("conf_storage");
+}
+
+S9sString
+S9sOptions::grantedNetworkMask() const
+{
+    return getString("granted_network_mask");
 }
 
 S9sString

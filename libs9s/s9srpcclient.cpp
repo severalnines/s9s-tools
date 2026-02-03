@@ -11351,6 +11351,15 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
     const S9sString confStorage = options->confStorage();
     if (!confStorage.empty())
         request["conf_storage"] = confStorage;
+    
+    // Only pass granted_network_mask when enabling pool mode
+    if (poolMode)
+    {
+        const S9sString grantedNetworkMask = options->grantedNetworkMask();
+        if (!grantedNetworkMask.empty())
+            request["controllers_network_mask"] = grantedNetworkMask;
+    }
+    
     return executeRequest(uri, request);
 }
 
@@ -11471,6 +11480,9 @@ S9sRpcClient::removeController(S9sOptions *options)
     {
         PRINT_ERROR("The --controller-id option must be specified for removeController operation.");
     }
+
+    if (options->uninstall())
+        jobData["enable_uninstall"] = true;
   
     // The jobspec describing the command.
     jobSpec["command"]  = "removeController";
@@ -11509,7 +11521,7 @@ S9sRpcClient::updateCmon(S9sOptions *options)
     }
 
     if (options->uninstall())
-        jobData["uninstall"] = true;
+        jobData["enable_uninstall"] = true;
 
     // The jobspec describing the command.
     jobSpec["command"]  = "updateCmonVersion";
