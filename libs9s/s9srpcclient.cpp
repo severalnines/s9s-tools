@@ -11527,6 +11527,8 @@ S9sRpcClient::updateCmon(S9sOptions *options)
     jobSpec["command"]  = "updateCmonVersion";
     jobSpec["job_data"] = jobData;
 
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
     job["title"]    = "Update Cmon";
 
     request["operation"] = "createJobInstance";
