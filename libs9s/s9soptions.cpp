@@ -7814,6 +7814,7 @@ S9sOptions::printHelpGeneric()
 "   metatype - to print metatype information.\n"
 "       node - to handle nodes.\n"
 "    process - to view processes running on nodes.\n"
+"pool-controllers - to manage controllers pool.\n"
 "replication - to monitor and control data replication.\n"
 "   dbschema - to view database schemas.\n"
 "     report - to manage reports.\n"
