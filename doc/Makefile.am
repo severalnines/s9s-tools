@@ -20,6 +20,7 @@ man_MANS =            \
 	s9s-report.1      \
 	s9s-tree.1        \
 	s9s-controller.1  \
+	s9s-pool-controllers.1 \
 	s9s.conf.5        \
 	s9s-cil.3
 
