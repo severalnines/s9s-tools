@@ -8178,6 +8178,7 @@ S9sOptions::printHelpCluster()
 "  --remove-node              Remove a node from the cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --set-read-only            Set the entire cluster into read-only mode.\n"
+"  --set-read-write           Set the entire cluster into read-write mode.\n"
 "  --setup-audit-logging      Set up the audit logging on the nodes.\n"
 "  --audit-log-events-data=STR Set the audit events data for PostgreSQL audit logging.\n"
 "  --setup-logrotate          Starts a job to setup logrotate on the nodes.\n"
@@ -12617,6 +12618,9 @@ S9sOptions::checkOptionsCluster()
     if (isSetReadOnlyRequested())
         countOptions++;
     
+    if (isSetReadWriteRequested())
+        countOptions++;
+    
     if (isEnableRecoveryRequested())
         countOptions++;
     
@@ -14863,6 +14867,7 @@ S9sOptions::readOptionsCluster(
         { "remove-node",      no_argument,       0, OptionRemoveNode      },
         { "rolling-restart",  no_argument,       0, OptionRollingRestart  },
         { "set-read-only",    no_argument,       0, OptionSetReadOnly     },
+        { "set-read-write",   no_argument,       0, OptionSetReadWrite    },
         { "setup-audit-logging", no_argument,    0, OptionSetupAudit      },
         { "audit-log-events-data", required_argument, 0, OptionAuditLogEventData },
         { "start",            no_argument,       0, OptionStart           },
@@ -15156,6 +15161,11 @@ S9sOptions::readOptionsCluster(
             case OptionSetReadOnly:
                 // --set-read-only
                 m_options["set_read_only"] = true;
+                break;
+            
+            case OptionSetReadWrite:
+                // --set-read-write
+                m_options["set_read_write"] = true;
                 break;
             
             case OptionSetupAudit:
