@@ -11839,6 +11839,9 @@ S9sRpcClient::modifySubscription()
     if (options->hasNewSubscriptionName())
         request["new_sub_name"] = options->newSubscriptionName();
 
+    if (!options->publicationName().empty())
+        request["pub_name"] = options->publicationName();
+
     if (options->isEnableRequested())
         request["enabled"] = true;
     else if (options->isDisableRequested())

@@ -966,7 +966,7 @@ UtS9sRpcClient::testCreateCluster03()
     options->setNodes("NODE1:42;NODE2:42;NODE3:42");
     options->setContainers("NODE1;NODE2;NODE3");
     S9S_VERIFY(client.createCluster());
-    
+
     payload = client.lastPayload();
     if (isVerbose())
         printDebug(payload);
@@ -975,7 +975,7 @@ UtS9sRpcClient::testCreateCluster03()
 
     S9S_COMPARE(
             payload.valueByPath("/job/title").toString(),
-            "Create MySQL Replication Cluster");
+            "Create MySQL Group Replication Cluster");
     
     S9S_COMPARE(
             payload.valueByPath("/job/job_spec/command").toString(),
@@ -1890,6 +1890,7 @@ UtS9sRpcClient::testBackup()
     options->m_options["s3_bucket"]           = "elastic-s3-test";
     options->m_options["s3_region"]           = "eu-west-3";
     options->m_options["cloud_only"]          = true;
+    options->m_options["cloud_provider"]      = "aws";
     options->m_options["delete_after_upload"] = true;
     options->m_options["snapshot_location"]   = "/home/vagrant/backups/es-snapshot-repositories";
     options->m_options["subdirectory"]        = "subdir1";
@@ -1938,21 +1939,22 @@ UtS9sRpcClient::testBackup()
             "mybackupmethod1");
     
     S9S_COMPARE(
-            jobData.valueByPath("backup_retention"),
+            jobData.valueByPath(
+                    "upload_backup_data_to_cloud_storage/backup_retention"),
             8);
-    
+
     S9S_COMPARE(
             jobData.valueByPath("backup_user"),
             "backupuser1");
-    
+
     S9S_COMPARE(
             jobData.valueByPath("backup_user_password"),
             "backuppassword1");
-    
+
     S9S_COMPARE(
             jobData.valueByPath("backupdir"),
             "/backupdir1");
-    
+
     S9S_COMPARE(
             jobData.valueByPath("snapshot_repository"),
             "snapshotRepo1");
@@ -1962,11 +1964,12 @@ UtS9sRpcClient::testBackup()
             "fs");
 
     S9S_COMPARE(
-            jobData.valueByPath("credential_id"),
+            jobData.valueByPath(
+                    "upload_backup_data_to_cloud_storage/cloud_storage_credentials_id"),
             1);
 
     S9S_COMPARE(
-            jobData.valueByPath("s3_bucket"),
+            jobData.valueByPath("upload_backup_data_to_cloud_storage/bucket"),
             "elastic-s3-test");
 
     S9S_COMPARE(
@@ -1978,7 +1981,8 @@ UtS9sRpcClient::testBackup()
             true);
 
     S9S_COMPARE(
-            jobData.valueByPath("delete_after_upload"),
+            jobData.valueByPath(
+                    "upload_backup_data_to_cloud_storage/delete_after_upload"),
             true);
 
     S9S_COMPARE(
@@ -2301,7 +2305,7 @@ UtS9sRpcClient::testAddPublication()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "createPublication");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["subcluster_id"], 42);
     S9S_VERIFY(payload["include_all_tables"].toBoolean());
@@ -2320,7 +2324,7 @@ UtS9sRpcClient::testAddPublication()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "createPublication");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["subcluster_name"], "source");
     S9S_COMPARE(payload["db_tables"], "table1;table2");
@@ -2362,7 +2366,7 @@ UtS9sRpcClient::testModifyPublication()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "modifyPublication");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "oldpub");
     S9S_COMPARE(payload["new_pub_name"], "newpub");
     S9S_COMPARE(payload["subcluster_id"], 42);
@@ -2381,7 +2385,7 @@ UtS9sRpcClient::testModifyPublication()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "modifyPublication");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["subcluster_id"], 42);
     S9S_VERIFY(payload["include_all_tables"].toBoolean());
@@ -2415,7 +2419,7 @@ UtS9sRpcClient::testDropPublication()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "dropPublication");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["subcluster_id"], 42);
 
@@ -2432,7 +2436,7 @@ UtS9sRpcClient::testDropPublication()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "dropPublication");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["pub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["subcluster_name"], "source");
 
@@ -2504,7 +2508,7 @@ UtS9sRpcClient::testAddSubscription()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "createSubscription");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["sub_name"], "mysub");
     S9S_COMPARE(payload["subcluster_id"], 42);
@@ -2523,7 +2527,7 @@ UtS9sRpcClient::testAddSubscription()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "createSubscription");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_db_name"], "mydb");
     S9S_COMPARE(payload["pub_name"], "mypub");
     S9S_COMPARE(payload["sub_name"], "mysub");
     S9S_COMPARE(payload["subcluster_name"], "target");
@@ -2566,7 +2570,7 @@ UtS9sRpcClient::testModifySubscription()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "modifySubscription");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_db_name"], "mydb");
     S9S_COMPARE(payload["sub_name"], "oldsub");
     S9S_COMPARE(payload["new_sub_name"], "newsub");
     S9S_COMPARE(payload["pub_name"], "newpub");
@@ -2586,7 +2590,7 @@ UtS9sRpcClient::testModifySubscription()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "modifySubscription");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_db_name"], "mydb");
     S9S_COMPARE(payload["sub_name"], "mysub");
     S9S_COMPARE(payload["subcluster_id"], 42);
     S9S_VERIFY(!payload["enabled"].toBoolean());
@@ -2620,7 +2624,7 @@ UtS9sRpcClient::testDropSubscription()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "dropSubscription");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_db_name"], "mydb");
     S9S_COMPARE(payload["sub_name"], "mysub");
     S9S_COMPARE(payload["subcluster_id"], 42);
 
@@ -2637,7 +2641,7 @@ UtS9sRpcClient::testDropSubscription()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "dropSubscription");
-    S9S_COMPARE(payload["db_name"], "mydb");
+    S9S_COMPARE(payload["sub_db_name"], "mydb");
     S9S_COMPARE(payload["sub_name"], "mysub");
     S9S_COMPARE(payload["subcluster_name"], "target");
 
