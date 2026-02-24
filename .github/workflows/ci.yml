@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu24
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
