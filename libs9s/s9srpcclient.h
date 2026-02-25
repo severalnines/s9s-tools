@@ -464,6 +464,7 @@ class S9sRpcClient
         bool enableBinaryLogging();
 
         bool setClusterReadOnly();
+        bool disableClusterReadOnly();
         
         bool failoverMaster();
         bool stageSlave();

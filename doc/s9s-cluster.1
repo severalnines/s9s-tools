@@ -553,6 +553,22 @@ s9s cluster \\
 .fi
 
 .TP
+.B --set-read-write
+This option will create a job that when executed will set the entire cluster
+into read-write mode, disabling read-only mode. Use this option to restore
+write access to a cluster that was previously set to read-only mode (e.g., due
+to disk space issues or manual intervention).
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --set-read-write \\
+    --cluster-id=1 \\
+    --debug \\
+    --log
+.fi
+
+.TP
 .B --setup-audit-logging
 Creates a job that will set up audit logging on the cluster nodes. This
 option is used to configure audit logging for database clusters, particularly

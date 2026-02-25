@@ -2598,6 +2598,31 @@ S9sRpcClient::setClusterReadOnly()
     return executeRequest(uri, request);
 }
 
+/**
+ * \returns true if the operation was successful, a reply is received from the
+ *   controller (even if the reply is an error reply).
+ */
+bool
+S9sRpcClient::disableClusterReadOnly()
+{
+    S9sVariantMap  request = composeRequest();
+    S9sVariantMap  job     = composeJob();
+    S9sVariantMap  jobSpec;
+    S9sString      uri = "/v2/jobs/";
+
+    jobSpec["command"]    = "disable_cluster_readonly";
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Disable Cluster Read-only";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.    
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    
+    return executeRequest(uri, request);
+}
+
 
 /**
  * \returns true if the operation was successful, a reply is received from the
