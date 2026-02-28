@@ -677,7 +677,7 @@ S9sOptions::createConfigFiles()
         return;
 
     userFile.fprintf("[global]\n");
-    userFile.fprintf("# controller=https://localhost:9501\n");
+    userFile.fprintf("# controller=https://localhost:9500\n");
     userFile.fprintf("\n");
 
     userFile.fprintf("#\n");
@@ -961,7 +961,7 @@ S9sOptions::checkController()
     if (!tmp.empty())
         setController(tmp);
     else
-        setController("https://localhost:9501");
+        setController("https://localhost:9500");
 }
 
 /**
@@ -1032,7 +1032,7 @@ S9sOptions::controllerPort()
     }
 
     if (retval < 1)
-        retval = 9501;
+        retval = 9500;
 
     return retval;
 }

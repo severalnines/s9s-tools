@@ -133,7 +133,7 @@ function testBoostrap()
         --generate-key \
         --group="admins" \
         --new-password="admin" \
-        --controller="https://localhost:9501" \
+        --controller="https://localhost:9500" \
         --email-address=${S9STEST_ADMIN_USER_EMAIL} \
         --first-name="Firstname" \
         --last-name="Lastname" \

@@ -12566,26 +12566,26 @@ S9sRpcClient::composeJobDataOneContainer() const
  * {
  *     "controllers": 
  *     {
- *         "192.168.0.100:9501": 
+ *         "192.168.0.100:9500": 
  *         {
  *             "class_name": "CmonController",
  *             "hostname": "192.168.0.100",
  *             "ip": "192.168.0.100",
- *             "port": 9501
+ *             "port": 9500
  *         },
- *         "192.168.0.223:9501": 
+ *         "192.168.0.223:9500": 
  *         {
  *             "class_name": "CmonController",
  *             "hostname": "192.168.0.223",
  *             "ip": "192.168.0.223",
- *             "port": 9501
+ *             "port": 9500
  *         },
- *         "192.168.0.235:9501": 
+ *         "192.168.0.235:9500": 
  *         {
  *             "class_name": "CmonController",
  *             "hostname": "192.168.0.235",
  *             "ip": "192.168.0.235",
- *             "port": 9501
+ *             "port": 9500
  *         }
  *     },
  *     "error_string": "Redirect notification.",
