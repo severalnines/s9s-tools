@@ -5047,10 +5047,8 @@ S9sRpcClient::createClickHouseCluster(
     if (options->noInstall())
     {
         jobData["install_software"] = false;
-        jobData["enable_uninstall"] = false;
     } else {
         jobData["install_software"] = true;
-        jobData["enable_uninstall"] = false;
     }
 
     if (!options->clusterName().empty())
