@@ -1191,6 +1191,8 @@ S9sNode::nodeTypeFlag() const
         return 'A';
     else if (theNodeType == "prometheus")
         return 'P';
+    else if (theNodeType == "clickhouse")
+        return 'H';
 
     else if (className() == "CmonMySqlHost")
         return 's';
@@ -1202,6 +1204,8 @@ S9sNode::nodeTypeFlag() const
         return 'E';
     else if (className() == "CmonMsSqlHost")
         return '$';
+    else if (className() == "CmonClickHouseHost")
+        return 'H';
 
     return '?';
 }
