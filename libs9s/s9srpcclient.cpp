@@ -3224,7 +3224,8 @@ S9sRpcClient::createCluster()
     vendor         = options->vendor();
 
 
-    if (vendor.empty() && options->clusterType() != "postgresql")
+    if (vendor.empty() && options->clusterType() != "postgresql"
+            && options->clusterType() != "clickhouse")
     {
         PRINT_ERROR(
             "The vendor name is unknown while creating a cluster.\n"
@@ -3324,7 +3325,12 @@ S9sRpcClient::createCluster()
     {
         success = createElasticsearch(
             hosts, osUserName, dbVersion);
- 
+
+    } else if (options->clusterType() == "clickhouse")
+    {
+        success = createClickHouseCluster(
+            hosts, osUserName, dbVersion);
+
     } else if (options->clusterType() == "mssql_single" ||
                options->clusterType() == "mssql_ao_async"||
                options->clusterType() == "mssql_ao_sync")
@@ -5003,6 +5009,62 @@ S9sRpcClient::createElasticsearch(
     request["operation"]        = "createJobInstance";
     request["job"]              = job;
     
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::createClickHouseCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName,
+        const S9sString      &version)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Missing node list while creating ClickHouse cluster.");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    jobData["cluster_type"]     = "clickhouse";
+    jobData["type"]             = "clickhouse";
+    jobData["nodes"]            = nodesField(hosts);
+    jobData["db_user"]          = options->dbAdminUserName();
+    jobData["db_password"]      = options->dbAdminPassword();
+    jobData["disable_firewall"] = !options->keepFirewall();
+    jobData["deploy_agents"]    = !options->noAgent();
+
+    if (options->hasProviderVersion())
+        jobData["version"]      = version;
+
+    if (options->noInstall())
+    {
+        jobData["install_software"] = false;
+        jobData["enable_uninstall"] = false;
+    } else {
+        jobData["install_software"] = true;
+        jobData["enable_uninstall"] = false;
+    }
+
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    jobSpec["command"]          = "create_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    job["title"]                = "Creating ClickHouse Cluster";
+    job["job_spec"]             = jobSpec;
+
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+
     return executeRequest(uri, request);
 }
 

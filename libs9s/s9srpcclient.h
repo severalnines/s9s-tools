@@ -641,6 +641,11 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &elasticVersion);
 
+        bool createClickHouseCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName,
+                const S9sString      &version);
+
         bool registerElasticsearchCluster(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName);

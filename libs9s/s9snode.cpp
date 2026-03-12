@@ -132,6 +132,8 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonMsSqlHost";
         else if (m_url.protocol().toLower() == "elastic")
             m_properties["class_name"] = "CmonElasticHost";
+        else if (m_url.protocol().toLower() == "clickhouse")
+            m_properties["class_name"] = "CmonClickHouseHost";
         else
             m_properties["protocol"] = m_url.protocol();
     }
