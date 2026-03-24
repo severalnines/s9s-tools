@@ -61,6 +61,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testPostgreSqlBackupOptions, retval);
     PERFORM_TEST(testAuditLogEventData, retval);
     PERFORM_TEST(testExternalBackup, retval);
+    PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
 
     return retval;
@@ -836,6 +837,84 @@ UtS9sOptions::testAddController()
     S9S_COMPARE(options->nodes().size(), 1);
     S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
     S9S_COMPARE(options->providerVersion(), "2.3.4-17176");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the --configure-wal option with --archive-mode and --summarize-wal.
+ */
+bool
+UtS9sOptions::testConfigureWalOptions()
+{
+    S9sOptions *options;
+
+    // Test --configure-wal with all WAL options
+    const char *argv1[] = {
+        "/bin/s9s", "node",
+        "--configure-wal",
+        "--cluster-id=1",
+        "--nodes=pghost:5432",
+        "--archive-mode=on",
+        "--summarize-wal=on",
+        nullptr
+    };
+    int argc1 = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+
+    S9S_COMPARE(options->m_operationMode, S9sOptions::Node);
+    S9S_VERIFY(options->isConfigureWal());
+    S9S_COMPARE(options->clusterId(), 1);
+    S9S_COMPARE(options->archiveMode(), "on");
+    S9S_COMPARE(options->summarizeWal(), "on");
+
+    S9sVariantList nodes = options->nodes();
+    S9S_COMPARE(nodes.size(), 1);
+    S9S_COMPARE(nodes[0].toNode().hostName(), "pghost");
+    S9S_COMPARE(nodes[0].toNode().port(), 5432);
+
+    // Test --configure-wal with summarize-wal=off
+    const char *argv2[] = {
+        "/bin/s9s", "node",
+        "--configure-wal",
+        "--cluster-id=2",
+        "--nodes=dbhost:5433",
+        "--archive-mode=always",
+        "--summarize-wal=off",
+        nullptr
+    };
+    int argc2 = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+
+    S9S_VERIFY(options->isConfigureWal());
+    S9S_COMPARE(options->clusterId(), 2);
+    S9S_COMPARE(options->archiveMode(), "always");
+    S9S_COMPARE(options->summarizeWal(), "off");
+
+    // Test --configure-wal without optional archive-mode/summarize-wal
+    const char *argv3[] = {
+        "/bin/s9s", "node",
+        "--configure-wal",
+        "--cluster-id=3",
+        "--nodes=host1:5432",
+        nullptr
+    };
+    int argc3 = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+
+    S9S_VERIFY(options->isConfigureWal());
+    S9S_COMPARE(options->archiveMode(), "");
+    S9S_COMPARE(options->summarizeWal(), "");
 
     S9sOptions::uninit();
     return true;
