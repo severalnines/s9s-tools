@@ -899,6 +899,7 @@ UtS9sOptions::testConfigureWalOptions()
     S9S_COMPARE(options->summarizeWal(), "off");
 
     // Test --configure-wal without optional archive-mode/summarize-wal
+    // should fail since at least one of them is required.
     const char *argv3[] = {
         "/bin/s9s", "node",
         "--configure-wal",
@@ -910,11 +911,35 @@ UtS9sOptions::testConfigureWalOptions()
 
     S9sOptions::uninit();
     options = S9sOptions::instance();
-    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
 
-    S9S_VERIFY(options->isConfigureWal());
-    S9S_COMPARE(options->archiveMode(), "");
-    S9S_COMPARE(options->summarizeWal(), "");
+    // Test --configure-wal without --cluster-id should fail.
+    const char *argv4[] = {
+        "/bin/s9s", "node",
+        "--configure-wal",
+        "--nodes=host1:5432",
+        "--summarize-wal=on",
+        nullptr
+    };
+    int argc4 = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    // Test --configure-wal without --nodes should fail.
+    const char *argv5[] = {
+        "/bin/s9s", "node",
+        "--configure-wal",
+        "--cluster-id=3",
+        "--summarize-wal=on",
+        nullptr
+    };
+    int argc5 = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc5, (char **)argv5));
 
     S9sOptions::uninit();
     return true;

@@ -12923,6 +12923,42 @@ S9sOptions::checkOptionsNode()
         return false;
     }
 
+    /*
+     * Checking mandatory and optional arguments for --configure-wal.
+     */
+    if (isConfigureWal())
+    {
+        if (!hasClusterIdOption())
+        {
+            m_errorMessage =
+                    "The --cluster-id option is required for "
+                    "--configure-wal.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        if (nodes().empty())
+        {
+            m_errorMessage =
+                    "The --nodes option is required for "
+                    "--configure-wal.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        if (summarizeWal().empty() && archiveMode().empty())
+        {
+            m_errorMessage =
+                    "At least one of --summarize-wal or --archive-mode "
+                    "is required for --configure-wal.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
     return true;
 }
 
