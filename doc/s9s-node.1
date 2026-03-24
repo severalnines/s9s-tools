@@ -45,6 +45,23 @@ s9s nodes \\
 .fi
 
 .TP
+.B \-\-configure\-wal
+Configure WAL archiving on a PostgreSQL node. Use
+.B \-\-archive\-mode
+to set the archive mode and
+.B \-\-summarize\-wal
+to enable or disable WAL summarization (requires PostgreSQL 17+).
+
+.B EXAMPLE
+.nf
+s9s node \\
+    --configure-wal \\
+    --cluster-id=1 \\
+    --nodes=HOST:5432 \\
+    --summarize-wal=on
+.fi
+
+.TP
 .B \-\-list\-config
 List the configuration values for the given node.
 
