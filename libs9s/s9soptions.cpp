@@ -467,6 +467,9 @@ enum S9sOptionType
     OptionSetReadWrite,
 
     OptionEnableBinaryLogging,
+    OptionConfigureWal,
+    OptionArchiveMode,
+    OptionSummarizeWal,
     OptionUsr1,
     OptionNext,
     OptionCurrent,
@@ -6539,6 +6542,33 @@ S9sOptions::isEnableBinaryLogging() const
     return getBool("enable_binary_logging");
 }
 
+/**
+ * \returns True if the --configure-wal command line option was provided.
+ */
+bool
+S9sOptions::isConfigureWal() const
+{
+    return getBool("configure_wal");
+}
+
+S9sString
+S9sOptions::archiveMode() const
+{
+    if (m_options.contains("archive_mode"))
+        return m_options.at("archive_mode").toString();
+
+    return "";
+}
+
+S9sString
+S9sOptions::summarizeWal() const
+{
+    if (m_options.contains("summarize_wal"))
+        return m_options.at("summarize_wal").toString();
+
+    return "";
+}
+
 bool
 S9sOptions::isDisableSslRequested() const
 {
@@ -8359,6 +8389,10 @@ S9sOptions::printHelpNode()
 "Options for the \"node\" command:\n"
 "  --change-config            Change the configuration for a node.\n"
 "  --enable-binary-logging    Enables binary logs on a node.\n"
+"  --configure-wal            Configure WAL archiving on a PostgreSQL node.\n"
+"    --archive-mode=MODE      Set archive mode (off, on, always).\n"
+"    --summarize-wal=VALUE    Enable/disable WAL summarization (on|off).\n"
+"                             Requires PostgreSQL 17+.\n"
 "  --list-config              Print the configuration for a node.\n"
 "  --list                     List the jobs found on the controller.\n"
 "  --pull-config              Copy configuration files from a node.\n"
@@ -8812,6 +8846,9 @@ S9sOptions::readOptionsNode(
         { "pull-config",      no_argument,       0, OptionPullConfig      },
         { "push-config",      no_argument,       0, OptionPushConfig      },
         { "enable-binary-logging", no_argument,  0, OptionEnableBinaryLogging },
+        { "configure-wal",    no_argument,       0, OptionConfigureWal    },
+        { "archive-mode",     required_argument, 0, OptionArchiveMode     },
+        { "summarize-wal",    required_argument, 0, OptionSummarizeWal    },
         { "inspect",          no_argument,       0, OptionInspect         },
         { "register",         no_argument,       0, OptionRegister        },
         { "restart",          no_argument,       0, OptionRestart         },
@@ -8993,6 +9030,31 @@ S9sOptions::readOptionsNode(
             case OptionEnableBinaryLogging:
                 // --enable-binary-logging
                 m_options["enable_binary_logging"] = true;
+                break;
+
+            case OptionConfigureWal:
+                // --configure-wal
+                m_options["configure_wal"] = true;
+                break;
+
+            case OptionArchiveMode:
+                // --archive-mode=MODE
+                m_options["archive_mode"] = optarg;
+                break;
+
+            case OptionSummarizeWal:
+                // --summarize-wal=on|off
+                if (S9sString(optarg).toLower() != "on" &&
+                    S9sString(optarg).toLower() != "off")
+                {
+                    PRINT_ERROR(
+                            "Invalid value '%s' for --summarize-wal. "
+                            "Use 'on' or 'off'.",
+                            optarg);
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                m_options["summarize_wal"] = optarg;
                 break;
 
             case OptionInspect:
@@ -12844,6 +12906,9 @@ S9sOptions::checkOptionsNode()
     if (isEnableBinaryLogging())
         countOptions++;
 
+    if (isConfigureWal())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = "Main command line options are mutually exclusive.";
@@ -12856,6 +12921,42 @@ S9sOptions::checkOptionsNode()
         m_exitStatus = BadOptions;
 
         return false;
+    }
+
+    /*
+     * Checking mandatory and optional arguments for --configure-wal.
+     */
+    if (isConfigureWal())
+    {
+        if (!hasClusterIdOption())
+        {
+            m_errorMessage =
+                    "The --cluster-id option is required for "
+                    "--configure-wal.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        if (nodes().empty())
+        {
+            m_errorMessage =
+                    "The --nodes option is required for "
+                    "--configure-wal.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        if (summarizeWal().empty() && archiveMode().empty())
+        {
+            m_errorMessage =
+                    "At least one of --summarize-wal or --archive-mode "
+                    "is required for --configure-wal.";
+
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;

@@ -7167,6 +7167,63 @@ S9sRpcClient::enableBinaryLogging()
     return retval;
 }
 
+/**
+ * Creates a job to configure WAL archiving on a PostgreSQL node.
+ * Corresponds to the "enable_log_archiving" command on the controller.
+ *
+ * Usage:
+ *   s9s node --configure-wal --cluster-id=ID --nodes=HOST \
+ *       --archive-mode=on|off|always --summarize-wal=on|off
+ */
+bool
+S9sRpcClient::configureWal()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    int            clusterId = options->clusterId();
+    S9sVariantList nodes     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    bool           retval;
+
+    if (nodes.size() != 1u)
+    {
+        PRINT_ERROR("To configure WAL exactly one node must be specified.");
+        return false;
+    }
+
+    S9sNode node = nodes[0].toNode();
+
+    // The job_data describing the job itself.
+    jobData["hostname"]  = node.hostName();
+    jobData["port"]      = node.port();
+
+    S9sString archiveMode = options->archiveMode();
+    if (!archiveMode.empty())
+        jobData["archive_mode"] = archiveMode;
+
+    S9sString summarizeWal = options->summarizeWal();
+    if (!summarizeWal.empty())
+        jobData["summarize_wal"] = summarizeWal;
+
+    // The jobspec describing the command.
+    jobSpec["command"]    = "enable_log_archiving";
+    jobSpec["job_data"]   = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]          = "Configure WAL";
+    job["job_spec"]       = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+    request["cluster_id"] = clusterId;
+
+    retval = executeRequest("/v2/jobs/", request);
+
+    return retval;
+}
 
 bool
 S9sRpcClient::setNodeReadOnly()

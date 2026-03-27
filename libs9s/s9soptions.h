@@ -729,6 +729,9 @@ class S9sOptions
         bool isCollectLogsRequested() const;
         bool isEnableSslRequested() const;
         bool isEnableBinaryLogging() const;
+        bool isConfigureWal() const;
+        S9sString archiveMode() const;
+        S9sString summarizeWal() const;
         bool isDisableSslRequested() const;
         bool isSetupAuditLoggingRequested() const;
         S9sString auditLogEventData() const;

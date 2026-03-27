@@ -462,6 +462,7 @@ class S9sRpcClient
         bool setNodeReadWrite();
 
         bool enableBinaryLogging();
+        bool configureWal();
 
         bool setClusterReadOnly();
         bool disableClusterReadOnly();

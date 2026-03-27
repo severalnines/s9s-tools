@@ -482,6 +482,10 @@ S9sBusinessLogic::execute()
         {
             success = client.enableBinaryLogging();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isConfigureWal())
+        {
+            success = client.configureWal();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isSetReadWriteRequested())
         {
             success = client.setNodeReadWrite();

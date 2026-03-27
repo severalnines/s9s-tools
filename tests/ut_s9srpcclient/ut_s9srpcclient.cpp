@@ -167,6 +167,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testDropSubscription, retval);
     PERFORM_TEST(testListSubscriptions, retval);
 
+    PERFORM_TEST(testConfigureWal, retval);
     PERFORM_TEST(testAddController, retval);
 
     return retval;
@@ -2685,6 +2686,60 @@ UtS9sRpcClient::testListSubscriptions()
     return true;
 }
 
+/**
+ * Testing the configureWal() RPC call sends the correct payload.
+ */
+bool
+UtS9sRpcClient::testConfigureWal()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload, jobData;
+
+    options->setNodes("pghost:5432");
+    options->m_options["cluster_id"]    = 1;
+    options->m_options["configure_wal"] = true;
+    options->m_options["archive_mode"]  = "on";
+    options->m_options["summarize_wal"] = "on";
+
+    S9S_VERIFY(client.configureWal());
+    payload = client.lastPayload();
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(payload["cluster_id"], 1);
+
+    S9S_COMPARE(
+            payload.valueByPath("job/class_name"),
+            "CmonJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("job/title"),
+            "Configure WAL");
+
+    S9S_COMPARE(
+            payload.valueByPath("job/job_spec/command"),
+            "enable_log_archiving");
+
+    jobData = payload.valueByPath("job/job_spec/job_data").toVariantMap();
+
+    S9S_COMPARE(jobData["hostname"], "pghost");
+    S9S_COMPARE(jobData["port"], 5432);
+    S9S_COMPARE(jobData["archive_mode"], "on");
+    S9S_COMPARE(jobData["summarize_wal"], "on");
+
+    // Test with summarize_wal=off and archive_mode=always
+    options->m_options["archive_mode"]  = "always";
+    options->m_options["summarize_wal"] = "off";
+
+    S9S_VERIFY(client.configureWal());
+    payload = client.lastPayload();
+    jobData = payload.valueByPath("job/job_spec/job_data").toVariantMap();
+
+    S9S_COMPARE(jobData["archive_mode"], "always");
+    S9S_COMPARE(jobData["summarize_wal"], "off");
+
+    return true;
+}
 
 bool
 UtS9sRpcClient::testAddController()
