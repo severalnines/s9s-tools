@@ -8135,6 +8135,7 @@ S9sOptions::printHelpAccount()
 "  --revoke                   Revoke privileges of the account.\n"
 "\n"
 "  --account=ACCOUNT          The account itself.\n"
+"  --force                    Force the delete even if the account owns objects.\n"
 "  --private                  Create a secured, more private account.\n"
 "  --privileges=PRIVILEGES    The privileges for the account.\n"
 "  --with-database            Create a database for the user.\n"
@@ -14026,6 +14027,7 @@ S9sOptions::readOptionsAccount(
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "limit",            required_argument, 0, OptionLimit           },
         { "offset",           required_argument, 0, OptionOffset          },
+        { "force",            no_argument,       0, OptionForce           },
 
         { 0, 0, 0, 0 }
     };
@@ -14240,7 +14242,12 @@ S9sOptions::readOptionsAccount(
                 // --offset=NUMBER
                 m_options["offset"] = optarg;
                 break;
-            
+
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
+                break;
+
             case '?':
             default:
                 S9S_WARNING("Unrecognized command line option.");
