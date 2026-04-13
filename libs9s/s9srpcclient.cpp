@@ -10010,6 +10010,9 @@ S9sRpcClient::deleteAccount()
     request["operation"]  = "deleteAccount";
     request["account"]    = account;
 
+    if (options->force())
+        request["force_delete"] = true;
+
     retval = executeRequest(uri, request);
 
     return retval;
