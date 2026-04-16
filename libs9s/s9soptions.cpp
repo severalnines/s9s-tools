@@ -541,6 +541,7 @@ enum S9sOptionType
     OptionStopController,
     OptionRemoveController,
     OptionUpdateCmon,
+    OptionIncremental,
 
     OptionExtensions
 };
@@ -4137,6 +4138,15 @@ bool
 S9sOptions::encryptBackup() const
 {
     return getBool("encrypt_backup");
+}
+
+/**
+ * \returns true if the --incremental command line option was provided.
+ */
+bool
+S9sOptions::incremental() const
+{
+    return getBool("incremental");
 }
 
 /**
@@ -8008,6 +8018,8 @@ S9sOptions::printHelpBackup()
 "  --no-privileges            Skip privilege information (PostgreSQL).\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
+"  --incremental              Create an incremental backup on top of the\n"
+"                             backup specified by --backup-id.\n"
 "  --compression-level        Backup compress level value to use (between 1 and 9).\n"
 "  --no-compression           Do not compress the backup.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
@@ -9423,6 +9435,7 @@ S9sOptions::readOptionsBackup(
         { "no-privileges",    no_argument,       0, OptionNoPrivileges    },
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
+        { "incremental",      no_argument,       0, OptionIncremental     },
         { "memory",           required_argument, 0, OptionMemory          },
         { "compression-level",required_argument, 0, OptionCompressionLevel},
         { "no-compression",   no_argument,       0, OptionNoCompression   },
@@ -9786,7 +9799,12 @@ S9sOptions::readOptionsBackup(
                 // --encrypt-backup
                 m_options["encrypt_backup"] = true;
                 break;
-                
+
+            case OptionIncremental:
+                // --incremental
+                m_options["incremental"] = true;
+                break;
+
             case OptionNoCompression:
                 // --no-compression
                 m_options["no_compression"] = true;
