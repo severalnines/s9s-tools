@@ -5414,8 +5414,8 @@ S9sOptions::isPrintDeploymentInfoRequested() const
 }
 
 /**
- * \returns true if the "assigned_controller" function is requested by providing the --assigned-controller
- *   command line option.
+ * \returns true if the "assignedController" operation is requested by providing the --assignment
+ *   command line option on the "pool-controllers" subcommand.
  */
 bool
 S9sOptions::isAssignedController() const
@@ -8781,11 +8781,11 @@ S9sOptions::printHelpControllers()
     printHelpGeneric();
 
     printf(
-"Options for the \"controllers\" command:\n"
+"Options for the \"pool-controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
 "  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
-"  --assigned-controller      To retrieve the controller assigned to specific cluster.\n"
+"  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
