@@ -12284,14 +12284,7 @@ S9sRpcClient::composeBackupJob()
 
     if (options->encryptBackup())
         jobData["encrypt_backup"] = true;
-
-    if (options->incremental())
-    {
-        jobData["incremental"] = true;
-        if (options->backupId() > 0)
-            jobData["parent_backup_id"] = options->backupId();
-    }
-
+    
     // 0: prefer global setting, -1: never delete, >0 delete after N days
     if (options->hasBackupRetention())
         jobData["backup_retention"] = options->backupRetention();

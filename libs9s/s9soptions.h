@@ -459,7 +459,6 @@ class S9sOptions
         S9sString backupPath() const;
         S9sString backupSourceAddress() const;
         int compressionLevel() const;
-        bool incremental() const;
         bool noCompression() const;
         bool pitrCompatible() const;
         bool usePigz() const;
