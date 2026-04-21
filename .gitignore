@@ -74,4 +74,5 @@ debian/libs9s0/
 debian/s9s-tools.substvars
 debian/s9s-tools/
 debian/tmp/
+.idea/
 

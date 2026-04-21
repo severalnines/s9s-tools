@@ -30,8 +30,9 @@ SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 .fi
 
 .TP
-.B --assigned-controller
-Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory
+.B --assignment
+Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory.
+Note: this operation is only available under the \fBpool-controllers\fP subcommand, not under \fBcontroller\fP.
 .nf
 s9s pool-controllers --assignment --cluster-id="2"
 SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
