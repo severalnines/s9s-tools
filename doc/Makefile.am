@@ -9,7 +9,6 @@ man_MANS =            \
 	s9s-container.1   \
 	s9s-process.1     \
 	s9s-backup.1      \
-	s9s-backup-clickhouse.1 \
 	s9s-user.1        \
 	s9s-group.1       \
 	s9s-account.1     \
