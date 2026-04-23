@@ -372,6 +372,9 @@ enum S9sOptionType
     OptionTestServer,
     OptionDataDir,
     OptionBackupDatadir,
+    OptionBackupFailoverHost,
+    OptionBackupMysqldumpType,
+    OptionExtendedInsert,
 
     OptionListImages,
     OptionListRegions,
@@ -8028,6 +8031,9 @@ S9sOptions::printHelpBackup()
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
+"  --backup-failover-host=HOSTNAME  Specify a backup failover host if the primary host is unavailable.\n"
+"  --backup-mysqldump-type=TYPE     Type of mysqldump to use (auto, mysql-client-native, percona-xtrabackup-mysqldump).\n"
+"  --extended-insert          Use extended insert syntax for mysqldump.\n"
 "\n"
     );
 }
@@ -9455,6 +9461,9 @@ S9sOptions::readOptionsBackup(
         { "cluster-decryption-key", required_argument, 0, OptionClusterDecryptionKey},
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
+        { "backup-failover-host", required_argument, 0, OptionBackupFailoverHost },
+        { "backup-mysqldump-type", required_argument, 0, OptionBackupMysqldumpType },
+        { "extended-insert",  no_argument,       0, OptionExtendedInsert  },
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -10003,7 +10012,22 @@ S9sOptions::readOptionsBackup(
                 // --test-server=HOSTNAME
                 m_options["test_server"] = optarg;
                 break;
-            
+
+            case OptionBackupFailoverHost:
+                // --backup-failover-host=HOSTNAME
+                m_options["backup_failover_host"] = optarg;
+                break;
+
+            case OptionBackupMysqldumpType:
+                // --backup-mysqldump-type=TYPE
+                m_options["backup_mysqldump_type"] = optarg;
+                break;
+
+            case OptionExtendedInsert:
+                // --extended-insert
+                m_options["extended_insert"] = true;
+                break;
+
             case OptionOutputFile:
                 // --output-file=FILE
                 m_options["output_file"] = optarg;
@@ -20086,6 +20110,33 @@ S9sString
 S9sOptions::testServer() const
 {
     return getString("test_server");
+}
+
+/**
+ * \returns The argument of the --backup-failover-host command line option.
+ */
+S9sString
+S9sOptions::backupFailoverHost() const
+{
+    return getString("backup_failover_host");
+}
+
+/**
+ * \returns The argument of the --backup-mysqldump-type command line option.
+ */
+S9sString
+S9sOptions::backupMysqldumpType() const
+{
+    return getString("backup_mysqldump_type");
+}
+
+/**
+ * \returns True if the --extended-insert command line option was provided.
+ */
+bool
+S9sOptions::extendedInsert() const
+{
+    return getBool("extended_insert");
 }
 
 
