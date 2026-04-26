@@ -8001,6 +8001,11 @@ S9sOptions::printHelpBackup()
 "  --backup-password=PASSWD   The password for the backup user.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
+"  --backup-failover-host=HOSTNAME  Specify a backup failover host if the primary host is unavailable.\n"
+"  --backup-mysqldump-type=TYPE     Type of mysqldump backup. Allowed values: SchemaOnly,\n"
+"                                   DataOnly, MySQLDBOnly, TriggersEventsRoutines,\n"
+"                                   SchemaAndData, Complete.\n"
+"  --extended-insert[=true|false]   Use extended insert syntax for mysqldump (default: true).\n"
 "  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --schemas=LIST             Include specific schemas (PostgreSQL only).\n"
@@ -8031,9 +8036,6 @@ S9sOptions::printHelpBackup()
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
 "  --use-pigz                 Use the pigz program to compress archive.\n"
-"  --backup-failover-host=HOSTNAME  Specify a backup failover host if the primary host is unavailable.\n"
-"  --backup-mysqldump-type=TYPE     Type of mysqldump to use (auto, mysql-client-native, percona-xtrabackup-mysqldump).\n"
-"  --extended-insert          Use extended insert syntax for mysqldump.\n"
 "\n"
     );
 }
@@ -9463,7 +9465,7 @@ S9sOptions::readOptionsBackup(
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
         { "backup-failover-host", required_argument, 0, OptionBackupFailoverHost },
         { "backup-mysqldump-type", required_argument, 0, OptionBackupMysqldumpType },
-        { "extended-insert",  no_argument,       0, OptionExtendedInsert  },
+        { "extended-insert",  optional_argument, 0, OptionExtendedInsert  },
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -10024,8 +10026,28 @@ S9sOptions::readOptionsBackup(
                 break;
 
             case OptionExtendedInsert:
-                // --extended-insert
-                m_options["extended_insert"] = true;
+                // --extended-insert[=true|false]
+                if (optarg)
+                {
+                    S9sString value = optarg;
+                    value.toLower();
+                    if (value == "true" || value == "1" || value == "yes")
+                        m_options["extended_insert"] = true;
+                    else if (value == "false" || value == "0" || value == "no")
+                        m_options["extended_insert"] = false;
+                    else
+                    {
+                        m_exitStatus = BadOptions;
+                        m_errorMessage.sprintf(
+                            "Invalid value '%s' for --extended-insert. "
+                            "Use 'true' or 'false'.", optarg);
+                        return false;
+                    }
+                }
+                else
+                {
+                    m_options["extended_insert"] = true;
+                }
                 break;
 
             case OptionOutputFile:
@@ -20131,11 +20153,16 @@ S9sOptions::backupMysqldumpType() const
 }
 
 /**
- * \returns True if the --extended-insert command line option was provided.
+ * \returns True if the --extended-insert command line option was provided with
+ *          value true, or if the option was not provided (default is true).
  */
 bool
 S9sOptions::extendedInsert() const
 {
+    // If the option was not set at all, default is true
+    if (!m_options.contains("extended_insert"))
+        return true;
+
     return getBool("extended_insert");
 }
 

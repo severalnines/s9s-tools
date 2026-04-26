@@ -12296,13 +12296,16 @@ S9sRpcClient::composeBackupJob()
         jobData["backup_individual_schemas"] = true;
 
     if (!options->backupFailoverHost().empty())
+    {
+        jobData["backup_failover"] = true;
         jobData["backup_failover_host"] = options->backupFailoverHost();
+    }
 
     if (!options->backupMysqldumpType().empty())
         jobData["backup_mysqldump_type"] = options->backupMysqldumpType();
 
-    if (options->extendedInsert())
-        jobData["extended_insert"] = true;
+    // Always send extended_insert (defaults to true if not specified)
+    jobData["extended_insert"] = options->extendedInsert();
 
     if (!options->testServer().empty())
     {
