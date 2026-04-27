@@ -4199,8 +4199,11 @@ S9sOptions::onController() const
  *   configuration file value or the empty string if none of those are 
  *   provided.
  *
- * The controller currently supports 'ndb', 'mysqldump', 'xtrabackupfull',
- * 'xtrabackupincr', 'mongodump', 'pg_dump' and 'mysqlpump'.
+ * The controller currently supports 'ndb', 'mysqldump', 'mariadb-dump',
+ * 'xtrabackupfull', 'xtrabackupincr', 'mariabackupfull', 'mariabackupincr',
+ * 'mongodump', 'percona-backup-mongodb', 'pgdump', 'pgdumpall',
+ * 'pg_basebackup', 'pgbackrestfull', 'pgbackrestincr', 'pgbackrestdiff',
+ * 'clickhouse-native' and 'clickhouse-native-incr'.
  * Now that mariadb 11.4 has only 'mariadb-dump' binary backup method name is valid
  * but will be programatically treated as 'mysqldump' and this is the value on property.
  */
@@ -7995,6 +7998,7 @@ S9sOptions::printHelpBackup()
 "  --datadir=DIRECTORY        Data directory to be used on a new backup verification node.\n"
 "  --backup-format=STRING     The format string used while printing backups.\n"
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
+"                             See s9s-backup(1) for supported values.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"

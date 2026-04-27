@@ -69,6 +69,28 @@ s9s backup \\
     --backup-dir=/tmp
 .fi
 
+.B EXAMPLE (ClickHouse full backup)
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --nodes="192.168.1.10" \\
+    --backup-method=clickhouse-native \\
+    --title=full_monday \\
+    --wait
+.fi
+
+.B EXAMPLE (ClickHouse incremental backup)
+.nf
+s9s backup \\
+    --create \\
+    --cluster-id=1 \\
+    --nodes="192.168.1.10" \\
+    --backup-method=clickhouse-native-incr \\
+    --title=incr_tuesday \\
+    --wait
+.fi
+
 .TP
 .B --create-schedule
 This command line option will create a backup schedule, a backup that is
@@ -762,9 +784,17 @@ printf() function interprets it as one percent sign.
 .TP
 .BI \-\^\-backup\-method= METHOD
 Controls what backup software is going to be used to create the backup. The
-Cmon controller currently supports the following methods: ndb, mysqldump, 
-xtrabackupfull, xtrabackupincr, mongodump, percona-backup-mongodb,
-pg_dump, pg_basebackup, mysqlpump.
+Cmon controller currently supports the following methods: ndb, mysqldump,
+mariadb-dump, xtrabackupfull, xtrabackupincr, mariabackupfull,
+mariabackupincr, mongodump, percona-backup-mongodb, pgdump, pgdumpall,
+pg_basebackup, pgbackrestfull, pgbackrestincr, pgbackrestdiff,
+clickhouse-native, clickhouse-native-incr.
+
+For ClickHouse clusters, \fIclickhouse-native\fP creates a full backup using
+the native ClickHouse BACKUP SQL command.  \fIclickhouse-native-incr\fP
+creates an incremental backup; Cluster Control automatically locates the most
+recent completed backup as the base — no parent backup ID needs to be
+supplied by the caller.
 
 .TP
 .BI \-\^\-backup\-password= PASSWORD
