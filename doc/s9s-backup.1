@@ -785,9 +785,10 @@ printf() function interprets it as one percent sign.
 .BI \-\^\-backup\-method= METHOD
 Controls what backup software is going to be used to create the backup. The
 Cmon controller currently supports the following methods: ndb, mysqldump,
-xtrabackupfull, xtrabackupincr, mongodump, percona-backup-mongodb,
-pg_dump, pg_basebackup, mysqlpump, clickhouse-native,
-clickhouse-native-incr.
+mariadb-dump, xtrabackupfull, xtrabackupincr, mariabackupfull,
+mariabackupincr, mongodump, percona-backup-mongodb, pgdump, pgdumpall,
+pg_basebackup, pgbackrestfull, pgbackrestincr, pgbackrestdiff,
+clickhouse-native, clickhouse-native-incr.
 
 For ClickHouse clusters, \fIclickhouse-native\fP creates a full backup using
 the native ClickHouse BACKUP SQL command.  \fIclickhouse-native-incr\fP
