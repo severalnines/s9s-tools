@@ -372,6 +372,9 @@ enum S9sOptionType
     OptionTestServer,
     OptionDataDir,
     OptionBackupDatadir,
+    OptionBackupFailoverHost,
+    OptionBackupMysqldumpType,
+    OptionExtendedInsert,
 
     OptionListImages,
     OptionListRegions,
@@ -8002,6 +8005,9 @@ S9sOptions::printHelpBackup()
 "  --backup-password=PASSWD   The password for the backup user.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
+"  --backup-failover-host=HOSTNAME  Specify a backup failover host if the primary host is unavailable.\n"
+"  --backup-mysqldump-type=TYPE     Type of mysqldump backup. Allowed values: SchemaOnly, DataOnly, MySQLDBOnly, TriggersEventsRoutines, SchemaAndData, Complete.\n"
+"  --extended-insert[=true|false]   Use extended insert syntax for mysqldump (default: true). Set false if you want to enable --skip-extended-insert in mysqldump.\n"
 "  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
 "  --databases=LIST           Comma separated list of databases to archive.\n"
 "  --schemas=LIST             Include specific schemas (PostgreSQL only).\n"
@@ -9459,6 +9465,9 @@ S9sOptions::readOptionsBackup(
         { "cluster-decryption-key", required_argument, 0, OptionClusterDecryptionKey},
         { "db-admin-passwd",  required_argument, 0, OptionDbAdminPassword },
         { "db-admin",         required_argument, 0, OptionDbAdmin         },
+        { "backup-failover-host", required_argument, 0, OptionBackupFailoverHost },
+        { "backup-mysqldump-type", required_argument, 0, OptionBackupMysqldumpType },
+        { "extended-insert",  optional_argument, 0, OptionExtendedInsert  },
 
         // For save cluster and restore cluster...
         { "output-file",      required_argument, 0, OptionOutputFile      },
@@ -10007,7 +10016,42 @@ S9sOptions::readOptionsBackup(
                 // --test-server=HOSTNAME
                 m_options["test_server"] = optarg;
                 break;
-            
+
+            case OptionBackupFailoverHost:
+                // --backup-failover-host=HOSTNAME
+                m_options["backup_failover_host"] = optarg;
+                break;
+
+            case OptionBackupMysqldumpType:
+                // --backup-mysqldump-type=TYPE
+                m_options["backup_mysqldump_type"] = optarg;
+                break;
+
+            case OptionExtendedInsert:
+                // --extended-insert[=true|false]
+                if (optarg)
+                {
+                    S9sString value = optarg;
+                    value.toLower();
+                    if (value == "true" || value == "1" || value == "yes")
+                        m_options["extended_insert"] = true;
+                    else if (value == "false" || value == "0" || value == "no")
+                        m_options["extended_insert"] = false;
+                    else
+                    {
+                        m_exitStatus = BadOptions;
+                        m_errorMessage.sprintf(
+                            "Invalid value '%s' for --extended-insert. "
+                            "Use 'true' or 'false'.", optarg);
+                        return false;
+                    }
+                }
+                else
+                {
+                    m_options["extended_insert"] = true;
+                }
+                break;
+
             case OptionOutputFile:
                 // --output-file=FILE
                 m_options["output_file"] = optarg;
@@ -20090,6 +20134,38 @@ S9sString
 S9sOptions::testServer() const
 {
     return getString("test_server");
+}
+
+/**
+ * \returns The argument of the --backup-failover-host command line option.
+ */
+S9sString
+S9sOptions::backupFailoverHost() const
+{
+    return getString("backup_failover_host");
+}
+
+/**
+ * \returns The argument of the --backup-mysqldump-type command line option.
+ */
+S9sString
+S9sOptions::backupMysqldumpType() const
+{
+    return getString("backup_mysqldump_type");
+}
+
+/**
+ * \returns True if the --extended-insert command line option was provided with
+ *          value true, or if the option was not provided (default is true).
+ */
+bool
+S9sOptions::extendedInsert() const
+{
+    // If the option was not set at all, default is true
+    if (!m_options.contains("extended_insert"))
+        return true;
+
+    return getBool("extended_insert");
 }
 
 
