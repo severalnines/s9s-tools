@@ -257,9 +257,9 @@ create_local_s9s_user() {
         # new s9s CLI requires the username defined alone without --cmon-user
         # only the new one has build info in --version:
         if s9s --version | grep -i build >/dev/null; then
-            s9s user --create --generate-key --group=admins --controller="https://localhost:9501" "$cmon_user"
+            s9s user --create --generate-key --group=admins --controller="https://localhost:9500" "$cmon_user"
         else
-            s9s user --create --generate-key --group=admins --controller="https://localhost:9501" --cmon-user="$cmon_user"
+            s9s user --create --generate-key --group=admins --controller="https://localhost:9500" --cmon-user="$cmon_user"
         fi
 
         # in case of suspended user, lets try to re-enable it
