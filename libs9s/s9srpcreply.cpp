@@ -3232,6 +3232,26 @@ S9sRpcReply::printBackupList()
 }
 
 void
+S9sRpcReply::printBinlogBackupList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        // Print binlog backup list
+        if (options->isLongRequested())
+            printBinlogBackupListLong();
+        else
+            printBinlogBackupListBrief();
+    }
+}
+
+void
 S9sRpcReply::printKeys()
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -10320,9 +10340,187 @@ S9sRpcReply::printBackupListDatabasesLong()
 }
 
 /**
+ * Prints the list of binlog backups in brief format.
+ */
+void
+S9sRpcReply::printBinlogBackupListBrief()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  binlogList;
+
+    // Get the binlog backup list from the reply
+    if (contains("binlog_backups"))
+        binlogList = operator[]("binlog_backups").toVariantList();
+    else if (contains("data"))
+        binlogList = operator[]("data").toVariantList();
+
+    // Print each binlog backup
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        S9sString fileName;
+
+        // Get the file name from the binlog backup record
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else if (binlog.contains("path"))
+            fileName = binlog["path"].toString();
+        else
+            fileName = "Unknown";
+
+        printf("%s\n", STR(fileName));
+    }
+}
+
+/**
+ * Prints the list of binlog backups in long format with size information.
+ */
+void
+S9sRpcReply::printBinlogBackupListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    S9sVariantList  binlogList;
+    S9sFormat       cidFormat;
+    S9sFormat       fileNameFormat;
+    S9sFormat       sizeFormat;
+    S9sFormat       createdFormat;
+    int             totalCount = 0;
+    ulonglong       totalSize = 0;
+
+    // Get the binlog backup list from the reply
+    if (contains("binlog_backups"))
+        binlogList = operator[]("binlog_backups").toVariantList();
+    else if (contains("data"))
+        binlogList = operator[]("data").toVariantList();
+
+    // First pass: collect formatting information
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        int cid = 0;
+        ulonglong size = 0;
+        S9sString fileName;
+        S9sString created;
+
+        // Get cluster ID
+        if (binlog.contains("cid"))
+            cid = binlog["cid"].toInt();
+        else if (binlog.contains("cluster_id"))
+            cid = binlog["cluster_id"].toInt();
+
+        // Get file size - check multiple possible locations
+        if (binlog.contains("size"))
+            size = binlog["size"].toULongLong();
+        else if (binlog.contains("metadata"))
+        {
+            S9sVariantMap metadata = binlog["metadata"].toVariantMap();
+            if (metadata.contains("size"))
+                size = metadata["size"].toULongLong();
+        }
+
+        // Get file name
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else if (binlog.contains("path"))
+            fileName = binlog["path"].toString();
+
+        // Get created timestamp
+        if (binlog.contains("created"))
+            created = binlog["created"].toString();
+        else if (binlog.contains("timestamp"))
+            created = binlog["timestamp"].toString();
+
+        cidFormat.widen(cid);
+        fileNameFormat.widen(fileName);
+        sizeFormat.widen(S9sFormat::toSizeString(size));
+        createdFormat.widen(created);
+
+        totalSize += size;
+        totalCount++;
+    }
+
+    // Print header
+    if (!options->isBatchRequested())
+    {
+        cidFormat.widen("CID");
+        fileNameFormat.widen("BINLOG FILE");
+        sizeFormat.widen("SIZE");
+        createdFormat.widen("CREATED");
+
+        printf("%s", headerColorBegin());
+        cidFormat.printf("CID");
+        fileNameFormat.printf("BINLOG FILE");
+        sizeFormat.printf("SIZE");
+        createdFormat.printf("CREATED");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    // Second pass: print the data
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        int cid = 0;
+        ulonglong size = 0;
+        S9sString fileName;
+        S9sString created;
+        S9sString sizeString;
+
+        // Get cluster ID
+        if (binlog.contains("cid"))
+            cid = binlog["cid"].toInt();
+        else if (binlog.contains("cluster_id"))
+            cid = binlog["cluster_id"].toInt();
+
+        // Get file size
+        if (binlog.contains("size"))
+            size = binlog["size"].toULongLong();
+        else if (binlog.contains("metadata"))
+        {
+            S9sVariantMap metadata = binlog["metadata"].toVariantMap();
+            if (metadata.contains("size"))
+                size = metadata["size"].toULongLong();
+        }
+
+        // Get file name
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else if (binlog.contains("path"))
+            fileName = binlog["path"].toString();
+        else
+            fileName = "Unknown";
+
+        // Get created timestamp
+        if (binlog.contains("created"))
+            created = binlog["created"].toString();
+        else if (binlog.contains("timestamp"))
+            created = binlog["timestamp"].toString();
+        else
+            created = "-";
+
+        sizeString = S9sFormat::toSizeString(size);
+
+        cidFormat.printf(cid);
+        fileNameFormat.printf(fileName);
+        sizeFormat.printf(sizeString);
+        createdFormat.printf(created);
+        printf("\n");
+    }
+
+    // Print footer with totals
+    if (!options->isBatchRequested())
+    {
+        S9sString totalSizeStr = S9sFormat::toSizeString(totalSize);
+        printf("\nTotal: %d binlog backup(s), %s\n",
+               totalCount, STR(totalSizeStr));
+    }
+}
+
+/**
  * Prints the list of backups in its brief format.
  */
-void 
+void
 S9sRpcReply::printBackupListFilesBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
