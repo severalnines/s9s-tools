@@ -788,7 +788,16 @@ Cmon controller currently supports the following methods: ndb, mysqldump,
 mariadb-dump, xtrabackupfull, xtrabackupincr, mariabackupfull,
 mariabackupincr, mongodump, percona-backup-mongodb, pgdump, pgdumpall,
 pg_basebackup, pgbackrestfull, pgbackrestincr, pgbackrestdiff,
-clickhouse-native, clickhouse-native-incr.
+walgfull, walgincr, clickhouse-native, clickhouse-native-incr.
+
+\fIwalgfull\fP and \fIwalgincr\fP are wal-g cloud-only PostgreSQL backups
+streaming directly to S3-compatible object storage. They require
+\fB\-\^\-cloud\-only\fP plus the standard cloud arguments
+(\fB\-\^\-cloud\-provider\fP, \fB\-\^\-credential\-id\fP,
+\fB\-\^\-s3\-bucket\fP). \fIwalgfull\fP creates a base backup;
+\fIwalgincr\fP creates a delta chained off the most recent backup in
+storage. wal-g must be installed on every database node and
+\fIarchive_command\fP set to push WAL via wal-g for PITR to work.
 
 For ClickHouse clusters, \fIclickhouse-native\fP creates a full backup using
 the native ClickHouse BACKUP SQL command.  \fIclickhouse-native-incr\fP

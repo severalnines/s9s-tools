@@ -4203,7 +4203,11 @@ S9sOptions::onController() const
  * 'xtrabackupfull', 'xtrabackupincr', 'mariabackupfull', 'mariabackupincr',
  * 'mongodump', 'percona-backup-mongodb', 'pgdump', 'pgdumpall',
  * 'pg_basebackup', 'pgbackrestfull', 'pgbackrestincr', 'pgbackrestdiff',
- * 'clickhouse-native' and 'clickhouse-native-incr'.
+ * 'walgfull', 'walgincr', 'clickhouse-native' and 'clickhouse-native-incr'.
+ *
+ * 'walgfull' / 'walgincr' are wal-g cloud-only PostgreSQL backups; they
+ * require --cloud-only together with --cloud-provider, --credential-id,
+ * --s3-bucket. See s9s-backup(1).
  * Now that mariadb 11.4 has only 'mariadb-dump' binary backup method name is valid
  * but will be programatically treated as 'mysqldump' and this is the value on property.
  */
