@@ -12177,6 +12177,12 @@ S9sRpcClient::composeBackupJob()
             jobCloudData["auto_create_bucket"]  = true;
             jobCloudData["cloud_storage_provider"] = cloudStorageProv;
             jobCloudData["cloud_storage_service"]  = cloudStorageProv;
+            // Also expose --s3-region inside the cloud-data blob so
+            // controllers that read cloud info (e.g. wal-g) pick it up
+            // alongside bucket / credentials_id without having to look at
+            // the top-level jobData.
+            if (!s3region.empty())
+                jobCloudData["s3_region"] = s3region;
             if(backupRetention != 0)
                 jobCloudData["backup_retention"] = backupRetention;
             if(deleteAfterUpload)
