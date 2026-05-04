@@ -12400,6 +12400,9 @@ S9sOptions::checkOptionsBackup()
     if (isListFilesRequested())
         countOptions++;
 
+    if (isListBinlogBackupsRequested())
+        countOptions++;
+
     if (isCreateRequested())
         countOptions++;
 
