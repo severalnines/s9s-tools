@@ -815,19 +815,9 @@ going to be archived.
 Do not compress the archive file created by the backup.
 
 .TP
-.BI \-\^\-compression\-method= METHOD
-Compression algorithm to use for ClickHouse ZIP backups. When set, the
-backup destination is a ZIP archive and ClickHouse applies the specified
-algorithm. Valid values: \fBstore\fR (no compression), \fBdeflate\fR,
-\fBbzip2\fR, \fBlzma\fR, \fBzstd\fR, \fBxz\fR. May be combined with
-\fB\-\^\-compression\-level\fR. Ignored when \fB\-\^\-no\-compression\fR is set.
-
-.TP
-.BI \-\^\-compression\-level= LEVEL
-Compression level to apply on backup compression. Value must be between
-1 and 9. For ClickHouse ZIP backups used together with
-\fB\-\^\-compression\-method\fR; for other backup methods controls the
-gzip/pigz compression intensity.
+.BI \-\^\-compression\-level
+Compression level (used threads) to apply on backup compression process.
+Value must be between 1 and 9.
 
 .TP
 .BI \-\^\-on\-node

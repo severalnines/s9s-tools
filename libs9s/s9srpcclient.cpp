@@ -12266,16 +12266,6 @@ S9sRpcClient::composeBackupJob()
         }
     }
 
-    if (!options->compressionMethod().empty())
-    {
-        if (options->noCompression())
-            PRINT_ERROR(
-                    "Option --compression-method is ignored due to "
-                    "--no-compression option being set.");
-        else
-            jobData["compression_method"] = options->compressionMethod();
-    }
-
     if (options->usePigz())
     {
         jobData["compression"] = true;
