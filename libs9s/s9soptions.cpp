@@ -220,6 +220,7 @@ enum S9sOptionType
     OptionListContainers,
     OptionType,
     OptionCompressionLevel,
+    OptionCompressionMethod,
     OptionNoCompression,
     OptionPitrCompatible,
     OptionUsePigz,
@@ -4149,7 +4150,7 @@ S9sOptions::noCompression() const
 }
 
 /**
- * \returns value of specified --compression-lelvel option if provided. Default value otherwise -1
+ * \returns value of specified --compression-level option if provided. Default value otherwise -1
  */
 int
 S9sOptions::compressionLevel() const
@@ -4157,6 +4158,15 @@ S9sOptions::compressionLevel() const
     if(m_options.contains("compression_level"))
         return m_options.at("compression_level").toInt();
     return -1;
+}
+
+/**
+ * \returns the value of --compression-method if provided, empty string otherwise.
+ */
+S9sString
+S9sOptions::compressionMethod() const
+{
+    return getString("compression_method");
 }
 
 
@@ -8008,7 +8018,10 @@ S9sOptions::printHelpBackup()
 "  --no-privileges            Skip privilege information (PostgreSQL).\n"
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
-"  --compression-level        Backup compress level value to use (between 1 and 9).\n"
+"  --compression-method       Compression algorithm for ClickHouse ZIP backups\n"
+"                             (store, deflate, bzip2, lzma, zstd, xz).\n"
+"  --compression-level        Backup compression level (1-9). Used with\n"
+"                             --compression-method for ClickHouse backups.\n"
 "  --no-compression           Do not compress the backup.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
@@ -9424,8 +9437,9 @@ S9sOptions::readOptionsBackup(
         { "encrypt-backup",   no_argument,       0, OptionBackupEncryption },
         { "full-path",        no_argument,       0, OptionFullPath        },
         { "memory",           required_argument, 0, OptionMemory          },
-        { "compression-level",required_argument, 0, OptionCompressionLevel},
-        { "no-compression",   no_argument,       0, OptionNoCompression   },
+        { "compression-level", required_argument, 0, OptionCompressionLevel  },
+        { "compression-method",required_argument, 0, OptionCompressionMethod },
+        { "no-compression",    no_argument,       0, OptionNoCompression     },
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
@@ -9795,6 +9809,11 @@ S9sOptions::readOptionsBackup(
             case OptionCompressionLevel:
                 // --compression-level
                 m_options["compression_level"] = optarg;
+                break;
+
+            case OptionCompressionMethod:
+                // --compression-method
+                m_options["compression_method"] = optarg;
                 break;
 
 
