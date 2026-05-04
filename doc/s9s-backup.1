@@ -181,8 +181,42 @@ archive files of the backups.
 .nf
 s9s backup \\
     --list-files \\
-    --long 
+    --long
 .fi
+
+.TP
+.B \-\^\-list\-binlog\-backups
+List binlog backups. This option lists binary log backup files along with their
+size and cluster information, useful for accounting and monitoring purposes.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-binlog-backups \\
+    --cluster-id=1 \\
+    --long
+.fi
+
+When listing binlog backups with the \fB\-\^\-long\fP option the following
+columns are listed:
+
+.RS 7
+.TP
+.B CID
+The numerical ID of the cluster to which the binlog backup belongs.
+
+.TP
+.B BINLOG FILE
+The name of the binary log file.
+
+.TP
+.B SIZE
+The size of the binlog backup file.
+
+.TP
+.B CREATED
+The date and time showing when the binlog backup was created.
+.RE
 
 .TP
 .B \-L, \-\^\-list

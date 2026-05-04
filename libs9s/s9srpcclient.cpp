@@ -9544,6 +9544,33 @@ S9sRpcClient::getBackups(
 }
 
 /**
+ * \param clusterId the cluster ID to get binlog backups for (optional, 0 for
+ *   all clusters).
+ * \returns True if the request was successful (even if the reply contains
+ *   is an error message).
+ *
+ * The method that gets the list of binlog backups from the server.
+ */
+bool
+S9sRpcClient::getBinlogBackups(
+        const int clusterId)
+{
+    S9sString      uri = "/v2/backup/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getBinlogBackups";
+    request["ascending"] = true;
+
+    if (clusterId > 0)
+        request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * Gets the list of backup schedules from the controller.
  */
 bool

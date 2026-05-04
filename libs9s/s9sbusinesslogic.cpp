@@ -953,11 +953,15 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isBackupOperation())
     {
-        if (options->isListRequested() || 
+        if (options->isListRequested() ||
                 options->isListFilesRequested() ||
                 options->isListDatabasesRequested())
         {
             executeBackupList(client);
+            client.setExitStatus();
+        } else if (options->isListBinlogBackupsRequested())
+        {
+            executeBinlogBackupList(client);
             client.setExitStatus();
         } else if (options->isCreateScheduleRequested())
         {
@@ -2225,11 +2229,30 @@ S9sBusinessLogic::executeBackupList(
     }
 }
 
+void
+S9sBusinessLogic::executeBinlogBackupList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getBinlogBackups(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printBinlogBackupList();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
 /**
  * This function will execute the listing of the users that can be requested by
  * the --list and --whoami command line options.
  */
-void 
+void
 S9sBusinessLogic::executeUserList(
         S9sRpcClient &client)
 {
