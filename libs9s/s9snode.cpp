@@ -134,6 +134,12 @@ S9sNode::S9sNode(
             m_properties["class_name"] = "CmonElasticHost";
         else if (m_url.protocol().toLower() == "clickhouse")
             m_properties["class_name"] = "CmonClickHouseHost";
+        else if (m_url.protocol().toLower() == "clickhouse_keeper"
+              || m_url.protocol().toLower() == "clickhouse-keeper")
+        {
+            m_properties["class_name"] = "CmonClickHouseHost";
+            m_properties["nodetype"] = "clickhouse_keeper";
+        }
         else
             m_properties["protocol"] = m_url.protocol();
     }
@@ -1193,6 +1199,8 @@ S9sNode::nodeTypeFlag() const
         return 'P';
     else if (theNodeType == "clickhouse")
         return 'H';
+    else if (theNodeType == "clickhouse_keeper")
+        return 'K';
 
     else if (className() == "CmonMySqlHost")
         return 's';
