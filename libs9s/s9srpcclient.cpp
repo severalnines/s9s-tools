@@ -4443,7 +4443,10 @@ S9sRpcClient::createPostgreSql(
     jobData["deploy_agents"]    = !options->noAgent();
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
-    
+
+    if (!options->pgHbaRules().empty())
+        jobData["extra_hba_rules"]   = options->pgHbaRules();
+
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
     

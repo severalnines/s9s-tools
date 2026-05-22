@@ -1054,6 +1054,40 @@ UtS9sRpcClient::testCreateCluster04()
             payload.valueByPath(JOB_DATA "version").toString(),
             "myversion");
 
+    // Test extra_hba_rules is passed when pghba_rules option is set.
+    {
+        S9sVariantMap  rule;
+        S9sVariantList rules;
+
+        rule["type"]     = "host";
+        rule["database"] = "all";
+        rule["user"]     = "viafirma";
+        rule["address"]  = "192.168.201.0/24";
+        rule["method"]   = "md5";
+        rules << rule;
+        options->m_options["pghba_rules"] = rules;
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "extra_hba_rules[0]/type").toString(),
+                "host");
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "extra_hba_rules[0]/user").toString(),
+                "viafirma");
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "extra_hba_rules[0]/address").toString(),
+                "192.168.201.0/24");
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "extra_hba_rules[0]/method").toString(),
+                "md5");
+    }
+
     return true;
 }
 

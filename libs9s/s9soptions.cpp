@@ -542,7 +542,8 @@ enum S9sOptionType
     OptionRemoveController,
     OptionUpdateCmon,
 
-    OptionExtensions
+    OptionExtensions,
+    OptionPgHbaRules
 };
 
 /**
@@ -3493,6 +3494,59 @@ S9sOptions::extensions() const
 {
     return getString("extensions");
 }
+
+S9sVariantList
+S9sOptions::pgHbaRules() const
+{
+    if (m_options.contains("pghba_rules"))
+        return m_options.at("pghba_rules").toVariantList();
+    return S9sVariantList();
+}
+
+/**
+ * Parses --pghba-rules entries using pg_hba.conf native space-separated format.
+ * Multiple rules are semicolon-separated.
+ * Format: "type database user [address] method" — 4 or 5 space-separated tokens.
+ * Example: "host all viafirma 192.168.201.0/24 md5;local all all trust"
+ */
+bool
+S9sOptions::appendPgHbaRules(
+        const S9sString &stringRep)
+{
+    S9sVariantList entries    = stringRep.split(";");
+    S9sVariantList rulesToSet = pgHbaRules();
+
+    for (uint idx = 0u; idx < entries.size(); ++idx)
+    {
+        S9sString      entryString = entries[idx].toString().trim();
+        S9sVariantList parts       = entryString.split(" ");
+        S9sVariantMap  rule;
+
+        if (parts.size() == 4)
+        {
+            rule["type"]     = parts[0].toString();
+            rule["database"] = parts[1].toString();
+            rule["user"]     = parts[2].toString();
+            rule["address"]  = "";
+            rule["method"]   = parts[3].toString();
+        } else if (parts.size() == 5)
+        {
+            rule["type"]     = parts[0].toString();
+            rule["database"] = parts[1].toString();
+            rule["user"]     = parts[2].toString();
+            rule["address"]  = parts[3].toString();
+            rule["method"]   = parts[4].toString();
+        } else {
+            return false;
+        }
+
+        rulesToSet << rule;
+    }
+
+    m_options["pghba_rules"] = rulesToSet;
+    return true;
+}
+
 /**
  *
  * \code{.js}
@@ -8249,6 +8303,10 @@ S9sOptions::printHelpCluster()
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
 "  --extensions=LIST          PostgresSQL extensions (postgis, pgvector).\n"
+"  --pghba-rules=LIST         Custom pg_hba.conf entries (PostgreSQL deployment).\n"
+"                             Format: \"type database user address method\"\n"
+"                             Semicolon-separated for multiple rules.\n"
+"                             Example: \"host all myuser 192.168.1.0/24 md5\"\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -15111,6 +15169,7 @@ S9sOptions::readOptionsCluster(
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "extensions",       required_argument, 0, OptionExtensions       },
+        { "pghba-rules",      required_argument, 0, OptionPgHbaRules       },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
         { "template",         required_argument, 0, OptionTemplate         },
         
@@ -16035,6 +16094,15 @@ S9sOptions::readOptionsCluster(
             case OptionExtensions:
                     // --extensions=STRING
                 m_options["extensions"] = optarg;
+                break;
+
+            case OptionPgHbaRules:
+                // --pghba-rules=STRING
+                if (!appendPgHbaRules(optarg))
+                {
+                    PRINT_ERROR("Invalid argument for --pghba-rules.");
+                    m_exitStatus = BadOptions;
+                }
                 break;
 
             case OptionVpcId:
