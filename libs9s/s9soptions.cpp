@@ -8028,6 +8028,7 @@ S9sOptions::printHelpBackup()
 "  --s3-region=STRING         The name of the region storing s3 bucket. (example: eu-west-3)\n"
 "  --cloud-only               Flag to indicate that backup will be directly streamed to cloud (no files generated)\n"
 "  --cloud-provider=STRING    Identifier of the cloud storage provider to be used\n"
+"  --delete-after-upload      Delete backup from local storage after uploading to cloud.\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
