@@ -1054,6 +1054,21 @@ UtS9sRpcClient::testCreateCluster04()
             payload.valueByPath(JOB_DATA "version").toString(),
             "myversion");
 
+    // Test hba_template is passed when pghba_template option is set.
+    {
+        options->m_options["pghba_template"] = "my_hba_template.conf";
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "hba_template").toString(),
+                "my_hba_template.conf");
+
+        options->m_options.erase("pghba_template");
+    }
+
     // Test extra_hba_rules is passed when pghba_rules option is set.
     {
         S9sVariantMap  rule;

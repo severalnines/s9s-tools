@@ -543,7 +543,8 @@ enum S9sOptionType
     OptionUpdateCmon,
 
     OptionExtensions,
-    OptionPgHbaRules
+    OptionPgHbaRules,
+    OptionPgHbaTemplate
 };
 
 /**
@@ -3493,6 +3494,15 @@ S9sString
 S9sOptions::extensions() const
 {
     return getString("extensions");
+}
+
+/**
+ * \returns The value for the --pghba-template= command line option.
+ */
+S9sString
+S9sOptions::pgHbaTemplate() const
+{
+    return getString("pghba_template");
 }
 
 S9sVariantList
@@ -8307,6 +8317,9 @@ S9sOptions::printHelpCluster()
 "                             Format: \"type database user address method\"\n"
 "                             Semicolon-separated for multiple rules.\n"
 "                             Example: \"host all myuser 192.168.1.0/24 md5\"\n"
+"  --pghba-template=FILENAME  pg_hba.conf template file (PostgreSQL deployment).\n"
+"                             File must exist in /etc/cmon/templates/ or\n"
+"                             /usr/share/cmon/templates/ on the controller.\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -15170,6 +15183,7 @@ S9sOptions::readOptionsCluster(
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "extensions",       required_argument, 0, OptionExtensions       },
         { "pghba-rules",      required_argument, 0, OptionPgHbaRules       },
+        { "pghba-template",   required_argument, 0, OptionPgHbaTemplate    },
         { "vpc-id",           required_argument, 0, OptionVpcId            },
         { "template",         required_argument, 0, OptionTemplate         },
         
@@ -16103,6 +16117,11 @@ S9sOptions::readOptionsCluster(
                     PRINT_ERROR("Invalid argument for --pghba-rules.");
                     m_exitStatus = BadOptions;
                 }
+                break;
+
+            case OptionPgHbaTemplate:
+                // --pghba-template=FILENAME
+                m_options["pghba_template"] = optarg;
                 break;
 
             case OptionVpcId:

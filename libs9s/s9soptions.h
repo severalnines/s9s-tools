@@ -420,6 +420,7 @@ class S9sOptions
         bool createLocalRepo() const;
         bool keepFirewall() const;
         S9sString extensions() const;
+        S9sString pgHbaTemplate() const;
         S9sVariantList pgHbaRules() const;
         bool appendPgHbaRules(const S9sString &stringRep);
 

@@ -4444,6 +4444,9 @@ S9sRpcClient::createPostgreSql(
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
 
+    if (!options->pgHbaTemplate().empty())
+        jobData["hba_template"]      = options->pgHbaTemplate();
+
     if (!options->pgHbaRules().empty())
         jobData["extra_hba_rules"]   = options->pgHbaRules();
 
