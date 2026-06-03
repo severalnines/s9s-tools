@@ -1117,22 +1117,14 @@ UtS9sRpcClient::testCreateCluster04()
         S9S_VERIFY(client.createCluster());
         payload = client.lastPayload();
 
-        S9S_COMPARE(
-                payload.valueByPath(
-                    JOB_DATA "extra_hba_rules[0]/type").toString(),
-                "host");
-        S9S_COMPARE(
-                payload.valueByPath(
-                    JOB_DATA "extra_hba_rules[0]/user").toString(),
-                "viafirma");
-        S9S_COMPARE(
-                payload.valueByPath(
-                    JOB_DATA "extra_hba_rules[0]/address").toString(),
-                "192.168.201.0/24");
-        S9S_COMPARE(
-                payload.valueByPath(
-                    JOB_DATA "extra_hba_rules[0]/method").toString(),
-                "md5");
+        S9sVariantList hbaRules =
+            payload.valueByPath(JOB_DATA "extra_hba_rules").toVariantList();
+        S9S_COMPARE(hbaRules.size(), 1u);
+        S9sVariantMap firstRule = hbaRules[0].toVariantMap();
+        S9S_COMPARE(firstRule["type"].toString(),    "host");
+        S9S_COMPARE(firstRule["user"].toString(),    "viafirma");
+        S9S_COMPARE(firstRule["address"].toString(), "192.168.201.0/24");
+        S9S_COMPARE(firstRule["method"].toString(),  "md5");
     }
 
     return true;
