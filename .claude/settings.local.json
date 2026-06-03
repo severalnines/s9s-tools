@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "mcp__claude_ai_Atlassian__getJiraIssue",
-      "Read(//Users/pablopnn/workspace/s9s/worktrees/**)",
-      "Read(//Users/pablopnn/workspace/**)"
-    ]
-  }
-}
