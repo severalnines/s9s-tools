@@ -5315,6 +5315,8 @@ S9sRpcClient::createNode()
         } else if (protocol == "elastic")
         {            
             hasElastic = true;
+        } else if (protocol == "clickhouse" || protocol == "clickhouse-keeper")
+        {
         } else if (protocol.empty())
         {
         } else {
