@@ -1119,7 +1119,7 @@ UtS9sRpcClient::testCreateCluster04()
 
         S9sVariantList hbaRules =
             payload.valueByPath(JOB_DATA "extra_hba_rules").toVariantList();
-        S9S_COMPARE(hbaRules.size(), 1u);
+        S9S_COMPARE(hbaRules.size(), 1);
         S9sVariantMap firstRule = hbaRules[0].toVariantMap();
         S9S_COMPARE(firstRule["type"].toString(),    "host");
         S9S_COMPARE(firstRule["user"].toString(),    "viafirma");
