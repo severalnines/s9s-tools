@@ -4444,8 +4444,14 @@ S9sRpcClient::createPostgreSql(
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
 
-    if (!options->pgHbaTemplate().empty())
-        jobData["hba_template"]      = options->pgHbaTemplate();
+    if (!options->pgHbaPreset().empty())
+        jobData["hba_preset"]        = options->pgHbaPreset();
+
+    if (options->saveAsHbaPreset())
+        jobData["save_as_hba_preset"] = true;
+
+    if (!options->hbaPresetName().empty())
+        jobData["hba_preset_name"]   = options->hbaPresetName();
 
     if (!options->pgHbaRules().empty())
         jobData["extra_hba_rules"]   = options->pgHbaRules();

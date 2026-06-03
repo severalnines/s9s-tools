@@ -544,7 +544,9 @@ enum S9sOptionType
 
     OptionExtensions,
     OptionPgHbaRules,
-    OptionPgHbaTemplate
+    OptionPgHbaPreset,
+    OptionSaveAsHbaPreset,
+    OptionHbaPresetName
 };
 
 /**
@@ -3497,12 +3499,30 @@ S9sOptions::extensions() const
 }
 
 /**
- * \returns The value for the --pghba-template= command line option.
+ * \returns The value for the --pghba-preset= command line option.
  */
 S9sString
-S9sOptions::pgHbaTemplate() const
+S9sOptions::pgHbaPreset() const
 {
-    return getString("pghba_template");
+    return getString("pghba_preset");
+}
+
+/**
+ * \returns True if the --save-as-hba-preset flag was provided.
+ */
+bool
+S9sOptions::saveAsHbaPreset() const
+{
+    return getBool("save_as_hba_preset");
+}
+
+/**
+ * \returns The value for the --hba-preset-name= command line option.
+ */
+S9sString
+S9sOptions::hbaPresetName() const
+{
+    return getString("hba_preset_name");
 }
 
 S9sVariantList
@@ -8317,9 +8337,12 @@ S9sOptions::printHelpCluster()
 "                             Format: \"type database user address method\"\n"
 "                             Semicolon-separated for multiple rules.\n"
 "                             Example: \"host all myuser 192.168.1.0/24 md5\"\n"
-"  --pghba-template=FILENAME  pg_hba.conf template file (PostgreSQL deployment).\n"
+"  --pghba-preset=FILENAME    pg_hba.conf preset file to apply at deployment.\n"
 "                             File must exist in /etc/cmon/templates/ or\n"
 "                             /usr/share/cmon/templates/ on the controller.\n"
+"  --save-as-hba-preset       Save --pghba-rules as a reusable preset file.\n"
+"  --hba-preset-name=NAME     Filename stem for the saved preset (requires\n"
+"                             --save-as-hba-preset and --pghba-rules).\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -15182,9 +15205,11 @@ S9sOptions::readOptionsCluster(
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "extensions",       required_argument, 0, OptionExtensions       },
-        { "pghba-rules",      required_argument, 0, OptionPgHbaRules       },
-        { "pghba-template",   required_argument, 0, OptionPgHbaTemplate    },
-        { "vpc-id",           required_argument, 0, OptionVpcId            },
+        { "pghba-rules",        required_argument, 0, OptionPgHbaRules      },
+        { "pghba-preset",       required_argument, 0, OptionPgHbaPreset     },
+        { "save-as-hba-preset", no_argument,       0, OptionSaveAsHbaPreset },
+        { "hba-preset-name",    required_argument, 0, OptionHbaPresetName   },
+        { "vpc-id",             required_argument, 0, OptionVpcId           },
         { "template",         required_argument, 0, OptionTemplate         },
         
         { "with-ssl",         no_argument,       0, OptionWithSsl          },
@@ -16119,9 +16144,19 @@ S9sOptions::readOptionsCluster(
                 }
                 break;
 
-            case OptionPgHbaTemplate:
-                // --pghba-template=FILENAME
-                m_options["pghba_template"] = optarg;
+            case OptionPgHbaPreset:
+                // --pghba-preset=FILENAME
+                m_options["pghba_preset"] = optarg;
+                break;
+
+            case OptionSaveAsHbaPreset:
+                // --save-as-hba-preset
+                m_options["save_as_hba_preset"] = true;
+                break;
+
+            case OptionHbaPresetName:
+                // --hba-preset-name=NAME
+                m_options["hba_preset_name"] = optarg;
                 break;
 
             case OptionVpcId:
