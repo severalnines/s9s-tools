@@ -178,6 +178,18 @@ S9sRpcReply::errorString() const
     return S9sString();
 }
 
+/**
+ * \returns The error_id sent by the controller in the reply, or 0 if not set.
+ */
+int
+S9sRpcReply::errorId() const
+{
+    if (contains("error_id"))
+        return at("error_id").toInt();
+
+    return 0;
+}
+
 S9sString
 S9sRpcReply::uuid() const
 {
@@ -1500,14 +1512,17 @@ S9sRpcReply::printMessages(
         }
     }
 
-    // And if error string is set, pint out it as well
+    // And if error string is set, print it out as well
     if (!errorString().empty())
     {
         if (isOk())
         {
             ::printf("%s\n", STR(S9sString::html2ansi(errorString())));
         } else {
-            PRINT_ERROR("%s", STR(errorString()));
+            if (errorId() != 0)
+                PRINT_ERROR("%s (error_id: %d)", STR(errorString()), errorId());
+            else
+                PRINT_ERROR("%s", STR(errorString()));
         }
     }
 }
