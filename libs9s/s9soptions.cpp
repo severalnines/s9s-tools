@@ -450,6 +450,7 @@ enum S9sOptionType
     OptionNoInstall,
     OptionMasterDelay,
     OptionNoTerminate,
+    OptionNdbDataMemoryRatio,
     OptionWithTimescaleDb,
     OptionUpgradeToVersion,
     OptionUpgradeMethod,
@@ -8291,6 +8292,11 @@ S9sOptions::printHelpCluster()
 "  --with-ssl                 Set up ssl while installing cluster.\n"
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
+"  --ndb-data-memory-ratio=RATIO\n"
+"                             For NDB cluster --create: fraction of host\n"
+"                             system memory used as auto DataMemory.\n"
+"                             Default 0.5. Persists into the cluster's\n"
+"                             cmon_N.cnf.\n"
 "  --uninstall                Uninstall software when removing a node.\n"
 
 "\n"
@@ -15065,6 +15071,8 @@ S9sOptions::readOptionsCluster(
         { "percona-pro-token", required_argument, 0, OptionPerconaProToken },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "ndb-data-memory-ratio",
+                              required_argument, 0, OptionNdbDataMemoryRatio },
         { "upgrade-to-version",required_argument, 0, OptionUpgradeToVersion },
         { "upgrade-method",   required_argument, 0, OptionUpgradeMethod   },
         { "delete-old-node",  no_argument,       0, OptionDeleteOldNode   },
@@ -15749,6 +15757,11 @@ S9sOptions::readOptionsCluster(
             case OptionWithTimescaleDb:
                 // --with-timescaledb
                 m_options["with_timescaledb"] = true;
+                break;
+
+            case OptionNdbDataMemoryRatio:
+                // --ndb-data-memory-ratio
+                m_options["ndb_data_memory_ratio"] = optarg;
                 break;
 
             case OptionUpgradeToVersion:
