@@ -4281,6 +4281,23 @@ S9sRpcClient::createNdbCluster(
     jobData["disable_firewall"] = !options->keepFirewall();
     jobData["deploy_agents"]    = !options->noAgent();
 
+    // --ndb-data-memory-ratio=RATIO -- forwarded to cmon as
+    // /job_data/ndb_data_memory_ratio so the auto-calculated NDB
+    // DataMemory can be tuned without resorting to an explicit absolute
+    // value. cmon also persists this into the per-cluster cmon_N.cnf
+    // (PropNdbDataMemoryRatio) so subsequent operations on the cluster
+    // re-use the same sizing.
+    {
+        const S9sString ratioStr = options->getString(
+                "ndb_data_memory_ratio", "");
+        if (!ratioStr.empty())
+        {
+            const double ratio = ratioStr.toDouble();
+            if (ratio > 0.0)
+                jobData["ndb_data_memory_ratio"] = ratio;
+        }
+    }
+
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
     
