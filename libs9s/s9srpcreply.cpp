@@ -10385,6 +10385,8 @@ S9sRpcReply::printBinlogBackupListLong()
     S9sFormat       fileNameFormat;
     S9sFormat       sizeFormat;
     S9sFormat       createdFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       pidFormat;
     int             totalCount = 0;
     ulonglong       totalSize = 0;
 
@@ -10402,6 +10404,9 @@ S9sRpcReply::printBinlogBackupListLong()
         ulonglong size = 0;
         S9sString fileName;
         S9sString created;
+        S9sString hostName;
+        int fullBackupId = 0;
+        S9sDateTime timeStamp;
 
         // Get cluster ID
         if (binlog.contains("cid"))
@@ -10425,16 +10430,57 @@ S9sRpcReply::printBinlogBackupListLong()
         else if (binlog.contains("path"))
             fileName = binlog["path"].toString();
 
-        // Get created timestamp
+        // Get hostname from cloud_settings or settings
+        if (binlog.contains("settings"))
+        {
+            S9sVariantMap settings = binlog["settings"].toVariantMap();
+            if (settings.contains("cloud_settings"))
+            {
+                S9sVariantMap cloudSettings = settings["cloud_settings"].toVariantMap();
+                if (cloudSettings.contains("hostname"))
+                    hostName = cloudSettings["hostname"].toString();
+            }
+        }
+
+        // Get full backup ID
+        if (binlog.contains("full_bid"))
+            fullBackupId = binlog["full_bid"].toInt();
+
+        // Get created timestamp and format it as human-readable
         if (binlog.contains("created"))
             created = binlog["created"].toString();
         else if (binlog.contains("timestamp"))
             created = binlog["timestamp"].toString();
 
+        // Parse and format the timestamp
+        if (!created.empty())
+        {
+            bool isNumeric = true;
+            for (uint i = 0; i < created.length(); ++i)
+            {
+                if (!isdigit(created[i]))
+                {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            if (isNumeric)
+            {
+                S9sDateTime tmp((time_t)created.toULongLong());
+                created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+            } else {
+                timeStamp.parse(created);
+                created = timeStamp.toString(S9sDateTime::MySqlLogFileFormat);
+            }
+        }
+
         cidFormat.widen(cid);
         fileNameFormat.widen(fileName);
         sizeFormat.widen(S9sFormat::toSizeString(size));
         createdFormat.widen(created);
+        hostNameFormat.widen(hostName);
+        pidFormat.widen(fullBackupId);
 
         totalSize += size;
         totalCount++;
@@ -10447,12 +10493,16 @@ S9sRpcReply::printBinlogBackupListLong()
         fileNameFormat.widen("BINLOG FILE");
         sizeFormat.widen("SIZE");
         createdFormat.widen("CREATED");
+        hostNameFormat.widen("HOSTNAME");
+        pidFormat.widen("PID");
 
         printf("%s", headerColorBegin());
         cidFormat.printf("CID");
         fileNameFormat.printf("BINLOG FILE");
         sizeFormat.printf("SIZE");
         createdFormat.printf("CREATED");
+        hostNameFormat.printf("HOSTNAME");
+        pidFormat.printf("PID");
         printf("%s", headerColorEnd());
         printf("\n");
     }
@@ -10466,6 +10516,9 @@ S9sRpcReply::printBinlogBackupListLong()
         S9sString fileName;
         S9sString created;
         S9sString sizeString;
+        S9sString hostName;
+        int fullBackupId = 0;
+        S9sDateTime timeStamp;
 
         // Get cluster ID
         if (binlog.contains("cid"))
@@ -10491,7 +10544,25 @@ S9sRpcReply::printBinlogBackupListLong()
         else
             fileName = "Unknown";
 
-        // Get created timestamp
+        // Get hostname from cloud_settings or settings
+        if (binlog.contains("settings"))
+        {
+            S9sVariantMap settings = binlog["settings"].toVariantMap();
+            if (settings.contains("cloud_settings"))
+            {
+                S9sVariantMap cloudSettings = settings["cloud_settings"].toVariantMap();
+                if (cloudSettings.contains("hostname"))
+                    hostName = cloudSettings["hostname"].toString();
+            }
+        }
+        if (hostName.empty())
+            hostName = "-";
+
+        // Get full backup ID
+        if (binlog.contains("full_bid"))
+            fullBackupId = binlog["full_bid"].toInt();
+
+        // Get created timestamp and format it as human-readable
         if (binlog.contains("created"))
             created = binlog["created"].toString();
         else if (binlog.contains("timestamp"))
@@ -10499,12 +10570,40 @@ S9sRpcReply::printBinlogBackupListLong()
         else
             created = "-";
 
+        // Parse and format the timestamp
+        if (created != "-" && !created.empty())
+        {
+            bool isNumeric = true;
+            for (uint i = 0; i < created.length(); ++i)
+            {
+                if (!isdigit(created[i]))
+                {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            if (isNumeric)
+            {
+                S9sDateTime tmp((time_t)created.toULongLong());
+                created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+            } else {
+                timeStamp.parse(created);
+                created = timeStamp.toString(S9sDateTime::MySqlLogFileFormat);
+            }
+        }
+
         sizeString = S9sFormat::toSizeString(size);
 
         cidFormat.printf(cid);
         fileNameFormat.printf(fileName);
         sizeFormat.printf(sizeString);
         createdFormat.printf(created);
+        hostNameFormat.printf(hostName);
+        if (fullBackupId > 0)
+            pidFormat.printf(fullBackupId);
+        else
+            pidFormat.printf("-");
         printf("\n");
     }
 
