@@ -4441,6 +4441,22 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
+    if (!options->hbaPresetName().empty() && !options->saveAsHbaPreset())
+    {
+        PRINT_ERROR(
+            "--hba-preset-name requires --save-as-hba-preset.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (options->saveAsHbaPreset() && options->pgHbaRules().empty())
+    {
+        PRINT_ERROR(
+            "--save-as-hba-preset requires --pghba-rules.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     addCredentialsToJobData(jobData);
 
     // 
@@ -4460,7 +4476,19 @@ S9sRpcClient::createPostgreSql(
     jobData["deploy_agents"]    = !options->noAgent();
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
-    
+
+    if (!options->pgHbaPreset().empty())
+        jobData["hba_preset"]        = options->pgHbaPreset();
+
+    if (options->saveAsHbaPreset())
+        jobData["save_as_hba_preset"] = true;
+
+    if (!options->hbaPresetName().empty())
+        jobData["hba_preset_name"]   = options->hbaPresetName();
+
+    if (!options->pgHbaRules().empty())
+        jobData["extra_hba_rules"]   = options->pgHbaRules();
+
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
     

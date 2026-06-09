@@ -544,7 +544,11 @@ enum S9sOptionType
     OptionRemoveController,
     OptionUpdateCmon,
 
-    OptionExtensions
+    OptionExtensions,
+    OptionPgHbaRules,
+    OptionPgHbaPreset,
+    OptionSaveAsHbaPreset,
+    OptionHbaPresetName
 };
 
 /**
@@ -3495,6 +3499,94 @@ S9sOptions::extensions() const
 {
     return getString("extensions");
 }
+
+/**
+ * \returns The value for the --pghba-preset= command line option.
+ */
+S9sString
+S9sOptions::pgHbaPreset() const
+{
+    return getString("pghba_preset");
+}
+
+/**
+ * \returns True if the --save-as-hba-preset flag was provided.
+ */
+bool
+S9sOptions::saveAsHbaPreset() const
+{
+    return getBool("save_as_hba_preset");
+}
+
+/**
+ * \returns The value for the --hba-preset-name= command line option.
+ */
+S9sString
+S9sOptions::hbaPresetName() const
+{
+    return getString("hba_preset_name");
+}
+
+S9sVariantList
+S9sOptions::pgHbaRules() const
+{
+    if (m_options.contains("pghba_rules"))
+        return m_options.at("pghba_rules").toVariantList();
+    return S9sVariantList();
+}
+
+/**
+ * Parses --pghba-rules entries using pg_hba.conf native space-separated format.
+ * Multiple rules are semicolon-separated.
+ * local rules:      "local database user method"             (4 tokens, no address)
+ * all other types:  "type database user address method"      (5 tokens)
+ * Example: "host all viafirma 192.168.201.0/24 md5;local all all trust"
+ */
+bool
+S9sOptions::appendPgHbaRules(
+        const S9sString &stringRep)
+{
+    S9sVariantList entries    = stringRep.split(";");
+    S9sVariantList rulesToSet = pgHbaRules();
+
+    for (uint idx = 0u; idx < entries.size(); ++idx)
+    {
+        S9sString      entryString = entries[idx].toString().trim();
+        S9sVariantList parts       = entryString.split(" \t");
+        S9sVariantMap  rule;
+
+        if (parts.size() == 4)
+        {
+            if (parts[0].toString().toLower() != "local")
+                return false;
+
+            rule["type"]     = parts[0].toString().toLower();
+            rule["database"] = parts[1].toString();
+            rule["user"]     = parts[2].toString();
+            rule["address"]  = "";
+            rule["method"]   = parts[3].toString();
+        } else if (parts.size() == 5)
+        {
+            // local connections never carry an address field
+            if (parts[0].toString().toLower() == "local")
+                return false;
+
+            rule["type"]     = parts[0].toString().toLower();
+            rule["database"] = parts[1].toString();
+            rule["user"]     = parts[2].toString();
+            rule["address"]  = parts[3].toString();
+            rule["method"]   = parts[4].toString();
+        } else {
+            return false;
+        }
+
+        rulesToSet << rule;
+    }
+
+    m_options["pghba_rules"] = rulesToSet;
+    return true;
+}
+
 /**
  *
  * \code{.js}
@@ -8259,6 +8351,17 @@ S9sOptions::printHelpCluster()
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
 "  --extensions=LIST          PostgresSQL extensions (postgis, pgvector).\n"
+"  --pghba-rules=LIST         Custom pg_hba.conf entries (PostgreSQL deployment).\n"
+"                             Format: \"type database user address method\"\n"
+"                             Local connections: \"local database user method\"\n"
+"                             Semicolon-separated for multiple rules.\n"
+"                             Example: \"host all myuser 192.168.1.0/24 md5\"\n"
+"  --pghba-preset=FILENAME    pg_hba.conf preset file to apply at deployment.\n"
+"                             File must exist in /etc/cmon/templates/ or\n"
+"                             /usr/share/cmon/templates/ on the controller.\n"
+"  --save-as-hba-preset       Save --pghba-rules as a reusable preset file.\n"
+"  --hba-preset-name=NAME     Filename stem for the saved preset (requires\n"
+"                             --save-as-hba-preset and --pghba-rules).\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -15137,7 +15240,11 @@ S9sOptions::readOptionsCluster(
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "extensions",       required_argument, 0, OptionExtensions       },
-        { "vpc-id",           required_argument, 0, OptionVpcId            },
+        { "pghba-rules",        required_argument, 0, OptionPgHbaRules      },
+        { "pghba-preset",       required_argument, 0, OptionPgHbaPreset     },
+        { "save-as-hba-preset", no_argument,       0, OptionSaveAsHbaPreset },
+        { "hba-preset-name",    required_argument, 0, OptionHbaPresetName   },
+        { "vpc-id",             required_argument, 0, OptionVpcId           },
         { "template",         required_argument, 0, OptionTemplate         },
         
         { "with-ssl",         no_argument,       0, OptionWithSsl          },
@@ -16066,6 +16173,31 @@ S9sOptions::readOptionsCluster(
             case OptionExtensions:
                     // --extensions=STRING
                 m_options["extensions"] = optarg;
+                break;
+
+            case OptionPgHbaRules:
+                // --pghba-rules=STRING
+                if (!appendPgHbaRules(optarg))
+                {
+                    PRINT_ERROR("Invalid argument for --pghba-rules.");
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
+            case OptionPgHbaPreset:
+                // --pghba-preset=FILENAME
+                m_options["pghba_preset"] = optarg;
+                break;
+
+            case OptionSaveAsHbaPreset:
+                // --save-as-hba-preset
+                m_options["save_as_hba_preset"] = true;
+                break;
+
+            case OptionHbaPresetName:
+                // --hba-preset-name=NAME
+                m_options["hba_preset_name"] = optarg;
                 break;
 
             case OptionVpcId:
