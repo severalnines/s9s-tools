@@ -4432,11 +4432,10 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
-    if (options->saveAsHbaPreset() && options->pgHbaRules().empty()
-            && options->pgHbaPreset().empty())
+    if (options->saveAsHbaPreset() && options->pgHbaRules().empty())
     {
         PRINT_ERROR(
-            "--save-as-hba-preset requires --pghba-rules or --pghba-preset.");
+            "--save-as-hba-preset requires --pghba-rules.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
