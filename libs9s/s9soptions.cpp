@@ -3536,7 +3536,8 @@ S9sOptions::pgHbaRules() const
 /**
  * Parses --pghba-rules entries using pg_hba.conf native space-separated format.
  * Multiple rules are semicolon-separated.
- * Format: "type database user [address] method" — 4 or 5 space-separated tokens.
+ * local rules:      "local database user method"             (4 tokens, no address)
+ * all other types:  "type database user address method"      (5 tokens)
  * Example: "host all viafirma 192.168.201.0/24 md5;local all all trust"
  */
 bool
@@ -3564,6 +3565,10 @@ S9sOptions::appendPgHbaRules(
             rule["method"]   = parts[3].toString();
         } else if (parts.size() == 5)
         {
+            // local connections never carry an address field
+            if (parts[0].toString().toLower() == "local")
+                return false;
+
             rule["type"]     = parts[0].toString();
             rule["database"] = parts[1].toString();
             rule["user"]     = parts[2].toString();
