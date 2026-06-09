@@ -10430,8 +10430,11 @@ S9sRpcReply::printBinlogBackupListLong()
         else if (binlog.contains("path"))
             fileName = binlog["path"].toString();
 
-        // Get hostname from cloud_settings or settings
-        if (binlog.contains("settings"))
+        // Get hostname: prefer the flat "hostname" field, fall back to the
+        // legacy nested settings.cloud_settings.hostname for compatibility.
+        if (binlog.contains("hostname"))
+            hostName = binlog["hostname"].toString();
+        else if (binlog.contains("settings"))
         {
             S9sVariantMap settings = binlog["settings"].toVariantMap();
             if (settings.contains("cloud_settings"))
@@ -10544,8 +10547,11 @@ S9sRpcReply::printBinlogBackupListLong()
         else
             fileName = "Unknown";
 
-        // Get hostname from cloud_settings or settings
-        if (binlog.contains("settings"))
+        // Get hostname: prefer the flat "hostname" field, fall back to the
+        // legacy nested settings.cloud_settings.hostname for compatibility.
+        if (binlog.contains("hostname"))
+            hostName = binlog["hostname"].toString();
+        else if (binlog.contains("settings"))
         {
             S9sVariantMap settings = binlog["settings"].toVariantMap();
             if (settings.contains("cloud_settings"))
