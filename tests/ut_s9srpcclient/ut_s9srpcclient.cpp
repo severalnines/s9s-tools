@@ -1125,6 +1125,8 @@ UtS9sRpcClient::testCreateCluster04()
         S9S_COMPARE(firstRule["user"].toString(),    "viafirma");
         S9S_COMPARE(firstRule["address"].toString(), "192.168.201.0/24");
         S9S_COMPARE(firstRule["method"].toString(),  "md5");
+
+        options->m_options.erase("pghba_rules");
     }
 
     return true;

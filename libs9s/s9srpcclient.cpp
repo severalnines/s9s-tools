@@ -4424,6 +4424,23 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
+    if (!options->hbaPresetName().empty() && !options->saveAsHbaPreset())
+    {
+        PRINT_ERROR(
+            "--hba-preset-name requires --save-as-hba-preset.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (options->saveAsHbaPreset() && options->pgHbaRules().empty()
+            && options->pgHbaPreset().empty())
+    {
+        PRINT_ERROR(
+            "--save-as-hba-preset requires --pghba-rules or --pghba-preset.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     addCredentialsToJobData(jobData);
 
     // 

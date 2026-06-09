@@ -3549,11 +3549,14 @@ S9sOptions::appendPgHbaRules(
     for (uint idx = 0u; idx < entries.size(); ++idx)
     {
         S9sString      entryString = entries[idx].toString().trim();
-        S9sVariantList parts       = entryString.split(" ");
+        S9sVariantList parts       = entryString.split(" \t");
         S9sVariantMap  rule;
 
         if (parts.size() == 4)
         {
+            if (parts[0].toString().toLower() != "local")
+                return false;
+
             rule["type"]     = parts[0].toString();
             rule["database"] = parts[1].toString();
             rule["user"]     = parts[2].toString();
@@ -8335,6 +8338,7 @@ S9sOptions::printHelpCluster()
 "  --extensions=LIST          PostgresSQL extensions (postgis, pgvector).\n"
 "  --pghba-rules=LIST         Custom pg_hba.conf entries (PostgreSQL deployment).\n"
 "                             Format: \"type database user address method\"\n"
+"                             Local connections: \"local database user method\"\n"
 "                             Semicolon-separated for multiple rules.\n"
 "                             Example: \"host all myuser 192.168.1.0/24 md5\"\n"
 "  --pghba-preset=FILENAME    pg_hba.conf preset file to apply at deployment.\n"
@@ -16141,6 +16145,7 @@ S9sOptions::readOptionsCluster(
                 {
                     PRINT_ERROR("Invalid argument for --pghba-rules.");
                     m_exitStatus = BadOptions;
+                    return false;
                 }
                 break;
 
