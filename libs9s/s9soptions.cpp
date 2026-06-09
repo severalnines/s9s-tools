@@ -3558,7 +3558,7 @@ S9sOptions::appendPgHbaRules(
             if (parts[0].toString().toLower() != "local")
                 return false;
 
-            rule["type"]     = parts[0].toString();
+            rule["type"]     = parts[0].toString().toLower();
             rule["database"] = parts[1].toString();
             rule["user"]     = parts[2].toString();
             rule["address"]  = "";
@@ -3569,7 +3569,7 @@ S9sOptions::appendPgHbaRules(
             if (parts[0].toString().toLower() == "local")
                 return false;
 
-            rule["type"]     = parts[0].toString();
+            rule["type"]     = parts[0].toString().toLower();
             rule["database"] = parts[1].toString();
             rule["user"]     = parts[2].toString();
             rule["address"]  = parts[3].toString();
