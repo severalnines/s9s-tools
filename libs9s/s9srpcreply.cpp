@@ -10345,7 +10345,6 @@ S9sRpcReply::printBackupListDatabasesLong()
 void
 S9sRpcReply::printBinlogBackupListBrief()
 {
-    S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  binlogList;
 
     // Get the binlog backup list from the reply
@@ -10379,7 +10378,6 @@ void
 S9sRpcReply::printBinlogBackupListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
-    bool            syntaxHighlight = options->useSyntaxHighlight();
     S9sVariantList  binlogList;
     S9sFormat       cidFormat;
     S9sFormat       fileNameFormat;
@@ -10414,36 +10412,17 @@ S9sRpcReply::printBinlogBackupListLong()
         else if (binlog.contains("cluster_id"))
             cid = binlog["cluster_id"].toInt();
 
-        // Get file size - check multiple possible locations
+        // Get file size
         if (binlog.contains("size"))
             size = binlog["size"].toULongLong();
-        else if (binlog.contains("metadata"))
-        {
-            S9sVariantMap metadata = binlog["metadata"].toVariantMap();
-            if (metadata.contains("size"))
-                size = metadata["size"].toULongLong();
-        }
 
         // Get file name
         if (binlog.contains("file_name"))
             fileName = binlog["file_name"].toString();
-        else if (binlog.contains("path"))
-            fileName = binlog["path"].toString();
 
-        // Get hostname: prefer the flat "hostname" field, fall back to the
-        // legacy nested settings.cloud_settings.hostname for compatibility.
+        // Get hostname
         if (binlog.contains("hostname"))
             hostName = binlog["hostname"].toString();
-        else if (binlog.contains("settings"))
-        {
-            S9sVariantMap settings = binlog["settings"].toVariantMap();
-            if (settings.contains("cloud_settings"))
-            {
-                S9sVariantMap cloudSettings = settings["cloud_settings"].toVariantMap();
-                if (cloudSettings.contains("hostname"))
-                    hostName = cloudSettings["hostname"].toString();
-            }
-        }
 
         // Get full backup ID
         if (binlog.contains("full_bid"))
@@ -10452,8 +10431,6 @@ S9sRpcReply::printBinlogBackupListLong()
         // Get created timestamp and format it as human-readable
         if (binlog.contains("created"))
             created = binlog["created"].toString();
-        else if (binlog.contains("timestamp"))
-            created = binlog["timestamp"].toString();
 
         // Parse and format the timestamp
         if (!created.empty())
@@ -10532,35 +10509,16 @@ S9sRpcReply::printBinlogBackupListLong()
         // Get file size
         if (binlog.contains("size"))
             size = binlog["size"].toULongLong();
-        else if (binlog.contains("metadata"))
-        {
-            S9sVariantMap metadata = binlog["metadata"].toVariantMap();
-            if (metadata.contains("size"))
-                size = metadata["size"].toULongLong();
-        }
 
         // Get file name
         if (binlog.contains("file_name"))
             fileName = binlog["file_name"].toString();
-        else if (binlog.contains("path"))
-            fileName = binlog["path"].toString();
         else
             fileName = "Unknown";
 
-        // Get hostname: prefer the flat "hostname" field, fall back to the
-        // legacy nested settings.cloud_settings.hostname for compatibility.
+        // Get hostname
         if (binlog.contains("hostname"))
             hostName = binlog["hostname"].toString();
-        else if (binlog.contains("settings"))
-        {
-            S9sVariantMap settings = binlog["settings"].toVariantMap();
-            if (settings.contains("cloud_settings"))
-            {
-                S9sVariantMap cloudSettings = settings["cloud_settings"].toVariantMap();
-                if (cloudSettings.contains("hostname"))
-                    hostName = cloudSettings["hostname"].toString();
-            }
-        }
         if (hostName.empty())
             hostName = "-";
 
@@ -10571,8 +10529,6 @@ S9sRpcReply::printBinlogBackupListLong()
         // Get created timestamp and format it as human-readable
         if (binlog.contains("created"))
             created = binlog["created"].toString();
-        else if (binlog.contains("timestamp"))
-            created = binlog["timestamp"].toString();
         else
             created = "-";
 
