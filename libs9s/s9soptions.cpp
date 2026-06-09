@@ -250,6 +250,7 @@ enum S9sOptionType
     OptionCheckPkgUpgrades,
     OptionListDatabases,
     OptionListFiles,
+    OptionListBinlogBackups,
     OptionAccount,
     OptionWithDatabase,
     OptionObjects,
@@ -6899,6 +6900,12 @@ S9sOptions::isListFilesRequested() const
     return getBool("list_files");
 }
 
+bool
+S9sOptions::isListBinlogBackupsRequested() const
+{
+    return getBool("list_binlog_backups");
+}
+
 /**
  * \returns true if the --long command line option was provided.
  */
@@ -7971,6 +7978,7 @@ S9sOptions::printHelpBackup()
 "  --delete-old                   Delete old backups.\n"
 "  --list-databases               List the backups in database format.\n"
 "  --list-files                   List the backups in backup file format.\n"
+"  --list-binlog-backups          List binlog backups.\n"
 "  --list                         List the backups.\n"
 "  --list-schedules               List the backup schedules.\n"
 "  --delete-schedules             Delete the job-id of the backup schedule.\n"
@@ -9381,6 +9389,7 @@ S9sOptions::readOptionsBackup(
         { "forced",           no_argument,       0, OptionForce           },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
+        { "list-binlog-backups", no_argument,    0, OptionListBinlogBackups },
         { "list",             no_argument,       0, 'L'                   },
         { "list-schedules",   no_argument,       0, OptionListSchedules   },
         { "delete-schedules", no_argument,       0, OptionDeleteSchedules },
@@ -9547,7 +9556,12 @@ S9sOptions::readOptionsBackup(
                 // --list-files
                 m_options["list_files"] = true;
                 break;
-            
+
+            case OptionListBinlogBackups:
+                // --list-binlog-backups
+                m_options["list_binlog_backups"] = true;
+                break;
+
             case OptionListSchedules:
                 // --list-schedules
                 m_options["list_schedules"] = true;
@@ -12391,6 +12405,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
     
     if (isListFilesRequested())
+        countOptions++;
+
+    if (isListBinlogBackupsRequested())
         countOptions++;
 
     if (isCreateRequested())

@@ -91,6 +91,7 @@ class S9sBusinessLogic
         void printBackupSchedules(S9sRpcClient &client);
         void printSnapshotRepositories(S9sRpcClient &client);
         void executeBackupList(S9sRpcClient &client);
+        void executeBinlogBackupList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
         void executeLogList(S9sRpcClient &client);

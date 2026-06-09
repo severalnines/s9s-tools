@@ -133,6 +133,7 @@ class S9sRpcReply : public S9sVariantMap
         void printNodeList();
         void printJobList();
         void printBackupList();
+        void printBinlogBackupList();
 
         void printSnapshotRepositories(bool allClusters=false);
         void printSnapshotRepositoriesBrief(bool allClusters=false);
@@ -380,7 +381,10 @@ class S9sRpcReply : public S9sVariantMap
 
         void printBackupListFilesBrief();
         void printBackupListFilesLong();
-        
+
+        void printBinlogBackupListBrief();
+        void printBinlogBackupListLong();
+
         void printUserListBrief();
         void printUserListLong();
 

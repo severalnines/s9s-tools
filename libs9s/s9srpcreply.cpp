@@ -3232,6 +3232,26 @@ S9sRpcReply::printBackupList()
 }
 
 void
+S9sRpcReply::printBinlogBackupList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        // Print binlog backup list
+        if (options->isLongRequested())
+            printBinlogBackupListLong();
+        else
+            printBinlogBackupListBrief();
+    }
+}
+
+void
 S9sRpcReply::printKeys()
 {
     S9sOptions     *options = S9sOptions::instance();
@@ -10320,9 +10340,248 @@ S9sRpcReply::printBackupListDatabasesLong()
 }
 
 /**
+ * Prints the list of binlog backups in brief format.
+ */
+void
+S9sRpcReply::printBinlogBackupListBrief()
+{
+    S9sVariantList  binlogList;
+
+    // Get the binlog backup list from the reply
+    if (contains("binlog_backups"))
+        binlogList = operator[]("binlog_backups").toVariantList();
+    else if (contains("data"))
+        binlogList = operator[]("data").toVariantList();
+
+    // Print each binlog backup
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        S9sString fileName;
+
+        // Get the file name from the binlog backup record
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else if (binlog.contains("path"))
+            fileName = binlog["path"].toString();
+        else
+            fileName = "Unknown";
+
+        printf("%s\n", STR(fileName));
+    }
+}
+
+/**
+ * Prints the list of binlog backups in long format with size information.
+ */
+void
+S9sRpcReply::printBinlogBackupListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  binlogList;
+    S9sFormat       cidFormat;
+    S9sFormat       fileNameFormat;
+    S9sFormat       sizeFormat;
+    S9sFormat       createdFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       pidFormat;
+    int             totalCount = 0;
+    ulonglong       totalSize = 0;
+
+    // Get the binlog backup list from the reply
+    if (contains("binlog_backups"))
+        binlogList = operator[]("binlog_backups").toVariantList();
+    else if (contains("data"))
+        binlogList = operator[]("data").toVariantList();
+
+    // First pass: collect formatting information
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        int cid = 0;
+        ulonglong size = 0;
+        S9sString fileName;
+        S9sString created;
+        S9sString hostName;
+        int fullBackupId = 0;
+        S9sDateTime timeStamp;
+
+        // Get cluster ID
+        if (binlog.contains("cid"))
+            cid = binlog["cid"].toInt();
+        else if (binlog.contains("cluster_id"))
+            cid = binlog["cluster_id"].toInt();
+
+        // Get file size
+        if (binlog.contains("size"))
+            size = binlog["size"].toULongLong();
+
+        // Get file name
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+
+        // Get hostname
+        if (binlog.contains("hostname"))
+            hostName = binlog["hostname"].toString();
+
+        // Get full backup ID
+        if (binlog.contains("full_bid"))
+            fullBackupId = binlog["full_bid"].toInt();
+
+        // Get created timestamp and format it as human-readable
+        if (binlog.contains("created"))
+            created = binlog["created"].toString();
+
+        // Parse and format the timestamp
+        if (!created.empty())
+        {
+            bool isNumeric = true;
+            for (uint i = 0; i < created.length(); ++i)
+            {
+                if (!isdigit(created[i]))
+                {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            if (isNumeric)
+            {
+                S9sDateTime tmp((time_t)created.toULongLong());
+                created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+            } else {
+                timeStamp.parse(created);
+                created = timeStamp.toString(S9sDateTime::MySqlLogFileFormat);
+            }
+        }
+
+        cidFormat.widen(cid);
+        fileNameFormat.widen(fileName);
+        sizeFormat.widen(S9sFormat::toSizeString(size));
+        createdFormat.widen(created);
+        hostNameFormat.widen(hostName);
+        pidFormat.widen(fullBackupId);
+
+        totalSize += size;
+        totalCount++;
+    }
+
+    // Print header
+    if (!options->isBatchRequested())
+    {
+        cidFormat.widen("CID");
+        fileNameFormat.widen("BINLOG FILE");
+        sizeFormat.widen("SIZE");
+        createdFormat.widen("CREATED");
+        hostNameFormat.widen("HOSTNAME");
+        pidFormat.widen("PID");
+
+        printf("%s", headerColorBegin());
+        cidFormat.printf("CID");
+        fileNameFormat.printf("BINLOG FILE");
+        sizeFormat.printf("SIZE");
+        createdFormat.printf("CREATED");
+        hostNameFormat.printf("HOSTNAME");
+        pidFormat.printf("PID");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    // Second pass: print the data
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        int cid = 0;
+        ulonglong size = 0;
+        S9sString fileName;
+        S9sString created;
+        S9sString sizeString;
+        S9sString hostName;
+        int fullBackupId = 0;
+        S9sDateTime timeStamp;
+
+        // Get cluster ID
+        if (binlog.contains("cid"))
+            cid = binlog["cid"].toInt();
+        else if (binlog.contains("cluster_id"))
+            cid = binlog["cluster_id"].toInt();
+
+        // Get file size
+        if (binlog.contains("size"))
+            size = binlog["size"].toULongLong();
+
+        // Get file name
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else
+            fileName = "Unknown";
+
+        // Get hostname
+        if (binlog.contains("hostname"))
+            hostName = binlog["hostname"].toString();
+        if (hostName.empty())
+            hostName = "-";
+
+        // Get full backup ID
+        if (binlog.contains("full_bid"))
+            fullBackupId = binlog["full_bid"].toInt();
+
+        // Get created timestamp and format it as human-readable
+        if (binlog.contains("created"))
+            created = binlog["created"].toString();
+        else
+            created = "-";
+
+        // Parse and format the timestamp
+        if (created != "-" && !created.empty())
+        {
+            bool isNumeric = true;
+            for (uint i = 0; i < created.length(); ++i)
+            {
+                if (!isdigit(created[i]))
+                {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            if (isNumeric)
+            {
+                S9sDateTime tmp((time_t)created.toULongLong());
+                created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+            } else {
+                timeStamp.parse(created);
+                created = timeStamp.toString(S9sDateTime::MySqlLogFileFormat);
+            }
+        }
+
+        sizeString = S9sFormat::toSizeString(size);
+
+        cidFormat.printf(cid);
+        fileNameFormat.printf(fileName);
+        sizeFormat.printf(sizeString);
+        createdFormat.printf(created);
+        hostNameFormat.printf(hostName);
+        if (fullBackupId > 0)
+            pidFormat.printf(fullBackupId);
+        else
+            pidFormat.printf("-");
+        printf("\n");
+    }
+
+    // Print footer with totals
+    if (!options->isBatchRequested())
+    {
+        S9sString totalSizeStr = S9sFormat::toSizeString(totalSize);
+        printf("\nTotal: %d binlog backup(s), %s\n",
+               totalCount, STR(totalSizeStr));
+    }
+}
+
+/**
  * Prints the list of backups in its brief format.
  */
-void 
+void
 S9sRpcReply::printBackupListFilesBrief()
 {
     S9sOptions     *options = S9sOptions::instance();
