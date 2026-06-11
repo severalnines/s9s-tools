@@ -216,6 +216,50 @@ and print more messages.
 .\"
 .\"
 .\"
+.SH ERROR IDS
+RPC replies from the controller may include an
+.B error_id
+integer field alongside the human-readable
+.B error_string
+and the
+.B request_status
+code.
+The field is absent when no specific error condition applies (successful replies and generic errors).
+Automated clients should use
+.B error_id
+for branching logic instead of parsing
+.BR error_string ,
+which is subject to change.
+
+.TS
+tab(|) allbox;
+cb cb cb
+n l l.
+Value|Name|Recovery
+1|ClusterNotAssignedToController|Cluster is managed by a different controller \(em refresh the controller-cluster map and retry
+2|AuthenticationRequired|Session missing or expired \(em re-authenticate
+3|InvalidCredentials|Wrong username or password \(em check credentials
+4|LicenseRequired|Operation blocked by missing or invalid license
+5|ControllerInitializing|Controller is still starting up \(em retry after a short delay
+.TE
+
+.PP
+Example response with
+.B error_id
+set:
+
+.nf
+{
+    "controller_id": "10192",
+    "error_id": 3,
+    "error_string": "Username or password is incorrect.",
+    "request_status": "AccessDenied"
+}
+.fi
+
+.\"
+.\"
+.\"
 .SH EXAMPLES
 List the clusters and the nodes managed by the controller:
 

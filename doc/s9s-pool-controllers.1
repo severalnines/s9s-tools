@@ -135,3 +135,29 @@ Controller version to be installed.
 .TP
 .B \-\^\-uninstall
 When used with \fB--remove-controller\fP, this option will also uninstall the controller software from the host. Without this option, the controller is only unregistered from the pool but the software remains installed.
+
+.\"
+.\"
+.\"
+.SH ERRORS
+When a request is routed to the wrong controller in a pool the reply will contain
+.B error_id: 1
+.RB ( ClusterNotAssignedToController ).
+This means the cluster is assigned to a different controller and the caller should
+refresh its controller-cluster map and retry the request against the correct controller.
+
+.nf
+{
+    "error_id": 1,
+    "error_string": "Request aborted. Cluster 3 is not assigned to the controller.",
+    "request_status": "ObjectNotFound"
+}
+.fi
+
+See
+.BR s9s (1)
+section
+.B ERROR IDS
+for the full list of
+.B error_id
+values.
