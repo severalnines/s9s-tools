@@ -1681,6 +1681,26 @@ S9sRpcReply::printCloudCredentialsLong()
    
 }
 
+// Returns a formatted slice of up to `count` cluster IDs starting at `start`.
+static S9sString
+clusterIdsSlice(const S9sVariantList &list, int start, int count)
+{
+    const int total = (int)list.size();
+    if (start >= total)
+        return S9sString();
+
+    const int end = (start + count < total) ? (start + count) : total;
+    S9sString retval = "[";
+    for (int i = start; i < end; ++i)
+    {
+        if (i > start)
+            retval += ", ";
+        retval += list[i].toString();
+    }
+    retval += "]";
+    return retval;
+}
+
 void
 S9sRpcReply::printPoolControllers()
 {
@@ -1718,7 +1738,6 @@ S9sRpcReply::printPoolControllers()
 void
 S9sRpcReply::printPoolControllersLong()
 {
-
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList  controllers = operator[]("controllers").toVariantList();
     if(controllers.size() == 0)
@@ -1729,8 +1748,10 @@ S9sRpcReply::printPoolControllersLong()
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);
     S9sFormat      statusFormat("\033[94m", TERM_NORMAL);
     S9sFormat      roleFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      countFormat;
     S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
 
+    countFormat.setRightJustify();
 
     // Filter controllers depending on requested output mode (only for list operation)
     const bool printAll = options->isPrintDeploymentInfoRequested();
@@ -1765,8 +1786,15 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      hostname = w["hostname"].toString();
         S9sString      port = w["port"].toString();
         S9sString      status = w["status"].toString();
-        S9sString      clusters = w["clusters"].toString();
         S9sString      role;
+
+        const S9sVariantList clusterList = w["clusters"].isVariantList()
+            ? w["clusters"].toVariantList() : S9sVariantList();
+        S9sString count;
+        count.sprintf("%d", (int)clusterList.size());
+        S9sString clusters = clusterIdsSlice(clusterList, 0, 10);
+        if (clusters.empty())
+            clusters = w["clusters"].toString();
 
         if (w.contains("properties"))
         {
@@ -1790,8 +1818,10 @@ S9sRpcReply::printPoolControllersLong()
         portFormat.widen(port);
         statusFormat.widen(status);
         roleFormat.widen(role);
+        countFormat.widen(count);
         clustersFormat.widen(clusters);
     }
+
     // print header
     if (!options->isNoHeaderRequested())
     {
@@ -1802,10 +1832,21 @@ S9sRpcReply::printPoolControllersLong()
         portFormat.printHeader("PORT");
         statusFormat.printHeader("STATUS");
         roleFormat.printHeader("ROLE");
+        countFormat.printHeader("COUNT");
         clustersFormat.printHeader("CLUSTERS");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
+
+    // computed after header printing so printHeader() widen calls are included
+    int nColumnsWithCount = 0;
+    nColumnsWithCount += sidFormat.realWidth();
+    nColumnsWithCount += idFormat.realWidth();
+    nColumnsWithCount += hostnameFormat.realWidth();
+    nColumnsWithCount += portFormat.realWidth();
+    nColumnsWithCount += statusFormat.realWidth();
+    nColumnsWithCount += roleFormat.realWidth();
+    nColumnsWithCount += countFormat.realWidth();
     // print data
     for (const auto & cl : filtered)
     {
@@ -1815,7 +1856,15 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      hostname = c["hostname"].toString();
         S9sString      port = c["port"].toString();
         S9sString      status = c["status"].toString();
-        S9sString      clusters = c["clusters"].toString();
+
+        const S9sVariantList clusterList = c["clusters"].isVariantList()
+            ? c["clusters"].toVariantList() : S9sVariantList();
+        const int total = (int)clusterList.size();
+        S9sString count;
+        count.sprintf("%d", total);
+        S9sString clusters = clusterIdsSlice(clusterList, 0, 10);
+        if (clusters.empty())
+            clusters = c["clusters"].toString();
 
         // role
         S9sString      role;
@@ -1841,8 +1890,17 @@ S9sRpcReply::printPoolControllersLong()
         portFormat.printf(port);
         statusFormat.printf(status);
         roleFormat.printf(role);
+        countFormat.printf(count);
         clustersFormat.printf(clusters);
         ::printf("\n");
+
+        // continuation rows for clusters beyond the first 10
+        for (int offset = 10; offset < total; offset += 10)
+        {
+            S9sString cont = clusterIdsSlice(clusterList, offset, 10);
+            ::printf("%-*s", nColumnsWithCount, "");
+            ::printf("\033[33m%s" TERM_NORMAL "\n", STR(cont));
+        }
     }
 
 }
