@@ -543,6 +543,7 @@ enum S9sOptionType
     OptionStopController,
     OptionRemoveController,
     OptionUpdateCmon,
+    OptionSetMaxClustersCapacity,
 
     OptionExtensions
 };
@@ -5477,13 +5478,27 @@ S9sOptions::isRemoveController() const
     return getBool("remove_controller");
 }
 
-/*  
+/*
  * \returns true if the --update-cmon command line option was provided for controllers
  */
 bool
 S9sOptions::isUpdateCmon() const
 {
     return getBool("update_cmon");
+}
+
+bool
+S9sOptions::isSetMaxClustersCapacityRequested() const
+{
+    return getBool("set_max_clusters_capacity");
+}
+
+int
+S9sOptions::getMaxClustersCapacity() const
+{
+    if (!m_options.contains("max_clusters_capacity"))
+        return -1;
+    return m_options.at("max_clusters_capacity").toInt();
 }
 
 /**
@@ -8815,6 +8830,9 @@ S9sOptions::printHelpControllers()
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
 "  --uninstall                Uninstall software when removing controller.\n"
+"  --set-max-clusters-capacity=N  Set the maximum number of clusters this controller can own\n"
+"                             (0 = unlimited). Takes effect immediately and persists across\n"
+"                             restarts. Requires admin privileges.\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -19607,6 +19625,7 @@ S9sOptions::readOptionsControllers(
                     {"stop",             no_argument, 0,       OptionStopController},
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
+                    {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
@@ -19844,6 +19863,21 @@ S9sOptions::readOptionsControllers(
                 m_options["update_cmon"] = true;
                 break;
 
+            case OptionSetMaxClustersCapacity:
+                // --set-max-clusters-capacity=N
+                if (optarg)
+                {
+                    m_options["set_max_clusters_capacity"] = true;
+                    m_options["max_clusters_capacity"] = optarg;
+                }
+                else
+                {
+                    m_errorMessage = "Missing value for --set-max-clusters-capacity.";
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
             /*
              * Other options
              */
@@ -19957,6 +19991,9 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
   
     if (isUpdateCmon())
+        countOptions++;
+
+    if (isSetMaxClustersCapacityRequested())
         countOptions++;
 
     if (countOptions == 0)

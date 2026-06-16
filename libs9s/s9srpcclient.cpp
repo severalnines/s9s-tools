@@ -13689,6 +13689,25 @@ S9sRpcClient::registerRedisOrValkeyCluster(
 }
 
 bool
+S9sRpcClient::setMaxClustersCapacity(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "setmaxclusterscapacity";
+
+    const int capacity = options->getMaxClustersCapacity();
+    if (capacity < 0)
+    {
+        PRINT_ERROR("The --set-max-clusters-capacity option requires a non-negative integer value.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    request["max_clusters"] = capacity;
+
+    return executeRequest(uri, request);
+}
+
+bool
 isValidDateTimeFormat(const std::string& str) {
     static const std::regex datetimeRegex("^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]) "
             "(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(([+-][0-2][0-9]((:)?[0-5][0-9])?)|[Z])?$");
