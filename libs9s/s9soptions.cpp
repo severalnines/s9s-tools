@@ -8833,6 +8833,9 @@ S9sOptions::printHelpControllers()
 "  --set-max-clusters-capacity=N  Set the maximum number of clusters this controller can own\n"
 "                             (0 = unlimited). Takes effect immediately and persists across\n"
 "                             restarts. Requires admin privileges.\n"
+"  --force                    With --set-max-clusters-capacity: allow the new cap to be lower\n"
+"                             than the current owned cluster count; sends SIGHUP to trigger\n"
+"                             immediate redistribution of excess clusters.\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -19626,6 +19629,7 @@ S9sOptions::readOptionsControllers(
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
+                    {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
@@ -19876,6 +19880,11 @@ S9sOptions::readOptionsControllers(
                     m_exitStatus = BadOptions;
                     return false;
                 }
+                break;
+
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
                 break;
 
             /*

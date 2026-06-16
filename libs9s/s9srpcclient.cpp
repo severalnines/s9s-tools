@@ -13703,6 +13703,8 @@ S9sRpcClient::setMaxClustersCapacity(S9sOptions *options)
         return false;
     }
     request["max_clusters"] = capacity;
+    if (options->force())
+        request["force"] = true;
 
     return executeRequest(uri, request);
 }
