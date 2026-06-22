@@ -62,6 +62,7 @@ class S9sRpcReply : public S9sVariantMap
         bool isRedirect() const;
 
         S9sString errorString() const;
+        int errorId() const;
         S9sString uuid() const;
 
         S9sTreeNode tree();
