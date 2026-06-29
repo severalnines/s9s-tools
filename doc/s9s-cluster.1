@@ -479,6 +479,21 @@ s9s cluster \\
     --wait
 .fi
 
+An existing ClickHouse cluster can be registered by giving a single node endpoint.
+The controller discovers the remaining nodes and their roles.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --register \\
+    --cluster-type=clickhouse \\
+    --nodes=192.168.0.196 \\
+    --db-admin=default \\
+    --db-admin-passwd=secret \\
+    --cluster-name=clickhouse_001 \\
+    --wait
+.fi
+
 .TP
 .B \-\-remove\-node
 Removes a node from the cluster by creating a job that performs the removal.
@@ -1124,8 +1139,9 @@ supported:
 \fBmysqlreplication\fP,
 \fBgroupreplication\fP (or \fBgroup_replication\fP),
 \fBndb\fP (or \fBndbcluster\fP),
-\fBpostgresql\fP
-and \fBpostgresql_logical\fP.
+\fBpostgresql\fP,
+\fBpostgresql_logical\fP
+and \fBclickhouse\fP.
 
 .TP
 .BI --config-template= FILENAME
