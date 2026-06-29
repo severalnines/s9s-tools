@@ -124,6 +124,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster04,     retval);
     PERFORM_TEST(testCreateCluster05,     retval);
     PERFORM_TEST(testCreateCluster06,     retval);
+    PERFORM_TEST(testRegisterClickHouse,  retval);
 
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
@@ -1158,6 +1159,64 @@ UtS9sRpcClient::testCreateCluster06()
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "version").toString(),
             "myversion");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testRegisterClickHouse()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options["cluster_type"]       = "clickhouse";
+    options->m_options["cluster_name"]       = "ch_001";
+    options->m_options["db_admin_user_name"] = "default";
+    options->m_options["db_admin_password"]  = "secret";
+    options->setNodes("NODE1:9440");
+
+    S9S_VERIFY(client.registerCluster());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Register ClickHouse Cluster");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "add_cluster");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "clickhouse");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "type").toString(),
+            "clickhouse");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_name").toString(),
+            "ch_001");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "db_user").toString(),
+            "default");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "db_password").toString(),
+            "secret");
+
+    // Exactly one node was forwarded for topology discovery.
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "nodes").toVariantList().size(),
+            1);
 
     return true;
 }
