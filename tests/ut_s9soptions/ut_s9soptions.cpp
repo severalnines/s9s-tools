@@ -63,6 +63,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testExternalBackup, retval);
     PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
+    PERFORM_TEST(testVirtualRouterId, retval);
 
     return retval;
 }
@@ -940,6 +941,118 @@ UtS9sOptions::testConfigureWalOptions()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc5, (char **)argv5));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the --virtual-router-id option parsing and validation.
+ */
+bool
+UtS9sOptions::testVirtualRouterId()
+{
+    S9sOptions *options;
+    bool        success;
+
+    // Test valid value (42)
+    const char *argv1[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=42",
+        nullptr
+    };
+    int argc1 = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc1, (char **)argv1);
+    S9S_VERIFY(success);
+    S9S_COMPARE(options->getInt("virtual_router_id"), 42);
+
+    // Test boundary value: 1 (minimum)
+    const char *argv2[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=1",
+        nullptr
+    };
+    int argc2 = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc2, (char **)argv2);
+    S9S_VERIFY(success);
+    S9S_COMPARE(options->getInt("virtual_router_id"), 1);
+
+    // Test boundary value: 255 (maximum)
+    const char *argv3[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=255",
+        nullptr
+    };
+    int argc3 = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc3, (char **)argv3);
+    S9S_VERIFY(success);
+    S9S_COMPARE(options->getInt("virtual_router_id"), 255);
+
+    // Test out-of-range: 0 (below minimum)
+    const char *argv4[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=0",
+        nullptr
+    };
+    int argc4 = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc4, (char **)argv4);
+    S9S_VERIFY(!success);
+
+    // Test out-of-range: 256 (above maximum)
+    const char *argv5[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=256",
+        nullptr
+    };
+    int argc5 = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc5, (char **)argv5);
+    S9S_VERIFY(!success);
+
+    // Test non-integer value
+    const char *argv6[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=abc",
+        nullptr
+    };
+    int argc6 = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc6, (char **)argv6);
+    S9S_VERIFY(!success);
 
     S9sOptions::uninit();
     return true;

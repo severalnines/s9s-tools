@@ -46,4 +46,5 @@ class UtS9sOptions : public S9sUnitTest
         bool testExternalBackup();
         bool testConfigureWalOptions();
         bool testAddController();
+        bool testVirtualRouterId();
 };

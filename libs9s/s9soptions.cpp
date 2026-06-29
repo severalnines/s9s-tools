@@ -4546,6 +4546,37 @@ S9sOptions::backupRetention() const
 }
 
 bool
+S9sOptions::setVirtualRouterId(
+        const S9sString &value)
+{
+    if (!value.looksInteger())
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is not a valid integer for "
+                "--virtual-router-id.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    int id = value.toInt();
+    if (id < 1 || id > 255)
+    {
+        m_errorMessage.sprintf(
+                "The value %d is out of range for "
+                "--virtual-router-id (must be 1-255).",
+                id);
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["virtual_router_id"] = id;
+    return true;
+}
+
+bool
 S9sOptions::setCloudRetention(
         const S9sString &value)
 {
@@ -9281,33 +9312,8 @@ S9sOptions::readOptionsNode(
 
             case OptionVirtualRouterId:
                 // --virtual-router-id=ID
-                {
-                    S9sString value = optarg;
-                    if (!value.looksInteger())
-                    {
-                        m_errorMessage.sprintf(
-                            "The value '%s' is not a valid integer for "
-                            "--virtual-router-id.",
-                            STR(value));
-
-                        m_exitStatus = BadOptions;
-                        return false;
-                    }
-
-                    int id = value.toInt();
-                    if (id < 1 || id > 255)
-                    {
-                        m_errorMessage.sprintf(
-                            "The value %d is out of range for "
-                            "--virtual-router-id (must be 1-255).",
-                            id);
-
-                        m_exitStatus = BadOptions;
-                        return false;
-                    }
-
-                    m_options["virtual_router_id"] = id;
-                }
+                if (!setVirtualRouterId(optarg))
+                    return false;
                 break;
 
             /*
@@ -16292,33 +16298,8 @@ S9sOptions::readOptionsCluster(
 
             case OptionVirtualRouterId:
                 // --virtual-router-id=ID
-                {
-                    S9sString value = optarg;
-                    if (!value.looksInteger())
-                    {
-                        m_errorMessage.sprintf(
-                            "The value '%s' is not a valid integer for "
-                            "--virtual-router-id.",
-                            STR(value));
-
-                        m_exitStatus = BadOptions;
-                        return false;
-                    }
-
-                    int id = value.toInt();
-                    if (id < 1 || id > 255)
-                    {
-                        m_errorMessage.sprintf(
-                            "The value %d is out of range for "
-                            "--virtual-router-id (must be 1-255).",
-                            id);
-
-                        m_exitStatus = BadOptions;
-                        return false;
-                    }
-
-                    m_options["virtual_router_id"] = id;
-                }
+                if (!setVirtualRouterId(optarg))
+                    return false;
                 break;
 
             case OptionLicense:
