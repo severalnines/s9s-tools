@@ -652,6 +652,10 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName);
 
+        bool registerClickHouseCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
+
         bool createMsSqlSingle(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,

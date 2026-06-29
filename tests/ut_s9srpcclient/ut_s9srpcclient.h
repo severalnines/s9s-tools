@@ -65,6 +65,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateCluster04();
         bool testCreateCluster05();
         bool testCreateCluster06();
+        bool testRegisterClickHouse();
 
         bool testGetAllClusterInfo();
         bool testGetCluster();
