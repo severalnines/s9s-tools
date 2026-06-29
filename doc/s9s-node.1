@@ -136,8 +136,15 @@ s9s node \\
     --print-request \\
     --nodes="keepalived://192.168.0.87" \\
     --virtual-ip="192.168.42.10" \\
-    --log 
+    --log
 .fi
+
+.TP
+.BI \-\^\-virtual\-router\-id= ID
+The VRRP virtual router ID for keepalived, an integer in the range 1\-255.
+Both nodes of a keepalived pair share the same virtual router ID. If this
+option is omitted, CMON auto\-assigns a deterministic default derived from
+the cluster ID. Cross\-subnet uniqueness is the operator's responsibility.
 
 .TP
 .B \-\-start
