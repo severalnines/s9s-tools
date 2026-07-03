@@ -5949,7 +5949,24 @@ S9sRpcClient::addPgBouncer(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setup";
-    jobData["nodes"]    = nodesField(nodes);        
+    jobData["nodes"]    = nodesField(nodes);
+
+    // Forward the admin account. cmon reads /job_data/admin_username and
+    // /job_data/admin_password (the same keys the web UI sends). Without
+    // this the --admin-user/--admin-password options are dropped and the
+    // admin silently falls back to 'pgbadmin' (CLUS-6881/CLUS-6892: the
+    // name may legitimately contain '-').
+    {
+        S9sOptions *options         = S9sOptions::instance();
+        S9sString   adminUser       = options->getString("admin_user", "");
+        S9sString   adminPassword   = options->getString("admin_password", "");
+
+        if (!adminUser.empty())
+            jobData["admin_username"] = adminUser;
+
+        if (!adminPassword.empty())
+            jobData["admin_password"] = adminPassword;
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbouncer";
