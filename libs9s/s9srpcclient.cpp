@@ -3864,9 +3864,13 @@ S9sRpcClient::registerHost()
         command = "keepalived";
         title   = "Register Keepalived Node";
         registerAction = true;
-    
+
         jobData["eth_interface"] = options->getString("eth_interface");
         jobData["virtual_ip"]    = options->getString("virtual_ip");
+
+        int vrid = options->getInt("virtual_router_id");
+        if (vrid > 0)
+            jobData["virtual_router_id"] = vrid;
     } else if (protocol == "postgresql")
     {
         command = "registernode";
@@ -5851,7 +5855,11 @@ S9sRpcClient::addKeepalived(
     // These are for keepalived.
     jobData["eth_interface"] = options->getString("eth_interface");
     jobData["virtual_ip"]    = options->getString("virtual_ip");
-    
+
+    int vrid = options->getInt("virtual_router_id");
+    if (vrid > 0)
+        jobData["virtual_router_id"] = vrid;
+
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
         int       port;

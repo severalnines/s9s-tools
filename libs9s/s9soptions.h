@@ -293,6 +293,8 @@ class S9sOptions
         bool hasBackupRetention() const;
         int backupRetention() const;
 
+        bool setVirtualRouterId(const S9sString &value);
+
         bool setCloudRetention(const S9sString &value);
         bool hasCloudRetention() const;
         int cloudRetention() const;

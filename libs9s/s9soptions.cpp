@@ -500,6 +500,7 @@ enum S9sOptionType
 
     OptionVirtualIp,
     OptionEthInterface,
+    OptionVirtualRouterId,
     OptionLicense,
     OptionRenewCert,
 
@@ -4545,6 +4546,37 @@ S9sOptions::backupRetention() const
 }
 
 bool
+S9sOptions::setVirtualRouterId(
+        const S9sString &value)
+{
+    if (!value.looksInteger())
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is not a valid integer for "
+                "--virtual-router-id.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    int id = value.toInt();
+    if (id < 1 || id > 255)
+    {
+        m_errorMessage.sprintf(
+                "The value %d is out of range for "
+                "--virtual-router-id (must be 1-255).",
+                id);
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["virtual_router_id"] = id;
+    return true;
+}
+
+bool
 S9sOptions::setCloudRetention(
         const S9sString &value)
 {
@@ -8335,6 +8367,9 @@ S9sOptions::printHelpCluster()
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
 "  --maxscale-mysql-user=USERNAME mysql user for Maxscale.\n"
 "  --maxscale-mysql-password=PASSWD mysql user password for Maxscale.\n"
+"  --virtual-router-id=ID     VRRP virtual router ID for keepalived (1-255).\n"
+"                             If omitted, CMON auto-assigns a deterministic\n"
+"                             default from the cluster ID.\n"
 "\n"
 "SSL related options (for create and enable-ssl)\n"
 "  --ssl-ca=STRING            The SSL CA file path on controller.\n"
@@ -8452,6 +8487,9 @@ S9sOptions::printHelpNode()
 "  --dont-import-accounts     Do not import users into loadbalancer.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"  --virtual-router-id=ID     VRRP virtual router ID for keepalived (1-255).\n"
+"                             If omitted, CMON auto-assigns a deterministic\n"
+"                             default from the cluster ID.\n"
 "\n");
 }
 
@@ -8924,6 +8962,7 @@ S9sOptions::readOptionsNode(
         { "master-delay",     required_argument, 0, OptionMasterDelay     },
         { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
+        { "virtual-router-id",   required_argument, 0, OptionVirtualRouterId },
 
         { 0, 0, 0, 0 }
     };
@@ -9269,6 +9308,12 @@ S9sOptions::readOptionsNode(
             case OptionEthInterface:
                 // --eth-interface=INTERFACE
                 m_options["eth_interface"] = optarg;
+                break;
+
+            case OptionVirtualRouterId:
+                // --virtual-router-id=ID
+                if (!setVirtualRouterId(optarg))
+                    return false;
                 break;
 
             /*
@@ -15156,6 +15201,7 @@ S9sOptions::readOptionsCluster(
         
         { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
+        { "virtual-router-id",   required_argument, 0, OptionVirtualRouterId },
 
         // Options for add cluster/node.
         { "master-delay",        required_argument, 0,  OptionMasterDelay  },
@@ -16250,7 +16296,13 @@ S9sOptions::readOptionsCluster(
                 m_options["eth_interface"] = optarg;
                 break;
 
-            case OptionLicense: 
+            case OptionVirtualRouterId:
+                // --virtual-router-id=ID
+                if (!setVirtualRouterId(optarg))
+                    return false;
+                break;
+
+            case OptionLicense:
                 // --license=STRING
                 m_options["license"] = optarg;
                 break;
