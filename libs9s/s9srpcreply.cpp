@@ -1720,8 +1720,8 @@ S9sRpcReply::printPoolControllers()
  *
  * \code
  * s9s controllers --list --controller-id="2"
- * ID HOSTNAME  POTRT STATUS ROLE  CLUSTERS
- * 2  localhost 9500  active main  1, 2, 3
+ * SID ID HOSTNAME  PORT STATUS ROLE COUNT CLUSTERS
+ * 2   2  localhost 9500 active main     3 [1, 2, 3]
  *
  * \endcode
  *
@@ -1788,10 +1788,14 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      status = w["status"].toString();
         S9sString      role;
 
-        const S9sVariantList clusterList = w["clusters"].isVariantList()
+        const bool clustersIsList = w["clusters"].isVariantList();
+        const S9sVariantList clusterList = clustersIsList
             ? w["clusters"].toVariantList() : S9sVariantList();
         S9sString count;
-        count.sprintf("%d", (int)clusterList.size());
+        if (clustersIsList)
+            count.sprintf("%d", (int)clusterList.size());
+        else
+            count = "-";
         S9sString clusters = clusterIdsSlice(clusterList, 0, 10);
         if (clusters.empty())
             clusters = w["clusters"].toString();
@@ -1857,11 +1861,15 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      port = c["port"].toString();
         S9sString      status = c["status"].toString();
 
-        const S9sVariantList clusterList = c["clusters"].isVariantList()
+        const bool clustersIsList = c["clusters"].isVariantList();
+        const S9sVariantList clusterList = clustersIsList
             ? c["clusters"].toVariantList() : S9sVariantList();
         const int total = (int)clusterList.size();
         S9sString count;
-        count.sprintf("%d", total);
+        if (clustersIsList)
+            count.sprintf("%d", total);
+        else
+            count = "-";
         S9sString clusters = clusterIdsSlice(clusterList, 0, 10);
         if (clusters.empty())
             clusters = c["clusters"].toString();
@@ -1899,7 +1907,8 @@ S9sRpcReply::printPoolControllersLong()
         {
             S9sString cont = clusterIdsSlice(clusterList, offset, 10);
             ::printf("%-*s", nColumnsWithCount, "");
-            ::printf("\033[33m%s" TERM_NORMAL "\n", STR(cont));
+            clustersFormat.printf(cont);
+            ::printf("\n");
         }
     }
 
