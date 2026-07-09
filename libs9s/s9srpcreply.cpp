@@ -1681,7 +1681,13 @@ S9sRpcReply::printCloudCredentialsLong()
    
 }
 
+// Maximum number of cluster IDs shown per row before wrapping the rest onto
+// continuation rows.
+static const int c_clusterIdsPerRow = 10;
+
 // Returns a formatted slice of up to `count` cluster IDs starting at `start`.
+// A trailing "..." is appended when more IDs follow the slice, making it clear
+// that the list continues.
 static S9sString
 clusterIdsSlice(const S9sVariantList &list, int start, int count)
 {
@@ -1697,6 +1703,8 @@ clusterIdsSlice(const S9sVariantList &list, int start, int count)
             retval += ", ";
         retval += list[i].toString();
     }
+    if (end < total)
+        retval += ", ...";
     retval += "]";
     return retval;
 }
@@ -1796,7 +1804,7 @@ S9sRpcReply::printPoolControllersLong()
             count.sprintf("%d", (int)clusterList.size());
         else
             count = "-";
-        S9sString clusters = clusterIdsSlice(clusterList, 0, 10);
+        S9sString clusters = clusterIdsSlice(clusterList, 0, c_clusterIdsPerRow);
         if (clusters.empty())
             clusters = w["clusters"].toString();
 
@@ -1870,7 +1878,7 @@ S9sRpcReply::printPoolControllersLong()
             count.sprintf("%d", total);
         else
             count = "-";
-        S9sString clusters = clusterIdsSlice(clusterList, 0, 10);
+        S9sString clusters = clusterIdsSlice(clusterList, 0, c_clusterIdsPerRow);
         if (clusters.empty())
             clusters = c["clusters"].toString();
 
@@ -1902,10 +1910,12 @@ S9sRpcReply::printPoolControllersLong()
         clustersFormat.printf(clusters);
         ::printf("\n");
 
-        // continuation rows for clusters beyond the first 10
-        for (int offset = 10; offset < total; offset += 10)
+        // continuation rows for clusters beyond the first row
+        for (int offset = c_clusterIdsPerRow; offset < total;
+                offset += c_clusterIdsPerRow)
         {
-            S9sString cont = clusterIdsSlice(clusterList, offset, 10);
+            S9sString cont = clusterIdsSlice(clusterList, offset,
+                    c_clusterIdsPerRow);
             ::printf("%-*s", nColumnsWithCount, "");
             clustersFormat.printf(cont);
             ::printf("\n");
