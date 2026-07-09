@@ -1728,8 +1728,8 @@ S9sRpcReply::printPoolControllers()
  *
  * \code
  * s9s controllers --list --controller-id="2"
- * SID ID HOSTNAME  PORT STATUS ROLE COUNT CLUSTERS
- * 2   2  localhost 9500 active main     3 [1, 2, 3]
+ * SID ID HOSTNAME  PORT STATUS ROLE COUNT/MAX CLUSTERS
+ * 2   2  localhost 9500 active main      3/10 [1, 2, 3]
  *
  * \endcode
  *
@@ -1799,20 +1799,19 @@ S9sRpcReply::printPoolControllersLong()
         const bool clustersIsList = w["clusters"].isVariantList();
         const S9sVariantList clusterList = clustersIsList
             ? w["clusters"].toVariantList() : S9sVariantList();
-        S9sString count;
-        if (clustersIsList)
-            count.sprintf("%d", (int)clusterList.size());
-        else
-            count = "-";
         S9sString clusters = clusterIdsSlice(clusterList, 0, c_clusterIdsPerRow);
         if (clusters.empty())
             clusters = w["clusters"].toString();
 
+        S9sString maxClusters = "-";
         if (w.contains("properties"))
         {
             S9sVariantMap props = w["properties"].toVariantMap();
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
+            if (props.contains("max_clusters"))
+                maxClusters = props["max_clusters"].toInt() > 0
+                    ? props["max_clusters"].toString() : S9sString("inf");
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1823,6 +1822,14 @@ S9sRpcReply::printPoolControllersLong()
         }
         else
             role = "";
+
+        // COUNT/MAX: current number of owned clusters over the configured cap
+        S9sString count;
+        if (clustersIsList)
+            count.sprintf("%d", (int)clusterList.size());
+        else
+            count = "-";
+        count += "/" + maxClusters;
 
         sidFormat.widen(sid);
         idFormat.widen(id);
@@ -1844,7 +1851,7 @@ S9sRpcReply::printPoolControllersLong()
         portFormat.printHeader("PORT");
         statusFormat.printHeader("STATUS");
         roleFormat.printHeader("ROLE");
-        countFormat.printHeader("COUNT");
+        countFormat.printHeader("COUNT/MAX");
         clustersFormat.printHeader("CLUSTERS");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
@@ -1873,22 +1880,21 @@ S9sRpcReply::printPoolControllersLong()
         const S9sVariantList clusterList = clustersIsList
             ? c["clusters"].toVariantList() : S9sVariantList();
         const int total = (int)clusterList.size();
-        S9sString count;
-        if (clustersIsList)
-            count.sprintf("%d", total);
-        else
-            count = "-";
         S9sString clusters = clusterIdsSlice(clusterList, 0, c_clusterIdsPerRow);
         if (clusters.empty())
             clusters = c["clusters"].toString();
 
         // role
         S9sString      role;
+        S9sString      maxClusters = "-";
         if (c.contains("properties"))
         {
             S9sVariantMap props = c["properties"].toVariantMap();
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
+            if (props.contains("max_clusters"))
+                maxClusters = props["max_clusters"].toInt() > 0
+                    ? props["max_clusters"].toString() : S9sString("inf");
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1899,6 +1905,14 @@ S9sRpcReply::printPoolControllersLong()
         }
         else
             role = "";
+
+        // COUNT/MAX: current number of owned clusters over the configured cap
+        S9sString count;
+        if (clustersIsList)
+            count.sprintf("%d", total);
+        else
+            count = "-";
+        count += "/" + maxClusters;
 
         sidFormat.printf(sid);
         idFormat.printf(id);
