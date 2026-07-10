@@ -105,8 +105,8 @@ add_s9s_commandline_apt() {
     wget -qO - https://build.opensuse.org/projects/home:severalnines/public_key | apt-key add -
 
     # Available distros: wheezy, jessie, precise, trusty, xenial, yakkety, zesty
-    wget -qO - http://repo.severalnines.com/s9s-tools-testing/${os_codename}/Release.key | apt-key add -
-    echo "deb http://repo.severalnines.com/s9s-tools-testing/${os_codename}/ ./" | tee /etc/apt/sources.list.d/s9s-tools.list
+    wget -qO - http://repo.s9s-dev.net/s9s-tools-testing/${os_codename}/Release.key | apt-key add -
+    echo "deb http://repo.s9s-dev.net/s9s-tools-testing/${os_codename}/ ./" | tee /etc/apt/sources.list.d/s9s-tools.list
     # update repositories
     apt -yq update -oAcquire::AllowReleaseInfoChange::Origin=true -oAcquire::AllowReleaseInfoChange::Label=true
 }
@@ -132,9 +132,9 @@ add_s9s_commandline_yum() {
 [s9s-tools]
 name=s9s-tools (${REPO})
 type=rpm-md
-baseurl=http://repo.severalnines.com/s9s-tools-testing/${REPO}
+baseurl=http://repo.s9s-dev.net/s9s-tools-testing/${REPO}
 gpgcheck=1
-gpgkey=http://repo.severalnines.com/s9s-tools-testing/${REPO}/repodata/repomd.xml.key
+gpgkey=http://repo.s9s-dev.net/s9s-tools-testing/${REPO}/repodata/repomd.xml.key
 enabled=1
 EOF
         log_msg "=> Added ${repo_source_file}"
@@ -152,21 +152,21 @@ add_s9s_commandline_zypper() {
 [s9s-tools]
 name=s9s-tools (Suse ${distversion})
 type=rpm-md
-baseurl=http://repo.severalnines.com/s9s-tools-testing/${distversion}
+baseurl=http://repo.s9s-dev.net/s9s-tools-testing/${distversion}
 gpgcheck=1
-gpgkey=http://repo.severalnines.com/s9s-tools-testing/${distversion}/repodata/repomd.xml.key
+gpgkey=http://repo.s9s-dev.net/s9s-tools-testing/${distversion}/repodata/repomd.xml.key
 enabled=1
 EOF
     # make sure curl or wget is available
     command -v curl || zypper -n install --no-confirm curl || command -v wget || zypper -n install --no-confirm wget
     if command -v curl; then
-        curl "http://repo.severalnines.com/s9s-tools-testing/${distversion}/repodata/repomd.xml.key" -o/tmp/s9s-tools.asc
+        curl "http://repo.s9s-dev.net/s9s-tools-testing/${distversion}/repodata/repomd.xml.key" -o/tmp/s9s-tools.asc
         rpm --import /tmp/s9s-tools.asc
     elif command -v wget; then
-        wget "http://repo.severalnines.com/s9s-tools-testing/${distversion}/repodata/repomd.xml.key" -O/tmp/s9s-tools.asc
+        wget "http://repo.s9s-dev.net/s9s-tools-testing/${distversion}/repodata/repomd.xml.key" -O/tmp/s9s-tools.asc
         rpm --import /tmp/s9s-tools.asc
     else
-        rpm --import "http://repo.severalnines.com/s9s-tools-testing/${distversion}/repodata/repomd.xml.key"
+        rpm --import "http://repo.s9s-dev.net/s9s-tools-testing/${distversion}/repodata/repomd.xml.key"
     fi
     zypper -n addrepo --refresh ${repo_source_file}
     log_msg "=> Added ${repo_source_file}"
