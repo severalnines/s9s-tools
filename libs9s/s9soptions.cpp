@@ -5490,7 +5490,7 @@ S9sOptions::isUpdateCmon() const
 bool
 S9sOptions::isSetMaxClustersCapacityRequested() const
 {
-    return getBool("set_max_clusters_capacity");
+    return m_options.contains("max_clusters_capacity");
 }
 
 int
@@ -19871,7 +19871,6 @@ S9sOptions::readOptionsControllers(
                 // --set-max-clusters-capacity=N
                 if (optarg)
                 {
-                    m_options["set_max_clusters_capacity"] = true;
                     m_options["max_clusters_capacity"] = optarg;
                 }
                 else
