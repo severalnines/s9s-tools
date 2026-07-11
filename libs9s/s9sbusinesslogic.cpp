@@ -1537,6 +1537,18 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
+        else if (options->isSetMaxClustersCapacityRequested())
+        {
+            client.setMaxClustersCapacity(options);
+            S9sRpcReply reply = client.reply();
+            if (!reply.isOk()) {
+                PRINT_ERROR("Failed to set max clusters capacity: %s", STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                ::printf("Max clusters capacity set to %d.\n", options->getMaxClustersCapacity());
+            }
+        }
         else
             PRINT_ERROR("Unknown controllers operation.");
     }

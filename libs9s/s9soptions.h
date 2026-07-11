@@ -542,6 +542,8 @@ class S9sOptions
         bool isStopController() const;
         bool isRemoveController() const;
         bool isUpdateCmon() const;
+        bool isSetMaxClustersCapacityRequested() const;
+        int  getMaxClustersCapacity() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;

@@ -372,6 +372,7 @@ class S9sRpcClient
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);
         bool updateCmon(S9sOptions *options);
+        bool setMaxClustersCapacity(S9sOptions *options);
 
         /*
          * Requests related to logical replication
