@@ -13784,9 +13784,10 @@ S9sRpcClient::setMaxClustersCapacity(S9sOptions *options)
     request["operation"] = "setmaxclusterscapacity";
 
     const int capacity = options->getMaxClustersCapacity();
-    if (capacity < 0)
+    if (capacity < -2)
     {
-        PRINT_ERROR("The --set-max-clusters-capacity option requires a non-negative integer value.");
+        PRINT_ERROR("The --set-max-clusters-capacity option requires an integer >= -2 "
+                    "(-2 = auto, -1 = unlimited, 0 = inactive, >0 = cap).");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
