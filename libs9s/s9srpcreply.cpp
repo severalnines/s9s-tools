@@ -1790,7 +1790,8 @@ S9sRpcReply::printPoolControllersLong()
                     status == "stopped" ||
                     status == "starting" ||
                     status == "active" ||
-                    status == "standalone";
+                    status == "standalone" ||
+                    status == "inactive";
             if (printAll || isDynamic)
                 filtered << w;
         }
