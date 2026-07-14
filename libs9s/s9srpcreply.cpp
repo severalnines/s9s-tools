@@ -1826,8 +1826,9 @@ S9sRpcReply::printPoolControllersLong()
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
             if (props.contains("max_clusters"))
-                maxClusters = props["max_clusters"].toInt() > 0
-                    ? props["max_clusters"].toString() : S9sString("inf");
+                maxClusters = props["max_clusters"].toInt() < 0
+                    ? S9sString("inf")            // -1 = unlimited
+                    : props["max_clusters"].toString();  // 0 = inactive, >0 = cap
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1909,8 +1910,9 @@ S9sRpcReply::printPoolControllersLong()
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
             if (props.contains("max_clusters"))
-                maxClusters = props["max_clusters"].toInt() > 0
-                    ? props["max_clusters"].toString() : S9sString("inf");
+                maxClusters = props["max_clusters"].toInt() < 0
+                    ? S9sString("inf")            // -1 = unlimited
+                    : props["max_clusters"].toString();  // 0 = inactive, >0 = cap
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
