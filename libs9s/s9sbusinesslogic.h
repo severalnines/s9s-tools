@@ -94,6 +94,7 @@ class S9sBusinessLogic
         void executeBinlogBackupList(S9sRpcClient &client);
 
         void executeJobList(S9sRpcClient &client);
+        void executeJobStuckList(S9sRpcClient &client);
         void executeLogList(S9sRpcClient &client);
         void executeJobLog(S9sRpcClient &client);
 

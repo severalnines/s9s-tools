@@ -38,6 +38,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testReadOptions05();
         bool testReadOptions06();
         bool testReadOptions07();
+        bool testJobStuck();
         bool testSetNodes();
         bool testPerconaProCluster();
         bool testPostgreSqlReplication();
