@@ -1776,6 +1776,18 @@ S9sRpcReply::printPoolControllersLong()
 
     countFormat.setRightJustify();
 
+    // A controller participates in the dynamic cluster pool only in these
+    // states. Static controllers (e.g. 'nfs_member') do not own pool clusters,
+    // so their COUNT/MAX and CLUSTERS columns are rendered as '-'.
+    auto isDynamicStatus = [](const S9sString &status) -> bool
+    {
+        return status == "stopped"    ||
+               status == "starting"   ||
+               status == "active"     ||
+               status == "standalone" ||
+               status == "inactive";
+    };
+
     // Filter controllers depending on requested output mode (only for list operation)
     const bool printAll = options->isPrintDeploymentInfoRequested();
     const bool isListOperation = contains("controllers");
@@ -1785,13 +1797,7 @@ S9sRpcReply::printPoolControllersLong()
         for (const auto & c : controllers)
         {
             S9sVariantMap  w = c.toVariantMap();
-            S9sString      status = w["status"].toString();
-            const bool isDynamic =
-                    status == "stopped" ||
-                    status == "starting" ||
-                    status == "active" ||
-                    status == "standalone";
-            if (printAll || isDynamic)
+            if (printAll || isDynamicStatus(w["status"].toString()))
                 filtered << w;
         }
     }
@@ -1825,8 +1831,9 @@ S9sRpcReply::printPoolControllersLong()
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
             if (props.contains("max_clusters"))
-                maxClusters = props["max_clusters"].toInt() > 0
-                    ? props["max_clusters"].toString() : S9sString("inf");
+                maxClusters = props["max_clusters"].toInt() < 0
+                    ? S9sString("inf")            // -1 = unlimited
+                    : props["max_clusters"].toString();  // 0 = inactive, >0 = cap
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1845,6 +1852,13 @@ S9sRpcReply::printPoolControllersLong()
         else
             count = "-";
         count += "/" + maxClusters;
+
+        // Static controllers do not own pool clusters: blank these columns.
+        if (!isDynamicStatus(status))
+        {
+            count = "-";
+            clusters = "-";
+        }
 
         sidFormat.widen(sid);
         idFormat.widen(id);
@@ -1908,8 +1922,9 @@ S9sRpcReply::printPoolControllersLong()
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
             if (props.contains("max_clusters"))
-                maxClusters = props["max_clusters"].toInt() > 0
-                    ? props["max_clusters"].toString() : S9sString("inf");
+                maxClusters = props["max_clusters"].toInt() < 0
+                    ? S9sString("inf")            // -1 = unlimited
+                    : props["max_clusters"].toString();  // 0 = inactive, >0 = cap
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1929,6 +1944,14 @@ S9sRpcReply::printPoolControllersLong()
             count = "-";
         count += "/" + maxClusters;
 
+        // Static controllers do not own pool clusters: blank these columns.
+        const bool isDynamic = isDynamicStatus(status);
+        if (!isDynamic)
+        {
+            count = "-";
+            clusters = "-";
+        }
+
         sidFormat.printf(sid);
         idFormat.printf(id);
         hostnameFormat.printf(hostname);
@@ -1940,7 +1963,7 @@ S9sRpcReply::printPoolControllersLong()
         ::printf("\n");
 
         // continuation rows for clusters beyond the first row
-        for (int offset = c_clusterIdsPerRow; offset < total;
+        for (int offset = c_clusterIdsPerRow; isDynamic && offset < total;
                 offset += c_clusterIdsPerRow)
         {
             S9sString cont = clusterIdsSlice(clusterList, offset,

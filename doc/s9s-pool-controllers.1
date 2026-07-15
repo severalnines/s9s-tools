@@ -109,6 +109,33 @@ Updates the cmon package on a controller instance. The '--controller-id' option 
 .nf
 s9s pool-controllers --update-cmon --controller-id=2
 .fi
+
+.TP
+.BI \-\^\-set-max-clusters-capacity=N
+Sets how many clusters the controller receiving the request can own. Sentinels:
+.B -2
+= auto (RAM-based),
+.B -1
+= unlimited,
+.B 0
+= inactive (own no clusters: abandon all, acquire none, report the 'inactive' status),
+.B >0
+= explicit cap. Requires admin privileges. Add '--force' when the value would drop
+currently-owned clusters (a cap below the owned count, or 0 to go inactive); the pool
+thread abandons the affected clusters on its next cycle and peers reclaim them.
+.nf
+s9s pool-controllers --set-max-clusters-capacity=40
+Max clusters capacity set to 40.
+.fi
+.PP
+This change is
+.B dynamic and does NOT survive a cmon restart:
+it is applied to the running controller in memory only. On restart the controller
+reverts to the configured 'controllers_pool_max_clusters' value (or its RAM-derived
+auto default when that key is unset). For a
+.B persistent
+value, set 'controllers_pool_max_clusters' in cmon.cnf (see cmon-pool(5)).
+
 .\"
 .\" Arguments related to list operations
 .\"
