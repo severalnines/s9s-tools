@@ -1055,6 +1055,72 @@ UtS9sRpcClient::testCreateCluster04()
             payload.valueByPath(JOB_DATA "version").toString(),
             "myversion");
 
+    // Test hba_preset is passed when pghba_preset option is set.
+    {
+        options->m_options["pghba_preset"] = "my_hba_preset.conf";
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "hba_preset").toString(),
+                "my_hba_preset.conf");
+
+        options->m_options.erase("pghba_preset");
+    }
+
+    // Test save_as_hba_preset and hba_preset_name are passed when set.
+    {
+        S9sVariantMap rule;
+        S9sVariantList rules;
+
+        rule["type"]     = "host";
+        rule["database"] = "all";
+        rule["user"]     = "save_preset_user";
+        rule["address"]  = "192.0.2.0/24";
+        rule["method"]   = "md5";
+        rules << rule;
+        options->m_options["pghba_rules"]        = rules;
+        options->m_options["save_as_hba_preset"] = true;
+        options->m_options["hba_preset_name"]    = "viafirma";
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "save_as_hba_preset").toBoolean(),
+                true);
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "hba_preset_name").toString(),
+                "viafirma");
+
+        options->m_options.erase("pghba_rules");
+        options->m_options.erase("save_as_hba_preset");
+        options->m_options.erase("hba_preset_name");
+    }
+
+    // Test extra_hba_rules is passed when pghba_rules option is set.
+    {
+        S9S_VERIFY(options->appendPgHbaRules("host all viafirma 192.168.201.0/24 md5"));
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9sVariantList hbaRules =
+            payload.valueByPath(JOB_DATA "extra_hba_rules").toVariantList();
+        S9S_COMPARE(hbaRules.size(), 1);
+        S9sVariantMap firstRule = hbaRules[0].toVariantMap();
+        S9S_COMPARE(firstRule["type"].toString(),    "host");
+        S9S_COMPARE(firstRule["user"].toString(),    "viafirma");
+        S9S_COMPARE(firstRule["address"].toString(), "192.168.201.0/24");
+        S9S_COMPARE(firstRule["method"].toString(),  "md5");
+
+        options->m_options.erase("pghba_rules");
+    }
+
     return true;
 }
 

@@ -75,4 +75,5 @@ debian/s9s-tools.substvars
 debian/s9s-tools/
 debian/tmp/
 .idea/
+.claude/
 
