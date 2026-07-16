@@ -711,6 +711,7 @@ class S9sOptions
         bool isCloneRequested() const;
         bool isFailRequested() const;
         bool isSuccessRequested() const;
+        bool isStuckRequested() const;
         bool isEnableRequested() const;
         bool isSetGroupRequested() const;
         bool isAddToGroupRequested() const;

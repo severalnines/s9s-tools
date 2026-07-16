@@ -899,6 +899,9 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeJobList(client);
+        } else if (options->isStuckRequested())
+        {
+            executeJobStuckList(client);
         } else if (options->isFailRequested())
         {
             success = client.createFailJob();
@@ -2360,10 +2363,47 @@ S9sBusinessLogic::executeJobList(
         }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
-    } 
+    }
 }
 
-void 
+/**
+ * \param client A client for the communication.
+ *
+ * Executes the --stuck operation on the jobs, listing the jobs currently
+ * running longer than their command class's configured stuck-job
+ * threshold.
+ */
+void
+S9sBusinessLogic::executeJobStuckList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options     = S9sOptions::instance();
+    int          clusterId   = options->clusterId();
+    S9sString    clusterName = options->clusterName();
+    S9sRpcReply  reply;
+    bool         success;
+
+    success = client.getStuckJobs(clusterName, clusterId);
+
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printStuckJobList();
+        } else {
+            if (options->isJsonRequested())
+                reply.printJsonFormat();
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
 S9sBusinessLogic::executeLogList(
         S9sRpcClient &client)
 {

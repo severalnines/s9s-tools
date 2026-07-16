@@ -55,6 +55,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions05, retval);
     PERFORM_TEST(testReadOptions06, retval);
     PERFORM_TEST(testReadOptions07, retval);
+    PERFORM_TEST(testJobStuck,      retval);
     PERFORM_TEST(testSetNodes,      retval);
     PERFORM_TEST(testPerconaProCluster, retval);
     PERFORM_TEST(testPostgreSqlReplication, retval);
@@ -423,6 +424,56 @@ UtS9sOptions::testReadOptions07()
 
     S9sOptions::uninit();
 #endif
+    return true;
+}
+
+/**
+ * Checking that "job --stuck" is recognized as its own main option (not
+ * requiring --list), and that it's mutually exclusive with --list.
+ */
+bool
+UtS9sOptions::testJobStuck()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        success;
+
+    {
+        const char *argv[] =
+        {
+            "/bin/s9s", "job", "--stuck", "--controller=localhost:9555",
+            "--cluster-id=1",
+            NULL
+        };
+        int argc = sizeof(argv) / sizeof(char *) - 1;
+
+        success = options->readOptions(&argc, (char**)argv);
+        S9S_VERIFY(success);
+
+        S9S_COMPARE(options->m_operationMode, S9sOptions::Job);
+        S9S_VERIFY(options->isStuckRequested());
+        S9S_VERIFY(!options->isListRequested());
+        S9S_COMPARE(options->clusterId(), 1);
+
+        S9sOptions::uninit();
+    }
+
+    {
+        // --stuck and --list are mutually exclusive main options.
+        options = S9sOptions::instance();
+        const char *argv[] =
+        {
+            "/bin/s9s", "job", "--stuck", "--list",
+            "--controller=localhost:9555",
+            NULL
+        };
+        int argc = sizeof(argv) / sizeof(char *) - 1;
+
+        success = options->readOptions(&argc, (char**)argv);
+        S9S_VERIFY(!success);
+
+        S9sOptions::uninit();
+    }
+
     return true;
 }
 

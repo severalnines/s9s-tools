@@ -1539,6 +1539,39 @@ S9sRpcClient::getJobInstances(
 }
 
 /**
+ * \param clusterId the ID of the cluster for which stuck jobs will be
+ *   fetched, or 0 for every cluster the authenticated user has read access
+ *   to.
+ * \returns true if the request sent and a return is received (even if the
+ *   reply is an error message).
+ *
+ * Sends a "getStuckJobs" request, receives the reply. We use this RPC call
+ * to get the jobs currently running longer than their command class's
+ * configured stuck-job threshold (e.g. s9s job --stuck).
+ */
+bool
+S9sRpcClient::getStuckJobs(
+        const S9sString  &clusterName,
+        const int         clusterId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getStuckJobs";
+
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId) ||
+        clusterId == 0)
+        request["cluster_id"] = clusterId;
+
+    if (!clusterName.empty())
+        request["cluster_name"] = clusterName;
+
+    retval = executeRequest(uri, request, false);
+    return retval;
+}
+
+/**
  * \param jobId the ID of the job
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
