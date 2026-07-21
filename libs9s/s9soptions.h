@@ -559,6 +559,9 @@ class S9sOptions
         S9sString title() const;
         S9sString jobTitle() const;
         S9sString testServer() const;
+        S9sString backupFailoverHost() const;
+        S9sString backupMysqldumpType() const;
+        bool extendedInsert() const;
 
         S9sString emailAddress() const;
 
