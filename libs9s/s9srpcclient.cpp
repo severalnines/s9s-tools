@@ -8125,6 +8125,9 @@ S9sRpcClient::dropCluster()
     if (options->hasRemoveBackupsOption())
         jobData["remove_backups"]  = options->removeBackups() ? "true" : "false";
 
+    if (options->hasRemoveCertificatesOption())
+        jobData["remove_certificates"] = options->removeCertificates();
+
     // Well, this is not going to work.
     if (options->hasClusterNameOption())
         jobData["cluster_name"] = options->clusterName();

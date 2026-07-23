@@ -211,6 +211,7 @@ enum S9sOptionType
     OptionUninstall,
     OptionUnregisterOnly,
     OptionRemoveBackups,
+    OptionRemoveCertificates,
     OptionUuid,
     OptionDateFormat,
     OptionFullUuid,
@@ -2597,6 +2598,22 @@ bool
 S9sOptions::hasRemoveBackupsOption() const
 {
     return m_options.contains("remove_backups");
+}
+
+/**
+ * \returns true if the --remove-certificates command line option was
+ *   provided.
+ */
+bool
+S9sOptions::hasRemoveCertificatesOption() const
+{
+    return m_options.contains("remove_certificates");
+}
+
+bool
+S9sOptions::removeCertificates() const
+{
+    return getBool("remove_certificates");
 }
 
 bool
@@ -15342,6 +15359,7 @@ S9sOptions::readOptionsCluster(
         { "uninstall",           no_argument,       0,  OptionUninstall     },
         { "unregister-only",     no_argument,       0,  OptionUnregisterOnly },
         { "remove-backups",      required_argument, 0,  OptionRemoveBackups },
+        { "remove-certificates", no_argument,       0,  OptionRemoveCertificates },
 
         // Options for mssql
         { "license",     required_argument, 0, OptionLicense     },
@@ -16415,6 +16433,11 @@ S9sOptions::readOptionsCluster(
             case OptionRemoveBackups:
                 // --remove-backups
                 m_options["remove_backups"] = optarg;
+                break;
+
+            case OptionRemoveCertificates:
+                // --remove-certificates
+                m_options["remove_certificates"] = true;
                 break;
 
 
