@@ -252,6 +252,8 @@ class S9sOptions
 
         bool removeBackups() const;
         bool hasRemoveBackupsOption() const;
+        bool removeCertificates() const;
+        bool hasRemoveCertificatesOption() const;
 
         bool forceOption() const;
         bool hasForceOption() const;

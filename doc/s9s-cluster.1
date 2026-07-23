@@ -354,13 +354,29 @@ s9s cluster \\
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
 
+Without \fB\-\-force\fR the first failing removal step (stopping the cluster
+management, deleting the backups) fails the job and the cleanup stops there.
+The removal can be repeated any time \(em also for a cluster whose metadata
+was only partially removed by an earlier, interrupted attempt \(em until all
+metadata is gone.
+
+With \fB\-\-force\fR a failing step is reported as a warning in the job log
+and the cleanup continues. If the cluster management cannot be stopped, the
+cluster configuration file is archived right away \(em so the cluster cannot
+come back after a controller restart \(em and the removal is re\-attempted
+automatically a few times by the job retry mechanism.
+
+With \fB\-\-remove\-certificates\fR the certificate files the controller
+generated for the cluster are deleted; by default they are archived so they
+can still be used to access the cluster outside of ClusterControl.
+
 .B EXAMPLE
 .nf
 s9s cluster \\
     --drop \\
     --cluster-id=1 \\
     --remove-backups=true \\
-    --wait 
+    --wait
 .fi
 
 .TP 
