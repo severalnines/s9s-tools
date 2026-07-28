@@ -367,8 +367,9 @@ come back after a controller restart \(em and the removal is re\-attempted
 automatically a few times by the job retry mechanism.
 
 With \fB\-\-remove\-certificates\fR the certificate files the controller
-generated for the cluster are deleted; by default they are archived so they
-can still be used to access the cluster outside of ClusterControl.
+generated for the cluster are deleted; by default they are kept untouched so
+they can still be used to access the cluster outside of ClusterControl and a
+later re\-import of the cluster keeps working with them.
 
 .B EXAMPLE
 .nf
