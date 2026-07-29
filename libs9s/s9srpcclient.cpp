@@ -13698,7 +13698,7 @@ S9sRpcClient::registerRedisOrValkeyShardedCluster(
     else
     {
         S9sString clusterName = isValkeyCluster ? "valkey" : "redis";
-        PRINT_ERROR("%s sharded cluster requires '--%s-sharded-port' option",
+        PRINT_ERROR("%s sharded cluster requires '--%s-port' option",
                     STR(clusterName),
                     STR(clusterName));
         return false;
