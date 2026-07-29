@@ -484,10 +484,22 @@ S9sRpcReply::printClusterInfoCacheStatistics()
         printf("  %-30s %s%llu%s\n", 
             "Total Refreshes:", 
             numberBegin, stats["total_refreshes"].toULongLong(), numberEnd);
-        printf("  %-30s %s%d%s seconds\n", 
-            "Refresh Interval:", 
+        printf("  %-30s %s%d%s seconds\n",
+            "Refresh Interval:",
             numberBegin, stats["refresh_interval_seconds"].toInt(), numberEnd);
-        
+        if (stats.contains("min_refresh_interval_seconds"))
+        {
+            printf("  %-30s %s%d%s seconds\n",
+                "Min Refresh Interval:",
+                numberBegin, stats["min_refresh_interval_seconds"].toInt(), numberEnd);
+        }
+        if (stats.contains("max_refresh_interval_seconds"))
+        {
+            printf("  %-30s %s%d%s seconds\n",
+                "Max Refresh Interval:",
+                numberBegin, stats["max_refresh_interval_seconds"].toInt(), numberEnd);
+        }
+
         if (stats.contains("hit_rate_percent"))
         {
             printf("  %-30s %s%.2f%%%s\n", 
