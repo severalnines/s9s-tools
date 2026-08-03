@@ -12644,6 +12644,26 @@ S9sOptions::checkOptionsBackup()
     }
 
     /*
+     * The --cluster-id is misleading with --restore-cluster-info: the
+     * cluster ID is stored in the archive itself, and passing --cluster-id
+     * either targets a cluster that is not registered yet (so the controller
+     * rejects it before even reading the archive) or a cluster that is
+     * already registered (so the restore fails trying to re-add hosts that
+     * are "already part of some other cluster"). There is no state in which
+     * the option has a valid effect.
+     */
+    if (isRestoreClusterRequested() && hasClusterIdOption())
+    {
+        m_errorMessage =
+            "The --cluster-id option can not be used with "
+            "--restore-cluster-info, the cluster ID is read from the "
+            "archive given in --input-file.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
      * Using the --databases is missleading when not creating new backup: the
      * user might think it is possible to restore one database of an archive.
      */
