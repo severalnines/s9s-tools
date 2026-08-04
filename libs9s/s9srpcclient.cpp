@@ -5957,12 +5957,35 @@ S9sRpcClient::addPgBackRest(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setup";
-    jobData["nodes"]    = nodesField(nodes);        
+    jobData["nodes"]    = nodesField(nodes);
+
+    // CLUS-7060: forward the S3 backup-repository options so the controller
+    // configures pgBackRest to use an S3 (object store) repository instead of
+    // a local posix path. The referenced credential (credential-id) carries
+    // the S3 endpoint, access key and secret.
+    {
+        S9sOptions   *options = S9sOptions::instance();
+        S9sString     cloudProvider = options->cloudProvider();
+
+        if (!cloudProvider.empty())
+        {
+            jobData["cloud_provider"] = cloudProvider;
+
+            if (options->cloudOnly())
+                jobData["cloud_only"] = true;
+            if (!options->s3bucket().empty())
+                jobData["s3_bucket"] = options->s3bucket();
+            if (!options->s3region().empty())
+                jobData["s3_region"] = options->s3region();
+            if (options->hasCredentialIdOption())
+                jobData["credential_id"] = options->credentialId();
+        }
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
     jobSpec["job_data"]   = jobData;
-    
+
     // The job instance describing how the job will be executed.
     job["title"]          = "Add PgBackRest to Cluster";
     job["job_spec"]       = jobSpec;

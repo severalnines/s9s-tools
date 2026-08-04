@@ -4085,21 +4085,31 @@ S9sOptions::comment() const
 }
 
 /**
- * \returns The argument for the --use-ssl option
+ * \returns The argument for the --s3-use-ssl option
+ *
+ * CLUS-7060: the cloud-credentials option parser stores this flag under the
+ * "s3_use_ssl" key (see readOptionsCloudCredentials), so read that key here —
+ * otherwise --s3-use-ssl would never reach the stored credential.
  */
 bool
 S9sOptions::hasUseSsl() const
 {
-    return m_options.contains("use_ssl");
+    return m_options.contains("s3_use_ssl") || m_options.contains("use_ssl");
 }
 
 /**
- * \returns The argument for the --insecure-ssl option
+ * \returns The argument for the --s3-insecure-ssl option
+ *
+ * CLUS-7060: the cloud-credentials option parser stores this flag under the
+ * "s3_insecure_ssl" key, so read that key here — otherwise --s3-insecure-ssl
+ * would never reach the stored credential and TLS verification could not be
+ * turned off.
  */
 bool
 S9sOptions::hasInsecureSsl() const
 {
-    return m_options.contains("insecure_ssl");
+    return m_options.contains("s3_insecure_ssl") ||
+           m_options.contains("insecure_ssl");
 }
 
 /**
@@ -15305,8 +15315,13 @@ S9sOptions::readOptionsCluster(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "credential-id",    required_argument, 0, OptionCredentialId    },
+        // CLUS-7060: S3 backup repository options for PgBackRest add-node.
+        { "cloud-provider",   required_argument, 0, OptionCloudProvider   },
+        { "cloud-only",       no_argument,       0, OptionOnlyCloud       },
+        { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
+        { "s3-region",        required_argument, 0, OptionS3Region        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
-        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "generate-key",     no_argument,       0, 'g'                   },
         { "image",            required_argument, 0, OptionImage           },
         { "image-os-user",    required_argument, 0, OptionImageOsUser     },
            { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
@@ -16158,10 +16173,30 @@ S9sOptions::readOptionsCluster(
                 // --containers=LIST
                 setContainers(optarg);
                 break;
-            
+
             case OptionCredentialId:
                 // --credential-id=ID
                 m_options["credential_id"] = optarg;
+                break;
+
+            case OptionCloudProvider:
+                // --cloud-provider=NAME  (CLUS-7060: PgBackRest S3 repo)
+                m_options["cloud_provider"] = optarg;
+                break;
+
+            case OptionOnlyCloud:
+                // --cloud-only  (CLUS-7060: PgBackRest S3 repo)
+                m_options["cloud_only"] = true;
+                break;
+
+            case OptionS3Bucket:
+                // --s3-bucket=NAME  (CLUS-7060: PgBackRest S3 repo)
+                m_options["s3_bucket"] = optarg;
+                break;
+
+            case OptionS3Region:
+                // --s3-region=STRING  (CLUS-7060: PgBackRest S3 repo)
+                m_options["s3_region"] = optarg;
                 break;
 
             case OptionFirewalls:
