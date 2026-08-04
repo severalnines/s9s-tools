@@ -5959,26 +5959,20 @@ S9sRpcClient::addPgBackRest(
     jobData["action"]   = "setup";
     jobData["nodes"]    = nodesField(nodes);
 
-    // CLUS-7060: forward the S3 backup-repository options so the controller
-    // configures pgBackRest to use an S3 (object store) repository instead of
-    // a local posix path. The referenced credential (credential-id) carries
-    // the S3 endpoint, access key and secret.
+    // CLUS-7060: an S3 (object store) backup repository is requested by
+    // referencing a registered cloud credential by id. The controller fetches
+    // the credential (endpoint, region, access key/secret, ssl) from its own
+    // credential store; the only value not held by the credential is the
+    // bucket, so that is passed alongside. No S3-specific credential options
+    // are re-typed here — this mirrors the snapshot-repository convention.
     {
-        S9sOptions   *options = S9sOptions::instance();
-        S9sString     cloudProvider = options->cloudProvider();
+        S9sOptions *options = S9sOptions::instance();
 
-        if (!cloudProvider.empty())
+        if (options->hasCredentialIdOption())
         {
-            jobData["cloud_provider"] = cloudProvider;
-
-            if (options->cloudOnly())
-                jobData["cloud_only"] = true;
+            jobData["credential_id"] = options->credentialId();
             if (!options->s3bucket().empty())
                 jobData["s3_bucket"] = options->s3bucket();
-            if (!options->s3region().empty())
-                jobData["s3_region"] = options->s3region();
-            if (options->hasCredentialIdOption())
-                jobData["credential_id"] = options->credentialId();
         }
     }
 
