@@ -15,6 +15,10 @@ s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
     data collection instead of using cached information.
   * CLUS-6878: Added --refresh option to replication command to bypass
     cluster info cache and get live data.
+  * CLUS-7060: Added --credential-id and --s3-bucket options to the cluster
+    command so PgBackRest can use an S3 (object store) backup repository
+    referenced by a registered cloud credential, on add-node, reconfigure
+    and reinstall.
 
  -- Peter Csaszar <peter@severalnines.com>  Tue, 13 Jan 2026 15:21:55 +0100
 
