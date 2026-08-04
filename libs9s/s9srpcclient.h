@@ -708,6 +708,11 @@ class S9sRpcClient
         bool addPgBackRest(
                 const S9sVariantList &hosts);
 
+        // CLUS-7060: add the S3 backup-repository reference (cloud credential id
+        // + bucket) to a pgbackrest setup/reconfigure/reinstall job_data.
+        static void addPgBackRestS3RepoToJobData(
+                S9sVariantMap &jobData);
+
         bool addPBMAgent(
                 const S9sVariantList &hosts);
 

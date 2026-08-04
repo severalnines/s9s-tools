@@ -5926,6 +5926,28 @@ S9sRpcClient::addKeepalived(
 }
 
 /**
+ * CLUS-7060: An S3 (object store) backup repository is referenced by a
+ * registered cloud credential id; only the bucket is passed alongside (the
+ * credential has no bucket). Shared by the pgbackrest setup, reconfigure and
+ * reinstall job builders. When no credential id is given nothing is added, so
+ * reconfigure/reinstall keep the repository configuration stored at install
+ * time.
+ */
+void
+S9sRpcClient::addPgBackRestS3RepoToJobData(
+        S9sVariantMap &jobData)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->hasCredentialIdOption())
+    {
+        jobData["credential_id"] = options->credentialId();
+        if (!options->s3bucket().empty())
+            jobData["s3_bucket"] = options->s3bucket();
+    }
+}
+
+/**
  * \param clusterId The ID of the cluster.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
@@ -5959,18 +5981,7 @@ S9sRpcClient::addPgBackRest(
     jobData["action"]   = "setup";
     jobData["nodes"]    = nodesField(nodes);
 
-    // An S3 backup repository is referenced by a registered cloud credential
-    // id; only the bucket is passed alongside (the credential has no bucket).
-    {
-        S9sOptions *options = S9sOptions::instance();
-
-        if (options->hasCredentialIdOption())
-        {
-            jobData["credential_id"] = options->credentialId();
-            if (!options->s3bucket().empty())
-                jobData["s3_bucket"] = options->s3bucket();
-        }
-    }
+    addPgBackRestS3RepoToJobData(jobData);
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
@@ -6759,18 +6770,7 @@ S9sRpcClient::reconfigurePgBackRest(
     jobData["action"]   = "reconfigure";
     jobData["nodes"]    = nodesField(nodes);
 
-    // (Re)point the repository to an S3 bucket by cloud credential id; when no
-    // credential id is given the current repository configuration is kept.
-    {
-        S9sOptions *options = S9sOptions::instance();
-
-        if (options->hasCredentialIdOption())
-        {
-            jobData["credential_id"] = options->credentialId();
-            if (!options->s3bucket().empty())
-                jobData["s3_bucket"] = options->s3bucket();
-        }
-    }
+    addPgBackRestS3RepoToJobData(jobData);
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
@@ -6925,18 +6925,7 @@ S9sRpcClient::reinstallPgBackRest(
     jobData["action"]   = "reinstall";
     jobData["nodes"]    = nodesField(nodes);
 
-    // (Re)point the repository to an S3 bucket by cloud credential id; when no
-    // credential id is given the current repository configuration is kept.
-    {
-        S9sOptions *options = S9sOptions::instance();
-
-        if (options->hasCredentialIdOption())
-        {
-            jobData["credential_id"] = options->credentialId();
-            if (!options->s3bucket().empty())
-                jobData["s3_bucket"] = options->s3bucket();
-        }
-    }
+    addPgBackRestS3RepoToJobData(jobData);
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
