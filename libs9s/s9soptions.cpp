@@ -15305,9 +15305,6 @@ S9sOptions::readOptionsCluster(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "credential-id",    required_argument, 0, OptionCredentialId    },
-        // CLUS-7060: the S3 backup repository for a PgBackRest add-node is
-        // referenced by a registered cloud credential (--credential-id, already
-        // above). The only value the credential does not carry is the bucket.
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   },
@@ -16169,7 +16166,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionS3Bucket:
-                // --s3-bucket=NAME  (CLUS-7060: PgBackRest S3 repo bucket)
+                // --s3-bucket=NAME
                 m_options["s3_bucket"] = optarg;
                 break;
 

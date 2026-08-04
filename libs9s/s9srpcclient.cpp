@@ -5959,12 +5959,8 @@ S9sRpcClient::addPgBackRest(
     jobData["action"]   = "setup";
     jobData["nodes"]    = nodesField(nodes);
 
-    // CLUS-7060: an S3 (object store) backup repository is requested by
-    // referencing a registered cloud credential by id. The controller fetches
-    // the credential (endpoint, region, access key/secret, ssl) from its own
-    // credential store; the only value not held by the credential is the
-    // bucket, so that is passed alongside. No S3-specific credential options
-    // are re-typed here — this mirrors the snapshot-repository convention.
+    // An S3 backup repository is referenced by a registered cloud credential
+    // id; only the bucket is passed alongside (the credential has no bucket).
     {
         S9sOptions *options = S9sOptions::instance();
 
@@ -6763,6 +6759,19 @@ S9sRpcClient::reconfigurePgBackRest(
     jobData["action"]   = "reconfigure";
     jobData["nodes"]    = nodesField(nodes);
 
+    // (Re)point the repository to an S3 bucket by cloud credential id; when no
+    // credential id is given the current repository configuration is kept.
+    {
+        S9sOptions *options = S9sOptions::instance();
+
+        if (options->hasCredentialIdOption())
+        {
+            jobData["credential_id"] = options->credentialId();
+            if (!options->s3bucket().empty())
+                jobData["s3_bucket"] = options->s3bucket();
+        }
+    }
+
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
     jobSpec["job_data"]   = jobData;
@@ -6915,6 +6924,19 @@ S9sRpcClient::reinstallPgBackRest(
     // The job_data describing the cluster.
     jobData["action"]   = "reinstall";
     jobData["nodes"]    = nodesField(nodes);
+
+    // (Re)point the repository to an S3 bucket by cloud credential id; when no
+    // credential id is given the current repository configuration is kept.
+    {
+        S9sOptions *options = S9sOptions::instance();
+
+        if (options->hasCredentialIdOption())
+        {
+            jobData["credential_id"] = options->credentialId();
+            if (!options->s3bucket().empty())
+                jobData["s3_bucket"] = options->s3bucket();
+        }
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
