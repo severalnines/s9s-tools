@@ -15305,8 +15305,9 @@ S9sOptions::readOptionsCluster(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "credential-id",    required_argument, 0, OptionCredentialId    },
+        { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
-        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "generate-key",     no_argument,       0, 'g'                   },
         { "image",            required_argument, 0, OptionImage           },
         { "image-os-user",    required_argument, 0, OptionImageOsUser     },
            { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
@@ -16158,10 +16159,15 @@ S9sOptions::readOptionsCluster(
                 // --containers=LIST
                 setContainers(optarg);
                 break;
-            
+
             case OptionCredentialId:
                 // --credential-id=ID
                 m_options["credential_id"] = optarg;
+                break;
+
+            case OptionS3Bucket:
+                // --s3-bucket=NAME
+                m_options["s3_bucket"] = optarg;
                 break;
 
             case OptionFirewalls:

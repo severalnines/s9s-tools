@@ -1659,6 +1659,23 @@ The mysql username of the maxscale balancer.
 .BI --maxscale-mysql-password= PASSWORD
 The password of the mysql user of the maxscale balancer.
 
+.TP
+.BI --credential-id= ID
+When adding, reconfiguring or reinstalling PgBackRest, this selects a previously
+registered cloud credential (see
+.BR s9s-cloud-credentials (1))
+to use an S3 (object store) backup repository instead of a local directory. The
+credential provides the S3 endpoint, region, access key, secret and TLS
+settings. On reconfigure or reinstall it may be omitted to keep the current
+repository.
+
+.TP
+.BI --s3-bucket= NAME
+The S3 bucket that holds the PgBackRest backup repository, used together with
+.BR --credential-id .
+Required when first configuring an S3 repository; on reconfigure or reinstall it
+may be omitted to reuse the bucket stored at install time.
+
 
 \"
 \"
