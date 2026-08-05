@@ -151,6 +151,10 @@ enum S9sOptionType
     OptionSnapshotRepo,
     OptionSnapshotRepoType,
     OptionSnapshotLocation,
+    OptionAddRepo,
+    OptionDropRepo,
+    OptionBackupRepo,
+    OptionRepoPath,
     OptionS3Bucket,
     OptionS3Region,
     OptionS3AccessKeyId,
@@ -2705,6 +2709,30 @@ int
 S9sOptions::credentialId() const
 {
     return getInt("credential_id");
+}
+
+bool
+S9sOptions::addRepo() const
+{
+    return getBool("add_repo");
+}
+
+bool
+S9sOptions::dropRepo() const
+{
+    return getBool("drop_repo");
+}
+
+S9sString
+S9sOptions::backupRepo() const
+{
+    return getString("backup_repo");
+}
+
+S9sString
+S9sOptions::repoPath() const
+{
+    return getString("repo_path");
 }
 
 bool
@@ -8165,6 +8193,9 @@ S9sOptions::printHelpBackup()
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "                             See s9s-backup(1) for supported values.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
+"  --backup-repo=REPO         (PgBackRest only, optional) Target repository for\n"
+"                             the backup: 'repo1' (default) or 'repo2'. Has no\n"
+"                             meaning for other backup methods for now.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
 "  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
@@ -9618,6 +9649,7 @@ S9sOptions::readOptionsBackup(
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-path",      required_argument, 0, OptionBackupPath      },
         { "backup-password",  required_argument, 0, OptionBackupPassword  },
+        { "backup-repo",      required_argument, 0, OptionBackupRepo      },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
         { "backup-source-address", required_argument, 0, OptionBackupSourceAddress},
         { "backup-user",      required_argument, 0, OptionBackupUser      },
@@ -9975,6 +10007,11 @@ S9sOptions::readOptionsBackup(
             case OptionBackupRetention:
                 // --backup-retention=DAYS
                 setBackupRetention(optarg);
+                break;
+
+            case OptionBackupRepo:
+                // --backup-repo=N  (pgBackRest target repository index)
+                m_options["backup_repo"] = optarg;
                 break;
 
             case OptionCloudRetention:
@@ -15306,6 +15343,9 @@ S9sOptions::readOptionsCluster(
         { "containers",       required_argument, 0, OptionContainers      },
         { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
+        { "add-repo",         no_argument,       0, OptionAddRepo         },
+        { "drop-repo",        no_argument,       0, OptionDropRepo        },
+        { "repo-path",        required_argument, 0, OptionRepoPath        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   },
         { "image",            required_argument, 0, OptionImage           },
@@ -16168,6 +16208,21 @@ S9sOptions::readOptionsCluster(
             case OptionS3Bucket:
                 // --s3-bucket=NAME
                 m_options["s3_bucket"] = optarg;
+                break;
+
+            case OptionAddRepo:
+                // --add-repo  (pgBackRest: add a second repository)
+                m_options["add_repo"] = true;
+                break;
+
+            case OptionDropRepo:
+                // --drop-repo  (pgBackRest: drop the second repository)
+                m_options["drop_repo"] = true;
+                break;
+
+            case OptionRepoPath:
+                // --repo-path=PATH  (pgBackRest: local repo path for --add-repo)
+                m_options["repo_path"] = optarg;
                 break;
 
             case OptionFirewalls:

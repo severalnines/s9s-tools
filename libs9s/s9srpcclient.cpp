@@ -6772,6 +6772,23 @@ S9sRpcClient::reconfigurePgBackRest(
 
     addPgBackRestS3RepoToJobData(jobData);
 
+    // pgBackRest multi-repository: add or drop the second repository. The repo
+    // parameters (credential_id + s3_bucket for S3, added above; or repo_path
+    // for local) describe the repository being added.
+    {
+        S9sOptions *options = S9sOptions::instance();
+        if (options->addRepo())
+        {
+            jobData["repo_action"] = "add";
+            if (!options->repoPath().empty())
+                jobData["repo_path"] = options->repoPath();
+        }
+        else if (options->dropRepo())
+        {
+            jobData["repo_action"] = "drop";
+        }
+    }
+
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
     jobSpec["job_data"]   = jobData;
@@ -12254,7 +12271,12 @@ S9sRpcClient::composeBackupJob()
 
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
-    
+
+    // pgBackRest multi-repository: select which repository the backup goes to
+    // (e.g. "repo1"/"repo2"). Optional; pgBackRest only. Default is repo1.
+    if (!S9sOptions::instance()->backupRepo().empty())
+        jobData["backup_repo"] = S9sOptions::instance()->backupRepo();
+
     // The job_data describing how the backup will be created.
     jobData["description"]       = "Backup created by s9s-tools.";
 
