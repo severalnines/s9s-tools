@@ -1472,9 +1472,60 @@ S9sBusinessLogic::execute()
             reply.printPoolControllers();
         }
         else if (options->isAssignedController()) {
-            client.assignedController(options);
-            S9sRpcReply reply = client.reply();
-            reply.printPoolControllers();
+            int clusterId = options->clusterId();
+            if (clusterId <= 0)
+            {
+                PRINT_ERROR(
+                    "The --cluster-id option must be specified for "
+                    "--assignment operation.");
+                options->setExitStatus(S9sOptions::BadOptions);
+            }
+            else
+            {
+                // Query all pool controllers and filter client-side to find
+                // which controller owns the requested cluster.
+                client.listControllers(options);
+                S9sRpcReply reply = client.reply();
+                if (reply.isOk())
+                {
+                    S9sVariantList controllers =
+                        reply["controllers"].toVariantList();
+                    S9sVariantList filtered;
+
+                    for (const auto &c : controllers)
+                    {
+                        S9sVariantMap w = c.toVariantMap();
+                        S9sVariantList clusters =
+                            w["clusters"].toVariantList();
+                        for (const auto &cid : clusters)
+                        {
+                            if (cid.toInt() == clusterId)
+                            {
+                                filtered << w;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (filtered.empty())
+                    {
+                        PRINT_ERROR(
+                            "Cluster %d is not assigned to any "
+                            "controller in the pool.",
+                            clusterId);
+                        options->setExitStatus(S9sOptions::Failed);
+                    }
+                    else
+                    {
+                        reply["controllers"] = filtered;
+                        reply.printPoolControllers();
+                    }
+                }
+                else
+                {
+                    reply.printPoolControllers();
+                }
+            }
         }
         else if (options->isSetPoolModeRequested() || options->isUnsetPoolModeRequested()) {
             client.setPoolMode(options);
