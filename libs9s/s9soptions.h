@@ -269,6 +269,11 @@ class S9sOptions
 
         bool hasCredentialIdOption() const;
         int credentialId() const;
+        // pgBackRest multi-repository.
+        bool addRepo() const;
+        bool dropRepo() const;
+        S9sString backupRepo() const;
+        S9sString repoPath() const;
 
         bool hasCredentialNameOption() const;
         S9sString credentialName() const;
