@@ -6783,9 +6783,12 @@ S9sRpcClient::reconfigurePgBackRest(
             if (!options->repoPath().empty())
                 jobData["repo_path"] = options->repoPath();
         }
-        else if (options->dropRepo())
+        else if (!options->dropRepo().empty())
         {
             jobData["repo_action"] = "drop";
+            const S9sString which = options->dropRepo();
+            if (which == "repo1" || which == "repo2")
+                jobData["repo_name"] = which;
         }
     }
 

@@ -2717,10 +2717,10 @@ S9sOptions::addRepo() const
     return getBool("add_repo");
 }
 
-bool
+S9sString
 S9sOptions::dropRepo() const
 {
-    return getBool("drop_repo");
+    return getString("drop_repo");
 }
 
 S9sString
@@ -15344,7 +15344,7 @@ S9sOptions::readOptionsCluster(
         { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "add-repo",         no_argument,       0, OptionAddRepo         },
-        { "drop-repo",        no_argument,       0, OptionDropRepo        },
+        { "drop-repo",        optional_argument, 0, OptionDropRepo        },
         { "repo-path",        required_argument, 0, OptionRepoPath        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   },
@@ -16216,8 +16216,9 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionDropRepo:
-                // --drop-repo  (pgBackRest: drop the second repository)
-                m_options["drop_repo"] = true;
+                // --drop-repo[=repo1|repo2]  (pgBackRest: drop a repository;
+                // defaults to repo2 when no value is given)
+                m_options["drop_repo"] = optarg ? optarg : "repo2";
                 break;
 
             case OptionRepoPath:
