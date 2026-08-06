@@ -1676,6 +1676,33 @@ The S3 bucket that holds the PgBackRest backup repository, used together with
 Required when first configuring an S3 repository; on reconfigure or reinstall it
 may be omitted to reuse the bucket stored at install time.
 
+.TP
+.B --add-repo
+With
+.BR --reconfigure-node ,
+adds a further PgBackRest repository alongside the existing one (filling the
+empty repository slot), so backups are kept in two places. Requires pgBackRest
+2.33 or newer. The added repository is S3 when given with
+.B --credential-id
+(and
+.BR --s3-bucket ),
+or local when given with
+.BR --repo-path .
+
+.TP
+.B --drop-repo=repo1|repo2
+With
+.BR --reconfigure-node ,
+removes the named PgBackRest repository. Either repository may be dropped
+(pgBackRest tolerates a repo2-only stanza), provided that at least two
+repositories are configured and the repository that will remain has at least one
+full backup. The repository to drop must be given explicitly.
+
+.TP
+.BI --repo-path= PATH
+The local directory of the second PgBackRest repository, used with
+.BR --add-repo .
+
 
 \"
 \"
