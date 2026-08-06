@@ -6787,8 +6787,14 @@ S9sRpcClient::reconfigurePgBackRest(
         {
             jobData["repo_action"] = "drop";
             const S9sString which = options->dropRepo();
-            if (which == "repo1" || which == "repo2")
-                jobData["repo_name"] = which;
+            // The repository to drop must be named explicitly; there is no safe
+            // default for a destructive operation.
+            if (which != "repo1" && which != "repo2")
+            {
+                PRINT_ERROR("--drop-repo requires 'repo1' or 'repo2'.");
+                return false;
+            }
+            jobData["repo_name"] = which;
         }
     }
 

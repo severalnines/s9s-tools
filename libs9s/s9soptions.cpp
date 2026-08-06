@@ -8437,6 +8437,11 @@ S9sOptions::printHelpCluster()
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
+"  --add-repo                 pgBackRest: add a second repository on --reconfigure-node\n"
+"                             (S3 via --credential-id + --s3-bucket, or local via --repo-path).\n"
+"  --drop-repo=repo1|repo2    pgBackRest: drop the named repository on --reconfigure-node.\n"
+"  --repo-path=PATH           pgBackRest: local repository path for --add-repo.\n"
+"  --s3-bucket=NAME           The S3 bucket for a pgBackRest S3 repository.\n"
 "  --datadir=DIRECTORY        The directory on the node that holds the data.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
@@ -15344,7 +15349,7 @@ S9sOptions::readOptionsCluster(
         { "credential-id",    required_argument, 0, OptionCredentialId    },
         { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
         { "add-repo",         no_argument,       0, OptionAddRepo         },
-        { "drop-repo",        optional_argument, 0, OptionDropRepo        },
+        { "drop-repo",        required_argument, 0, OptionDropRepo        },
         { "repo-path",        required_argument, 0, OptionRepoPath        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
         { "generate-key",     no_argument,       0, 'g'                   },
@@ -16216,9 +16221,9 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionDropRepo:
-                // --drop-repo[=repo1|repo2]  (pgBackRest: drop a repository;
-                // defaults to repo2 when no value is given)
-                m_options["drop_repo"] = optarg ? optarg : "repo2";
+                // --drop-repo=repo1|repo2  (pgBackRest: drop a repository; the
+                // repository to drop must be named explicitly)
+                m_options["drop_repo"] = optarg;
                 break;
 
             case OptionRepoPath:

@@ -1680,9 +1680,9 @@ may be omitted to reuse the bucket stored at install time.
 .B --add-repo
 With
 .BR --reconfigure-node ,
-adds a second PgBackRest repository (repo2) alongside the existing one, so
-backups are kept in two places. Requires pgBackRest 2.33 or newer. The added
-repository is S3 when given with
+adds a further PgBackRest repository alongside the existing one (filling the
+empty repository slot), so backups are kept in two places. Requires pgBackRest
+2.33 or newer. The added repository is S3 when given with
 .B --credential-id
 (and
 .BR --s3-bucket ),
@@ -1690,11 +1690,13 @@ or local when given with
 .BR --repo-path .
 
 .TP
-.B --drop-repo
+.B --drop-repo=repo1|repo2
 With
 .BR --reconfigure-node ,
-removes the second PgBackRest repository (repo2). Only the second repository can
-be dropped, and only if the remaining repository has a full backup.
+removes the named PgBackRest repository. Either repository may be dropped
+(pgBackRest tolerates a repo2-only stanza), provided that at least two
+repositories are configured and the repository that will remain has at least one
+full backup. The repository to drop must be given explicitly.
 
 .TP
 .BI --repo-path= PATH
