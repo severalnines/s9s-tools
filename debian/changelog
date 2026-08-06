@@ -1,6 +1,8 @@
 s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
+  * Added PgBackRest multi-repository options: --add-repo/--drop-repo/--repo-path
+    for cluster reconfigure and --backup-repo=repo1|repo2 for backups.
   * Added --exclude-hosts-info option for cluster listing to reduce
     response size.
   * Added --exclude-sheet-info option for cluster listing to improve
