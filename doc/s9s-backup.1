@@ -693,6 +693,12 @@ The strings in the node list are urls that can have the following protocols:
 Sets where the created archive files are going to be placed.
 
 .TP
+.BI \-\^\-backup\-repo= REPO
+(PgBackRest only, optional.) Selects which repository the backup is written to
+when the stanza has more than one: \fBrepo1\fP (the default) or \fBrepo2\fP. It
+has no meaning for other backup methods for now.
+
+.TP
 .BI \-\^\-temp\-dir\-path= DIR
 By default, s9s backup creates temporary backup files to /var/tmp/cmon-% path. Specify
 this option with your desired path if you want to target to another location.
