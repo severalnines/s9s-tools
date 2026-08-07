@@ -4113,12 +4113,15 @@ S9sOptions::comment() const
 }
 
 /**
- * \returns The argument for the --use-ssl option
+ * \returns true if the --s3-use-ssl option was provided.
  */
 bool
 S9sOptions::hasUseSsl() const
 {
-    return m_options.contains("use_ssl");
+    // The only option that toggles this is --s3-use-ssl, which stores the flag
+    // under "s3_use_ssl"; reading "use_ssl" here left it always false (so an
+    // https endpoint was registered with use_ssl=false).
+    return m_options.contains("s3_use_ssl");
 }
 
 /**
