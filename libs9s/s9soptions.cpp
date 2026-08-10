@@ -76,7 +76,6 @@ enum S9sOptionType
     OptionSet,
     OptionChangePassword,
     OptionDrop,
-    OptionRemoveCluster,
     OptionOsUser,
     OptionOsKeyFile,
     OptionOsPassword,
@@ -8351,6 +8350,7 @@ S9sOptions::printHelpCluster()
 "  --disable-recovery         Disable automatic recovery from a job.\n"
 "  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
+"  --remove                   Alias for --drop.\n"
 "  --enable-recovery          Enable automatic recovery from a job.\n"
 "  --enable-ssl               Enable SSL connections on the nodes.\n"
 "  --import-config            Collects configuration files from the nodes.\n"
@@ -15187,7 +15187,7 @@ S9sOptions::readOptionsCluster(
         { "uninstall-cmonagents",no_argument,    0, OptionUninstallCmonAgents},
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
-        { "remove-cluster",   no_argument,       0, OptionRemoveCluster   },
+        { "remove",           no_argument,       0, OptionDrop            },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
         { "revoke",           no_argument,       0, OptionRevoke          },
@@ -15580,18 +15580,9 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionDrop:
-                // --drop
+                // --drop, --remove
                 m_options["drop"] = true;
                 break;
-
-            case OptionRemoveCluster:
-                // --remove-cluster
-                m_errorMessage =
-                    "The '--remove-cluster' option does not exist, "
-                    "please use '--drop' instead.";
-
-                m_exitStatus = BadOptions;
-                return false;
             
             case OptionStop:
                 // --stop
