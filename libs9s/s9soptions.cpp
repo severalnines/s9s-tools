@@ -8169,6 +8169,8 @@ S9sOptions::printHelpBackup()
 "  --restore-cluster-info         Restores a saved cluster object.\n"
 "  --restore-controller           Restores the controller from a file.\n"
 "  --restore                      Restore an existing backup.\n"
+"  --force                        Overwrite conflicting files left behind by a\n"
+"                                  previous restore (with --restore-controller).\n"
 "  --save-cluster-info            Saves the information about one cluster.\n"
 "  --save-controller              Saves the entire controller into a file.\n"
 "  --verify                       Verify an existing backup on a test server.\n"
@@ -8396,6 +8398,7 @@ S9sOptions::printHelpCluster()
 "  --disable-recovery         Disable automatic recovery from a job.\n"
 "  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
+"  --remove                   Alias for --drop.\n"
 "  --enable-recovery          Enable automatic recovery from a job.\n"
 "  --enable-ssl               Enable SSL connections on the nodes.\n"
 "  --import-config            Collects configuration files from the nodes.\n"
@@ -9612,6 +9615,7 @@ S9sOptions::readOptionsBackup(
         { "delete-old",       no_argument,       0, OptionDeleteOld       },
         { "delete-all",       no_argument,       0, OptionDeleteAll       },
         { "db-cluster-id",    required_argument, 0, OptionDbClusterId     },
+        { "force",            no_argument,       0, OptionForce           },
         { "forced",           no_argument,       0, OptionForce           },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
@@ -12703,6 +12707,26 @@ S9sOptions::checkOptionsBackup()
     }
 
     /*
+     * The --cluster-id is misleading with --restore-cluster-info: the
+     * cluster ID is stored in the archive itself, and passing --cluster-id
+     * either targets a cluster that is not registered yet (so the controller
+     * rejects it before even reading the archive) or a cluster that is
+     * already registered (so the restore fails trying to re-add hosts that
+     * are "already part of some other cluster"). There is no state in which
+     * the option has a valid effect.
+     */
+    if (isRestoreClusterRequested() && hasClusterIdOption())
+    {
+        m_errorMessage =
+            "The --cluster-id option can not be used with "
+            "--restore-cluster-info, the cluster ID is read from the "
+            "archive given in --input-file.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
      * Using the --databases is missleading when not creating new backup: the
      * user might think it is possible to restore one database of an archive.
      */
@@ -15222,6 +15246,7 @@ S9sOptions::readOptionsCluster(
         { "uninstall-cmonagents",no_argument,    0, OptionUninstallCmonAgents},
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
+        { "remove",           no_argument,       0, OptionDrop            },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
         { "revoke",           no_argument,       0, OptionRevoke          },
@@ -15619,7 +15644,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionDrop:
-                // --drop
+                // --drop, --remove
                 m_options["drop"] = true;
                 break;
             

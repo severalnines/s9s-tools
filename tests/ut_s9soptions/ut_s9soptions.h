@@ -47,4 +47,5 @@ class UtS9sOptions : public S9sUnitTest
         bool testConfigureWalOptions();
         bool testAddController();
         bool testVirtualRouterId();
+        bool testRestoreClusterInfoOptions();
 };
