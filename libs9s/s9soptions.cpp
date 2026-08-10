@@ -76,6 +76,7 @@ enum S9sOptionType
     OptionSet,
     OptionChangePassword,
     OptionDrop,
+    OptionRemoveCluster,
     OptionOsUser,
     OptionOsKeyFile,
     OptionOsPassword,
@@ -15186,6 +15187,7 @@ S9sOptions::readOptionsCluster(
         { "uninstall-cmonagents",no_argument,    0, OptionUninstallCmonAgents},
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
+        { "remove-cluster",   no_argument,       0, OptionRemoveCluster   },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
         { "revoke",           no_argument,       0, OptionRevoke          },
@@ -15581,6 +15583,15 @@ S9sOptions::readOptionsCluster(
                 // --drop
                 m_options["drop"] = true;
                 break;
+
+            case OptionRemoveCluster:
+                // --remove-cluster
+                m_errorMessage =
+                    "The '--remove-cluster' option does not exist, "
+                    "please use '--drop' instead.";
+
+                m_exitStatus = BadOptions;
+                return false;
             
             case OptionStop:
                 // --stop
