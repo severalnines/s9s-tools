@@ -8124,6 +8124,8 @@ S9sOptions::printHelpBackup()
 "  --restore-cluster-info         Restores a saved cluster object.\n"
 "  --restore-controller           Restores the controller from a file.\n"
 "  --restore                      Restore an existing backup.\n"
+"  --force                        Overwrite conflicting files left behind by a\n"
+"                                  previous restore (with --restore-controller).\n"
 "  --save-cluster-info            Saves the information about one cluster.\n"
 "  --save-controller              Saves the entire controller into a file.\n"
 "  --verify                       Verify an existing backup on a test server.\n"
@@ -9559,6 +9561,7 @@ S9sOptions::readOptionsBackup(
         { "delete-old",       no_argument,       0, OptionDeleteOld       },
         { "delete-all",       no_argument,       0, OptionDeleteAll       },
         { "db-cluster-id",    required_argument, 0, OptionDbClusterId     },
+        { "force",            no_argument,       0, OptionForce           },
         { "forced",           no_argument,       0, OptionForce           },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },

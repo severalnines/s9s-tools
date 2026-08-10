@@ -64,6 +64,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
+    PERFORM_TEST(testRestoreClusterInfoOptions, retval);
 
     return retval;
 }
@@ -941,6 +942,47 @@ UtS9sOptions::testConfigureWalOptions()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc5, (char **)argv5));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that --restore-cluster-info rejects --cluster-id: the cluster ID
+ * is stored in the archive, and passing --cluster-id has no state on the
+ * controller in which the restore can succeed.
+ */
+bool
+UtS9sOptions::testRestoreClusterInfoOptions()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // --restore-cluster-info without --cluster-id should succeed.
+    const char *argv1[] = {
+        "/bin/s9s", "backup",
+        "--restore-cluster-info",
+        "--input-file=/tmp/cluster-1.tar.gz",
+        nullptr
+    };
+    int argc1 = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+
+    // --restore-cluster-info with --cluster-id should fail.
+    const char *argv2[] = {
+        "/bin/s9s", "backup",
+        "--restore-cluster-info",
+        "--input-file=/tmp/cluster-1.tar.gz",
+        "--cluster-id=1",
+        nullptr
+    };
+    int argc2 = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
 
     S9sOptions::uninit();
     return true;
