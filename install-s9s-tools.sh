@@ -51,8 +51,8 @@ do_release_file() {
                 detect_suse_version
                 break
             else
-                egrep -q "(VERSION=.*7\.|platform:el7)" $file \
-                    >/dev/null 2>/dev/null && dist="redhat" && distversion=7 && break
+                egrep -q "platform:el10" $file \
+                    >/dev/null 2>/dev/null && dist="redhat" && distversion=10 && break
                 egrep -q "(VERSION=.*8\.|platform:el8)" $file \
                     >/dev/null 2>/dev/null && dist="redhat" && distversion=8 && break
                 egrep -q "(VERSION=.*9\.|platform:el9)" $file \
@@ -65,10 +65,9 @@ do_release_file() {
             #dist=${dist,,}
             dist=$(echo $dist | tr '[:upper:]' '[:lower:]')
             if [[ $dist == "redhat" ]] || [[ $dist == "red" ]] || [[ $dist == "fedora" ]]; then
-                grep -q " 7." $file >/dev/null 2>/dev/null && distversion=7 && break
+                grep -q " 10." $file >/dev/null 2>/dev/null && distversion=10 && break
                 grep -q " 8." $file >/dev/null 2>/dev/null && distversion=8 && break
                 grep -q " 9." $file >/dev/null 2>/dev/null && distversion=9 && break
-                grep -q "21" $file >/dev/null 2>/dev/null && distversion=7 && break
             fi
         fi
     done
@@ -116,14 +115,14 @@ add_s9s_commandline_yum() {
     rpm --import https://build.opensuse.org/projects/home:severalnines/public_key || true
 
     repo_source_file=/etc/yum.repos.d/s9s-tools.repo
+    case $distversion in
+        8|9|10) ;;
+        *) log_msg "=> Unsupported RHEL version: ${distversion:-unknown}. Supported: 8, 9, 10."; exit 1;;
+    esac
     if [[ -z $CENTOS ]]; then
-        REPO="RHEL_7"
-        [[ $distversion == "8" ]] && REPO="RHEL_8"
-        [[ $distversion == "9" ]] && REPO="RHEL_9"
+        REPO="RHEL_${distversion}"
     else
-        REPO="CentOS_7"
-        [[ $distversion == "8" ]] && REPO="CentOS_8"
-        [[ $distversion == "9" ]] && REPO="CentOS_9"
+        REPO="CentOS_${distversion}"
     fi
     # after dist upgrade or errors we must re-recreate this repo file
     grep -q ${REPO} $repo_source_file >/dev/null 2>/dev/null || rm -f $repo_source_file
