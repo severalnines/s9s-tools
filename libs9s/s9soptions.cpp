@@ -450,6 +450,7 @@ enum S9sOptionType
     OptionCreateSnaphotRepository,
     OptionListSnaphotRepository,
     OptionDeleteSnaphotRepository,
+    OptionListPgBackRestRepositories,
 
     OptionConfigTemplate,
     OptionHaProxyConfigTemplate,
@@ -5233,6 +5234,16 @@ S9sOptions::isCreateSnapshotRepositoryRequested() const
     return getBool("create_snapshot_repository");
 }
 
+/**
+ * \returns True if the --list-pgbackrest-repositories command line option
+ *   is provided.
+ */
+bool
+S9sOptions::isListPgBackRestRepositoriesRequested() const
+{
+    return getBool("list_pgbackrest_repositories");
+}
+
 
 /**
  * \returns True if the --get-acl command line option is provided.
@@ -8177,6 +8188,8 @@ S9sOptions::printHelpBackup()
 "  --create-snapshot-repository   Create a snapshot repository on elastisearch cluster.\n"
 "  --list-snapshot-repository     List the snapshot repositories on elastisearch cluster.\n"
 "  --delete-snapshot-repository   Deletes a snapshot repository on elastisearch cluster.\n"
+"  --list-pgbackrest-repositories List the pgBackRest repositories (repo1/repo2)\n"
+"                                 configured on a PostgreSQL cluster.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
 "  --backup-list=\"ID1, ID2\"   The list of IDs of the backups.\n"
@@ -9632,7 +9645,8 @@ S9sOptions::readOptionsBackup(
         { "create-snapshot-repository", no_argument, 0, OptionCreateSnaphotRepository},
         { "list-snapshot-repository",   no_argument, 0, OptionListSnaphotRepository},
         { "delete-snapshot-repository", no_argument, 0, OptionDeleteSnaphotRepository},
-        
+        { "list-pgbackrest-repositories", no_argument, 0, OptionListPgBackRestRepositories},
+
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
         { "log",              no_argument,       0, 'G'                   },
@@ -10190,6 +10204,11 @@ S9sOptions::readOptionsBackup(
             case OptionDeleteSnaphotRepository:
                 // --delete-snapshot-repository
                 m_options["delete_snapshot_repository"] = true;
+                break;
+
+            case OptionListPgBackRestRepositories:
+                // --list-pgbackrest-repositories
+                m_options["list_pgbackrest_repositories"] = true;
                 break;
 
             case OptionCredentialId:
@@ -12692,6 +12711,9 @@ S9sOptions::checkOptionsBackup()
         countOptions++;
 
     if (isDeleteSnapshotRepositoryRequested())
+        countOptions++;
+
+    if (isListPgBackRestRepositoriesRequested())
         countOptions++;
 
     if (countOptions > 1)

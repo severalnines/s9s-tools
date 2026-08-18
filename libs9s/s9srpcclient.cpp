@@ -9753,6 +9753,26 @@ S9sRpcClient::getSnapshotRepositories(
     return retval;
 }
 
+/**
+ * Gets the pgBackRest repositories (repo1/repo2) configured for a
+ * PostgreSQL cluster from the controller.
+ */
+bool
+S9sRpcClient::getPgBackRestRepositories(
+        const int clusterId)
+{
+    S9sString      uri = "/v2/backup/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]  = "getPgBackRestRepositories";
+    request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
 
 /**
  * \param backupId The ID of the backup to delete.

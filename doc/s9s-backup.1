@@ -517,7 +517,26 @@ s9s backup \\
     --delete-snapshot-repository \\
     --cluster-id=1 \\
     --snapshot-repository=mySnapshotRepository \\
-    --wait 
+    --wait
+.fi
+
+.TP
+.B \-\^\-list-pgbackrest-repositories
+Lists the pgBackRest repositories (repo1 and, if configured, repo2) of a
+PostgreSQL cluster: the storage type ("posix"/"s3"), the host the
+repository is served from, and either its local path or its S3 bucket, as
+well as which repository new backups target by default. The repo1/repo2
+slot a given storage type ends up in is not a fixed convention (it depends
+on the order the repositories were added), so this is the only reliable way
+to learn what "repo1"/"repo2" mean for a given cluster. When this main
+option is used the \fB\-\^\-cluster\-id\fP option has to be used to
+identify the cluster.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-pgbackrest-repositories \\
+    --cluster-id=1
 .fi
 
 .\"
