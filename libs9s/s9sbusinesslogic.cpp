@@ -991,6 +991,10 @@ S9sBusinessLogic::execute()
             success = deleteSnapshotRepository(client);
             client.printMessages(success ? "Deleted." : "Failed",success);
             client.setExitStatus();
+        } else if (options->isListPgBackRestRepositoriesRequested())
+        {
+            printPgBackRestRepositories(client);
+            client.setExitStatus();
         } else if (options->isCreateRequested())
         {
             success = client.createBackup();
@@ -2205,7 +2209,26 @@ S9sBusinessLogic::printSnapshotRepositories(
     }
 }
 
-bool 
+void
+S9sBusinessLogic::printPgBackRestRepositories(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getPgBackRestRepositories(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printPgBackRestRepositories();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+bool
 S9sBusinessLogic::deleteSnapshotRepository(
         S9sRpcClient &client)
 {

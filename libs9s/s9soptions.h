@@ -596,6 +596,7 @@ class S9sOptions
         bool isListSnapshotRepositoryRequested() const;
         bool isCreateSnapshotRepositoryRequested() const;
         bool isDeleteSnapshotRepositoryRequested() const;
+        bool isListPgBackRestRepositoriesRequested() const;
         bool isGetAclRequested() const;
         bool isCatRequested() const;
         bool isAccessRequested() const;

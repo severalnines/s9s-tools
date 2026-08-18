@@ -139,6 +139,8 @@ class S9sRpcReply : public S9sVariantMap
         void printSnapshotRepositories(bool allClusters=false);
         void printSnapshotRepositoriesBrief(bool allClusters=false);
         void printSnapshotRepositoriesLong(bool allClusters=false);
+
+        void printPgBackRestRepositories();
         
         void printBackupSchedules();
         void printBackupSchedulesBrief();

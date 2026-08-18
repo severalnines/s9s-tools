@@ -3334,8 +3334,93 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
         ::printf("\nTotal: %d snapshot repository(ies)\n", nLines);
 }
 
+/**
+ * Prints the pgBackRest repositories (repo1/repo2) of a PostgreSQL cluster,
+ * as returned by the "getPgBackRestRepositories" operation.
+ */
+void
+S9sRpcReply::printPgBackRestRepositories()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  repositories;
+    S9sFormat      nameFormat;
+    S9sFormat      typeFormat;
+    S9sFormat      storageHostFormat;
+    S9sFormat      locationFormat;
+    S9sFormat      defaultFormat;
+    S9sString      defaultRepo;
+    int            nLines = 0;
 
-void 
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (contains("repositories"))
+        repositories = operator[]("repositories").toVariantMap();
+
+    defaultRepo = repositories["default_backup_repo"].toString();
+
+    for (S9sString key : repositories.keys())
+    {
+        if (key == "default_backup_repo")
+            continue;
+
+        S9sVariantMap repoMap   = repositories[key].toVariantMap();
+        S9sString     type      = repoMap["type"].toString();
+        S9sString     location  =
+            type == "s3" ? repoMap["bucket"].toString() : repoMap["path"].toString();
+
+        nameFormat.widen(key);
+        typeFormat.widen(type);
+        storageHostFormat.widen(repoMap["storage_host"].toString());
+        locationFormat.widen(location);
+        defaultFormat.widen(key == defaultRepo ? "yes" : "no");
+        ++nLines;
+    }
+
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        nameFormat.printHeader("REPO");
+        typeFormat.printHeader("TYPE");
+        storageHostFormat.printHeader("STORAGE HOST");
+        locationFormat.printHeader("LOCATION");
+        defaultFormat.printHeader("DEFAULT");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (S9sString key : repositories.keys())
+    {
+        if (key == "default_backup_repo")
+            continue;
+
+        S9sVariantMap repoMap  = repositories[key].toVariantMap();
+        S9sString     type     = repoMap["type"].toString();
+        S9sString     location =
+            type == "s3" ? repoMap["bucket"].toString() : repoMap["path"].toString();
+
+        nameFormat.printf(key);
+        typeFormat.printf(type);
+        storageHostFormat.printf(repoMap["storage_host"].toString());
+        locationFormat.printf(location);
+        defaultFormat.printf(key == defaultRepo ? "yes" : "no");
+        printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+        ::printf("\nTotal: %d pgBackRest repository(ies), default: %s\n",
+                nLines, STR(defaultRepo));
+}
+
+
+void
 S9sRpcReply::printBackupList()
 {
     S9sOptions *options = S9sOptions::instance();

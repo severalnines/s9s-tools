@@ -22,6 +22,12 @@ s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
     referenced by a registered cloud credential, on add-node, reconfigure
     and reinstall.
 
+  [ Álvaro Viñuela ]
+  * Added --list-pgbackrest-repositories option to the backup command,
+    exposing the controller's getPgBackRestRepositories operation: shows
+    the storage type, host and path/bucket of a PostgreSQL cluster's
+    pgBackRest repo1/repo2, and which repository backups target by default.
+
  -- Peter Csaszar <peter@severalnines.com>  Tue, 13 Jan 2026 15:21:55 +0100
 
 s9s-tools (1.9.2025061016-testingubuntu1) unstable; urgency=medium
