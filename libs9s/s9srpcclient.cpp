@@ -13768,6 +13768,13 @@ S9sRpcClient::registerRedisOrValkeyShardedCluster(
     jobData["type"]             = isValkeyCluster ? "valkey_sharded" : "redis_sharded";
     jobData["nodes"]            = nodesField(hosts);
     jobData["db_user"]          = options->dbAdminUserName();
+
+    if (options->dbAdminPassword().empty())
+    {
+        PRINT_ERROR("%s sharded cluster requires '--db-admin-passwd' option",
+                    isValkeyCluster ? "Valkey" : "Redis");
+        return false;
+    }
     jobData["db_password"]      = options->dbAdminPassword();
 
     if (!providerVersion.empty())
@@ -13845,6 +13852,13 @@ S9sRpcClient::registerRedisOrValkeyCluster(
     jobData["nodes"]            = nodesField(hosts);
 
     jobData["db_user"]          = options->dbAdminUserName();
+
+    if (options->dbAdminPassword().empty())
+    {
+        PRINT_ERROR("%s cluster requires '--db-admin-passwd' option",
+                    isValkeyCluster ? "Valkey" : "Redis");
+        return false;
+    }
     jobData["db_password"]      = options->dbAdminPassword();
 
     if(!options->replicationPassword().empty())

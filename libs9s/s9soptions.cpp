@@ -8463,6 +8463,7 @@ S9sOptions::printHelpCluster()
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --repl-user=USERNAME       The user name for the cluster's replication user.\n"
 "  --repl-passwd=PASSWD       The password for the cluster's replication user.\n"
+"  --redis-port=INT           The port for the Redis sharded cluster.\n"
 "  --db-name=NAME             The name of the database.\n"
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
