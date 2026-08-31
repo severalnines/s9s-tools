@@ -1567,7 +1567,7 @@ S9sRpcClient::getStuckJobs(
     if (!clusterName.empty())
         request["cluster_name"] = clusterName;
 
-    retval = executeRequest(uri, request, false);
+    retval = executeRequest(uri, request);
     return retval;
 }
 

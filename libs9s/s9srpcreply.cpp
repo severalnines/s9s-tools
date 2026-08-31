@@ -225,7 +225,9 @@ S9sRpcReply::jobs()
  *   currently considered "stuck" (running longer than their command
  *   class's configured threshold), as returned by a "getStuckJobs" request.
  *   Each map has the same fields as jobs(), plus "elapsed_seconds",
- *   "stuck_threshold_hours", and "job_class".
+ *   "stuck_threshold_hours", "job_class", and - when the job reported a
+ *   forward-progress heartbeat - "last_progress_at". "elapsed_seconds" is
+ *   measured from "last_progress_at" when present, else from the start time.
  */
 S9sVariantList
 S9sRpcReply::stuckJobs()
@@ -9773,6 +9775,20 @@ elapsedTimeString(ulonglong seconds)
     return retval;
 }
 
+// The job's last forward-progress heartbeat as a printable timestamp, or "-"
+// when it reported none (elapsed time is then measured from its start).
+static S9sString
+lastProgressString(S9sVariantMap &jobMap)
+{
+    S9sString value = jobMap["last_progress_at"].toString();
+    if (value.empty())
+        return "-";
+
+    S9sDateTime tmp;
+    tmp.parse(value);
+    return tmp.toString(S9sDateTime::MySqlLogFileFormat);
+}
+
 /**
  * Prints the jobs currently running longer than their command class's
  * stuck-job threshold (reply of a "getStuckJobs" request, e.g.
@@ -9791,6 +9807,7 @@ S9sRpcReply::printStuckJobList()
     S9sFormat       classFormat;
     S9sFormat       elapsedFormat;
     S9sFormat       thresholdFormat;
+    S9sFormat       lastProgressFormat;
     S9sFormat       stateFormat;
 
     if (options->isJsonRequested())
@@ -9822,6 +9839,7 @@ S9sRpcReply::printStuckJobList()
         classFormat.widen(jobClass);
         elapsedFormat.widen(elapsed);
         thresholdFormat.widen(threshold);
+        lastProgressFormat.widen(lastProgressString(theMap));
         stateFormat.widen(status);
 
         ++nLines;
@@ -9839,6 +9857,7 @@ S9sRpcReply::printStuckJobList()
         classFormat.printHeader("CLASS");
         elapsedFormat.printHeader("ELAPSED");
         thresholdFormat.printHeader("THRESHOLD");
+        lastProgressFormat.printHeader("LAST PROGRESS");
         stateFormat.printHeader("STATE");
         printf("TITLE");
         printf("%s", headerColorEnd());
@@ -9883,6 +9902,7 @@ S9sRpcReply::printStuckJobList()
         classFormat.printf(jobClass);
         elapsedFormat.printf(elapsed);
         thresholdFormat.printf(threshold);
+        lastProgressFormat.printf(lastProgressString(theMap));
 
         printf("%s", stateColorStart);
         stateFormat.printf(status);
