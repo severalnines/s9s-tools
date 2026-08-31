@@ -538,6 +538,7 @@ enum S9sOptionType
     OptionWatchlistProperties,
 
     OptionAddController,
+    OptionAddDb,
     OptionControllersList,
     OptionPrintDeploymentInfo,
     OptionAssignedController,
@@ -5632,6 +5633,17 @@ S9sOptions::isAddController() const
 }
 
 /**
+ * \returns true if the "add-db" function is requested by providing the
+ * --add-db command line option (joins the given node into the pool's
+ * cmon DB HA InnoDB Cluster as a SECONDARY, via the addCmonDbInstance job).
+ */
+bool
+S9sOptions::isAddDb() const
+{
+    return getBool("add_db");
+}
+
+/**
  * \returns true if the --start command line option was provided for controllers
  */
 bool
@@ -9030,6 +9042,8 @@ S9sOptions::printHelpControllers()
 "  --list                     To retrieve the list of stored controllers.\n"
 "  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
+"  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
+"                             as a SECONDARY (requires --nodes with exactly one node).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
@@ -9050,7 +9064,9 @@ S9sOptions::printHelpControllers()
 "  --force                    With --set-max-clusters-capacity: allow a value that drops\n"
 "                             currently-owned clusters (a cap below the owned count, or 0 to\n"
 "                             go inactive); the pool thread abandons the affected clusters on\n"
-"                             its next cycle.\n"
+"                             its next cycle. With --add-db: proceed even if an existing,\n"
+"                             unrelated MySQL installation is detected on the target host\n"
+"                             (its data will be overwritten by the join).\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -19947,6 +19963,7 @@ S9sOptions::readOptionsControllers(
                     {"list",             no_argument, 0,       OptionControllersList},
                     {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
+                    {"add-db",           no_argument, 0,       OptionAddDb},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
@@ -20174,6 +20191,11 @@ S9sOptions::readOptionsControllers(
                 m_options["add_controller"] = true;
                 break;
 
+            case OptionAddDb:
+                // --add-db
+                m_options["add_db"] = true;
+                break;
+
             case OptionStartController:
                 // --start
                 m_options["start_controller"] = true;
@@ -20313,6 +20335,9 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isAddController())
+        countOptions++;
+
+    if (isAddDb())
         countOptions++;
 
     if (isStartController())

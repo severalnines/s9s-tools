@@ -11740,6 +11740,61 @@ S9sRpcClient::addNewController(S9sOptions *options)
 }
 
 /**
+ * @brief join a bare host into the pool's cmon DB HA InnoDB Cluster as a
+ * SECONDARY (CmdAddCmonDbInstance / the addCmonDbInstance job).
+ *
+ * SSH credentials (ssh_user/ssh_keyfile/ssh_keydata/ssh_password, from the
+ * standard --os-user/--os-key-file/--os-password options) are already
+ * added to jobData by composeJobData() itself (via
+ * addCredentialsToJobData()), the same way every other node-adding command
+ * gets them - nothing extra needed here for that.
+ */
+bool
+S9sRpcClient::addNewCmonDbInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+        // S9sNode::port() defaults to 0 when no ':port' was given on
+        // --nodes, unlike the addCmonDbInstance job's own 3306 default.
+        int port = hosts[0].toNode().port();
+        jobData["port"] = port > 0 ? port : 3306;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "addCmonDbInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["force"] = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "addCmonDbInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Add DB Instance to Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns true if the request was successfully sent
  *
  * Starts a controller instance

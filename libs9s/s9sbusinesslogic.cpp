@@ -1505,6 +1505,12 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
+        else if (options->isAddDb())
+        {
+            success = client.addNewCmonDbInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
         else if (options->isStartController())
         {
             client.startController(options);
