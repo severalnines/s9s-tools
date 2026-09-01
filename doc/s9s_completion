@@ -190,6 +190,7 @@ function _s9s()
                 opts+="--remote-cluster-id= "
 
                 opts+="--account= "
+                opts+="--auto-agent "
                 opts+="--cloud= "
                 opts+="--cluster-format= "
                 opts+="--cluster-name= "
@@ -205,6 +206,7 @@ function _s9s()
                 opts+="--image= "
                 opts+="--image-os-user= "
                 opts+="--job-tags= "
+                opts+="--no-agent "
                 opts+="--nodes= "
                 opts+="--opt-group= "
                 opts+="--opt-name= "

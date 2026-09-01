@@ -294,6 +294,25 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-auto-agent
+When creating a new cluster this option leaves the decision about the agent
+installation to the controller instead of requesting or refusing it. Without
+this option the client always asks for the agents to be installed, unless
+\fB\-\-no-agent\fP is provided.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=postgresql \\
+    --nodes="10.67.199.164" \\
+    --db-admin=postgres \\
+    --db-admin-passwd=secret \\
+    --provider-version=17 \\
+    --auto-agent
+.fi
+
+.TP
 .B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
