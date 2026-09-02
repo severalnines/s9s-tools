@@ -85,6 +85,9 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateServer();
         bool testSetHost();
         bool testCreateGalera();
+        bool testDeployAgentsDefault();
+        bool testDeployAgentsNoAgent();
+        bool testDeployAgentsAutoAgent();
         bool testCreateReplication();
         bool testCreateNdbCluster();
         bool testAddNode();
