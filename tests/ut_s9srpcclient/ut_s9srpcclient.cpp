@@ -145,6 +145,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateServer,        retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
+    PERFORM_TEST(testDeployAgentsDefault, retval);
+    PERFORM_TEST(testDeployAgentsNoAgent, retval);
+    PERFORM_TEST(testDeployAgentsAutoAgent, retval);
     PERFORM_TEST(testCreateReplication,   retval);
     PERFORM_TEST(testCreateNdbCluster,    retval);
     PERFORM_TEST(testAddNode,             retval);
@@ -1690,6 +1693,73 @@ UtS9sRpcClient::testCreateGalera()
     S9S_VERIFY(payload.contains("\"version\": \"5.6\""));
     S9S_VERIFY(payload.contains("\"hostname\": \"192.168.1.193\""));
 
+    return true;
+}
+
+/**
+ * Checking that a plain create cluster asks for the agents.
+ */
+bool
+UtS9sRpcClient::testDeployAgentsDefault()
+{
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          payload;
+
+    hosts << S9sNode("192.168.1.191");
+
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
+    payload = client.payload(0u);
+
+    S9S_VERIFY(payload.contains("\"deploy_agents\": true"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Checking that --no-agent refuses the agents.
+ */
+bool
+UtS9sRpcClient::testDeployAgentsNoAgent()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          payload;
+
+    options->m_options["no_agent"] = true;
+    hosts << S9sNode("192.168.1.191");
+
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
+    payload = client.payload(0u);
+
+    S9S_VERIFY(payload.contains("\"deploy_agents\": false"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Checking that --auto-agent leaves the key out of the request.
+ */
+bool
+UtS9sRpcClient::testDeployAgentsAutoAgent()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          payload;
+
+    options->m_options["auto_agent"] = true;
+    hosts << S9sNode("192.168.1.191");
+
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
+    payload = client.payload(0u);
+
+    S9S_VERIFY(!payload.contains("deploy_agents"));
+
+    S9sOptions::uninit();
     return true;
 }
 

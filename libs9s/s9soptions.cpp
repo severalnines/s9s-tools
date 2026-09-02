@@ -313,6 +313,7 @@ enum S9sOptionType
     OptionDisableSsl,
     OptionCreateReport,
     OptionNoAgent,
+    OptionAutoAgent,
     OptionMaskPasswords,
     OptionDeployAgents,
     OptionDeployCmonAgents,
@@ -3399,6 +3400,15 @@ bool
 S9sOptions::noAgent() const
 {
     return getBool("no_agent");
+}
+
+/**
+ * \returns true if the --auto-agent command line option was provided.
+ */
+bool
+S9sOptions::autoAgent() const
+{
+    return getBool("auto_agent");
 }
 
 /**
@@ -8530,6 +8540,7 @@ S9sOptions::printHelpCluster()
 "\n"
 " Options for cluster creation\n"
 "  --no-agent                 Do not install prometheus agents during create cluster.\n"
+"  --auto-agent               Let the prometheus agent deployment be decided automatically.\n"
 "\n"
 "Add replication node related options\n"
 "  --master-delay             Delay in seconds to be set on replica node\n"
@@ -15297,6 +15308,7 @@ S9sOptions::readOptionsCluster(
 
         // Options for cluster creation
         { "no-agent",         no_argument,    0, OptionNoAgent            },
+        { "auto-agent",       no_argument,    0, OptionAutoAgent          },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -15619,6 +15631,11 @@ S9sOptions::readOptionsCluster(
             case OptionNoAgent:
                 // --no-agent
                 m_options["no_agent"] = true;
+                break;
+
+            case OptionAutoAgent:
+                // --auto-agent
+                m_options["auto_agent"] = true;
                 break;
 
             case OptionMaskPasswords:
