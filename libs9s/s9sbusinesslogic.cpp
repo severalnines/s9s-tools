@@ -1475,6 +1475,11 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printPoolControllers();
         }
+        else if (options->isListDb()) {
+            client.listDbClusterNodes(options);
+            S9sRpcReply reply = client.reply();
+            reply.printCmonDbClusterNodes();
+        }
         else if (options->isAssignedController()) {
             client.assignedController(options);
             S9sRpcReply reply = client.reply();
@@ -1502,6 +1507,24 @@ S9sBusinessLogic::execute()
         else if (options->isAddController())
         {
             success = client.addNewController(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isAddDb())
+        {
+            success = client.addNewCmonDbInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isImportDb())
+        {
+            success = client.importCmonDbInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isDeleteDb())
+        {
+            success = client.deleteCmonDbInstance(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }

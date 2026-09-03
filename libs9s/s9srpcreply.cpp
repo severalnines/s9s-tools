@@ -1988,6 +1988,91 @@ S9sRpcReply::printPoolControllersLong()
 
 }
 
+void
+S9sRpcReply::printCmonDbClusterNodes()
+{
+    printDebugMessages();
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printJsonFormat();
+    if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else
+        printCmonDbClusterNodesLong();
+}
+
+/**
+ * Lists the pool's cmon DB HA InnoDB Cluster nodes (read-only
+ * getCmonDbClusterNodes call, "pool-controllers --list-db").
+ *
+ * The reply shape is intentionally minimal (CmonInnoDbClusterNodeHost
+ * records: hostname/port only - no role/status, since nothing monitors
+ * live member state for these records):
+ *
+ * \code{.js}
+ * {
+ *   "cmon_db_cluster_nodes": [
+ *     {"class_name": "CmonInnoDbClusterNodeHost", "cluster_id": 0,
+ *      "hostname": "10.0.1.42", "port": 3306},
+ *     ...
+ *   ],
+ *   "total": 2
+ * }
+ * \endcode
+ *
+ * class_name/cluster_id are internal bookkeeping, not surfaced in the
+ * plain-text table - they're still visible via --print-json.
+ *
+ * \code
+ * s9s pool-controllers --list-db
+ * HOSTNAME  PORT
+ * 10.0.1.42 3306
+ * 10.0.1.87 3306
+ * \endcode
+ */
+void
+S9sRpcReply::printCmonDbClusterNodesLong()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList  nodes = operator[]("cmon_db_cluster_nodes").toVariantList();
+
+    S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
+    S9sFormat      portFormat("\033[94m", TERM_NORMAL);
+
+    // set width
+    for (const auto & n : nodes)
+    {
+        S9sVariantMap  w = n.toVariantMap();
+        S9sString      hostname = w["hostname"].toString();
+        S9sString      port     = w["port"].toString();
+
+        hostnameFormat.widen(hostname);
+        portFormat.widen(port);
+    }
+
+    // print header
+    if (!options->isNoHeaderRequested())
+    {
+        ::printf("%s", headerColorBegin());
+        hostnameFormat.printHeader("HOSTNAME");
+        portFormat.printHeader("PORT");
+        ::printf("%s", headerColorEnd());
+        ::printf("\n");
+    }
+
+    // print data
+    for (const auto & n : nodes)
+    {
+        S9sVariantMap  w = n.toVariantMap();
+        S9sString      hostname = w["hostname"].toString();
+        S9sString      port     = w["port"].toString();
+
+        hostnameFormat.printf(hostname);
+        portFormat.printf(port);
+        ::printf("\n");
+    }
+}
+
 
 
 void

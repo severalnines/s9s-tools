@@ -366,9 +366,13 @@ class S9sRpcClient
          * Requests related to controllers operations
          */
         bool listControllers(S9sOptions *options);
+        bool listDbClusterNodes(S9sOptions *options);
         bool assignedController(S9sOptions *options);
         bool setPoolMode(S9sOptions *options);
         bool addNewController(S9sOptions *options);
+        bool addNewCmonDbInstance(S9sOptions *options);
+        bool importCmonDbInstance(S9sOptions *options);
+        bool deleteCmonDbInstance(S9sOptions *options);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);

@@ -173,6 +173,10 @@ UtS9sRpcClient::runTest(
 
     PERFORM_TEST(testConfigureWal, retval);
     PERFORM_TEST(testAddController, retval);
+    PERFORM_TEST(testAddDb, retval);
+    PERFORM_TEST(testImportDb, retval);
+    PERFORM_TEST(testDeleteDb, retval);
+    PERFORM_TEST(testListDb, retval);
 
     return retval;
 }
@@ -2961,6 +2965,192 @@ UtS9sRpcClient::testAddController()
     S9S_COMPARE(jobData["version"], "2.3.4-17176");
     S9S_COMPARE(jobData["server_address"], "10.16.186.1");
     S9S_COMPARE(jobData["port"], 9500);
+
+    return true;
+}
+
+/**
+ * Testing addNewCmonDbInstance() (the "pool-controllers --add-db" job -
+ * CmdAddCmonDbInstance) request shape: job_spec.command, and job_data's
+ * server_address/port/force fields.
+ */
+bool
+UtS9sRpcClient::testAddDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    // Explicit port, force omitted (must default to false).
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+
+    S9S_VERIFY(client.addNewCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "addCmonDbInstance");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3307);
+    S9S_VERIFY(!jobData["force"].toBoolean());
+
+    // No port on --nodes -> must default to 3306 (S9sNode::port() itself
+    // defaults to 0, not 3306, so addNewCmonDbInstance() must apply the
+    // fallback itself). --force must also come through.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87");
+    options->m_options["force"] = true;
+
+    S9S_VERIFY(client.addNewCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3306);
+    S9S_VERIFY(jobData["force"].toBoolean());
+
+    return true;
+}
+
+/**
+ * Testing importCmonDbInstance() (the "pool-controllers --import-db" job -
+ * CmdImportCmonDbInstance) request shape: job_spec.command, and job_data's
+ * server_address/port/force fields.
+ */
+bool
+UtS9sRpcClient::testImportDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    // Explicit port, force omitted (must default to false).
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+
+    S9S_VERIFY(client.importCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "ImportCmonDbInstance");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3307);
+    S9S_VERIFY(!jobData["force"].toBoolean());
+
+    // No port on --nodes -> must default to 3306 (S9sNode::port() itself
+    // defaults to 0, not 3306, so importCmonDbInstance() must apply the
+    // fallback itself). --force must also come through.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87");
+    options->m_options["force"] = true;
+
+    S9S_VERIFY(client.importCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3306);
+    S9S_VERIFY(jobData["force"].toBoolean());
+
+    return true;
+}
+
+/**
+ * Testing deleteCmonDbInstance() (the "pool-controllers --delete-db" job -
+ * CmdDeleteCmonDbInstance) request shape: job_spec.command, and job_data's
+ * server_address/port/force fields.
+ */
+bool
+UtS9sRpcClient::testDeleteDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    // Explicit port, force omitted (must default to false).
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+
+    S9S_VERIFY(client.deleteCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "DeleteCmonDbInstance");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3307);
+    S9S_VERIFY(!jobData["force"].toBoolean());
+
+    // No port on --nodes -> must default to 3306 (S9sNode::port() itself
+    // defaults to 0, not 3306, so deleteCmonDbInstance() must apply the
+    // fallback itself). --force must also come through.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87");
+    options->m_options["force"] = true;
+
+    S9S_VERIFY(client.deleteCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3306);
+    S9S_VERIFY(jobData["force"].toBoolean());
+
+    return true;
+}
+
+/**
+ * Testing listDbClusterNodes() (the "pool-controllers --list-db" call -
+ * the read-only getCmonDbClusterNodes RPC) request shape: unlike
+ * add/import/deleteCmonDbInstance this is not a job, just a flat request
+ * with the operation name.
+ */
+bool
+UtS9sRpcClient::testListDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listDbClusterNodes(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getcmondbclusternodes");
 
     return true;
 }
