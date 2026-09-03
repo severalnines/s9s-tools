@@ -539,6 +539,8 @@ enum S9sOptionType
 
     OptionAddController,
     OptionAddDb,
+    OptionImportDb,
+    OptionDeleteDb,
     OptionControllersList,
     OptionPrintDeploymentInfo,
     OptionAssignedController,
@@ -5644,6 +5646,28 @@ S9sOptions::isAddDb() const
 }
 
 /**
+ * \returns true if the "import-db" function is requested by providing the
+ * --import-db command line option (imports an existing, standalone cmon DB
+ * instance into the pool via the importCmonDbInstance job).
+ */
+bool
+S9sOptions::isImportDb() const
+{
+    return getBool("import_db");
+}
+
+/**
+ * \returns true if the "delete-db" function is requested by providing the
+ * --delete-db command line option (removes a cmon DB instance from the
+ * pool's cmon DB HA InnoDB Cluster via the deleteCmonDbInstance job).
+ */
+bool
+S9sOptions::isDeleteDb() const
+{
+    return getBool("delete_db");
+}
+
+/**
  * \returns true if the --start command line option was provided for controllers
  */
 bool
@@ -9044,6 +9068,10 @@ S9sOptions::printHelpControllers()
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
+"  --import-db                To import an existing, standalone cmon DB instance into\n"
+"                             the pool (requires --nodes with exactly one node).\n"
+"  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
+"                             InnoDB Cluster (requires --nodes with exactly one node).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
@@ -9066,7 +9094,9 @@ S9sOptions::printHelpControllers()
 "                             go inactive); the pool thread abandons the affected clusters on\n"
 "                             its next cycle. With --add-db: proceed even if an existing,\n"
 "                             unrelated MySQL installation is detected on the target host\n"
-"                             (its data will be overwritten by the join).\n"
+"                             (its data will be overwritten by the join). With --delete-db:\n"
+"                             remove the instance from the cluster's metadata even if it\n"
+"                             cannot be reached (mirrors mysqlsh's remove_instance(force)).\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -19964,6 +19994,8 @@ S9sOptions::readOptionsControllers(
                     {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
                     {"add-db",           no_argument, 0,       OptionAddDb},
+                    {"import-db",        no_argument, 0,       OptionImportDb},
+                    {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
@@ -20196,6 +20228,16 @@ S9sOptions::readOptionsControllers(
                 m_options["add_db"] = true;
                 break;
 
+            case OptionImportDb:
+                // --import-db
+                m_options["import_db"] = true;
+                break;
+
+            case OptionDeleteDb:
+                // --delete-db
+                m_options["delete_db"] = true;
+                break;
+
             case OptionStartController:
                 // --start
                 m_options["start_controller"] = true;
@@ -20338,6 +20380,12 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isAddDb())
+        countOptions++;
+
+    if (isImportDb())
+        countOptions++;
+
+    if (isDeleteDb())
         countOptions++;
 
     if (isStartController())

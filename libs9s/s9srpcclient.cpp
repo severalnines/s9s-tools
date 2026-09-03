@@ -11795,6 +11795,116 @@ S9sRpcClient::addNewCmonDbInstance(S9sOptions *options)
 }
 
 /**
+ * @brief import an existing, standalone cmon DB instance into the pool
+ * (CmdImportCmonDbInstance / the ImportCmonDbInstance job).
+ *
+ * Same job_data shape as addNewCmonDbInstance() - SSH credentials, when
+ * given via --os-user/--os-key-file/--os-password, flow through
+ * composeJobData() the same way.
+ */
+bool
+S9sRpcClient::importCmonDbInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+        // S9sNode::port() defaults to 0 when no ':port' was given on
+        // --nodes, unlike the ImportCmonDbInstance job's own 3306 default.
+        int port = hosts[0].toNode().port();
+        jobData["port"] = port > 0 ? port : 3306;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "importCmonDbInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["force"] = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "ImportCmonDbInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Import DB Instance to Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief remove a cmon DB instance from the pool's cmon DB HA InnoDB
+ * Cluster (CmdDeleteCmonDbInstance / the DeleteCmonDbInstance job).
+ *
+ * Uses composeJobData() the same way removeController() does for its own
+ * "remove something" job: SSH credentials are only added when the caller
+ * actually passed --os-user/--os-key-file/--os-password, so this stays
+ * harmless even though a delete typically does not need them - the
+ * server-side job decides whether it uses them, not this call.
+ *
+ * --force is meaningful here too: it mirrors mysqlsh's
+ * cluster.remove_instance(force) option, letting the instance be dropped
+ * from the cluster's metadata even when it cannot be reached.
+ */
+bool
+S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+        int port = hosts[0].toNode().port();
+        jobData["port"] = port > 0 ? port : 3306;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "deleteCmonDbInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["force"] = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "DeleteCmonDbInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Delete DB Instance from Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns true if the request was successfully sent
  *
  * Starts a controller instance
