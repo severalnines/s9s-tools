@@ -111,6 +111,8 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testConfigureWal();
         bool testAddController();
         bool testAddDb();
+        bool testImportDb();
+        bool testDeleteDb();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

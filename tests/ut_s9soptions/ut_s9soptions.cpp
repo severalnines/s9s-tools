@@ -64,6 +64,8 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
     PERFORM_TEST(testAddDb, retval);
+    PERFORM_TEST(testImportDb, retval);
+    PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
 
@@ -886,6 +888,92 @@ UtS9sOptions::testAddDb()
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
     S9S_VERIFY(options->isAddDb());
+    S9S_VERIFY(options->getBool("force"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testImportDb()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--import-db",
+                            "--nodes=10.16.186.1:3306",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isImportDb());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 3306);
+    S9S_VERIFY(!options->getBool("force"));
+
+    S9sOptions::uninit();
+
+    // --force must also be accepted and readable via the generic
+    // getBool("force") accessor, the same way importCmonDbInstance() reads
+    // it when building the job's job_data.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--import-db",
+                            "--nodes=10.16.186.1:3306",
+                            "--force",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isImportDb());
+    S9S_VERIFY(options->getBool("force"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testDeleteDb()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-db",
+                            "--nodes=10.16.186.1:3306",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isDeleteDb());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 3306);
+    S9S_VERIFY(!options->getBool("force"));
+
+    S9sOptions::uninit();
+
+    // --force must also be accepted and readable via the generic
+    // getBool("force") accessor, the same way deleteCmonDbInstance() reads
+    // it when building the job's job_data.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-db",
+                            "--nodes=10.16.186.1:3306",
+                            "--force",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isDeleteDb());
     S9S_VERIFY(options->getBool("force"));
 
     S9sOptions::uninit();
