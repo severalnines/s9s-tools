@@ -173,6 +173,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testImportDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
+    PERFORM_TEST(testListDb, retval);
 
     return retval;
 }
@@ -3053,6 +3054,33 @@ UtS9sRpcClient::testDeleteDb()
     S9S_COMPARE(jobData["server_address"], "10.0.1.87");
     S9S_COMPARE(jobData["port"], 3306);
     S9S_VERIFY(jobData["force"].toBoolean());
+
+    return true;
+}
+
+/**
+ * Testing listDbClusterNodes() (the "pool-controllers --list-db" call -
+ * the read-only getCmonDbClusterNodes RPC) request shape: unlike
+ * add/import/deleteCmonDbInstance this is not a job, just a flat request
+ * with the operation name.
+ */
+bool
+UtS9sRpcClient::testListDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listDbClusterNodes(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getcmondbclusternodes");
 
     return true;
 }

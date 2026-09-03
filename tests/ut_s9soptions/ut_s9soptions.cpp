@@ -66,6 +66,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testImportDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
+    PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
 
@@ -975,6 +976,28 @@ UtS9sOptions::testDeleteDb()
     S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
     S9S_VERIFY(options->isDeleteDb());
     S9S_VERIFY(options->getBool("force"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testListDb()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // --list-db is a read-only query: no --nodes required, unlike
+    // --add-db/--import-db/--delete-db.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-db",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListDb());
 
     S9sOptions::uninit();
     return true;

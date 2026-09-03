@@ -49,6 +49,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testAddDb();
         bool testImportDb();
         bool testDeleteDb();
+        bool testListDb();
         bool testVirtualRouterId();
         bool testRestoreClusterInfoOptions();
 };

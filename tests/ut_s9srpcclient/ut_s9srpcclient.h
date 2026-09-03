@@ -113,6 +113,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testAddDb();
         bool testImportDb();
         bool testDeleteDb();
+        bool testListDb();
 };
 
 class S9sRpcClientTester : public S9sRpcClient
