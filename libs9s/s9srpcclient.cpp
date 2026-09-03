@@ -11666,6 +11666,24 @@ S9sRpcClient::assignedController(S9sOptions *options)
 }
 
 /**
+ * @brief lists the pool's cmon DB HA InnoDB Cluster nodes
+ * (getCmonDbClusterNodes - a read-only query, unlike the job-creating
+ * addCmonDbInstance/ImportCmonDbInstance/DeleteCmonDbInstance calls).
+ *
+ * Mirrors listControllers()'s own wiring: same "/v2/poolcontrollers/"
+ * endpoint, same fire-and-render pattern (no job to wait on).
+ */
+bool
+S9sRpcClient::listDbClusterNodes(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "getcmondbclusternodes";
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns set or unset pool mode on a specific controller
  */
 bool

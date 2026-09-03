@@ -541,6 +541,7 @@ enum S9sOptionType
     OptionAddDb,
     OptionImportDb,
     OptionDeleteDb,
+    OptionListDb,
     OptionControllersList,
     OptionPrintDeploymentInfo,
     OptionAssignedController,
@@ -5668,6 +5669,18 @@ S9sOptions::isDeleteDb() const
 }
 
 /**
+ * \returns true if the "list-db" function is requested by providing the
+ * --list-db command line option (lists the pool's cmon DB HA InnoDB
+ * Cluster nodes via the read-only getCmonDbClusterNodes RPC call - not a
+ * job, unlike --add-db/--import-db/--delete-db).
+ */
+bool
+S9sOptions::isListDb() const
+{
+    return getBool("list_db");
+}
+
+/**
  * \returns true if the --start command line option was provided for controllers
  */
 bool
@@ -9064,6 +9077,9 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"pool-controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
+"  --list-db                  To retrieve the list of the pool's cmon DB HA InnoDB\n"
+"                             Cluster nodes (read-only, no job is created). Supports\n"
+"                             --print-json like --list.\n"
 "  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
@@ -19996,6 +20012,7 @@ S9sOptions::readOptionsControllers(
                     {"add-db",           no_argument, 0,       OptionAddDb},
                     {"import-db",        no_argument, 0,       OptionImportDb},
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
+                    {"list-db",          no_argument, 0,       OptionListDb},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
@@ -20238,6 +20255,11 @@ S9sOptions::readOptionsControllers(
                 m_options["delete_db"] = true;
                 break;
 
+            case OptionListDb:
+                // --list-db
+                m_options["list_db"] = true;
+                break;
+
             case OptionStartController:
                 // --start
                 m_options["start_controller"] = true;
@@ -20386,6 +20408,9 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isDeleteDb())
+        countOptions++;
+
+    if (isListDb())
         countOptions++;
 
     if (isStartController())

@@ -157,7 +157,10 @@ class S9sRpcReply : public S9sVariantMap
 
         void printPoolControllers();
         void printPoolControllersLong();
-        
+
+        void printCmonDbClusterNodes();
+        void printCmonDbClusterNodesLong();
+
         // Methods handling users.
         void printUserList();
         void printUsersStat();

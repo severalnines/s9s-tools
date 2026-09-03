@@ -1475,6 +1475,11 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printPoolControllers();
         }
+        else if (options->isListDb()) {
+            client.listDbClusterNodes(options);
+            S9sRpcReply reply = client.reply();
+            reply.printCmonDbClusterNodes();
+        }
         else if (options->isAssignedController()) {
             client.assignedController(options);
             S9sRpcReply reply = client.reply();
