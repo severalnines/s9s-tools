@@ -839,6 +839,22 @@ The verification status of the backup. Possible values are "Unverified",
 "Verified" and "Failed".
 
 .TP
+.B x
+The same value the EXPIRES column of the long backup list shows: the date and
+time when the controller will delete the backup, formatted as the
+\fB\-\-date\-format\fP asks for. The word "NEVER" is shown for a backup the
+controller keeps forever, and "-" when the controller does not report an expiry
+at all - an older controller, from before the feature. A date in the
+past means the backup is eligible for deletion and the controller has not swept
+it yet - or is keeping it on purpose, see the "X" field.
+
+.TP
+.B X
+The word "KEPT" when the controller found the backup past its retention and kept
+it anyway, to honour the cluster's minimum number of backups
+(backup_n_safety_copies), "-" otherwise.
+
+.TP
 .B %
 The percent sign itself. Use two percent signs, "%%" the same way the standard
 printf() function interprets it as one percent sign.
