@@ -11673,6 +11673,10 @@ S9sRpcClient::assignedController(S9sOptions *options)
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+    if(options->controllerId() >= 0)
+        request["controller_id"] = options->controllerId();
+    else
+        request["controller_id"] = 0;
     return executeRequest(uri, request);
 }
 
