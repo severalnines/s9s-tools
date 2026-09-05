@@ -540,7 +540,6 @@ enum S9sOptionType
 
     OptionAddController,
     OptionAddDb,
-    OptionImportDb,
     OptionDeleteDb,
     OptionListDb,
     OptionControllersList,
@@ -5657,17 +5656,6 @@ S9sOptions::isAddDb() const
 }
 
 /**
- * \returns true if the "import-db" function is requested by providing the
- * --import-db command line option (imports an existing, standalone cmon DB
- * instance into the pool via the importCmonDbInstance job).
- */
-bool
-S9sOptions::isImportDb() const
-{
-    return getBool("import_db");
-}
-
-/**
  * \returns true if the "delete-db" function is requested by providing the
  * --delete-db command line option (removes a cmon DB instance from the
  * pool's cmon DB HA InnoDB Cluster via the deleteCmonDbInstance job).
@@ -5682,7 +5670,7 @@ S9sOptions::isDeleteDb() const
  * \returns true if the "list-db" function is requested by providing the
  * --list-db command line option (lists the pool's cmon DB HA InnoDB
  * Cluster nodes via the read-only getCmonDbClusterNodes RPC call - not a
- * job, unlike --add-db/--import-db/--delete-db).
+ * job, unlike --add-db/--delete-db).
  */
 bool
 S9sOptions::isListDb() const
@@ -9095,8 +9083,6 @@ S9sOptions::printHelpControllers()
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
-"  --import-db                To import an existing, standalone cmon DB instance into\n"
-"                             the pool (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
 "                             InnoDB Cluster (requires --nodes with exactly one node).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
@@ -20027,7 +20013,6 @@ S9sOptions::readOptionsControllers(
                     {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
                     {"add-db",           no_argument, 0,       OptionAddDb},
-                    {"import-db",        no_argument, 0,       OptionImportDb},
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"list-db",          no_argument, 0,       OptionListDb},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
@@ -20262,11 +20247,6 @@ S9sOptions::readOptionsControllers(
                 m_options["add_db"] = true;
                 break;
 
-            case OptionImportDb:
-                // --import-db
-                m_options["import_db"] = true;
-                break;
-
             case OptionDeleteDb:
                 // --delete-db
                 m_options["delete_db"] = true;
@@ -20419,9 +20399,6 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isAddDb())
-        countOptions++;
-
-    if (isImportDb())
         countOptions++;
 
     if (isDeleteDb())

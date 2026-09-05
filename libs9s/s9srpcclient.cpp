@@ -11679,7 +11679,7 @@ S9sRpcClient::assignedController(S9sOptions *options)
 /**
  * @brief lists the pool's cmon DB HA InnoDB Cluster nodes
  * (getCmonDbClusterNodes - a read-only query, unlike the job-creating
- * addCmonDbInstance/ImportCmonDbInstance/DeleteCmonDbInstance calls).
+ * addCmonDbInstance/DeleteCmonDbInstance calls).
  *
  * Mirrors listControllers()'s own wiring: same "/v2/poolcontrollers/"
  * endpoint, same fire-and-render pattern (no job to wait on).
@@ -11816,59 +11816,6 @@ S9sRpcClient::addNewCmonDbInstance(S9sOptions *options)
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
     job["title"]    = "Add DB Instance to Pool";
-
-    request["operation"] = "createJobInstance";
-    request["job"]       = job;
-
-    return executeRequest(uri, request);
-}
-
-/**
- * @brief import an existing, standalone cmon DB instance into the pool
- * (CmdImportCmonDbInstance / the ImportCmonDbInstance job).
- *
- * Same job_data shape as addNewCmonDbInstance() - SSH credentials, when
- * given via --os-user/--os-key-file/--os-password, flow through
- * composeJobData() the same way.
- */
-bool
-S9sRpcClient::importCmonDbInstance(S9sOptions *options)
-{
-    const S9sString uri = "/v2/jobs/";
-    S9sVariantMap   request;
-
-    S9sVariantList hosts = options->nodes();
-
-    S9sVariantMap job     = composeJob();
-    S9sVariantMap jobData = composeJobData();
-    S9sVariantMap jobSpec;
-
-    if (hosts.size() == 1)
-    {
-        jobData["server_address"] = hosts[0].toNode().hostName();
-        // S9sNode::port() defaults to 0 when no ':port' was given on
-        // --nodes, unlike the ImportCmonDbInstance job's own 3306 default.
-        int port = hosts[0].toNode().port();
-        jobData["port"] = port > 0 ? port : 3306;
-    }
-    else
-    {
-        PRINT_ERROR(
-                "Exactly one node must specified for "
-                "importCmonDbInstance operation.");
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
-    jobData["force"] = options->getBool("force");
-
-    // The jobspec describing the command.
-    jobSpec["command"]  = "ImportCmonDbInstance";
-    jobSpec["job_data"] = jobData;
-
-    // The job instance describing how the job will be executed.
-    job["job_spec"] = jobSpec;
-    job["title"]    = "Import DB Instance to Pool";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;

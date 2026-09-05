@@ -1516,12 +1516,6 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
-        else if (options->isImportDb())
-        {
-            success = client.importCmonDbInstance(options);
-            S9sRpcReply reply = client.reply();
-            maybeJobRegistered(client, clusterId, success);
-        }
         else if (options->isDeleteDb())
         {
             success = client.deleteCmonDbInstance(options);

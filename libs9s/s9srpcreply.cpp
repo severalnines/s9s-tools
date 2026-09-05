@@ -2005,14 +2005,14 @@ S9sRpcReply::printCmonDbClusterNodes()
  * Lists the pool's cmon DB HA InnoDB Cluster nodes (read-only
  * getCmonDbClusterNodes call, "pool-controllers --list-db").
  *
- * The reply shape is intentionally minimal (CmonInnoDbClusterNodeHost
+ * The reply shape is intentionally minimal (CmonPoolModeDbClusterNodeHost
  * records: hostname/port only - no role/status, since nothing monitors
  * live member state for these records):
  *
  * \code{.js}
  * {
  *   "cmon_db_cluster_nodes": [
- *     {"class_name": "CmonInnoDbClusterNodeHost", "cluster_id": 0,
+ *     {"class_name": "CmonPoolModeDbClusterNodeHost", "cluster_id": 0,
  *      "hostname": "10.0.1.42", "port": 3306},
  *     ...
  *   ],
