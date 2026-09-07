@@ -378,6 +378,7 @@ class S9sRpcClient
         bool removeController(S9sOptions *options);
         bool updateCmon(S9sOptions *options);
         bool setMaxClustersCapacity(S9sOptions *options);
+        bool installOpenBao(S9sOptions *options);
 
         /*
          * Requests related to logical replication
