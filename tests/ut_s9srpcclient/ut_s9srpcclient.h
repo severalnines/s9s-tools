@@ -117,6 +117,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testImportDb();
         bool testDeleteDb();
         bool testListDb();
+        bool testInstallOpenBao();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

@@ -67,6 +67,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testImportDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testAddOpenBao, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
 
@@ -998,6 +999,91 @@ UtS9sOptions::testListDb()
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
     S9S_VERIFY(options->isListDb());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the --add-openbao option and its parameters on the pool-controllers
+ * subcommand.
+ *
+ * The version and the listener port are deliberately not openbao-specific
+ * options: they ride --provider-version and the node specification, the same way
+ * --add-controller takes them.
+ */
+bool
+UtS9sOptions::testAddOpenBao()
+{
+    S9sOptions *options;
+
+    // Every parameter given.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1:8300",
+                            "--provider-version=2.5.4",
+                            "--openbao-mount=clustercontrol",
+                            "--openbao-namespace=tenant1",
+                            "--openbao-force-reinit",
+                            "--no-install",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddOpenBao());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.16.186.1");
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 8300);
+    S9S_COMPARE(options->providerVersion(), "2.5.4");
+    S9S_COMPARE(options->openBaoMount(), "clustercontrol");
+    S9S_COMPARE(options->openBaoNamespace(), "tenant1");
+    S9S_VERIFY(options->openBaoForceReinit());
+    S9S_VERIFY(options->noInstall());
+
+    // No parameter given: the controller's own defaults must be used, so
+    // nothing is set here.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isAddOpenBao());
+    S9S_VERIFY(!options->hasOpenBaoOption());
+    S9S_COMPARE(options->providerVersion(""), "");
+    S9S_COMPARE(options->openBaoMount(), "");
+    S9S_VERIFY(!options->openBaoForceReinit());
+    S9S_VERIFY(!options->noInstall());
+
+    // The host is mandatory.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+
+    // The parameters are meaningless without --add-openbao.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list",
+                            "--openbao-mount=clustercontrol",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
 
     S9sOptions::uninit();
     return true;

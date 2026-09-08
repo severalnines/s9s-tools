@@ -12060,6 +12060,86 @@ S9sRpcClient::updateCmon(S9sOptions *options)
 }
 
 /**
+ * \returns true if the request was successfully sent
+ *
+ * Creates the job that installs an OpenBao instance on the host given by the
+ * --nodes command line option. The job only produces the instance: it does not
+ * point this controller at it, so nothing here writes the vaultkv_* settings.
+ *
+ * Every --openbao-* parameter is optional and is only put into the job_data when
+ * it was actually given on the command line - an absent key means the controller
+ * applies its own default. The root token and the unseal keys are left on the
+ * target host by the job, so there is nothing sensitive to send or to receive
+ * here.
+ */
+bool
+S9sRpcClient::installOpenBao(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList  hosts = options->nodes();
+
+    S9sVariantMap   job     = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+
+        const int port = hosts[0].toNode().port();
+        if (port > 0)
+            jobData["port"] = port;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "installOpenBao operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (!options->providerVersion().empty())
+        jobData["version"] = options->providerVersion();
+
+    if (!options->openBaoMount().empty())
+        jobData["openbao_mount"] = options->openBaoMount();
+
+    if (!options->openBaoNamespace().empty())
+        jobData["openbao_namespace"] = options->openBaoNamespace();
+
+    if (!options->openBaoPackagePath().empty())
+        jobData["openbao_package_path"] = options->openBaoPackagePath();
+
+    if (!options->openBaoPackage().empty())
+        jobData["openbao_package"] = options->openBaoPackage();
+
+    // install_software defaults to true controller-side; only --no-install needs
+    // to be transmitted.
+    if (options->noInstall())
+        jobData["install_software"] = false;
+
+    if (options->openBaoForceReinit())
+        jobData["openbao_force_reinit"] = true;
+
+    // The jobspec describing the command. The controller registers this job
+    // under the SETUP_OPENBAO action and uppercases what it receives.
+    jobSpec["command"]  = "setup_openbao";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Setup OpenBao";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns delete watchlists stored on controller DB
  *
  */

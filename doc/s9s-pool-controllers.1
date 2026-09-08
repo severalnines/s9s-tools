@@ -111,6 +111,40 @@ s9s pool-controllers --update-cmon --controller-id=2
 .fi
 
 .TP
+.B --add-openbao
+Installs and bootstraps an OpenBao instance on the host named by '--nodes' (exactly
+one host is required). Requires super admin privileges.
+
+The root token and the unseal keys are written to '/etc/openbao/init.json'
+on the target host.
+.nf
+s9s pool-controllers --add-openbao --nodes=10.16.186.189 --log
+.fi
+
+To install a specific version on a non-default port, inside a namespace. The
+version comes from \fB--provider-version\fP and the listener port from the node
+specification, the same way \fB--add-controller\fP takes them:
+.nf
+s9s pool-controllers --add-openbao --nodes=10.16.186.189:8300 \\
+    --provider-version=2.5.4 --openbao-mount=clustercontrol \\
+    --openbao-namespace=tenant1 --log
+.fi
+
+The package by default is downloaded from the public OpenBao release page and
+verified against the checksums that release publishes.
+
+\fB--openbao-package-path\fP installs a package already staged on the
+host, and \fB--use-internal-repos\fP installs it by name from the repositories
+the host has configured.
+
+Installing on a host with no route to the internet, from a package staged there
+beforehand:
+.nf
+s9s pool-controllers --add-openbao --nodes=10.16.186.189 \\
+    --openbao-package-path=/var/tmp/openbao_2.5.4_linux_amd64.deb --log
+.fi
+
+.TP
 .BI \-\^\-set-max-clusters-capacity=N
 Sets how many clusters the controller receiving the request can own. Sentinels:
 .B -2
@@ -158,6 +192,44 @@ By default only controllers with dynamic status ('stopped', 'starting', 'active'
 .TP
 .BI \-\^\-provider-version=VERSION
 Controller version to be installed.
+
+.TP
+.BI \-\^\-openbao-mount=MOUNT
+Used with \fB--add-openbao\fP: the path of the KV v2 secrets engine the job
+creates. Defaults to 'clustercontrol' on the controller side.
+
+.TP
+.BI \-\^\-openbao-namespace=NAME
+Used with \fB--add-openbao\fP: an OpenBao namespace to create and use. No
+namespace is created when the option is omitted. Namespaces are an OpenBao
+feature; on HashiCorp Vault they are Enterprise-only.
+
+.TP
+.BI \-\^\-openbao-package=SPEC
+Used with \fB--add-openbao\fP and \fB--use-internal-repos\fP: the exact package
+spec to install, so a version can be pinned with the package manager's own
+syntax (e.g. 'openbao=2.5.4-1' for apt, 'openbao-2.5.4' for yum). The default
+is plain 'openbao'.
+
+.TP
+.BI \-\^\-openbao-package-path=PATH
+Used with \fB--add-openbao\fP: the absolute path of a package file already
+staged on the target host. It is installed as it is - nothing is downloaded and
+no checksum is verified, because whoever staged the file vouched for it. This is
+the option for a host with no outbound internet access. Takes precedence over
+\fB--use-internal-repos\fP.
+
+.TP
+.B \-\^\-openbao-force-reinit
+Used with \fB--add-openbao\fP:
+.B destroys the existing OpenBao instance on the host.
+The data directory is renamed rather than deleted, but the new instance is
+initialised from scratch with new unseal keys, so every secret the old one held
+becomes unreachable. Without this option the job refuses to restart an
+initialised instance whose '/etc/openbao/init.json' is missing, because it could
+not be unsealed again afterwards; this option is the way out of that state when
+the keys are genuinely lost and the instance holds nothing of value. Use it on a
+scratch instance only.
 
 .TP
 .B \-\^\-uninstall

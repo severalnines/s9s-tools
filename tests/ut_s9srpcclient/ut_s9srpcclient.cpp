@@ -177,6 +177,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testImportDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testInstallOpenBao, retval);
 
     return retval;
 }
@@ -3151,6 +3152,80 @@ UtS9sRpcClient::testListDb()
         printDebug(payload);
 
     S9S_COMPARE(payload["operation"], "getcmondbclusternodes");
+
+    return true;
+}
+
+/**
+ * Testing installOpenBao() (the "pool-controllers --add-openbao" job -
+ * CmdSetupOpenBao) request shape.
+ *
+ * The version and the listener port are deliberately NOT openbao-specific
+ * options: they ride the standard --provider-version option and the node
+ * specification, exactly as the add-controller job takes them.
+ */
+bool
+UtS9sRpcClient::testInstallOpenBao()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    // Port from the node spec, version from --provider-version.
+    options->setNodes("10.16.186.1:8300");
+    options->m_options["provider_version"]      = "2.5.4";
+    options->m_options["openbao_mount"]         = "clustercontrol";
+    options->m_options["openbao_namespace"]     = "tenant1";
+    options->m_options["openbao_force_reinit"]  = true;
+    options->m_options["no_install"]            = true;
+
+    S9S_VERIFY(client.installOpenBao(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    // The controller registers the action as SETUP_OPENBAO and uppercases
+    // whatever it receives, so this must not be camel-cased.
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "setup_openbao");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Setup OpenBao");
+
+    auto jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.16.186.1");
+    S9S_COMPARE(jobData["port"], 8300);
+    S9S_COMPARE(jobData["version"], "2.5.4");
+    S9S_COMPARE(jobData["openbao_mount"], "clustercontrol");
+    S9S_COMPARE(jobData["openbao_namespace"], "tenant1");
+    S9S_COMPARE(jobData["openbao_force_reinit"], true);
+    S9S_COMPARE(jobData["install_software"], false);
+
+    /*
+     * Without the parameters the job_data must carry no openbao_* key and no
+     * version, so that the controller applies its own defaults.
+     */
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.16.186.1");
+
+    S9S_VERIFY(client.installOpenBao(options));
+    payload = client.lastPayload();
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+
+    S9S_COMPARE(jobData["server_address"], "10.16.186.1");
+    // No port in the node spec: the key is omitted so the controller uses its
+    // own OpenBao default rather than being handed a 0.
+    S9S_VERIFY(!jobData.contains("port"));
+    S9S_VERIFY(!jobData.contains("version"));
+    S9S_VERIFY(!jobData.contains("openbao_mount"));
+    S9S_VERIFY(!jobData.contains("openbao_namespace"));
+    S9S_VERIFY(!jobData.contains("openbao_force_reinit"));
+    S9S_VERIFY(!jobData.contains("install_software"));
 
     return true;
 }

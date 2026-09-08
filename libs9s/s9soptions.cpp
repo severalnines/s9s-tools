@@ -556,6 +556,12 @@ enum S9sOptionType
     OptionRemoveController,
     OptionUpdateCmon,
     OptionSetMaxClustersCapacity,
+    OptionAddOpenBao,
+    OptionOpenBaoMount,
+    OptionOpenBaoNamespace,
+    OptionOpenBaoPackagePath,
+    OptionOpenBaoPackage,
+    OptionOpenBaoForceReinit,
 
     OptionExtensions,
     OptionPgHbaRules,
@@ -5741,6 +5747,83 @@ S9sOptions::getMaxClustersCapacity() const
 }
 
 /**
+ * \returns true if the "installOpenBao" job is requested by providing the
+ *   --add-openbao command line option on the "pool-controllers" subcommand.
+ */
+bool
+S9sOptions::isAddOpenBao() const
+{
+    return getBool("add_openbao");
+}
+
+/**
+ * \returns true if any of the --openbao-* command line options was provided.
+ *
+ * Used by the option check to reject the parameters of the OpenBao installation
+ * when no OpenBao installation was requested at all.
+ */
+bool
+S9sOptions::hasOpenBaoOption() const
+{
+    return m_options.contains("openbao_mount")
+        || m_options.contains("openbao_namespace")
+        || m_options.contains("openbao_package_path")
+        || m_options.contains("openbao_package")
+        || m_options.contains("openbao_force_reinit");
+}
+
+/**
+ * \returns The value of the --openbao-mount command line option or the empty
+ *   string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoMount() const
+{
+    return getString("openbao_mount");
+}
+
+/**
+ * \returns The value of the --openbao-namespace command line option or the empty
+ *   string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoNamespace() const
+{
+    return getString("openbao_namespace");
+}
+
+/**
+ * \returns The value of the --openbao-package-path command line option or the
+ *   empty string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoPackagePath() const
+{
+    return getString("openbao_package_path");
+}
+
+
+
+/**
+ * \returns The value of the --openbao-package command line option or the empty
+ *   string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoPackage() const
+{
+    return getString("openbao_package");
+}
+
+/**
+ * \returns true if the --openbao-force-reinit command line option was provided.
+ */
+bool
+S9sOptions::openBaoForceReinit() const
+{
+    return getBool("openbao_force_reinit");
+}
+
+/**
  * \returns true if the --add-publication command line option was provided.
  */
 bool
@@ -9104,12 +9187,26 @@ S9sOptions::printHelpControllers()
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
+"  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
 "  --uninstall                Uninstall software when removing controller.\n"
+"  --openbao-mount=MOUNT      The KV v2 mount to create (default: clustercontrol).\n"
+"  --openbao-namespace=NAME   The OpenBao namespace to create (default: none).\n"
+"  --openbao-package-path=PATH\n"
+"                             Install a package already staged on the target host\n"
+"                             instead of downloading one.\n"
+"  --openbao-force-reinit     Discard any existing OpenBao storage on the host and\n"
+"                             initialise a fresh instance. The previous data\n"
+"                             directory is renamed, not deleted, but its secrets\n"
+"                             become unreachable. Use only on a scratch instance.\n"
+"  --no-install               Do not install the openbao package; it must already\n"
+"                             be present on the host.\n"
+"  --openbao-package=SPEC     With --use-internal-repos, the exact package spec to\n"
+"                             install (e.g. openbao=2.5.4-1). Default: openbao.\n"
 "  --set-max-clusters-capacity=N  Set how many clusters this controller can own. Sentinels:\n"
 "                             -2 = auto (RAM-based), -1 = unlimited, 0 = inactive (own no\n"
 "                             clusters: abandon all, acquire none), >0 = explicit cap. Takes\n"
@@ -20038,6 +20135,7 @@ S9sOptions::readOptionsControllers(
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
+                    {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
                     {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
@@ -20047,6 +20145,13 @@ S9sOptions::readOptionsControllers(
                     {"granted-network-mask", required_argument, 0, OptionGrantedNetworkMask},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     {"uninstall",        no_argument,       0, OptionUninstall},
+                    // Arguments when installing an OpenBao instance
+                    {"openbao-mount",    required_argument, 0, OptionOpenBaoMount},
+                    {"openbao-namespace", required_argument, 0, OptionOpenBaoNamespace},
+                    {"openbao-package-path", required_argument, 0, OptionOpenBaoPackagePath},
+                    {"openbao-package",  required_argument, 0, OptionOpenBaoPackage},
+                    {"openbao-force-reinit", no_argument, 0, OptionOpenBaoForceReinit},
+                    { "no-install",      no_argument,       0, OptionNoInstall },
                     
                     // Job Related Options
                     {"log",              no_argument,       0, 'G'},
@@ -20296,6 +20401,11 @@ S9sOptions::readOptionsControllers(
                 m_options["update_cmon"] = true;
                 break;
 
+            case OptionAddOpenBao:
+                // --add-openbao
+                m_options["add_openbao"] = true;
+                break;
+
             case OptionSetMaxClustersCapacity:
                 // --set-max-clusters-capacity=N
                 if (optarg)
@@ -20354,6 +20464,36 @@ S9sOptions::readOptionsControllers(
             case OptionUninstall:
                 // --uninstall
                 m_options["uninstall"] = true;
+                break;
+
+            case OptionOpenBaoMount:
+                // --openbao-mount=MOUNT
+                m_options["openbao_mount"] = optarg;
+                break;
+
+            case OptionOpenBaoNamespace:
+                // --openbao-namespace=NAMESPACE
+                m_options["openbao_namespace"] = optarg;
+                break;
+
+                // --openbao-package-path=PATH
+            case OptionOpenBaoPackagePath:
+                m_options["openbao_package_path"] = optarg;
+                break;
+
+                // --openbao-package=SPEC
+            case OptionOpenBaoPackage:
+                m_options["openbao_package"] = optarg;
+                break;
+
+                // --openbao-force-reinit
+            case OptionOpenBaoForceReinit:
+                m_options["openbao_force_reinit"] = true;
+                break;
+
+            case OptionNoInstall:
+                // --no-install
+                m_options["no_install"] = true;
                 break;
 
             /*
@@ -20445,6 +20585,9 @@ S9sOptions::checkOptionsControllers()
     if (isSetMaxClustersCapacityRequested())
         countOptions++;
 
+    if (isAddOpenBao())
+        countOptions++;
+
     if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
@@ -20487,6 +20630,24 @@ S9sOptions::checkOptionsControllers()
             m_exitStatus = BadOptions;
             return false;
         }
+    }
+
+    // Validate the OpenBao options only when relevant
+    if (hasOpenBaoOption())
+    {
+        if (!isAddOpenBao())
+        {
+            m_errorMessage = "The --openbao-* options can only be used with --add-openbao.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if (isAddOpenBao() && nodes().size() != 1u)
+    {
+        m_errorMessage = "The --nodes option must specify exactly one host for --add-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;
