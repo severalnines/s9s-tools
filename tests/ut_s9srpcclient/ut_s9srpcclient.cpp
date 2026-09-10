@@ -3126,6 +3126,21 @@ UtS9sRpcClient::testDeleteDb()
     S9S_COMPARE(jobData["port"], 3306);
     S9S_VERIFY(jobData["force"].toBoolean());
 
+    // --node-id is an alternative to --nodes: it must send "id" instead of
+    // server_address/port, and take priority even if --nodes was also set.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+    options->m_options["node_id"] = "42";
+
+    S9S_VERIFY(client.deleteCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["id"], 42);
+    S9S_VERIFY(!jobData.contains("server_address"));
+    S9S_VERIFY(!jobData.contains("port"));
+
     return true;
 }
 
