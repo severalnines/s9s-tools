@@ -178,6 +178,8 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
+    PERFORM_TEST(testListConfigStorage, retval);
+    PERFORM_TEST(testListOpenBaoVersions, retval);
 
     return retval;
 }
@@ -3226,6 +3228,66 @@ UtS9sRpcClient::testInstallOpenBao()
     S9S_VERIFY(!jobData.contains("openbao_namespace"));
     S9S_VERIFY(!jobData.contains("openbao_force_reinit"));
     S9S_VERIFY(!jobData.contains("install_software"));
+
+    return true;
+}
+
+/**
+ * Testing listConfigStorage() (the "pool-controllers --list-config-storage"
+ * call) request shape.
+ *
+ * A read of what the controller already knows: it takes no arguments, so the
+ * only thing that can be wrong is the endpoint and the operation name, and the
+ * controller lower-cases nothing - it compares the operation as sent.
+ */
+bool
+UtS9sRpcClient::testListConfigStorage()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listConfigStorage(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "listconfigstorage");
+
+    // Nothing else belongs in the request: adding a filter here would have to
+    // be matched on the controller side, and it is not.
+    S9S_VERIFY(!payload.contains("job"));
+    S9S_VERIFY(!payload.contains("cluster_id"));
+
+    return true;
+}
+
+/**
+ * Testing listOpenBaoVersions() (the "pool-controllers
+ * --list-openbao-versions" call) request shape.
+ */
+bool
+UtS9sRpcClient::testListOpenBaoVersions()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listOpenBaoVersions(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "listopenbaoversions");
+    S9S_VERIFY(!payload.contains("job"));
 
     return true;
 }

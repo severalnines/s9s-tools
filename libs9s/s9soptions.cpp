@@ -557,6 +557,8 @@ enum S9sOptionType
     OptionUpdateCmon,
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
+    OptionListConfigStorage,
+    OptionListOpenBaoVersions,
     OptionOpenBaoMount,
     OptionOpenBaoNamespace,
     OptionOpenBaoPackagePath,
@@ -5757,6 +5759,24 @@ S9sOptions::isAddOpenBao() const
 }
 
 /**
+ * \returns true if the --list-config-storage command line option was provided.
+ */
+bool
+S9sOptions::isListConfigStorage() const
+{
+    return getBool("list_config_storage");
+}
+
+/**
+ * \returns true if the --list-openbao-versions command line option was provided.
+ */
+bool
+S9sOptions::isListOpenBaoVersions() const
+{
+    return getBool("list_openbao_versions");
+}
+
+/**
  * \returns true if any of the --openbao-* command line options was provided.
  *
  * Used by the option check to reject the parameters of the OpenBao installation
@@ -9188,6 +9208,9 @@ S9sOptions::printHelpControllers()
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
+"  --list-config-storage      List the configuration/secret storage instances the\n"
+"                             controller knows about.\n"
+"  --list-openbao-versions    List the available OpenBao versions.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
@@ -20136,6 +20159,8 @@ S9sOptions::readOptionsControllers(
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
+                    {"list-config-storage", no_argument, 0,    OptionListConfigStorage},
+                    {"list-openbao-versions", no_argument, 0,  OptionListOpenBaoVersions},
                     {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
@@ -20406,6 +20431,16 @@ S9sOptions::readOptionsControllers(
                 m_options["add_openbao"] = true;
                 break;
 
+            case OptionListConfigStorage:
+                // --list-config-storage
+                m_options["list_config_storage"] = true;
+                break;
+
+            case OptionListOpenBaoVersions:
+                // --list-openbao-versions
+                m_options["list_openbao_versions"] = true;
+                break;
+
             case OptionSetMaxClustersCapacity:
                 // --set-max-clusters-capacity=N
                 if (optarg)
@@ -20586,6 +20621,12 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isAddOpenBao())
+        countOptions++;
+
+    if (isListConfigStorage())
+        countOptions++;
+
+    if (isListOpenBaoVersions())
         countOptions++;
 
     if (countOptions == 0)

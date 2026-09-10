@@ -562,6 +562,8 @@ class S9sOptions
         bool isSetMaxClustersCapacityRequested() const;
         int  getMaxClustersCapacity() const;
         bool isAddOpenBao() const;
+        bool isListConfigStorage() const;
+        bool isListOpenBaoVersions() const;
         bool hasOpenBaoOption() const;
         S9sString openBaoMount() const;
         S9sString openBaoNamespace() const;
