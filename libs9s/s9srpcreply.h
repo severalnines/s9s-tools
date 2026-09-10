@@ -155,6 +155,8 @@ class S9sRpcReply : public S9sVariantMap
         void printWatchlists();
         void printWatchlistsLong();
 
+        void printConfigStorageList();
+        void printOpenBaoVersionList();
         void printPoolControllers();
         void printPoolControllersLong();
 

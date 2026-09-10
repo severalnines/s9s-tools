@@ -51,6 +51,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testDeleteDb();
         bool testListDb();
         bool testAddOpenBao();
+        bool testListOpenBaoOperations();
         bool testVirtualRouterId();
         bool testRestoreClusterInfoOptions();
 };

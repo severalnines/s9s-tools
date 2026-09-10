@@ -377,6 +377,8 @@ class S9sRpcClient
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);
         bool updateCmon(S9sOptions *options);
+        bool listConfigStorage(S9sOptions *options);
+        bool listOpenBaoVersions(S9sOptions *options);
         bool setMaxClustersCapacity(S9sOptions *options);
         bool installOpenBao(S9sOptions *options);
 

@@ -68,6 +68,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddOpenBao, retval);
+    PERFORM_TEST(testListOpenBaoOperations, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
 
@@ -1086,6 +1087,76 @@ UtS9sOptions::testAddOpenBao()
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
 
     S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the two read-only OpenBao options on the pool-controllers
+ * subcommand: --list-config-storage and --list-openbao-versions.
+ *
+ * Both take no arguments and neither needs --nodes: they ask the controller
+ * what it already knows, which is the point of having them before a host is
+ * chosen.
+ */
+bool
+UtS9sOptions::testListOpenBaoOperations()
+{
+    S9sOptions *options;
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-config-storage",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListConfigStorage());
+    S9S_VERIFY(!options->isListOpenBaoVersions());
+    S9S_VERIFY(!options->isAddOpenBao());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-openbao-versions",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isListOpenBaoVersions());
+    S9S_VERIFY(!options->isListConfigStorage());
+    S9S_VERIFY(!options->isAddOpenBao());
+
+    // Neither is set when another operation was asked for, so the dispatch
+    // cannot fall into a listing by accident.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(!options->isListConfigStorage());
+    S9S_VERIFY(!options->isListOpenBaoVersions());
+
+    // They are operations in their own right, so asking for two at once is a
+    // bad command line rather than a silent precedence.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-config-storage",
+                            "--list-openbao-versions",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
     return true;
 }
 

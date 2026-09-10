@@ -1564,6 +1564,32 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
+        else if (options->isListOpenBaoVersions())
+        {
+            success = client.listOpenBaoVersions(options);
+            S9sRpcReply reply = client.reply();
+            if (success && reply.isOk())
+                reply.printOpenBaoVersionList();
+            else
+            {
+                PRINT_ERROR("Failed to list OpenBao versions: %s",
+                            STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+        }
+        else if (options->isListConfigStorage())
+        {
+            success = client.listConfigStorage(options);
+            S9sRpcReply reply = client.reply();
+            if (success && reply.isOk())
+                reply.printConfigStorageList();
+            else
+            {
+                PRINT_ERROR("Failed to list configuration storage: %s",
+                            STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+        }
         else if (options->isAddOpenBao())
         {
             success = client.installOpenBao(options);

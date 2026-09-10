@@ -14178,6 +14178,30 @@ S9sRpcClient::registerRedisOrValkeyCluster(
 }
 
 bool
+S9sRpcClient::listConfigStorage(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "listconfigstorage";
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::listOpenBaoVersions(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "listopenbaoversions";
+
+    return executeRequest(uri, request);
+}
+
+bool
 S9sRpcClient::setMaxClustersCapacity(S9sOptions *options)
 {
     const S9sString uri = "/v2/poolcontrollers/";

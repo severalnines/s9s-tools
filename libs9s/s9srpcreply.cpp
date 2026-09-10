@@ -1611,6 +1611,118 @@ S9sRpcReply::printCloudCredentials()
 }
  
 /**
+ * Prints the OpenBao versions the controller has been exercised against.
+ *
+ * \code
+ * s9s pool-controllers --list-openbao-versions
+ * 2.5.4 (default)
+ * 2.4.1
+ * \endcode
+ *
+ * The list is advisory: --provider-version accepts any version the OpenBao
+ * release page publishes.
+ */
+void
+S9sRpcReply::printOpenBaoVersionList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    const S9sVariantList versions = operator[]("openbao_versions").toVariantList();
+    const S9sString defaultVersion = operator[]("default_version").toString();
+
+    for (uint idx = 0; idx < versions.size(); ++idx)
+    {
+        const S9sString version = versions[idx].toString();
+
+        if (!options->isBatchRequested() && version == defaultVersion)
+            printf("%s (default)\n", STR(version));
+        else
+            printf("%s\n", STR(version));
+    }
+}
+
+/**
+ * Prints the configuration/secret storage instances the controller knows about.
+ *
+ * \code
+ * s9s pool-controllers --list-config-storage
+ * TYPE    HOSTNAME    PORT VERSION MOUNT  NAMESPACE CREDS
+ * openbao 10.0.3.163  8300 2.6.2   ftbao  -         yes
+ * \endcode
+ *
+ * CREDS says whether the controller has ssh credentials recorded for the
+ * instance, which is what lets a pool-mode switch read the token by itself.
+ * The token is never part of the reply and is never printed.
+ */
+void
+S9sRpcReply::printConfigStorageList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    const S9sVariantList storageList = operator[]("config_storage").toVariantList();
+
+    if (storageList.empty())
+    {
+        if (!options->isBatchRequested())
+        {
+            printf("No configuration storage is registered.\n");
+        }
+        return;
+    }
+
+    if (!options->isBatchRequested())
+    {
+        printf("%-8s %-24s %5s %-8s %-16s %-12s %s\n",
+               "TYPE", "HOSTNAME", "PORT", "VERSION", "MOUNT", "NAMESPACE", "CREDS");
+    }
+
+    for (uint idx = 0; idx < storageList.size(); ++idx)
+    {
+        S9sVariantMap entry = storageList[idx].toVariantMap();
+        const S9sString nameSpace = entry["namespace"].toString();
+
+        const S9sString version = entry["version"].toString();
+
+        printf("%-8s %-24s %5d %-8s %-16s %-12s %s\n",
+               STR(entry["type"].toString()),
+               STR(entry["hostname"].toString()),
+               entry["port"].toInt(),
+               version.empty() ? "-" : STR(version),
+               STR(entry["mount"].toString()),
+               nameSpace.empty() ? "-" : STR(nameSpace),
+               entry["credentials_stored"].toBoolean() ? "yes" : "no");
+    }
+}
+
+/**
  * Lists the cloud credentials stored on the controller (excluding sensitive info)
  *
  * \code
