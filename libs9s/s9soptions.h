@@ -286,7 +286,10 @@ class S9sOptions
 
         bool hasControllerIdOption() const;
         int controllerId() const;
-        
+
+        bool hasNodeOption() const;
+        S9sString node() const;
+
         bool hasBackupId() const;
         int backupId() const;
 

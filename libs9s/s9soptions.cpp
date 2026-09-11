@@ -543,6 +543,7 @@ enum S9sOptionType
     OptionImportDb,
     OptionDeleteDb,
     OptionListDb,
+    OptionNode,
     OptionControllersList,
     OptionPrintDeploymentInfo,
     OptionAssignedController,
@@ -2800,6 +2801,30 @@ S9sOptions::controllerId() const
     if(!hasControllerIdOption())
         return 0;
     return m_options.at("controller_id").toInt();
+}
+
+
+/**
+ * \returns True if the --node command line option was provided.
+ */
+bool
+S9sOptions::hasNodeOption() const
+{
+    return m_options.contains("node");
+}
+
+/**
+ * \returns The hostname/IP (from --node) of the pool's cmon DB HA InnoDB
+ * Cluster node --delete-db should target, or an empty string if --node
+ * wasn't given - an alternative to --nodes (hostname[:port]) that skips
+ * having to also specify the port.
+ */
+S9sString
+S9sOptions::node() const
+{
+    if (!hasNodeOption())
+        return S9sString();
+    return m_options.at("node").toString();
 }
 
 
@@ -9201,7 +9226,8 @@ S9sOptions::printHelpControllers()
 "  --import-db                To import an existing, standalone cmon DB instance into\n"
 "                             the pool (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
-"                             InnoDB Cluster (requires --nodes with exactly one node).\n"
+"                             InnoDB Cluster (requires --nodes with exactly one node, or\n"
+"                             --node instead).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
@@ -9212,6 +9238,8 @@ S9sOptions::printHelpControllers()
 "                             controller knows about.\n"
 "  --list-openbao-versions    List the available OpenBao versions.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
+"  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
+"                             only, alternative to --nodes - no port needed).\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
@@ -20164,6 +20192,7 @@ S9sOptions::readOptionsControllers(
                     {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
+                    {"node",             required_argument, 0, OptionNode},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
@@ -20466,6 +20495,11 @@ S9sOptions::readOptionsControllers(
             case OptionControllerId:
                 // --controller-id
                 m_options["controller_id"] = optarg;
+                break;
+
+            case OptionNode:
+                // --node
+                m_options["node"] = optarg;
                 break;
 
             case OptionDbClusterId:
