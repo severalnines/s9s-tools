@@ -552,7 +552,6 @@ class S9sOptions
         bool isUnsetPoolModeRequested() const;
         bool isAddController() const;
         bool isAddDb() const;
-        bool isImportDb() const;
         bool isDeleteDb() const;
         bool isListDb() const;
         bool isStartController() const;
