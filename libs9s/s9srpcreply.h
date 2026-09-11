@@ -68,6 +68,7 @@ class S9sRpcReply : public S9sVariantMap
         S9sTreeNode tree();
 
         S9sVariantList jobs();
+        S9sVariantList stuckJobs();
         int jobId() const;
         S9sString jobTitle() const;
         bool isJobFailed() const;
@@ -133,6 +134,7 @@ class S9sRpcReply : public S9sVariantMap
         void printLogList();
         void printNodeList();
         void printJobList();
+        void printStuckJobList();
         void printBackupList();
         void printBinlogBackupList();
 

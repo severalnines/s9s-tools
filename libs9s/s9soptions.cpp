@@ -367,6 +367,7 @@ enum S9sOptionType
     OptionIncludeDatabasesInfo,
     OptionFail,
     OptionSuccess,
+    OptionStuck,
     OptionAccess,
     OptionTemplate,
     OptionSubnetId,
@@ -6640,6 +6641,15 @@ S9sOptions::isSuccessRequested() const
 }
 
 /**
+ * \returns True if the --stuck command line option was provided.
+ */
+bool
+S9sOptions::isStuckRequested() const
+{
+    return getBool("stuck");
+}
+
+/**
  * \returns True if the --enable command line option was provided.
  */
 bool
@@ -8268,6 +8278,7 @@ S9sOptions::printHelpJob()
 "  --list                     List the jobs.\n"
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
+"  --stuck                    List jobs running longer than their stuck-job threshold.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
 "  --disable                  Disable or pause a recurring/scheduled job instance.\n"
 "  --enable                   Enable/resume a recurring/scheduled job instance.\n"
@@ -12994,10 +13005,13 @@ S9sOptions::checkOptionsJob()
      */
     if (isListRequested())
         countOptions++;
-    
+
+    if (isStuckRequested())
+        countOptions++;
+
     if (isKillRequested())
         countOptions++;
-    
+
     if (isEnableRequested())
         countOptions++;
 
@@ -17263,6 +17277,7 @@ S9sOptions::readOptionsJob(
         { "log",              no_argument,       0, 'G'                   },
         { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
+        { "stuck",            no_argument,       0,  OptionStuck          },
         { "wait",             no_argument,       0,  5                    },
         { "disable",          no_argument,       0, OptionDisable         },
         { "enable",           no_argument,       0, OptionEnable          },
@@ -17401,6 +17416,11 @@ S9sOptions::readOptionsJob(
             case OptionSuccess:
                 // --success
                 m_options["success"] = true;
+                break;
+
+            case OptionStuck:
+                // --stuck
+                m_options["stuck"] = true;
                 break;
 
             case OptionConfigFile:
