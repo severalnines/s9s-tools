@@ -2006,14 +2006,13 @@ S9sRpcReply::printCmonDbClusterNodes()
  * getCmonDbClusterNodes call, "pool-controllers --list-db").
  *
  * The reply shape is intentionally minimal (CmonPoolModeDbClusterNodeHost
- * records: id/hostname/port only - no role/status, since nothing monitors
- * live member state for these records). "id" is the cmon-assigned host id
- * that --delete-db --node-id accepts as an alternative to --nodes:
+ * records: hostname/port only - no role/status, since nothing monitors
+ * live member state for these records):
  *
  * \code{.js}
  * {
  *   "cmon_db_cluster_nodes": [
- *     {"class_name": "CmonPoolModeDbClusterNodeHost", "cluster_id": 0, "id": 42,
+ *     {"class_name": "CmonPoolModeDbClusterNodeHost", "cluster_id": 0,
  *      "hostname": "10.0.1.42", "port": 3306},
  *     ...
  *   ],
@@ -2026,9 +2025,9 @@ S9sRpcReply::printCmonDbClusterNodes()
  *
  * \code
  * s9s pool-controllers --list-db
- * ID HOSTNAME  PORT
- * 42 10.0.1.42 3306
- * 43 10.0.1.87 3306
+ * HOSTNAME  PORT
+ * 10.0.1.42 3306
+ * 10.0.1.87 3306
  * \endcode
  */
 void
@@ -2037,7 +2036,6 @@ S9sRpcReply::printCmonDbClusterNodesLong()
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList  nodes = operator[]("cmon_db_cluster_nodes").toVariantList();
 
-    S9sFormat      idFormat("\033[92m", TERM_NORMAL);
     S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);
 
@@ -2045,11 +2043,9 @@ S9sRpcReply::printCmonDbClusterNodesLong()
     for (const auto & n : nodes)
     {
         S9sVariantMap  w = n.toVariantMap();
-        S9sString      id       = w["id"].toString();
         S9sString      hostname = w["hostname"].toString();
         S9sString      port     = w["port"].toString();
 
-        idFormat.widen(id);
         hostnameFormat.widen(hostname);
         portFormat.widen(port);
     }
@@ -2058,7 +2054,6 @@ S9sRpcReply::printCmonDbClusterNodesLong()
     if (!options->isNoHeaderRequested())
     {
         ::printf("%s", headerColorBegin());
-        idFormat.printHeader("ID");
         hostnameFormat.printHeader("HOSTNAME");
         portFormat.printHeader("PORT");
         ::printf("%s", headerColorEnd());
@@ -2069,11 +2064,9 @@ S9sRpcReply::printCmonDbClusterNodesLong()
     for (const auto & n : nodes)
     {
         S9sVariantMap  w = n.toVariantMap();
-        S9sString      id       = w["id"].toString();
         S9sString      hostname = w["hostname"].toString();
         S9sString      port     = w["port"].toString();
 
-        idFormat.printf(id);
         hostnameFormat.printf(hostname);
         portFormat.printf(port);
         ::printf("\n");

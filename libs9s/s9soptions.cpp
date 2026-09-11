@@ -543,7 +543,7 @@ enum S9sOptionType
     OptionImportDb,
     OptionDeleteDb,
     OptionListDb,
-    OptionNodeId,
+    OptionNode,
     OptionControllersList,
     OptionPrintDeploymentInfo,
     OptionAssignedController,
@@ -2803,27 +2803,26 @@ S9sOptions::controllerId() const
 
 
 /**
- * \returns True if the --node-id command line option was provided.
+ * \returns True if the --node command line option was provided.
  */
 bool
-S9sOptions::hasNodeIdOption() const
+S9sOptions::hasNodeOption() const
 {
-    return m_options.contains("node_id");
+    return m_options.contains("node");
 }
 
 /**
- * \returns The id (from --node-id) of the pool's cmon DB HA InnoDB Cluster
- * node --delete-db should target, or 0 if --node-id wasn't given - an
- * alternative to --nodes (hostname[:port]) that identifies the same
- * CmonPoolModeDbClusterNodeHost record by its cmon-assigned host id instead
- * (see `s9s pool-controllers --list-db`'s own "id" column).
+ * \returns The hostname/IP (from --node) of the pool's cmon DB HA InnoDB
+ * Cluster node --delete-db should target, or an empty string if --node
+ * wasn't given - an alternative to --nodes (hostname[:port]) that skips
+ * having to also specify the port.
  */
-int
-S9sOptions::nodeId() const
+S9sString
+S9sOptions::node() const
 {
-    if (!hasNodeIdOption())
-        return 0;
-    return m_options.at("node_id").toInt();
+    if (!hasNodeOption())
+        return S9sString();
+    return m_options.at("node").toString();
 }
 
 
@@ -9208,7 +9207,7 @@ S9sOptions::printHelpControllers()
 "                             the pool (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
 "                             InnoDB Cluster (requires --nodes with exactly one node, or\n"
-"                             --node-id instead - see --list-db's \"id\" column).\n"
+"                             --node instead).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
@@ -9216,8 +9215,8 @@ S9sOptions::printHelpControllers()
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
-"  --node-id                  To specify a pool cmon DB HA node by its id (--delete-db only,\n"
-"                             alternative to --nodes).\n"
+"  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
+"                             only, alternative to --nodes - no port needed).\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
@@ -20168,7 +20167,7 @@ S9sOptions::readOptionsControllers(
                     {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
-                    {"node-id",          required_argument, 0, OptionNodeId},
+                    {"node",             required_argument, 0, OptionNode},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
@@ -20463,9 +20462,9 @@ S9sOptions::readOptionsControllers(
                 m_options["controller_id"] = optarg;
                 break;
 
-            case OptionNodeId:
-                // --node-id
-                m_options["node_id"] = optarg;
+            case OptionNode:
+                // --node
+                m_options["node"] = optarg;
                 break;
 
             case OptionDbClusterId:

@@ -11902,14 +11902,14 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
     S9sVariantMap jobData = composeJobData();
     S9sVariantMap jobSpec;
 
-    // --node-id is an alternative to --nodes: identifies the same pool DB
-    // HA node by its cmon-assigned host id (see --list-db's "id" column)
-    // instead of hostname[:port]. Mutually exclusive with --nodes - takes
-    // priority if both were somehow given, since it's the more specific of
-    // the two.
-    if (options->hasNodeIdOption())
+    // --node is an alternative to --nodes: identifies the same pool DB HA
+    // node by hostname/IP alone (no port needed), a separate "node" job_data
+    // field so the BE never confuses it with server_address/port. Mutually
+    // exclusive with --nodes - takes priority if both were somehow given,
+    // since it's the more specific of the two.
+    if (options->hasNodeOption())
     {
-        jobData["id"] = options->nodeId();
+        jobData["node"] = options->node();
     }
     else if (hosts.size() == 1)
     {
@@ -11920,7 +11920,7 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
     else
     {
         PRINT_ERROR(
-                "Exactly one node (via --nodes) or --node-id must be "
+                "Exactly one node (via --nodes) or --node must be "
                 "specified for the deleteCmonDbInstance operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;

@@ -980,20 +980,20 @@ UtS9sOptions::testDeleteDb()
 
     S9sOptions::uninit();
 
-    // --node-id is an alternative to --nodes, identifying the pool DB HA
-    // node by its cmon-assigned host id instead of hostname[:port].
+    // --node is an alternative to --nodes, identifying the pool DB HA node
+    // by hostname/IP alone, without needing a port.
     const char *argv3[] = { "/bin/s9s",
                             "pool-controllers",
                             "--delete-db",
-                            "--node-id=42",
+                            "--node=10.16.186.1",
                             nullptr };
     int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
 
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
     S9S_VERIFY(options->isDeleteDb());
-    S9S_VERIFY(options->hasNodeIdOption());
-    S9S_COMPARE(options->nodeId(), 42);
+    S9S_VERIFY(options->hasNodeOption());
+    S9S_COMPARE(options->node(), "10.16.186.1");
     S9S_VERIFY(options->nodes().empty());
 
     S9sOptions::uninit();
