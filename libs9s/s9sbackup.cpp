@@ -343,6 +343,72 @@ S9sBackup::endAsString() const
 }
 
 /**
+ * \returns When the controller will delete this backup, as the controller
+ *   reports it, or the empty variant when it does not report it at all.
+ *
+ * Read flat, the way begin() and end() are: s9s asks getBackups without a
+ * backup_record_version, so the reply is the flat record and not the version 2
+ * one that nests everything under "metadata".
+ */
+S9sVariant
+S9sBackup::expires() const
+{
+    if (m_properties.contains("expires"))
+        return m_properties.at("expires");
+
+    return S9sVariant();
+}
+
+/**
+ * \returns The expiry formatted as the command line options ask for, "NEVER"
+ *   for a backup the controller keeps forever, or "-" when there is no answer.
+ *
+ * The three cases are not interchangeable, and only the controller can tell
+ * them apart. An empty string is its way of saying "never deleted" - it knows
+ * the retention and it resolved to keep-forever - while an absent field means
+ * this controller does not report expiries at all, and one that cannot be
+ * parsed means we would be inventing a date. A blank column for all three would
+ * read as "no retention" for a backup that has one.
+ */
+S9sString
+S9sBackup::expiresAsString() const
+{
+    S9sOptions  *options   = S9sOptions::instance();
+    S9sVariant   value     = expires();
+    S9sString    rawString = value.toString();
+    S9sDateTime  expiry;
+
+    if (value.isInvalid())
+        return "-";
+
+    if (rawString.empty())
+        return "NEVER";
+
+    if (!expiry.parse(rawString))
+        return "-";
+
+    return options->formatDateTime(expiry);
+}
+
+/**
+ * \returns True when the controller found this backup past its retention and
+ *   kept it anyway, to honour backup_n_safety_copies.
+ *
+ * This is why an expiry in the past is not a contradiction: the date says when
+ * the backup became eligible for deletion, this says the housekeeping looked at
+ * it and declined. Only the controller can answer it - the rule counts and
+ * orders the cluster's viable backups.
+ */
+bool
+S9sBackup::retainedBySafetyCopies() const
+{
+    if (m_properties.contains("retained_by_safety_copies"))
+        return m_properties.at("retained_by_safety_copies").toBoolean();
+
+    return false;
+}
+
+/**
  * \returns The absolute path of the root directory where these backup files are
  * placed.
  */
@@ -869,6 +935,23 @@ S9sBackup::toString(
                     // The verification status.
                     partFormat += 's';
                     tmp.sprintf(STR(partFormat), STR(verificationStatus()));
+                    retval += tmp;
+                    break;
+
+                case 'x':
+                    // When the controller will delete this backup.
+                    partFormat += 's';
+                    tmp.sprintf(STR(partFormat), STR(expiresAsString()));
+                    retval += tmp;
+                    break;
+
+                case 'X':
+                    // Expired, but kept for the safety copies rule.
+                    partFormat += 's';
+
+                    tmp.sprintf(STR(partFormat),
+                            retainedBySafetyCopies() ? "KEPT" : "-");
+
                     retval += tmp;
                     break;
                 

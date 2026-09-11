@@ -67,6 +67,9 @@ class S9sBackup
         S9sString beginAsString() const;
         S9sVariant end() const;
         S9sString endAsString() const;
+        S9sVariant expires() const;
+        S9sString expiresAsString() const;
+        bool retainedBySafetyCopies() const;
         S9sString rootDir() const;
         bool isCompressed() const;
         S9sString method() const;

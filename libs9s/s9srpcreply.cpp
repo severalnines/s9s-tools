@@ -10436,6 +10436,7 @@ S9sRpcReply::printBackupListLong()
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
     S9sFormat       ownerFormat;
+    S9sFormat       expiresFormat;
    
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
@@ -10490,6 +10491,14 @@ S9sRpcReply::printBackupListLong()
                 
         created = backup.beginAsString();
         createdFormat.widen(created);
+
+        /*
+         * The same three answers as the %x format field: a date, "NEVER", or
+         * "-" when the controller does not report expiries at all. An older
+         * controller therefore leaves a column of dashes rather than a blank
+         * one, which would read as "no retention".
+         */
+        expiresFormat.widen(backup.expiresAsString());
     }
 
     /*
@@ -10508,6 +10517,7 @@ S9sRpcReply::printBackupListLong()
         hostNameFormat.printHeader("HOSTNAME");
         createdFormat.printHeader("CREATED");
         sizeFormat.printHeader("SIZE");
+        expiresFormat.printHeader("EXPIRES");
         printf("TITLE");
  
         printf("%s", headerColorEnd());
@@ -10624,6 +10634,12 @@ S9sRpcReply::printBackupListLong()
         
         createdFormat.printf(created);
         sizeFormat.printf(sizeString);
+
+        /*
+         * Before the title, which is last and printed without padding: a
+         * column after it would be pushed around by every title in the list.
+         */
+        expiresFormat.printf(backup.expiresAsString());
         printf("%s", STR(backup.title()));
         printf("\n");
     }
