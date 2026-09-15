@@ -174,10 +174,11 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testConfigureWal, retval);
     PERFORM_TEST(testAddController, retval);
     PERFORM_TEST(testAddDb, retval);
-    PERFORM_TEST(testImportDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
+    PERFORM_TEST(testListConfigStorage, retval);
+    PERFORM_TEST(testListOpenBaoVersions, retval);
 
     return retval;
 }
@@ -3024,59 +3025,6 @@ UtS9sRpcClient::testAddDb()
 }
 
 /**
- * Testing importCmonDbInstance() (the "pool-controllers --import-db" job -
- * CmdImportCmonDbInstance) request shape: job_spec.command, and job_data's
- * server_address/port/force fields.
- */
-bool
-UtS9sRpcClient::testImportDb()
-{
-    S9sOptions         *options = S9sOptions::instance();
-    S9sRpcClientTester  client;
-    S9sVariantMap       payload;
-    S9sVariantMap       jobData;
-
-    // Explicit port, force omitted (must default to false).
-    S9sOptions::uninit();
-    options = S9sOptions::instance();
-    options->setNodes("10.0.1.87:3307");
-
-    S9S_VERIFY(client.importCmonDbInstance(options));
-    payload = client.lastPayload();
-
-    if (isVerbose())
-        printDebug(payload);
-
-    S9S_COMPARE(payload["operation"], "createJobInstance");
-    S9S_COMPARE(
-            payload.valueByPath("/job/job_spec/command").toString(),
-            "ImportCmonDbInstance");
-
-    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
-    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
-    S9S_COMPARE(jobData["port"], 3307);
-    S9S_VERIFY(!jobData["force"].toBoolean());
-
-    // No port on --nodes -> must default to 3306 (S9sNode::port() itself
-    // defaults to 0, not 3306, so importCmonDbInstance() must apply the
-    // fallback itself). --force must also come through.
-    S9sOptions::uninit();
-    options = S9sOptions::instance();
-    options->setNodes("10.0.1.87");
-    options->m_options["force"] = true;
-
-    S9S_VERIFY(client.importCmonDbInstance(options));
-    payload = client.lastPayload();
-
-    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
-    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
-    S9S_COMPARE(jobData["port"], 3306);
-    S9S_VERIFY(jobData["force"].toBoolean());
-
-    return true;
-}
-
-/**
  * Testing deleteCmonDbInstance() (the "pool-controllers --delete-db" job -
  * CmdDeleteCmonDbInstance) request shape: job_spec.command, and job_data's
  * server_address/port/force fields.
@@ -3241,6 +3189,66 @@ UtS9sRpcClient::testInstallOpenBao()
     S9S_VERIFY(!jobData.contains("openbao_namespace"));
     S9S_VERIFY(!jobData.contains("openbao_force_reinit"));
     S9S_VERIFY(!jobData.contains("install_software"));
+
+    return true;
+}
+
+/**
+ * Testing listConfigStorage() (the "pool-controllers --list-config-storage"
+ * call) request shape.
+ *
+ * A read of what the controller already knows: it takes no arguments, so the
+ * only thing that can be wrong is the endpoint and the operation name, and the
+ * controller lower-cases nothing - it compares the operation as sent.
+ */
+bool
+UtS9sRpcClient::testListConfigStorage()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listConfigStorage(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "listconfigstorage");
+
+    // Nothing else belongs in the request: adding a filter here would have to
+    // be matched on the controller side, and it is not.
+    S9S_VERIFY(!payload.contains("job"));
+    S9S_VERIFY(!payload.contains("cluster_id"));
+
+    return true;
+}
+
+/**
+ * Testing listOpenBaoVersions() (the "pool-controllers
+ * --list-openbao-versions" call) request shape.
+ */
+bool
+UtS9sRpcClient::testListOpenBaoVersions()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listOpenBaoVersions(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "listopenbaoversions");
+    S9S_VERIFY(!payload.contains("job"));
 
     return true;
 }

@@ -207,7 +207,7 @@ S9sRpcReply::uuid() const
  * It is either one job coming from the "job" field of the reply or zero to many
  * maps coming from the "jobs" field. This depends on the request we sent.
  */
-S9sVariantList 
+S9sVariantList
 S9sRpcReply::jobs()
 {
     S9sVariantList retval;
@@ -218,6 +218,24 @@ S9sRpcReply::jobs()
         retval = operator[]("jobs").toVariantList();
 
     return retval;
+}
+
+/**
+ * \returns The variant list that contains variant maps with the jobs
+ *   currently considered "stuck" (running longer than their command
+ *   class's configured threshold), as returned by a "getStuckJobs" request.
+ *   Each map has the same fields as jobs(), plus "elapsed_seconds",
+ *   "stuck_threshold_hours", "job_class", and - when the job reported a
+ *   forward-progress heartbeat - "last_progress_at". "elapsed_seconds" is
+ *   measured from "last_progress_at" when present, else from the start time.
+ */
+S9sVariantList
+S9sRpcReply::stuckJobs()
+{
+    if (contains("stuck_jobs"))
+        return operator[]("stuck_jobs").toVariantList();
+
+    return S9sVariantList();
 }
 
 /**
@@ -1610,6 +1628,118 @@ S9sRpcReply::printCloudCredentials()
         printCloudCredentialsLong();
 }
  
+/**
+ * Prints the OpenBao versions the controller has been exercised against.
+ *
+ * \code
+ * s9s pool-controllers --list-openbao-versions
+ * 2.5.4 (default)
+ * 2.4.1
+ * \endcode
+ *
+ * The list is advisory: --provider-version accepts any version the OpenBao
+ * release page publishes.
+ */
+void
+S9sRpcReply::printOpenBaoVersionList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    const S9sVariantList versions = operator[]("openbao_versions").toVariantList();
+    const S9sString defaultVersion = operator[]("default_version").toString();
+
+    for (uint idx = 0; idx < versions.size(); ++idx)
+    {
+        const S9sString version = versions[idx].toString();
+
+        if (!options->isBatchRequested() && version == defaultVersion)
+            printf("%s (default)\n", STR(version));
+        else
+            printf("%s\n", STR(version));
+    }
+}
+
+/**
+ * Prints the configuration/secret storage instances the controller knows about.
+ *
+ * \code
+ * s9s pool-controllers --list-config-storage
+ * TYPE    HOSTNAME    PORT VERSION MOUNT  NAMESPACE CREDS
+ * openbao 10.0.3.163  8300 2.6.2   ftbao  -         yes
+ * \endcode
+ *
+ * CREDS says whether the controller has ssh credentials recorded for the
+ * instance, which is what lets a pool-mode switch read the token by itself.
+ * The token is never part of the reply and is never printed.
+ */
+void
+S9sRpcReply::printConfigStorageList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    const S9sVariantList storageList = operator[]("config_storage").toVariantList();
+
+    if (storageList.empty())
+    {
+        if (!options->isBatchRequested())
+        {
+            printf("No configuration storage is registered.\n");
+        }
+        return;
+    }
+
+    if (!options->isBatchRequested())
+    {
+        printf("%-8s %-24s %5s %-8s %-16s %-12s %s\n",
+               "TYPE", "HOSTNAME", "PORT", "VERSION", "MOUNT", "NAMESPACE", "CREDS");
+    }
+
+    for (uint idx = 0; idx < storageList.size(); ++idx)
+    {
+        S9sVariantMap entry = storageList[idx].toVariantMap();
+        const S9sString nameSpace = entry["namespace"].toString();
+
+        const S9sString version = entry["version"].toString();
+
+        printf("%-8s %-24s %5d %-8s %-16s %-12s %s\n",
+               STR(entry["type"].toString()),
+               STR(entry["hostname"].toString()),
+               entry["port"].toInt(),
+               version.empty() ? "-" : STR(version),
+               STR(entry["mount"].toString()),
+               nameSpace.empty() ? "-" : STR(nameSpace),
+               entry["credentials_stored"].toBoolean() ? "yes" : "no");
+    }
+}
+
 /**
  * Lists the cloud credentials stored on the controller (excluding sensitive info)
  *
@@ -9931,7 +10061,164 @@ S9sRpcReply::printJobListLong()
         printf("-");
 
     printf("\n");
-    
+
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
+}
+
+// Formats a duration in seconds as "HH:MM:SS" - hours are not capped at 24,
+// so a job stuck for multiple days still prints as a single number of hours
+// (e.g. "50:23:11") rather than rolling over into a separate day count.
+static S9sString
+elapsedTimeString(ulonglong seconds)
+{
+    S9sString retval;
+
+    retval.sprintf(
+            "%02llu:%02llu:%02llu",
+            seconds / 3600ull,
+            (seconds % 3600ull) / 60ull,
+            seconds % 60ull);
+
+    return retval;
+}
+
+// The job's last forward-progress heartbeat as a printable timestamp, or "-"
+// when it reported none (elapsed time is then measured from its start).
+static S9sString
+lastProgressString(S9sVariantMap &jobMap)
+{
+    S9sString value = jobMap["last_progress_at"].toString();
+    if (value.empty())
+        return "-";
+
+    S9sDateTime tmp;
+    tmp.parse(value);
+    return tmp.toString(S9sDateTime::MySqlLogFileFormat);
+}
+
+/**
+ * Prints the jobs currently running longer than their command class's
+ * stuck-job threshold (reply of a "getStuckJobs" request, e.g.
+ * s9s job --stuck).
+ */
+void
+S9sRpcReply::printStuckJobList()
+{
+    S9sOptions     *options         = S9sOptions::instance();
+    S9sVariantList  theList         = stuckJobs();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    int             total           = operator[]("total").toInt();
+    int             nLines          = 0;
+    S9sFormat       idFormat;
+    S9sFormat       cidFormat;
+    S9sFormat       classFormat;
+    S9sFormat       elapsedFormat;
+    S9sFormat       thresholdFormat;
+    S9sFormat       lastProgressFormat;
+    S9sFormat       stateFormat;
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    //
+    // First run, collecting some information.
+    //
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap       = theList[idx].toVariantMap();
+        S9sJob        job          = theMap;
+        int           jobId        = job.jobId();
+        int           cid          = job.clusterId();
+        S9sString     status       = job.status();
+        S9sString     jobClass     = theMap["job_class"].toString();
+        S9sString     elapsed      = elapsedTimeString(
+                theMap["elapsed_seconds"].toULongLong());
+        S9sString     threshold;
+
+        threshold.sprintf(
+                "%lluh", theMap["stuck_threshold_hours"].toULongLong());
+
+        idFormat.widen(jobId);
+        cidFormat.widen(cid);
+        classFormat.widen(jobClass);
+        elapsedFormat.widen(elapsed);
+        thresholdFormat.widen(threshold);
+        lastProgressFormat.widen(lastProgressString(theMap));
+        stateFormat.widen(status);
+
+        ++nLines;
+    }
+
+    //
+    // Printing the header. If we have no lines to print we won't print the
+    // header either.
+    //
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        idFormat.printHeader("ID");
+        cidFormat.printHeader("CID");
+        classFormat.printHeader("CLASS");
+        elapsedFormat.printHeader("ELAPSED");
+        thresholdFormat.printHeader("THRESHOLD");
+        lastProgressFormat.printHeader("LAST PROGRESS");
+        stateFormat.printHeader("STATE");
+        printf("TITLE");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+
+    //
+    // Second run, doing the actual printing.
+    //
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap       = theList[idx].toVariantMap();
+        S9sJob        job          = theMap;
+        int           jobId        = job.jobId();
+        int           cid          = job.clusterId();
+        S9sString     status       = job.status();
+        S9sString     title        = job.title();
+        S9sString     jobClass     = theMap["job_class"].toString();
+        S9sString     elapsed      = elapsedTimeString(
+                theMap["elapsed_seconds"].toULongLong());
+        S9sString     threshold;
+        const char   *stateColorStart = "";
+        const char   *stateColorEnd   = "";
+
+        threshold.sprintf(
+                "%lluh", theMap["stuck_threshold_hours"].toULongLong());
+
+        if (title.empty())
+            title = "Untitled Job";
+
+        if (syntaxHighlight)
+        {
+            // Every job here is "running", but it's stuck, so this is
+            // reported as a warning rather than the usual green.
+            stateColorStart = XTERM_COLOR_YELLOW;
+            stateColorEnd   = TERM_NORMAL;
+        }
+
+        idFormat.printf(jobId);
+        cidFormat.printf(cid);
+        classFormat.printf(jobClass);
+        elapsedFormat.printf(elapsed);
+        thresholdFormat.printf(threshold);
+        lastProgressFormat.printf(lastProgressString(theMap));
+
+        printf("%s", stateColorStart);
+        stateFormat.printf(status);
+        printf("%s", stateColorEnd);
+
+        printf("%s\n", STR(title));
+    }
+
     if (!options->isBatchRequested())
         printf("Total: %d\n", total);
 }
@@ -9941,7 +10228,7 @@ S9sRpcReply::printJobListLong()
 
 {
     "cc_timestamp": 1475228277,
-    "data": [ 
+    "data": [
     {
         "busy": 0.0482585,
         "cpuid": 7,
@@ -10163,6 +10450,7 @@ S9sRpcReply::printBackupListLong()
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
     S9sFormat       ownerFormat;
+    S9sFormat       expiresFormat;
    
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
@@ -10217,6 +10505,14 @@ S9sRpcReply::printBackupListLong()
                 
         created = backup.beginAsString();
         createdFormat.widen(created);
+
+        /*
+         * The same three answers as the %x format field: a date, "NEVER", or
+         * "-" when the controller does not report expiries at all. An older
+         * controller therefore leaves a column of dashes rather than a blank
+         * one, which would read as "no retention".
+         */
+        expiresFormat.widen(backup.expiresAsString());
     }
 
     /*
@@ -10235,6 +10531,7 @@ S9sRpcReply::printBackupListLong()
         hostNameFormat.printHeader("HOSTNAME");
         createdFormat.printHeader("CREATED");
         sizeFormat.printHeader("SIZE");
+        expiresFormat.printHeader("EXPIRES");
         printf("TITLE");
  
         printf("%s", headerColorEnd());
@@ -10351,6 +10648,12 @@ S9sRpcReply::printBackupListLong()
         
         createdFormat.printf(created);
         sizeFormat.printf(sizeString);
+
+        /*
+         * Before the title, which is last and printed without padding: a
+         * column after it would be pushed around by every title in the list.
+         */
+        expiresFormat.printf(backup.expiresAsString());
         printf("%s", STR(backup.title()));
         printf("\n");
     }

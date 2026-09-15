@@ -185,7 +185,11 @@ class S9sRpcClient
 
         // Methods related to jobs.
         bool getJobInstances(
-                const S9sString  &clusterName, 
+                const S9sString  &clusterName,
+                const int         clusterId);
+
+        bool getStuckJobs(
+                const S9sString  &clusterName,
                 const int         clusterId);
 
         bool deleteJobInstance(const int jobId);
@@ -371,12 +375,13 @@ class S9sRpcClient
         bool setPoolMode(S9sOptions *options);
         bool addNewController(S9sOptions *options);
         bool addNewCmonDbInstance(S9sOptions *options);
-        bool importCmonDbInstance(S9sOptions *options);
         bool deleteCmonDbInstance(S9sOptions *options);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);
         bool updateCmon(S9sOptions *options);
+        bool listConfigStorage(S9sOptions *options);
+        bool listOpenBaoVersions(S9sOptions *options);
         bool setMaxClustersCapacity(S9sOptions *options);
         bool installOpenBao(S9sOptions *options);
 

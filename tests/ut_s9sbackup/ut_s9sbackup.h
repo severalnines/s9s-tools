@@ -30,5 +30,6 @@ class UtS9sBackup : public S9sUnitTest
         bool testCreate();
         bool testSetProperties();
         bool testAssign();
+        bool testExpiry();
 };
 

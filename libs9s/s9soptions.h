@@ -555,7 +555,6 @@ class S9sOptions
         bool isUnsetPoolModeRequested() const;
         bool isAddController() const;
         bool isAddDb() const;
-        bool isImportDb() const;
         bool isDeleteDb() const;
         bool isListDb() const;
         bool isStartController() const;
@@ -565,6 +564,8 @@ class S9sOptions
         bool isSetMaxClustersCapacityRequested() const;
         int  getMaxClustersCapacity() const;
         bool isAddOpenBao() const;
+        bool isListConfigStorage() const;
+        bool isListOpenBaoVersions() const;
         bool hasOpenBaoOption() const;
         S9sString openBaoMount() const;
         S9sString openBaoNamespace() const;
@@ -734,6 +735,7 @@ class S9sOptions
         bool isCloneRequested() const;
         bool isFailRequested() const;
         bool isSuccessRequested() const;
+        bool isStuckRequested() const;
         bool isEnableRequested() const;
         bool isSetGroupRequested() const;
         bool isAddToGroupRequested() const;

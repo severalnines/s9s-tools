@@ -38,6 +38,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testReadOptions05();
         bool testReadOptions06();
         bool testReadOptions07();
+        bool testJobStuck();
         bool testSetNodes();
         bool testPerconaProCluster();
         bool testPostgreSqlReplication();
@@ -47,10 +48,10 @@ class UtS9sOptions : public S9sUnitTest
         bool testConfigureWalOptions();
         bool testAddController();
         bool testAddDb();
-        bool testImportDb();
         bool testDeleteDb();
         bool testListDb();
         bool testAddOpenBao();
+        bool testListOpenBaoOperations();
         bool testVirtualRouterId();
         bool testRestoreClusterInfoOptions();
 };

@@ -55,6 +55,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions05, retval);
     PERFORM_TEST(testReadOptions06, retval);
     PERFORM_TEST(testReadOptions07, retval);
+    PERFORM_TEST(testJobStuck,      retval);
     PERFORM_TEST(testSetNodes,      retval);
     PERFORM_TEST(testPerconaProCluster, retval);
     PERFORM_TEST(testPostgreSqlReplication, retval);
@@ -64,10 +65,10 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
     PERFORM_TEST(testAddDb, retval);
-    PERFORM_TEST(testImportDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddOpenBao, retval);
+    PERFORM_TEST(testListOpenBaoOperations, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
 
@@ -429,6 +430,56 @@ UtS9sOptions::testReadOptions07()
 
     S9sOptions::uninit();
 #endif
+    return true;
+}
+
+/**
+ * Checking that "job --stuck" is recognized as its own main option (not
+ * requiring --list), and that it's mutually exclusive with --list.
+ */
+bool
+UtS9sOptions::testJobStuck()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        success;
+
+    {
+        const char *argv[] =
+        {
+            "/bin/s9s", "job", "--stuck", "--controller=localhost:9555",
+            "--cluster-id=1",
+            NULL
+        };
+        int argc = sizeof(argv) / sizeof(char *) - 1;
+
+        success = options->readOptions(&argc, (char**)argv);
+        S9S_VERIFY(success);
+
+        S9S_COMPARE(options->m_operationMode, S9sOptions::Job);
+        S9S_VERIFY(options->isStuckRequested());
+        S9S_VERIFY(!options->isListRequested());
+        S9S_COMPARE(options->clusterId(), 1);
+
+        S9sOptions::uninit();
+    }
+
+    {
+        // --stuck and --list are mutually exclusive main options.
+        options = S9sOptions::instance();
+        const char *argv[] =
+        {
+            "/bin/s9s", "job", "--stuck", "--list",
+            "--controller=localhost:9555",
+            NULL
+        };
+        int argc = sizeof(argv) / sizeof(char *) - 1;
+
+        success = options->readOptions(&argc, (char**)argv);
+        S9S_VERIFY(!success);
+
+        S9sOptions::uninit();
+    }
+
     return true;
 }
 
@@ -897,49 +948,6 @@ UtS9sOptions::testAddDb()
 }
 
 bool
-UtS9sOptions::testImportDb()
-{
-    S9sOptions *options = S9sOptions::instance();
-
-    const char *argv1[] = { "/bin/s9s",
-                            "pool-controllers",
-                            "--import-db",
-                            "--nodes=10.16.186.1:3306",
-                            nullptr };
-    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
-
-    S9sOptions::uninit();
-    options = S9sOptions::instance();
-    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
-    S9S_VERIFY(options->isImportDb());
-    S9S_COMPARE(options->nodes().size(), 1);
-    S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
-    S9S_COMPARE(options->nodes()[0].toNode().port(), 3306);
-    S9S_VERIFY(!options->getBool("force"));
-
-    S9sOptions::uninit();
-
-    // --force must also be accepted and readable via the generic
-    // getBool("force") accessor, the same way importCmonDbInstance() reads
-    // it when building the job's job_data.
-    const char *argv2[] = { "/bin/s9s",
-                            "pool-controllers",
-                            "--import-db",
-                            "--nodes=10.16.186.1:3306",
-                            "--force",
-                            nullptr };
-    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
-
-    options = S9sOptions::instance();
-    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
-    S9S_VERIFY(options->isImportDb());
-    S9S_VERIFY(options->getBool("force"));
-
-    S9sOptions::uninit();
-    return true;
-}
-
-bool
 UtS9sOptions::testDeleteDb()
 {
     S9sOptions *options = S9sOptions::instance();
@@ -1006,7 +1014,7 @@ UtS9sOptions::testListDb()
     S9sOptions *options = S9sOptions::instance();
 
     // --list-db is a read-only query: no --nodes required, unlike
-    // --add-db/--import-db/--delete-db.
+    // --add-db/--delete-db.
     const char *argv1[] = { "/bin/s9s",
                             "pool-controllers",
                             "--list-db",
@@ -1104,6 +1112,76 @@ UtS9sOptions::testAddOpenBao()
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
 
     S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the two read-only OpenBao options on the pool-controllers
+ * subcommand: --list-config-storage and --list-openbao-versions.
+ *
+ * Both take no arguments and neither needs --nodes: they ask the controller
+ * what it already knows, which is the point of having them before a host is
+ * chosen.
+ */
+bool
+UtS9sOptions::testListOpenBaoOperations()
+{
+    S9sOptions *options;
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-config-storage",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListConfigStorage());
+    S9S_VERIFY(!options->isListOpenBaoVersions());
+    S9S_VERIFY(!options->isAddOpenBao());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-openbao-versions",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isListOpenBaoVersions());
+    S9S_VERIFY(!options->isListConfigStorage());
+    S9S_VERIFY(!options->isAddOpenBao());
+
+    // Neither is set when another operation was asked for, so the dispatch
+    // cannot fall into a listing by accident.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(!options->isListConfigStorage());
+    S9S_VERIFY(!options->isListOpenBaoVersions());
+
+    // They are operations in their own right, so asking for two at once is a
+    // bad command line rather than a silent precedence.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-config-storage",
+                            "--list-openbao-versions",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
     return true;
 }
 

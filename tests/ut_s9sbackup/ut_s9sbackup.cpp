@@ -115,6 +115,7 @@ UtS9sBackup::runTest(const char *testName)
     PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testSetProperties,   retval);
     PERFORM_TEST(testAssign,          retval);
+    PERFORM_TEST(testExpiry,          retval);
 
     return retval;
 }
@@ -182,6 +183,57 @@ UtS9sBackup::testSetProperties()
 
     theString = theBackup.toString(0, 0, false, "%I %H");
     S9S_COMPARE(theString, "2 192.168.1.134");
+
+    return true;
+}
+
+/**
+ * The three answers the controller can give about when a backup expires, and
+ * the two format fields that print them.
+ *
+ * They are three because a blank column would read as "no retention" for all of
+ * them: an empty string is the controller saying the backup is never deleted, an
+ * absent field is a controller that does not report expiries at all, and a date
+ * is a date. The fixture has no `expires` at all, which is the older-controller
+ * case, so it doubles as the starting point here.
+ */
+bool
+UtS9sBackup::testExpiry()
+{
+    S9sVariantMap theMap;
+    S9sBackup     theBackup;
+
+    S9S_VERIFY(theMap.parse(backupJson1));
+
+    theBackup = theMap;
+    S9S_COMPARE(theBackup.expiresAsString(), "-");
+    S9S_COMPARE(theBackup.toString(0, 0, false, "%x"), "-");
+    S9S_VERIFY(!theBackup.retainedBySafetyCopies());
+    S9S_COMPARE(theBackup.toString(0, 0, false, "%X"), "-");
+
+    theMap["expires"] = "";
+    theBackup = theMap;
+    S9S_COMPARE(theBackup.expiresAsString(), "NEVER");
+    S9S_COMPARE(theBackup.toString(0, 0, false, "%x"), "NEVER");
+
+    /*
+     * The formatted date itself depends on the time zone and on
+     * --date-format, as the other tests in this file note, so this only pins
+     * that a real date is neither of the two words above.
+     */
+    theMap["expires"] = "2035-06-09T09:15:19.000Z";
+    theBackup = theMap;
+    S9S_VERIFY(theBackup.expiresAsString() != "-");
+    S9S_VERIFY(theBackup.expiresAsString() != "NEVER");
+
+    theMap["expires"] = "not a date";
+    theBackup = theMap;
+    S9S_COMPARE(theBackup.expiresAsString(), "-");
+
+    theMap["retained_by_safety_copies"] = true;
+    theBackup = theMap;
+    S9S_VERIFY(theBackup.retainedBySafetyCopies());
+    S9S_COMPARE(theBackup.toString(0, 0, false, "%X"), "KEPT");
 
     return true;
 }

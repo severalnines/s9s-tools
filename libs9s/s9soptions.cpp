@@ -367,6 +367,7 @@ enum S9sOptionType
     OptionIncludeDatabasesInfo,
     OptionFail,
     OptionSuccess,
+    OptionStuck,
     OptionAccess,
     OptionTemplate,
     OptionSubnetId,
@@ -540,7 +541,6 @@ enum S9sOptionType
 
     OptionAddController,
     OptionAddDb,
-    OptionImportDb,
     OptionDeleteDb,
     OptionListDb,
     OptionNode,
@@ -558,6 +558,8 @@ enum S9sOptionType
     OptionUpdateCmon,
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
+    OptionListConfigStorage,
+    OptionListOpenBaoVersions,
     OptionOpenBaoMount,
     OptionOpenBaoNamespace,
     OptionOpenBaoPackagePath,
@@ -5688,17 +5690,6 @@ S9sOptions::isAddDb() const
 }
 
 /**
- * \returns true if the "import-db" function is requested by providing the
- * --import-db command line option (imports an existing, standalone cmon DB
- * instance into the pool via the importCmonDbInstance job).
- */
-bool
-S9sOptions::isImportDb() const
-{
-    return getBool("import_db");
-}
-
-/**
  * \returns true if the "delete-db" function is requested by providing the
  * --delete-db command line option (removes a cmon DB instance from the
  * pool's cmon DB HA InnoDB Cluster via the deleteCmonDbInstance job).
@@ -5713,7 +5704,7 @@ S9sOptions::isDeleteDb() const
  * \returns true if the "list-db" function is requested by providing the
  * --list-db command line option (lists the pool's cmon DB HA InnoDB
  * Cluster nodes via the read-only getCmonDbClusterNodes RPC call - not a
- * job, unlike --add-db/--import-db/--delete-db).
+ * job, unlike --add-db/--delete-db).
  */
 bool
 S9sOptions::isListDb() const
@@ -5779,6 +5770,24 @@ bool
 S9sOptions::isAddOpenBao() const
 {
     return getBool("add_openbao");
+}
+
+/**
+ * \returns true if the --list-config-storage command line option was provided.
+ */
+bool
+S9sOptions::isListConfigStorage() const
+{
+    return getBool("list_config_storage");
+}
+
+/**
+ * \returns true if the --list-openbao-versions command line option was provided.
+ */
+bool
+S9sOptions::isListOpenBaoVersions() const
+{
+    return getBool("list_openbao_versions");
 }
 
 /**
@@ -6642,6 +6651,15 @@ bool
 S9sOptions::isSuccessRequested() const
 {
     return getBool("success");
+}
+
+/**
+ * \returns True if the --stuck command line option was provided.
+ */
+bool
+S9sOptions::isStuckRequested() const
+{
+    return getBool("stuck");
 }
 
 /**
@@ -8273,6 +8291,7 @@ S9sOptions::printHelpJob()
 "  --list                     List the jobs.\n"
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
+"  --stuck                    List jobs running longer than their stuck-job threshold.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
 "  --disable                  Disable or pause a recurring/scheduled job instance.\n"
 "  --enable                   Enable/resume a recurring/scheduled job instance.\n"
@@ -9203,8 +9222,6 @@ S9sOptions::printHelpControllers()
 "  --add-controller           To create a new controller instance on specified host.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
-"  --import-db                To import an existing, standalone cmon DB instance into\n"
-"                             the pool (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
 "                             InnoDB Cluster (requires --nodes with exactly one node, or\n"
 "                             --node instead).\n"
@@ -9214,6 +9231,9 @@ S9sOptions::printHelpControllers()
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
+"  --list-config-storage      List the configuration/secret storage instances the\n"
+"                             controller knows about.\n"
+"  --list-openbao-versions    List the available OpenBao versions.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
 "                             only, alternative to --nodes - no port needed).\n"
@@ -12999,10 +13019,13 @@ S9sOptions::checkOptionsJob()
      */
     if (isListRequested())
         countOptions++;
-    
+
+    if (isStuckRequested())
+        countOptions++;
+
     if (isKillRequested())
         countOptions++;
-    
+
     if (isEnableRequested())
         countOptions++;
 
@@ -17268,6 +17291,7 @@ S9sOptions::readOptionsJob(
         { "log",              no_argument,       0, 'G'                   },
         { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
+        { "stuck",            no_argument,       0,  OptionStuck          },
         { "wait",             no_argument,       0,  5                    },
         { "disable",          no_argument,       0, OptionDisable         },
         { "enable",           no_argument,       0, OptionEnable          },
@@ -17406,6 +17430,11 @@ S9sOptions::readOptionsJob(
             case OptionSuccess:
                 // --success
                 m_options["success"] = true;
+                break;
+
+            case OptionStuck:
+                // --stuck
+                m_options["stuck"] = true;
                 break;
 
             case OptionConfigFile:
@@ -20152,7 +20181,6 @@ S9sOptions::readOptionsControllers(
                     {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
                     {"add-db",           no_argument, 0,       OptionAddDb},
-                    {"import-db",        no_argument, 0,       OptionImportDb},
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"list-db",          no_argument, 0,       OptionListDb},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
@@ -20164,6 +20192,8 @@ S9sOptions::readOptionsControllers(
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
+                    {"list-config-storage", no_argument, 0,    OptionListConfigStorage},
+                    {"list-openbao-versions", no_argument, 0,  OptionListOpenBaoVersions},
                     {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
@@ -20396,11 +20426,6 @@ S9sOptions::readOptionsControllers(
                 m_options["add_db"] = true;
                 break;
 
-            case OptionImportDb:
-                // --import-db
-                m_options["import_db"] = true;
-                break;
-
             case OptionDeleteDb:
                 // --delete-db
                 m_options["delete_db"] = true;
@@ -20433,6 +20458,16 @@ S9sOptions::readOptionsControllers(
             case OptionAddOpenBao:
                 // --add-openbao
                 m_options["add_openbao"] = true;
+                break;
+
+            case OptionListConfigStorage:
+                // --list-config-storage
+                m_options["list_config_storage"] = true;
+                break;
+
+            case OptionListOpenBaoVersions:
+                // --list-openbao-versions
+                m_options["list_openbao_versions"] = true;
                 break;
 
             case OptionSetMaxClustersCapacity:
@@ -20595,9 +20630,6 @@ S9sOptions::checkOptionsControllers()
     if (isAddDb())
         countOptions++;
 
-    if (isImportDb())
-        countOptions++;
-
     if (isDeleteDb())
         countOptions++;
 
@@ -20620,6 +20652,12 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isAddOpenBao())
+        countOptions++;
+
+    if (isListConfigStorage())
+        countOptions++;
+
+    if (isListOpenBaoVersions())
         countOptions++;
 
     if (countOptions == 0)

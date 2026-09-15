@@ -117,6 +117,22 @@ s9s job \\
 .fi
 
 .TP
+.B \-\^\-stuck
+Lists the jobs that are currently running longer than the stuck-job threshold
+configured for their command class. The elapsed time is measured from the job's
+last forward-progress report, or from the start of the job if it never reported
+any progress. The \fB\-\^\-cluster-id=\fP or the \fB\-\^\-cluster-name=\fP command
+line option can be used to check the jobs of one given cluster only, if neither
+is provided the stuck jobs of all the clusters are printed.
+
+.B EXAMPLE
+.nf
+s9s job \\
+    --stuck \\
+    --cluster-id=1
+.fi
+
+.TP
 .B \-\^\-success
 Create a job that does nothing and it succeeds. The \fB\-\^\-timeout\fP command
 line option can be used to control how much time the job will take to execute.
