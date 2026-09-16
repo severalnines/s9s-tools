@@ -1620,9 +1620,12 @@ S9sRpcReply::printSupportedClusterList()
 void 
 S9sRpcReply::printCloudCredentials()
 {
+    S9sOptions *options = S9sOptions::instance();
 
     printDebugMessages();
-    if (!isOk())
+    if (options->isJsonRequested())
+        printJsonFormat();
+    else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else
         printCloudCredentialsLong();

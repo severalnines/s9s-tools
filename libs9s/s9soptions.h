@@ -462,7 +462,9 @@ class S9sOptions
         bool      hasCommentOption() const;
         S9sString comment() const;
         bool      hasUseSsl() const;
+        bool      useSsl() const;
         bool      hasInsecureSsl() const;
+        bool      insecureSsl() const;
         bool      cloudOnly() const;
         bool      deleteAfterUpload() const;
         bool      hasCloudProviderOption() const;
