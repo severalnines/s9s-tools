@@ -160,8 +160,8 @@ enum S9sOptionType
     OptionS3AccessKeyId,
     OptionS3SecretKey,
     OptionEndpoint,
-    OptionS3UseSsl,
-    OptionS3InsecureSsl,
+    OptionUseSsl,
+    OptionInsecureSsl,
     OptionComment,
     OptionOnlyCloud,
     OptionDeleteAfterUpload,
@@ -4136,7 +4136,10 @@ S9sOptions::comment() const
 }
 
 /**
- * \returns The argument for the --use-ssl option
+ * \returns true if the --use-ssl option was given, with or without a value.
+ *
+ * The property is left out of the request when it was not given, so the
+ * controller applies its own default, which is the same true.
  */
 bool
 S9sOptions::hasUseSsl() const
@@ -4145,12 +4148,41 @@ S9sOptions::hasUseSsl() const
 }
 
 /**
- * \returns The argument for the --insecure-ssl option
+ * \returns The value of the --use-ssl option, true when it carried no value.
+ */
+bool
+S9sOptions::useSsl() const
+{
+    if (m_options.contains("use_ssl"))
+        return m_options.at("use_ssl").toBoolean();
+
+    return true;
+}
+
+/**
+ * \returns true if the --insecure-ssl option was given, with or without a value.
+ *
+ * The property is left out of the request when it was not given, so the
+ * controller applies its own default, which is the same false.
  */
 bool
 S9sOptions::hasInsecureSsl() const
 {
     return m_options.contains("insecure_ssl");
+}
+
+/**
+ * \returns The value of the --insecure-ssl option, false when it carried no
+ *   value. Skipping certificate verification must always be spelled out as
+ *   --insecure-ssl=true.
+ */
+bool
+S9sOptions::insecureSsl() const
+{
+    if (m_options.contains("insecure_ssl"))
+        return m_options.at("insecure_ssl").toBoolean();
+
+    return false;
 }
 
 /**
@@ -19570,8 +19602,8 @@ S9sOptions::readOptionsCloudCredentials(
                     {"s3-access-key-id", required_argument, 0, OptionS3AccessKeyId},
                     {"s3-secret-key",    required_argument, 0, OptionS3SecretKey},
                     {"endpoint",         required_argument, 0, OptionEndpoint},
-                    {"s3-use-ssl",       no_argument,       0, OptionS3UseSsl},
-                    {"s3-insecure-ssl",  no_argument,       0, OptionS3InsecureSsl},
+                    {"use-ssl",          optional_argument, 0, OptionUseSsl},
+                    {"insecure-ssl",     optional_argument, 0, OptionInsecureSsl},
                     {"credential-id",    required_argument, 0, OptionCredentialId},
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -19719,14 +19751,20 @@ S9sOptions::readOptionsCloudCredentials(
                 m_options["endpoint"] = optarg;
                 break;
 
-            case OptionS3UseSsl:
-                // --s3-use-ssl
-                m_options["s3_use_ssl"] = true;
+            case OptionUseSsl:
+                // --use-ssl[=BOOLEAN]
+                if (optarg)
+                    m_options["use_ssl"] = S9sString(optarg).toBoolean();
+                else
+                    m_options["use_ssl"] = true;
                 break;
 
-            case OptionS3InsecureSsl:
-                // --s3-insecure-ssl
-                m_options["s3_insecure_ssl"] = true;
+            case OptionInsecureSsl:
+                // --insecure-ssl[=BOOLEAN]
+                if (optarg)
+                    m_options["insecure_ssl"] = S9sString(optarg).toBoolean();
+                else
+                    m_options["insecure_ssl"] = false;
                 break;
 
             case OptionCredentialId:
