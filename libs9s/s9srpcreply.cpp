@@ -2135,15 +2135,17 @@ S9sRpcReply::printCmonDbClusterNodes()
  * Lists the pool's cmon DB HA InnoDB Cluster nodes (read-only
  * getCmonDbClusterNodes call, "pool-controllers --list-db").
  *
- * The reply shape is intentionally minimal (CmonPoolModeDbClusterNodeHost
- * records: hostname/port only - no role/status, since nothing monitors
- * live member state for these records):
+ * Each record is cross-referenced by the controller against the InnoDB
+ * Cluster's own live Group Replication view for a "status"/"role" pair -
+ * the same STATUS/ROLE columns "pool-controllers --list" already prints
+ * for controllers (see printPoolControllersLong()):
  *
  * \code{.js}
  * {
  *   "cmon_db_cluster_nodes": [
  *     {"class_name": "CmonPoolModeDbClusterNodeHost", "cluster_id": 0,
- *      "hostname": "10.0.1.42", "port": 3306},
+ *      "hostname": "10.0.1.42", "port": 3306, "status": "ONLINE",
+ *      "role": "Primary"},
  *     ...
  *   ],
  *   "total": 2
@@ -2155,9 +2157,9 @@ S9sRpcReply::printCmonDbClusterNodes()
  *
  * \code
  * s9s pool-controllers --list-db
- * HOSTNAME  PORT
- * 10.0.1.42 3306
- * 10.0.1.87 3306
+ * HOSTNAME  PORT STATUS ROLE
+ * 10.0.1.42 3306 ONLINE Primary
+ * 10.0.1.87 3306 ONLINE Secondary
  * \endcode
  */
 void
@@ -2168,6 +2170,8 @@ S9sRpcReply::printCmonDbClusterNodesLong()
 
     S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      statusFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      roleFormat("\033[94m", TERM_NORMAL);
 
     // set width
     for (const auto & n : nodes)
@@ -2175,9 +2179,13 @@ S9sRpcReply::printCmonDbClusterNodesLong()
         S9sVariantMap  w = n.toVariantMap();
         S9sString      hostname = w["hostname"].toString();
         S9sString      port     = w["port"].toString();
+        S9sString      status   = w["status"].toString();
+        S9sString      role     = w["role"].toString();
 
         hostnameFormat.widen(hostname);
         portFormat.widen(port);
+        statusFormat.widen(status);
+        roleFormat.widen(role);
     }
 
     // print header
@@ -2186,6 +2194,8 @@ S9sRpcReply::printCmonDbClusterNodesLong()
         ::printf("%s", headerColorBegin());
         hostnameFormat.printHeader("HOSTNAME");
         portFormat.printHeader("PORT");
+        statusFormat.printHeader("STATUS");
+        roleFormat.printHeader("ROLE");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
@@ -2196,9 +2206,13 @@ S9sRpcReply::printCmonDbClusterNodesLong()
         S9sVariantMap  w = n.toVariantMap();
         S9sString      hostname = w["hostname"].toString();
         S9sString      port     = w["port"].toString();
+        S9sString      status   = w["status"].toString();
+        S9sString      role     = w["role"].toString();
 
         hostnameFormat.printf(hostname);
         portFormat.printf(port);
+        statusFormat.printf(status);
+        roleFormat.printf(role);
         ::printf("\n");
     }
 }
