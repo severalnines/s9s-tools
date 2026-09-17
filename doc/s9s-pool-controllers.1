@@ -30,6 +30,19 @@ SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 .fi
 
 .TP
+.B --list-db
+Gets the pool's cmon DB HA InnoDB Cluster nodes. Read-only, no job is created. Each
+node is cross-referenced against the cluster's live Group Replication view for a
+STATUS/ROLE pair, the same convention \fB--list\fP uses for controllers. Supports
+\fB--print-json\fP like \fB--list\fP.
+.nf
+s9s pool-controllers --list-db
+HOSTNAME  PORT STATUS ROLE
+10.0.1.42 3306 ONLINE Primary
+10.0.1.87 3306 ONLINE Secondary
+.fi
+
+.TP
 .B --assignment
 Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory.
 Note: this operation is only available under the \fBpool-controllers\fP subcommand, not under \fBcontroller\fP.
@@ -109,6 +122,37 @@ Updates the cmon package on a controller instance. The '--controller-id' option 
 .nf
 s9s pool-controllers --update-cmon --controller-id=2
 .fi
+
+.TP
+.B --add-db
+Joins a bare host into the pool's cmon DB HA InnoDB Cluster as a SECONDARY.
+Requires \fB--nodes\fP with exactly one node (no fan-out; run the command again to
+add more). Requires super admin privileges.
+.nf
+s9s pool-controllers --add-db --nodes=10.0.1.87 --log
+.fi
+
+Add '--force' to proceed even when an existing, unrelated MySQL installation is
+detected on the target host; its data will be overwritten by the join.
+
+.TP
+.B --delete-db
+Removes a cmon DB instance from the pool's cmon DB HA InnoDB Cluster (cluster/Group
+Replication membership only - the target's own mysqld is left running). Requires
+\fB--nodes\fP with exactly one node, or \fB--node\fP instead. Requires super admin
+privileges.
+.nf
+s9s pool-controllers --delete-db --nodes=10.0.1.87:3306 --log
+.fi
+
+\&'--node' identifies the same pool DB HA node by hostname/IP alone, without needing
+its port:
+.nf
+s9s pool-controllers --delete-db --node=10.0.1.87 --log
+.fi
+
+Add '--force' to remove the instance from the cluster's metadata even if it cannot
+be reached (mirrors mysqlsh's \fBremove_instance(force)\fP).
 
 .TP
 .B --add-openbao
@@ -192,6 +236,12 @@ By default only controllers with dynamic status ('stopped', 'starting', 'active'
 .TP
 .BI \-\^\-provider-version=VERSION
 Controller version to be installed.
+
+.TP
+.BI \-\^\-node=HOSTNAME
+Used with \fB--delete-db\fP: identifies a pool cmon DB HA node by hostname/IP alone,
+an alternative to \fB--nodes\fP that needs no port. Mutually exclusive with
+\fB--nodes\fP for this operation; takes priority if both are given.
 
 .TP
 .BI \-\^\-openbao-mount=MOUNT
