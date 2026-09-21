@@ -417,6 +417,18 @@ EOF
 
     check_exit_code $?
 
+    #
+    # CLUS-8177 regression check: the "Granting privileges for the Cmon
+    # Controllers" step must run and must not fail because the generated
+    # PostgreSQL grant command is missing its OS user (e.g. 'su -  -c ...'
+    # instead of 'su - postgres -c ...'), which shows up in the job log as
+    # PostgreSQL refusing a connection for role "root".
+    #
+    if [ -n "$WITH_CLUSTER_POSTGRE" ]; then
+        S9S_LAST_OUTPUT_CONTAINS "Granting privileges for the Cmon Controllers"
+        S9S_LAST_OUTPUT_NOT_CONTAINS 'role "root" does not exist'
+    fi
+
     mys9s job --list
 
     #
