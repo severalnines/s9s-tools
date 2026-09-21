@@ -11565,8 +11565,13 @@ S9sRpcClient::createCloudCredentials(S9sOptions *options)
     if(provider == "s3")
     {
         credentialsMap["endpoint"] = options->endpoint();
-        credentialsMap["use_ssl"] = options->hasUseSsl();
-        credentialsMap["insecure_ssl"] = options->hasInsecureSsl();
+        // Both are optional in the controller's credential schema and its
+        // defaults are the same as ours, so an option that was not given is
+        // left out instead of pinning the property to our default.
+        if (options->hasUseSsl())
+            credentialsMap["use_ssl"] = options->useSsl();
+        if (options->hasInsecureSsl())
+            credentialsMap["insecure_ssl"] = options->insecureSsl();
     }
     request["credentials"] = credentialsMap;
     if(options->hasCommentOption())

@@ -1420,23 +1420,34 @@ S9sBusinessLogic::execute()
             S9sString provider = options->cloudProvider();
             success = client.createCloudCredentials(options);
             S9sRpcReply reply = client.reply();
-            reply.isOk() ? ::printf("Cloud credential '%s' saved.\n", STR(options->credentialName())) : 
-                           ::printf("Cloud credential could not be saved. Error: %s.\n",
-                           STR(reply.errorString()));
+            // The controller's error string is a sentence of its own, so it is
+            // printed as it stands instead of getting another period appended.
+            if (options->isJsonRequested())
+                reply.printJsonFormat();
+            else
+                reply.isOk() ? ::printf("Cloud credential '%s' saved.\n", STR(options->credentialName())) : 
+                               ::printf("Cloud credential could not be saved. Error: %s\n",
+                               STR(reply.errorString()));
+            client.setExitStatus();
         }
         else if(options->isListCloudCredentials()) {
             success = client.listCloudCredentials();
             S9sRpcReply reply = client.reply();
             reply.printCloudCredentials();
+            client.setExitStatus();
         }
         else if(options->isDeleteCloudCredential()) {
             const int id = options->credentialId();
             const S9sString provider = options->cloudProvider();
             success = client.deleteCloudCredentials(id, provider);
             S9sRpcReply reply = client.reply();
-            reply.isOk() ? ::printf("Cloud credential %d deleted.\n", id) : 
-                           ::printf("Cloud credential could not be deleted. Error: %s.\n",
-                           STR(reply.errorString()));
+            if (options->isJsonRequested())
+                reply.printJsonFormat();
+            else
+                reply.isOk() ? ::printf("Cloud credential %d deleted.\n", id) : 
+                               ::printf("Cloud credential could not be deleted. Error: %s\n",
+                               STR(reply.errorString()));
+            client.setExitStatus();
         }
         else 
             PRINT_ERROR("Unknown cloud-credentials operation.");
