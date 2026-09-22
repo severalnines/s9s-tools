@@ -106,6 +106,32 @@ S9sAccount::setPrivate(
 }
 
 /**
+ * \returns true if the account is locked (native MariaDB/MySQL
+ *   ACCOUNT LOCK, mysql.user.account_locked).
+ */
+bool
+S9sAccount::isLocked() const
+{
+    if (m_properties.contains("account_locked"))
+        return m_properties.at("account_locked").toBoolean();
+
+    return false;
+}
+
+/**
+ * \param value The new locked state for the account.
+ *
+ * Sets whether the account should be locked (ACCOUNT LOCK) or unlocked
+ * (ACCOUNT UNLOCK) on the next updateAccount() call.
+ */
+void
+S9sAccount::setLocked(
+        bool value)
+{
+    m_properties["account_locked"] = value;
+}
+
+/**
  * FIXME: This is not used any more.
  */
 S9sString

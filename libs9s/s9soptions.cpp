@@ -246,6 +246,8 @@ enum S9sOptionType
     OptionCreateAccount,
     OptionGrant,
     OptionRevoke,
+    OptionLock,
+    OptionUnlock,
     OptionCheckHosts,
     OptionDeleteAccount,
     OptionCreateDatabase,
@@ -6633,6 +6635,26 @@ S9sOptions::isDeleteRequested() const
 }
 
 /**
+ * \returns True if the --lock command line option was provided when the
+ *   program was started (e.g. "s9s account --lock").
+ */
+bool
+S9sOptions::isLockRequested() const
+{
+    return getBool("lock");
+}
+
+/**
+ * \returns True if the --unlock command line option was provided when the
+ *   program was started (e.g. "s9s account --unlock").
+ */
+bool
+S9sOptions::isUnlockRequested() const
+{
+    return getBool("unlock");
+}
+
+/**
  * \returns True if the --clone command line option was provided when the
  *   program was started.
  */
@@ -8571,7 +8593,9 @@ S9sOptions::printHelpAccount()
 "  --delete                   Remove the account from the cluster.\n"
 "  --grant                    Grant privileges for the account.\n"
 "  --list                     List the accounts on the cluster.\n"
+"  --lock                     Lock the account (ACCOUNT LOCK).\n"
 "  --revoke                   Revoke privileges of the account.\n"
+"  --unlock                   Unlock the account (ACCOUNT UNLOCK).\n"
 "\n"
 "  --account=ACCOUNT          The account itself.\n"
 "  --force                    Force the delete even if the account owns objects.\n"
@@ -13704,19 +13728,25 @@ S9sOptions::checkOptionsAccount()
     
     if (isDeleteRequested())
         countOptions++;
-    
+
+    if (isLockRequested())
+        countOptions++;
+
+    if (isUnlockRequested())
+        countOptions++;
+
     if (isSetRequested())
         countOptions++;
-    
+
     if (isChangePasswordRequested())
         countOptions++;
-    
+
     if (isWhoAmIRequested())
         countOptions++;
 
     if (isListKeysRequested())
         countOptions++;
-    
+
     if (isAddKeyRequested())
         countOptions++;
 
@@ -13729,6 +13759,14 @@ S9sOptions::checkOptionsAccount()
     } else if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    if ((isLockRequested() || isUnlockRequested()) && account().userName().empty())
+    {
+        m_errorMessage = "Account name is not provided.";
         m_exitStatus = BadOptions;
 
         return false;
@@ -14648,7 +14686,9 @@ S9sOptions::readOptionsAccount(
         { "grant",            no_argument,       0, OptionGrant           },
         { "list",             no_argument,       0, 'L'                   },
         { "revoke",           no_argument,       0, OptionRevoke          },
-        
+        { "lock",             no_argument,       0, OptionLock            },
+        { "unlock",           no_argument,       0, OptionUnlock          },
+
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
@@ -14807,11 +14847,21 @@ S9sOptions::readOptionsAccount(
                 m_options["delete"] = true;
                 break;
 
+            case OptionLock:
+                // --lock
+                m_options["lock"] = true;
+                break;
+
+            case OptionUnlock:
+                // --unlock
+                m_options["unlock"] = true;
+                break;
+
             case OptionSet:
                 // --set
                 m_options["set"]  = true;
                 break;
-           
+
             case OptionChangePassword:
                 // --change-password
                 m_options["change_password"] = true;

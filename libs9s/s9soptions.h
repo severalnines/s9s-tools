@@ -731,6 +731,8 @@ class S9sOptions
         bool isInspectRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;
+        bool isLockRequested() const;
+        bool isUnlockRequested() const;
         bool isCloneRequested() const;
         bool isFailRequested() const;
         bool isSuccessRequested() const;

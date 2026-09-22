@@ -223,6 +223,7 @@ class S9sRpcClient
          * Account&database handling.
          */
         bool createAccount();
+        bool updateAccount(const S9sAccount &account);
         bool getAccounts();
 
         bool getClusterConfig();

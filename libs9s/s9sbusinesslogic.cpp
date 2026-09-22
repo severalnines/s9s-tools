@@ -1240,6 +1240,22 @@ S9sBusinessLogic::execute()
             success = client.deleteAccount();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isLockRequested())
+        {
+            S9sAccount account = options->account();
+            account.setLocked(true);
+
+            success = client.updateAccount(account);
+            client.printMessages("Locked.", success);
+            client.setExitStatus();
+        } else if (options->isUnlockRequested())
+        {
+            S9sAccount account = options->account();
+            account.setLocked(false);
+
+            success = client.updateAccount(account);
+            client.printMessages("Unlocked.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
             options->setExitStatus(S9sOptions::BadOptions);
