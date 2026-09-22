@@ -22,6 +22,7 @@
 #include "s9soptions.h"
 #include "s9snode.h"
 #include "s9sfile.h"
+#include "s9saccount.h"
 
 #include <cstdio>
 #include <cstring>
@@ -71,6 +72,10 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testListOpenBaoOperations, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
+    PERFORM_TEST(testLockAccount, retval);
+    PERFORM_TEST(testUnlockAccount, retval);
+    PERFORM_TEST(testLockUnlockMutualExclusion, retval);
+    PERFORM_TEST(testLockAccountMissingAccount, retval);
 
     return retval;
 }
@@ -1418,6 +1423,118 @@ UtS9sOptions::testVirtualRouterId()
     options = S9sOptions::instance();
     success = options->readOptions(&argc6, (char **)argv6);
     S9S_VERIFY(!success);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "s9s account --lock --account=USERNAME" parses correctly
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testLockAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--lock",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isLockRequested());
+    S9S_VERIFY(!options->isUnlockRequested());
+    S9S_COMPARE(options->account().userName(), "joe");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "s9s account --unlock --account=USERNAME" parses correctly
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testUnlockAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--unlock",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isUnlockRequested());
+    S9S_VERIFY(!options->isLockRequested());
+    S9S_COMPARE(options->account().userName(), "joe");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--lock" and "--unlock" given together are rejected the
+ * same way every other pair of the account command's mutually exclusive
+ * main options is (checkOptionsAccount() counts all main options and
+ * refuses more than one with "The main options are mutually exclusive.")
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testLockUnlockMutualExclusion()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--lock",
+                            "--unlock",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(), "The main options are mutually exclusive.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--lock"/"--unlock" without "--account=" is rejected with
+ * the account-name-is-not-provided check in checkOptionsAccount()
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testLockAccountMissingAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--lock",
+                            "--cluster-id=1",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(), "Account name is not provided.");
 
     S9sOptions::uninit();
     return true;
