@@ -123,6 +123,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testGetPoolModeReadiness();
         bool testMigrateCmonDb();
         bool testSetPoolModePrerequisites();
+        bool testPoolModeSetupCommands();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

@@ -2280,6 +2280,58 @@ S9sRpcReply::printSetPoolModeError()
 }
 
 /**
+ * \returns The s9s commands that set up the pool mode prerequisites a
+ *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
+ *   reports missing, in the order they have to be run.
+ *
+ * --migrate-db is only suggested while cmon's DB still needs migrating and no
+ * migration is running; one that failed may be retried. Prerequisites opted out
+ * of with --no-require-db-cluster/--no-require-config-storage are skipped, and
+ * nothing is suggested when pool mode is on or the readiness is not applicable.
+ */
+S9sStringList
+S9sRpcReply::poolModeSetupCommands(
+        const S9sVariantMap &readiness)
+{
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
+    S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
+    S9sStringList   retval;
+    bool            dbMissing = false;
+    bool            storageMissing = false;
+
+    if (readiness.valueByPath("pool_mode").toBoolean() ||
+            !readiness.valueByPath("applicable").toBoolean())
+    {
+        return retval;
+    }
+
+    for (const auto &item : missing)
+    {
+        if (item.toString() == "cmon_db_cluster")
+            dbMissing = true;
+        else if (item.toString() == "config_storage")
+            storageMissing = true;
+    }
+
+    if (dbMissing && !options->noRequireDbCluster())
+    {
+        if (dbCluster["migration_required"].toBoolean() &&
+                dbCluster["migration_state"].toString() != "running")
+        {
+            retval << "s9s pool-controllers --migrate-db";
+        }
+
+        retval << "s9s pool-controllers --bootstrap-db --log";
+    }
+
+    if (storageMissing && !options->noRequireConfigStorage())
+        retval << "s9s pool-controllers --add-openbao --nodes=HOST --log";
+
+    return retval;
+}
+
+/**
  * Prints a getPoolModeReadiness reply (or the "readiness" object of a failed
  * setPoolMode reply) as a human readable summary, with the command that sets
  * up each missing prerequisite.
@@ -2325,6 +2377,7 @@ S9sRpcReply::printPoolModeReadinessSummary(
     const bool      migrationRequired =
         dbCluster["migration_required"].toBoolean();
     const S9sString dbBackend = dbCluster["db_backend"].toString();
+    const S9sString migrationState = dbCluster["migration_state"].toString();
 
     ::printf("Pool mode readiness: %s\n", ready ? "ready" : "not ready");
 
@@ -2341,6 +2394,19 @@ S9sRpcReply::printPoolModeReadinessSummary(
                 STR(dbBackend),
                 migrationRequired ?
                     " (migration to Oracle MySQL required)" : "");
+    }
+
+    if (migrationState == "running")
+    {
+        ::printf("    Migration              : in progress, cmon restarts "
+                "when it completes\n");
+    }
+    else if (migrationState == "failed")
+    {
+        ::printf("    Migration              : the last migration failed, "
+                "MariaDB is untouched\n");
+        ::printf("                             check 'journalctl -u "
+                "cmon-db-migration' before retrying with --migrate-db\n");
     }
 
     if (!dbMissing)
@@ -2375,11 +2441,10 @@ S9sRpcReply::printPoolModeReadinessSummary(
                 STR(storage["version"].toString()));
     }
 
-    const bool suggestDb      = dbMissing && !options->noRequireDbCluster();
-    const bool suggestStorage = storageMissing && !options->noRequireConfigStorage();
+    const S9sStringList commands = poolModeSetupCommands(readiness);
 
     ::printf("\n");
-    if (!suggestDb && !suggestStorage)
+    if (commands.empty())
     {
         ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
                 "pool mode (cmon restarts).\n");
@@ -2388,17 +2453,17 @@ S9sRpcReply::printPoolModeReadinessSummary(
 
     ::printf("To set up the missing prerequisites, run in this order:\n");
 
-    if (suggestDb && migrationRequired)
+    // A running migration is a step of its own, just not one to start again.
+    if (migrationState == "running")
+        ::printf("  (wait for the cmon DB migration in progress to finish)\n");
+
+    for (const auto &command : commands)
     {
-        ::printf("  s9s pool-controllers --migrate-db\n");
-        ::printf("      (cmon restarts when the migration completes)\n");
+        ::printf("  %s\n", STR(command));
+
+        if (command.endsWith("--migrate-db"))
+            ::printf("      (cmon restarts when the migration completes)\n");
     }
-
-    if (suggestDb)
-        ::printf("  s9s pool-controllers --bootstrap-db --log\n");
-
-    if (suggestStorage)
-        ::printf("  s9s pool-controllers --add-openbao --nodes=HOST --log\n");
 
     ::printf("then enable pool mode with 's9s pool-controllers --set-pool-mode'.\n");
 }

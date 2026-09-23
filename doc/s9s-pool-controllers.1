@@ -104,6 +104,11 @@ The prerequisites are the \fBCC DB cluster\fP, cmon's own DB made highly availab
 \fB--add-db\fP instances join later), and the \fBCC configuration storage\fP, the
 OpenBao secret store the controllers of the pool share. When the controller runs in
 k8s mode, or other controllers are already in the pool, there is nothing to set up.
+
+While a \fB--migrate-db\fP migration is running it is reported as in progress and
+\fB--migrate-db\fP is not suggested again. After a failed migration cmon is not
+restarted and MariaDB is left untouched; check 'journalctl -u cmon-db-migration'
+before retrying with \fB--migrate-db\fP.
 .nf
 s9s pool-controllers --pool-readiness
 Pool mode readiness: not ready

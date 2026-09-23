@@ -24,6 +24,7 @@
 #include "s9sobject.h"
 #include "s9sformatter.h"
 #include "s9sdbgrowthreport.h"
+#include "s9sstringlist.h"
 
 class S9sNode;
 class S9sCluster;
@@ -167,6 +168,8 @@ class S9sRpcReply : public S9sVariantMap
 
         void printPoolModeReadiness();
         void printSetPoolModeError();
+        static S9sStringList poolModeSetupCommands(
+                const S9sVariantMap &readiness);
 
         // Methods handling users.
         void printUserList();

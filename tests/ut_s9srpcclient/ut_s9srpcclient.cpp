@@ -183,6 +183,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetPoolModeReadiness, retval);
     PERFORM_TEST(testMigrateCmonDb, retval);
     PERFORM_TEST(testSetPoolModePrerequisites, retval);
+    PERFORM_TEST(testPoolModeSetupCommands, retval);
 
     return retval;
 }
@@ -3414,6 +3415,71 @@ UtS9sRpcClient::testSetPoolModePrerequisites()
 
     S9S_VERIFY(!payload["pool_mode"].toBoolean());
     S9S_VERIFY(!payload.contains("require_cmon_db_cluster"));
+
+    return true;
+}
+
+/**
+ * Testing S9sRpcReply::poolModeSetupCommands(), the commands the
+ * "--pool-readiness" summary (and a failed "--set-pool-mode") suggests for a
+ * getPoolModeReadiness reply - in particular how the cmon DB migration state
+ * decides whether --migrate-db is suggested.
+ */
+bool
+UtS9sRpcClient::testPoolModeSetupCommands()
+{
+    S9sVariantMap  readiness;
+    S9sVariantMap  dbCluster;
+    S9sVariantList missing;
+    S9sStringList  commands;
+
+    S9sOptions::uninit();
+
+    missing << S9sVariant("cmon_db_cluster") << S9sVariant("config_storage");
+    dbCluster["ready"]              = false;
+    dbCluster["db_backend"]         = "mariadb";
+    dbCluster["migration_required"] = true;
+    dbCluster["migration_state"]    = "none";
+
+    readiness["pool_mode"]       = false;
+    readiness["applicable"]      = true;
+    readiness["ready"]           = false;
+    readiness["missing"]         = missing;
+    readiness["cmon_db_cluster"] = dbCluster;
+
+    // MariaDB, nothing migrated yet: the whole chain, in order.
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 3);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
+    S9S_COMPARE(commands[1], "s9s pool-controllers --bootstrap-db --log");
+    S9S_COMPARE(commands[2],
+            "s9s pool-controllers --add-openbao --nodes=HOST --log");
+
+    // A migration in progress must not be started again.
+    dbCluster["migration_state"] = "running";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --bootstrap-db --log");
+
+    // A failed one left MariaDB untouched, so it is retried.
+    dbCluster["migration_state"] = "failed";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 3);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
+
+    // An opted-out prerequisite gets no command.
+    S9sOptions::instance()->m_options["no_require_config_storage"] = true;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[1], "s9s pool-controllers --bootstrap-db --log");
+    S9sOptions::uninit();
+
+    // Nothing to do when not applicable.
+    readiness["applicable"] = false;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_VERIFY(commands.empty());
 
     return true;
 }
