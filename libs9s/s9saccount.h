@@ -49,6 +49,9 @@ class S9sAccount
 
         void setPrivate(bool value = true);
 
+        bool isLocked() const;
+        void setLocked(bool value);
+
         void setGrants(const S9sString &value);
         S9sString grants() const;
         S9sString grants(bool syntaxHighlight) const;

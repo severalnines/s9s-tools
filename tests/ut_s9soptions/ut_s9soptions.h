@@ -54,4 +54,8 @@ class UtS9sOptions : public S9sUnitTest
         bool testListOpenBaoOperations();
         bool testVirtualRouterId();
         bool testRestoreClusterInfoOptions();
+        bool testLockAccount();
+        bool testUnlockAccount();
+        bool testLockUnlockMutualExclusion();
+        bool testLockAccountMissingAccount();
 };

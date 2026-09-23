@@ -9991,6 +9991,30 @@ S9sRpcClient::createAccount()
     return retval;
 }
 
+/**
+ * \param account The account to update (e.g. carrying the new locked state).
+ *
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * A function to update an existing account on the cluster, e.g. to lock or
+ * unlock it (native MariaDB/MySQL ACCOUNT LOCK/UNLOCK). The password is not
+ * sent unless explicitly set on the account, in which case the server will
+ * also change the password.
+ */
+bool
+S9sRpcClient::updateAccount(
+        const S9sAccount &account)
+{
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
+
+    request["operation"]  = "updateAccount";
+    request["account"]    = account;
+
+    return executeRequest(uri, request);
+}
+
 bool
 S9sRpcClient::getAccounts()
 {

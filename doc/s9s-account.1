@@ -47,6 +47,33 @@ Remove the account.
 Grant privileges for an account on one or more databases.
 
 .TP
+.B --lock
+Lock the account (native MariaDB/MySQL \fBACCOUNT LOCK\fP), preventing it from
+logging in. The account's password is not required for this operation.
+
+.B EXAMPLE
+.nf
+# \fBs9s account \\
+    --lock \\
+    --cluster-id=1 \\
+    --account="joe"\fR
+.fi
+
+.TP
+.B --unlock
+Unlock a previously locked account (native MariaDB/MySQL \fBACCOUNT UNLOCK\fP),
+restoring its ability to log in. The account's password is not required for
+this operation.
+
+.B EXAMPLE
+.nf
+# \fBs9s account \\
+    --unlock \\
+    --cluster-id=1 \\
+    --account="joe"\fR
+.fi
+
+.TP
 .B -L, --list
 Lists the accounts on the cluster.
 
