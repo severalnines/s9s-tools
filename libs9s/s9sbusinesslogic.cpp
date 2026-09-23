@@ -1523,14 +1523,15 @@ S9sBusinessLogic::execute()
         {
             success = client.getPoolModeReadiness(options);
             S9sRpcReply reply = client.reply();
-            if (success && reply.isOk())
+            // With --print-json an error reply is printed as JSON too.
+            if (options->isJsonRequested() || (success && reply.isOk()))
                 reply.printPoolModeReadiness();
             else
-            {
                 PRINT_ERROR("Failed to check pool mode readiness: %s",
                             STR(reply.errorString()));
+
+            if (!success || !reply.isOk())
                 options->setExitStatus(S9sOptions::Failed);
-            }
         }
         else if (options->isMigrateDb())
         {
