@@ -543,6 +543,11 @@ enum S9sOptionType
     OptionAddDb,
     OptionDeleteDb,
     OptionListDb,
+    OptionBootstrapDb,
+    OptionMigrateDb,
+    OptionPoolReadiness,
+    OptionNoRequireDbCluster,
+    OptionNoRequireConfigStorage,
     OptionNode,
     OptionControllersList,
     OptionPrintDeploymentInfo,
@@ -5701,6 +5706,39 @@ S9sOptions::isUnsetPoolModeRequested() const
 }
 
 /**
+ * \returns true if the --pool-readiness command line option was provided
+ *   (asks the controller which pool mode prerequisites are still missing via
+ *   the read-only getPoolModeReadiness RPC call).
+ */
+bool
+S9sOptions::isPoolReadiness() const
+{
+    return getBool("pool_readiness");
+}
+
+/**
+ * \returns true if the --no-require-db-cluster command line option was
+ *   provided: --set-pool-mode then sends require_cmon_db_cluster=false, for a
+ *   caller that manages the CC DB cluster itself.
+ */
+bool
+S9sOptions::noRequireDbCluster() const
+{
+    return getBool("no_require_db_cluster");
+}
+
+/**
+ * \returns true if the --no-require-config-storage command line option was
+ *   provided: --set-pool-mode then sends require_config_storage=false, for a
+ *   caller that manages the CC configuration storage itself.
+ */
+bool
+S9sOptions::noRequireConfigStorage() const
+{
+    return getBool("no_require_config_storage");
+}
+
+/**
  * \returns true if the "add-controller" function is requested by providing
  * the --add-controller command line option.
  */
@@ -5742,6 +5780,30 @@ bool
 S9sOptions::isListDb() const
 {
     return getBool("list_db");
+}
+
+/**
+ * \returns true if the "bootstrap-db" function is requested by providing the
+ * --bootstrap-db command line option (turns the main controller's own cmon DB
+ * into the seed PRIMARY of the pool's cmon DB HA InnoDB Cluster via the
+ * bootstrapCmonDbCluster job).
+ */
+bool
+S9sOptions::isBootstrapDb() const
+{
+    return getBool("bootstrap_db");
+}
+
+/**
+ * \returns true if the "migrate-db" function is requested by providing the
+ * --migrate-db command line option (migrates cmon's MariaDB to Oracle MySQL
+ * via the migrateCmonDb RPC call - not a job, and cmon restarts when it
+ * completes).
+ */
+bool
+S9sOptions::isMigrateDb() const
+{
+    return getBool("migrate_db");
 }
 
 /**
@@ -9257,7 +9319,17 @@ S9sOptions::printHelpControllers()
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
 "                             InnoDB Cluster (requires --nodes with exactly one node, or\n"
 "                             --node instead).\n"
-"  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
+"  --bootstrap-db             To turn this (main) controller's own cmon DB into the\n"
+"                             pool's cmon DB HA InnoDB Cluster PRIMARY behind a local\n"
+"                             MySQL Router (a job, cmon is not restarted).\n"
+"  --migrate-db               To migrate cmon's MariaDB to Oracle MySQL, needed before\n"
+"                             --bootstrap-db. cmon restarts when it completes.\n"
+"  --pool-readiness           To check which pool mode prerequisites (CC DB cluster,\n"
+"                             CC configuration storage) are still missing and how to\n"
+"                             set them up. Supports --print-json like --list.\n"
+"  --set-pool-mode            To enable pool mode on this controller (cmon restarts).\n"
+"  --unset-pool-mode          To disable pool mode on this controller (cmon restarts).\n"
+"  --assignment             To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
@@ -9274,7 +9346,12 @@ S9sOptions::printHelpControllers()
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
 "  --uninstall                Uninstall software when removing controller.\n"
-"  --openbao-mount=MOUNT      The KV v2 mount to create (default: clustercontrol).\n"
+"  --no-require-db-cluster    With --set-pool-mode: do not require the CC DB cluster\n"
+"                             (--bootstrap-db), for a DB cluster managed elsewhere.\n"
+"  --no-require-config-storage\n"
+"                             With --set-pool-mode: do not require the CC configuration\n"
+"                             storage (--add-openbao), for a storage managed elsewhere.\n"
+"  --openbao-mount=MOUNT     The KV v2 mount to create (default: clustercontrol).\n"
 "  --openbao-namespace=NAME   The OpenBao namespace to create (default: none).\n"
 "  --openbao-package-path=PATH\n"
 "                             Install a package already staged on the target host\n"
@@ -20221,6 +20298,9 @@ S9sOptions::readOptionsControllers(
                     {"add-db",           no_argument, 0,       OptionAddDb},
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"list-db",          no_argument, 0,       OptionListDb},
+                    {"bootstrap-db",     no_argument, 0,       OptionBootstrapDb},
+                    {"migrate-db",       no_argument, 0,       OptionMigrateDb},
+                    {"pool-readiness",   no_argument, 0,       OptionPoolReadiness},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
@@ -20240,6 +20320,8 @@ S9sOptions::readOptionsControllers(
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"granted-network-mask", required_argument, 0, OptionGrantedNetworkMask},
+                    {"no-require-db-cluster", no_argument, 0,  OptionNoRequireDbCluster},
+                    {"no-require-config-storage", no_argument, 0, OptionNoRequireConfigStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     {"uninstall",        no_argument,       0, OptionUninstall},
                     // Arguments when installing an OpenBao instance
@@ -20474,6 +20556,31 @@ S9sOptions::readOptionsControllers(
                 m_options["list_db"] = true;
                 break;
 
+            case OptionBootstrapDb:
+                // --bootstrap-db
+                m_options["bootstrap_db"] = true;
+                break;
+
+            case OptionMigrateDb:
+                // --migrate-db
+                m_options["migrate_db"] = true;
+                break;
+
+            case OptionPoolReadiness:
+                // --pool-readiness
+                m_options["pool_readiness"] = true;
+                break;
+
+            case OptionNoRequireDbCluster:
+                // --no-require-db-cluster
+                m_options["no_require_db_cluster"] = true;
+                break;
+
+            case OptionNoRequireConfigStorage:
+                // --no-require-config-storage
+                m_options["no_require_config_storage"] = true;
+                break;
+
             case OptionStartController:
                 // --start
                 m_options["start_controller"] = true;
@@ -20674,6 +20781,15 @@ S9sOptions::checkOptionsControllers()
     if (isListDb())
         countOptions++;
 
+    if (isBootstrapDb())
+        countOptions++;
+
+    if (isMigrateDb())
+        countOptions++;
+
+    if (isPoolReadiness())
+        countOptions++;
+
     if (isStartController())
         countOptions++;
 
@@ -20727,6 +20843,17 @@ S9sOptions::checkOptionsControllers()
             m_exitStatus = BadOptions;
             return false;
         }
+    }
+
+    // The prerequisite opt-outs only mean something to the pool mode switch.
+    if ((noRequireDbCluster() || noRequireConfigStorage()) &&
+            !isSetPoolModeRequested())
+    {
+        m_errorMessage =
+            "The --no-require-db-cluster and --no-require-config-storage "
+            "options can only be used with --set-pool-mode.";
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     /*

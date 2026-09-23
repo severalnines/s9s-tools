@@ -179,6 +179,10 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testInstallOpenBao, retval);
     PERFORM_TEST(testListConfigStorage, retval);
     PERFORM_TEST(testListOpenBaoVersions, retval);
+    PERFORM_TEST(testBootstrapDb, retval);
+    PERFORM_TEST(testGetPoolModeReadiness, retval);
+    PERFORM_TEST(testMigrateCmonDb, retval);
+    PERFORM_TEST(testSetPoolModePrerequisites, retval);
 
     return retval;
 }
@@ -3249,6 +3253,167 @@ UtS9sRpcClient::testListOpenBaoVersions()
 
     S9S_COMPARE(payload["operation"], "listopenbaoversions");
     S9S_VERIFY(!payload.contains("job"));
+
+    return true;
+}
+
+/**
+ * Testing bootstrapCmonDbCluster() (the "pool-controllers --bootstrap-db"
+ * job - CmdBootstrapCmonDbCluster) request shape: a pool-level job with no
+ * cluster_id and an empty job_data.
+ */
+bool
+UtS9sRpcClient::testBootstrapDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.bootstrapCmonDbCluster(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "bootstrapCmonDbCluster");
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Bootstrap CC DB Cluster");
+    S9S_VERIFY(payload["job"]["job_spec"]["job_data"].toVariantMap().empty());
+    S9S_VERIFY(!payload.contains("cluster_id"));
+
+    return true;
+}
+
+/**
+ * Testing getPoolModeReadiness() (the "pool-controllers --pool-readiness"
+ * call) request shape: a flat, read-only request, not a job.
+ */
+bool
+UtS9sRpcClient::testGetPoolModeReadiness()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.getPoolModeReadiness(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/poolcontrollers/");
+    S9S_COMPARE(payload["operation"], "getpoolmodereadiness");
+    S9S_VERIFY(!payload.contains("job"));
+
+    return true;
+}
+
+/**
+ * Testing migrateCmonDb() (the "pool-controllers --migrate-db" call) request
+ * shape: an RPC call of its own, not a job.
+ */
+bool
+UtS9sRpcClient::testMigrateCmonDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.migrateCmonDb(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/poolcontrollers/");
+    S9S_COMPARE(payload["operation"], "migratecmondb");
+    S9S_VERIFY(!payload.contains("job"));
+
+    return true;
+}
+
+/**
+ * Testing setPoolMode() with the --no-require-db-cluster and
+ * --no-require-config-storage opt-outs: the require_* fields are only sent,
+ * as false, when opted out - the controller defaults both to true.
+ */
+bool
+UtS9sRpcClient::testSetPoolModePrerequisites()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    // No opt-out: neither field is sent.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["set_pool_mode"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "setPoolMode");
+    S9S_VERIFY(payload["pool_mode"].toBoolean());
+    S9S_VERIFY(!payload.contains("require_cmon_db_cluster"));
+    S9S_VERIFY(!payload.contains("require_config_storage"));
+    // The old setPoolMode-side bootstrap is gone.
+    S9S_VERIFY(!payload.contains("bootstrap_db_ha"));
+
+    // Both opted out.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["set_pool_mode"]             = true;
+    options->m_options["no_require_db_cluster"]     = true;
+    options->m_options["no_require_config_storage"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    S9S_VERIFY(payload.contains("require_cmon_db_cluster"));
+    S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
+    S9S_VERIFY(payload.contains("require_config_storage"));
+    S9S_VERIFY(!payload["require_config_storage"].toBoolean());
+
+    // Only one opted out.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["set_pool_mode"]         = true;
+    options->m_options["no_require_db_cluster"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
+    S9S_VERIFY(!payload.contains("require_config_storage"));
+
+    // Disabling pool mode has no prerequisites to check.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["unset_pool_mode"]       = true;
+    options->m_options["no_require_db_cluster"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    S9S_VERIFY(!payload["pool_mode"].toBoolean());
+    S9S_VERIFY(!payload.contains("require_cmon_db_cluster"));
 
     return true;
 }

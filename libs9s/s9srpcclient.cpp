@@ -11753,8 +11753,84 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
         const S9sString grantedNetworkMask = options->grantedNetworkMask();
         if (!grantedNetworkMask.empty())
             request["controllers_network_mask"] = grantedNetworkMask;
+
+        // Both prerequisites are required by default controller-side; only
+        // an opt-out needs to be transmitted.
+        if (options->noRequireDbCluster())
+            request["require_cmon_db_cluster"] = false;
+
+        if (options->noRequireConfigStorage())
+            request["require_config_storage"] = false;
     }
-    
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief asks which pool mode prerequisites are still missing
+ * (getPoolModeReadiness - a read-only query, allowed while pool mode is off).
+ */
+bool
+S9sRpcClient::getPoolModeReadiness(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "getpoolmodereadiness";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief migrates cmon's MariaDB to Oracle MySQL (migrateCmonDb), the
+ * prerequisite of the bootstrapCmonDbCluster job on a MariaDB controller.
+ *
+ * Not a job: the controller starts the migration asynchronously and replies
+ * straight away. cmon restarts when the migration completes.
+ */
+bool
+S9sRpcClient::migrateCmonDb(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "migratecmondb";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief turns the main controller's own cmon DB into the seed PRIMARY of the
+ * pool's cmon DB HA InnoDB Cluster behind a local MySQL Router
+ * (CmdBootstrapCmonDbCluster / the bootstrapCmonDbCluster job).
+ *
+ * The job only ever acts on the local host, so it takes no job_data of its
+ * own and there is no cluster_id: like addCmonDbInstance it targets the pool.
+ */
+bool
+S9sRpcClient::bootstrapCmonDbCluster(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobSpec;
+
+    (void) options;
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "bootstrapCmonDbCluster";
+    jobSpec["job_data"] = S9sVariantMap();
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Bootstrap CC DB Cluster";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
     return executeRequest(uri, request);
 }
 

@@ -119,6 +119,10 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testInstallOpenBao();
         bool testListConfigStorage();
         bool testListOpenBaoVersions();
+        bool testBootstrapDb();
+        bool testGetPoolModeReadiness();
+        bool testMigrateCmonDb();
+        bool testSetPoolModePrerequisites();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

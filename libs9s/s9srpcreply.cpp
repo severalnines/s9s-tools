@@ -2220,6 +2220,189 @@ S9sRpcReply::printCmonDbClusterNodesLong()
     }
 }
 
+/**
+ * Prints which pool mode prerequisites are in place (read-only
+ * getPoolModeReadiness call, "pool-controllers --pool-readiness").
+ *
+ * \code
+ * s9s pool-controllers --pool-readiness
+ * Pool mode readiness: not ready
+ *   CC DB cluster            : missing
+ *     DB backend             : mariadb (migration to Oracle MySQL required)
+ *   CC configuration storage : missing (openbao)
+ *
+ * To set up the missing prerequisites, run in this order:
+ *   s9s pool-controllers --migrate-db
+ *       (cmon restarts when the migration completes)
+ *   s9s pool-controllers --bootstrap-db --log
+ *   s9s pool-controllers --add-openbao --nodes=HOST --log
+ * then enable pool mode with 's9s pool-controllers --set-pool-mode'.
+ * \endcode
+ */
+void
+S9sRpcReply::printPoolModeReadiness()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    printPoolModeReadinessSummary(*this);
+}
+
+/**
+ * Prints why a setPoolMode request failed. When pool mode could not be
+ * enabled because prerequisites are missing the controller also sends a
+ * "readiness" object (the getPoolModeReadiness reply shape), which is turned
+ * into the s9s commands that set the missing pieces up.
+ */
+void
+S9sRpcReply::printSetPoolModeError()
+{
+    PRINT_ERROR("Failed to set pool mode: %s", STR(errorString()));
+
+    if (contains("readiness") && at("readiness").isVariantMap())
+    {
+        ::printf("\n");
+        printPoolModeReadinessSummary(at("readiness").toVariantMap());
+    }
+}
+
+/**
+ * Prints a getPoolModeReadiness reply (or the "readiness" object of a failed
+ * setPoolMode reply) as a human readable summary, with the command that sets
+ * up each missing prerequisite.
+ *
+ * A prerequisite the user opted out of with --no-require-db-cluster or
+ * --no-require-config-storage is still reported, but no command is suggested
+ * for it.
+ */
+void
+S9sRpcReply::printPoolModeReadinessSummary(
+        const S9sVariantMap &readiness)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
+    S9sVariantMap   storage   = readiness.valueByPath("config_storage").toVariantMap();
+    S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
+    bool            dbMissing = false;
+    bool            storageMissing = false;
+
+    if (readiness.valueByPath("pool_mode").toBoolean())
+    {
+        ::printf("Pool mode is already enabled on this controller.\n");
+        return;
+    }
+
+    if (!readiness.valueByPath("applicable").toBoolean())
+    {
+        ::printf("Pool mode readiness: not applicable\n");
+        ::printf("  Nothing to set up: the controller runs in k8s mode or "
+                "other controllers are already in the pool.\n");
+        return;
+    }
+
+    for (const auto &item : missing)
+    {
+        if (item.toString() == "cmon_db_cluster")
+            dbMissing = true;
+        else if (item.toString() == "config_storage")
+            storageMissing = true;
+    }
+
+    const bool      ready = readiness.valueByPath("ready").toBoolean();
+    const bool      migrationRequired =
+        dbCluster["migration_required"].toBoolean();
+    const S9sString dbBackend = dbCluster["db_backend"].toString();
+
+    ::printf("Pool mode readiness: %s\n", ready ? "ready" : "not ready");
+
+    // The CC DB cluster: cmon's own DB made highly available.
+    ::printf("  CC DB cluster            : %s\n",
+            dbMissing ? "missing" : "ready");
+
+    if (dbMissing && options->noRequireDbCluster())
+        ::printf("    (not required, --no-require-db-cluster)\n");
+
+    if (!dbBackend.empty())
+    {
+        ::printf("    DB backend             : %s%s\n",
+                STR(dbBackend),
+                migrationRequired ?
+                    " (migration to Oracle MySQL required)" : "");
+    }
+
+    if (!dbMissing)
+    {
+        ::printf("    Members online         : %d/%d\n",
+                dbCluster["members_online"].toInt(),
+                dbCluster["members_total"].toInt());
+    }
+
+    // The CC configuration storage: the secret store the pool shares.
+    const S9sString storageType = storage["type"].toString();
+
+    ::printf("  CC configuration storage : %s%s%s%s\n",
+            storageMissing ? "missing" : "ready",
+            storageType.empty() ? "" : " (",
+            STR(storageType),
+            storageType.empty() ? "" : ")");
+
+    if (storageMissing && options->noRequireConfigStorage())
+        ::printf("    (not required, --no-require-config-storage)\n");
+
+    if (!storageMissing && !storage["hostname"].toString().empty())
+    {
+        ::printf("    Address                : %s:%d\n",
+                STR(storage["hostname"].toString()),
+                storage["port"].toInt());
+    }
+
+    if (!storageMissing && !storage["version"].toString().empty())
+    {
+        ::printf("    Version                : %s\n",
+                STR(storage["version"].toString()));
+    }
+
+    const bool suggestDb      = dbMissing && !options->noRequireDbCluster();
+    const bool suggestStorage = storageMissing && !options->noRequireConfigStorage();
+
+    ::printf("\n");
+    if (!suggestDb && !suggestStorage)
+    {
+        ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
+                "pool mode (cmon restarts).\n");
+        return;
+    }
+
+    ::printf("To set up the missing prerequisites, run in this order:\n");
+
+    if (suggestDb && migrationRequired)
+    {
+        ::printf("  s9s pool-controllers --migrate-db\n");
+        ::printf("      (cmon restarts when the migration completes)\n");
+    }
+
+    if (suggestDb)
+        ::printf("  s9s pool-controllers --bootstrap-db --log\n");
+
+    if (suggestStorage)
+        ::printf("  s9s pool-controllers --add-openbao --nodes=HOST --log\n");
+
+    ::printf("then enable pool mode with 's9s pool-controllers --set-pool-mode'.\n");
+}
+
 
 
 void

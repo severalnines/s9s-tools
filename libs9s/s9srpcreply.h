@@ -165,6 +165,9 @@ class S9sRpcReply : public S9sVariantMap
         void printCmonDbClusterNodes();
         void printCmonDbClusterNodesLong();
 
+        void printPoolModeReadiness();
+        void printSetPoolModeError();
+
         // Methods handling users.
         void printUserList();
         void printUsersStat();
@@ -332,6 +335,8 @@ class S9sRpcReply : public S9sVariantMap
         
     private:
         void printServersStat();
+
+        static void printPoolModeReadinessSummary(const S9sVariantMap &readiness);
 
         
         void printLogBrief();
