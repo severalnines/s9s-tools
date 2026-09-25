@@ -56,6 +56,12 @@ SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 .B --set-pool-mode
 Sets existing controller on pool mode (EXTRA_OPTS=--pool on /etc/default/cmon) and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
 No controller_id is required as affected controller is the one receiving the rpc request
+
+On the first controller of a pool this requires the CC DB cluster
+(\fB--bootstrap-db\fP) and the CC configuration storage (\fB--add-openbao\fP) to be
+set up beforehand; \fB--set-pool-mode\fP does not set them up itself. When one is
+missing the request fails, and the missing prerequisites are printed together with
+the commands that set them up (see \fB--pool-readiness\fP).
 .RS
 .TP
 .B --conf-storage=MODE
@@ -63,6 +69,14 @@ Optional storage backend for controller configuration when enabling pool mode. A
 .TP
 .B --granted-network-mask=MASK
 Optional network mask to grant access to controllers in the pool. This value is passed as 'controllers_network_mask' in the job data when enabling pool mode. If omitted, main controllers local network mask will be used
+.TP
+.B --no-require-db-cluster
+Do not require the CC DB cluster (sends 'require_cmon_db_cluster: false'), for a
+caller that manages cmon's DB high availability itself.
+.TP
+.B --no-require-config-storage
+Do not require the CC configuration storage (sends 'require_config_storage: false'),
+for a caller that manages the configuration/secret storage itself.
 .RE
 .nf
 s9s pool-controllers --set-pool-mode
@@ -76,6 +90,76 @@ No controller_id is required as affected controller is the one receiving the rpc
 .nf
 s9s pool-controllers --unset-pool-mode
 Pool mode unset successfully.
+.fi
+
+.TP
+.B --pool-readiness
+Checks which pool mode prerequisites are still missing on this controller and prints
+the command that sets up each of them. Read-only, no job is created, and it works
+while pool mode is off. Requires super admin privileges. Supports
+\fB--print-json\fP like \fB--list\fP.
+
+The prerequisites are the \fBCC DB cluster\fP, cmon's own DB made highly available
+(a MySQL InnoDB Cluster behind a local MySQL Router, which other controllers and
+\fB--add-db\fP instances join later), and the \fBCC configuration storage\fP, the
+OpenBao secret store the controllers of the pool share. When the controller runs in
+k8s mode, or other controllers are already in the pool, there is nothing to set up.
+
+While a \fB--migrate-db\fP migration or a \fB--bootstrap-db\fP job is running it
+is reported as in progress and neither \fB--migrate-db\fP nor \fB--bootstrap-db\fP
+is suggested again; \fB--bootstrap-db\fP is only suggested once cmon's DB is Oracle
+MySQL. When the migration is not supported on the host it is reported with the
+reason, and \fB--migrate-db\fP is not suggested. A failed migration rolls back to
+MariaDB unless it failed after cmon was restarted on MySQL; check the unit with
+journalctl -u cmon-db-migration, then retry with \fB--migrate-db\fP while cmon's
+DB is still MariaDB.
+.nf
+s9s pool-controllers --pool-readiness
+Pool mode readiness: not ready
+  CC DB cluster            : missing
+    DB backend             : mariadb (migration to Oracle MySQL required)
+  CC configuration storage : missing (openbao)
+
+To set up the missing prerequisites, run in this order:
+  s9s pool-controllers --migrate-db
+      (cmon is stopped for several minutes; once it is back, check
+       --pool-readiness again for the next steps)
+  s9s pool-controllers --add-openbao --nodes=HOST --log
+then enable pool mode with 's9s pool-controllers --set-pool-mode'.
+.fi
+
+.TP
+.B --migrate-db
+Migrates cmon's DB from MariaDB to Oracle MySQL 8.4, which \fB--bootstrap-db\fP
+needs. Only valid on the main controller, with pool mode off, outside k8s mode,
+while cmon's DB is MariaDB and while cmon runs no jobs. Requires super admin
+privileges.
+
+The migration is supported on RHEL-family hosts only (EL8, EL9 and EL10). On other
+hosts it is refused and \fB--pool-readiness\fP reports why; to move cmon's DB to
+Oracle MySQL on Debian and Ubuntu follow the manual procedure at
+https://docs.severalnines.com/clustercontrol/latest/admin-guide/scalable-controllers-pool/#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu
+
+The migration runs in the background and
+.B cmon is stopped for several minutes,
+restarting when it completes. Until then \fB--pool-readiness\fP fails to connect:
+wait for the controller to come back, then check again. If the migration fails
+before cmon runs on MySQL again it is rolled back to MariaDB and cmon is
+restarted; check 'journalctl -u cmon-db-migration' before retrying.
+.nf
+s9s pool-controllers --migrate-db
+.fi
+
+.TP
+.B --bootstrap-db
+Creates the CC DB cluster: turns the main controller's own cmon DB into the single
+PRIMARY of a MySQL InnoDB Cluster behind a local MySQL Router and points cmon at the
+Router. It is a job (\fB--log\fP and \fB--wait\fP apply) that does not restart
+cmon, and it is a no-op when the cluster already exists. It must be run on the main
+controller, while it is the only controller known to the pool, and cmon's DB must be
+Oracle MySQL (see \fB--migrate-db\fP). Requires super admin privileges.
+.nf
+s9s pool-controllers --bootstrap-db --log
 .fi
 
 .TP
