@@ -3581,8 +3581,45 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     summary = readinessSummary(readiness);
     S9S_VERIFY(summary.contains("Bootstrap              : in progress"));
 
-    // An opted-out prerequisite gets no command.
+    // The same with the storage ready: pool mode can not be enabled yet, so
+    // it is not suggested either.
+    S9sVariantList dbOnly;
+
+    dbOnly << S9sVariant("cmon_db_cluster");
+    readiness["missing"] = dbOnly;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_VERIFY(commands.empty());
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("wait for the CC DB cluster bootstrap in progress"));
+    S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+
+    // Not supported on this host with the storage ready: the same, with the
+    // manual migration as the way forward.
+    dbCluster["db_backend"]            = "mariadb";
+    dbCluster["migration_required"]    = true;
+    dbCluster["migration_supported"]   = false;
     dbCluster["bootstrap_in_progress"] = false;
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_VERIFY(commands.empty());
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("move cmon's DB to Oracle MySQL manually"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+
+    // Nothing required missing: now pool mode is suggested.
+    readiness["missing"] = S9sVariantList();
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Run 's9s pool-controllers --set-pool-mode'"));
+
+    readiness["missing"] = missing;
+
+    // An opted-out prerequisite gets no command.
+    dbCluster["db_backend"]            = "mysql";
+    dbCluster["migration_required"]    = false;
+    dbCluster["migration_supported"]   = true;
     readiness["cmon_db_cluster"] = dbCluster;
     S9sOptions::instance()->m_options["no_require_config_storage"] = true;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);

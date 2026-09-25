@@ -2420,8 +2420,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
 
     if (migrationState == "running")
     {
-        ::printf("    Migration              : in progress, cmon restarts "
-                "when it completes\n");
+        ::printf("    Migration              : in progress, cmon is stopped "
+                "until it completes\n");
     }
     else if (migrationRequired && !migrationSupported)
     {
@@ -2477,11 +2477,34 @@ S9sRpcReply::printPoolModeReadinessSummary(
 
     const S9sStringList commands = poolModeSetupCommands(readiness);
 
+    // A required CC DB cluster no command can be suggested for yet: a
+    // migration or bootstrap is running, or the migration is not supported.
+    S9sString dbBlocker;
+
+    if (dbMissing && !options->noRequireDbCluster())
+    {
+        if (migrationState == "running")
+            dbBlocker = "wait for the cmon DB migration in progress to finish";
+        else if (bootstrapRunning)
+            dbBlocker = "wait for the CC DB cluster bootstrap in progress to finish";
+        else if (migrationRequired && !migrationSupported)
+            dbBlocker = "move cmon's DB to Oracle MySQL manually (see the reason above)";
+    }
+
     ::printf("\n");
-    if (commands.empty())
+    if (commands.empty() && dbBlocker.empty())
     {
         ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
                 "pool mode (cmon restarts).\n");
+        return;
+    }
+
+    // Pool mode can not be enabled yet and there is nothing to run for it.
+    if (commands.empty())
+    {
+        ::printf("To set up the missing CC DB cluster, %s,\n"
+                "then re-check with 's9s pool-controllers --pool-readiness'.\n",
+                STR(dbBlocker));
         return;
     }
 
@@ -2489,10 +2512,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
 
     // A running migration or bootstrap is a step of its own, just not one to
     // start again.
-    if (migrationState == "running")
-        ::printf("  (wait for the cmon DB migration in progress to finish)\n");
-    else if (bootstrapRunning)
-        ::printf("  (wait for the CC DB cluster bootstrap in progress to finish)\n");
+    if (!dbBlocker.empty())
+        ::printf("  (%s)\n", STR(dbBlocker));
 
     for (const auto &command : commands)
     {
