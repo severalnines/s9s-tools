@@ -3534,7 +3534,7 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     dbCluster["migration_unsupported_reason"] =
         "Migrating cmon's DB is only supported on RHEL-family hosts, see "
         "https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
-        "redundancy-high-availability/"
+        "scalable-controllers-pool/"
         "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu";
     readiness["cmon_db_cluster"] = dbCluster;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
