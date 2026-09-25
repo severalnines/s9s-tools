@@ -1554,10 +1554,12 @@ S9sBusinessLogic::execute()
 
                 // Like --set-pool-mode, the controller goes away for a while.
                 ::printf(
-                    "The migration runs in the background and cmon restarts "
-                    "when it completes.\n"
-                    "Wait for the controller to come back, then check with "
-                    "'s9s pool-controllers --pool-readiness'.\n");
+                    "The migration runs in the background: cmon is stopped "
+                    "for several minutes\n"
+                    "and restarts when it completes. Until then "
+                    "'s9s pool-controllers --pool-readiness'\n"
+                    "fails to connect; wait for the controller to come back, "
+                    "then check again.\n");
             }
         }
         else if (options->isBootstrapDb())

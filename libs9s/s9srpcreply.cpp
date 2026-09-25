@@ -2233,8 +2233,8 @@ S9sRpcReply::printCmonDbClusterNodesLong()
  *
  * To set up the missing prerequisites, run in this order:
  *   s9s pool-controllers --migrate-db
- *       (cmon restarts when the migration completes)
- *   s9s pool-controllers --bootstrap-db --log
+ *       (cmon is stopped for several minutes; once it is back, check
+ *        --pool-readiness again for the next steps)
  *   s9s pool-controllers --add-openbao --nodes=HOST --log
  * then enable pool mode with 's9s pool-controllers --set-pool-mode'.
  * \endcode
@@ -2284,8 +2284,12 @@ S9sRpcReply::printSetPoolModeError()
  *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
  *   reports missing, in the order they have to be run.
  *
- * --migrate-db is only suggested while cmon's DB still needs migrating and no
- * migration is running; one that failed may be retried. Prerequisites opted out
+ * --migrate-db is only suggested while cmon's DB still needs migrating, the
+ * controller supports migrating it on this host and no migration is running;
+ * one that failed may be retried. --bootstrap-db is only suggested once cmon's
+ * DB no longer needs migrating and while neither a bootstrap nor a migration
+ * is running. A cmon that does not send "migration_supported" (older than the
+ * key) is taken to support the migration. Prerequisites opted out
  * of with --no-require-db-cluster/--no-require-config-storage are skipped, and
  * nothing is suggested when pool mode is on or the readiness is not applicable.
  */
@@ -2316,13 +2320,21 @@ S9sRpcReply::poolModeSetupCommands(
 
     if (dbMissing && !options->noRequireDbCluster())
     {
-        if (dbCluster["migration_required"].toBoolean() &&
-                dbCluster["migration_state"].toString() != "running")
-        {
-            retval << "s9s pool-controllers --migrate-db";
-        }
+        const bool migrationRequired =
+            dbCluster["migration_required"].toBoolean();
+        const bool migrationSupported =
+            !dbCluster.contains("migration_supported") ||
+            dbCluster["migration_supported"].toBoolean();
+        const bool migrationRunning =
+            dbCluster["migration_state"].toString() == "running";
+        const bool bootstrapRunning =
+            dbCluster["bootstrap_in_progress"].toBoolean();
 
-        retval << "s9s pool-controllers --bootstrap-db --log";
+        if (migrationRequired && migrationSupported && !migrationRunning)
+            retval << "s9s pool-controllers --migrate-db";
+
+        if (!migrationRequired && !migrationRunning && !bootstrapRunning)
+            retval << "s9s pool-controllers --bootstrap-db --log";
     }
 
     if (storageMissing && !options->noRequireConfigStorage())
@@ -2376,6 +2388,13 @@ S9sRpcReply::printPoolModeReadinessSummary(
     const bool      ready = readiness.valueByPath("ready").toBoolean();
     const bool      migrationRequired =
         dbCluster["migration_required"].toBoolean();
+    const bool      migrationSupported =
+        !dbCluster.contains("migration_supported") ||
+        dbCluster["migration_supported"].toBoolean();
+    const S9sString unsupportedReason =
+        dbCluster["migration_unsupported_reason"].toString();
+    const bool      bootstrapRunning =
+        dbCluster["bootstrap_in_progress"].toBoolean();
     const S9sString dbBackend = dbCluster["db_backend"].toString();
     const S9sString migrationState = dbCluster["migration_state"].toString();
 
@@ -2396,17 +2415,32 @@ S9sRpcReply::printPoolModeReadinessSummary(
                     " (migration to Oracle MySQL required)" : "");
     }
 
+    if (bootstrapRunning)
+        ::printf("    Bootstrap              : in progress\n");
+
     if (migrationState == "running")
     {
         ::printf("    Migration              : in progress, cmon restarts "
                 "when it completes\n");
     }
+    else if (migrationRequired && !migrationSupported)
+    {
+        ::printf("    Migration              : not supported on this host\n");
+
+        if (!unsupportedReason.empty())
+            ::printf("                             %s\n", STR(unsupportedReason));
+    }
     else if (migrationState == "failed")
     {
-        ::printf("    Migration              : the last migration failed, "
-                "MariaDB is untouched\n");
+        // A failure before cmon runs on MySQL again is rolled back to MariaDB.
+        ::printf("    Migration              : the last migration failed; it "
+                "rolls back to MariaDB\n");
+        ::printf("                             unless it failed after cmon was "
+                "restarted on MySQL\n");
         ::printf("                             check 'journalctl -u "
-                "cmon-db-migration' before retrying with --migrate-db\n");
+                "cmon-db-migration'%s\n",
+                migrationSupported && dbBackend == "mariadb" ?
+                    ", then retry with --migrate-db" : "");
     }
 
     if (!dbMissing)
@@ -2453,16 +2487,24 @@ S9sRpcReply::printPoolModeReadinessSummary(
 
     ::printf("To set up the missing prerequisites, run in this order:\n");
 
-    // A running migration is a step of its own, just not one to start again.
+    // A running migration or bootstrap is a step of its own, just not one to
+    // start again.
     if (migrationState == "running")
         ::printf("  (wait for the cmon DB migration in progress to finish)\n");
+    else if (bootstrapRunning)
+        ::printf("  (wait for the CC DB cluster bootstrap in progress to finish)\n");
 
     for (const auto &command : commands)
     {
         ::printf("  %s\n", STR(command));
 
+        // --bootstrap-db can only follow once cmon is back on MySQL.
         if (command.endsWith("--migrate-db"))
-            ::printf("      (cmon restarts when the migration completes)\n");
+        {
+            ::printf("      (cmon is stopped for several minutes; once it is "
+                    "back, check\n"
+                    "       --pool-readiness again for the next steps)\n");
+        }
     }
 
     ::printf("then enable pool mode with 's9s pool-controllers --set-pool-mode'.\n");
