@@ -5536,6 +5536,63 @@ S9sRpcClient::createNode()
     return success;
 }
 
+bool
+S9sRpcClient::addShard()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sVariantList nodes;
+    S9sString      uri = "/v2/jobs/";
+
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while adding a shard.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+
+        if (protocol != "clickhouse" && !protocol.empty())
+        {
+            PRINT_ERROR(
+                    "The protocol '%s' is not supported for --add-shard, "
+                    "only clickhouse:// data nodes can form a new shard.",
+                    STR(protocol));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+
+        nodes << hosts[idx].toVariantMap();
+    }
+
+    jobData["nodes"]            = nodes;
+    jobData["install_software"] = !options->noInstall();
+    jobData["disable_firewall"] = !options->keepFirewall();
+
+    jobSpec["command"]    = "add_shard";
+    jobSpec["job_data"]   = jobData;
+
+    job["title"]          = "Add Shard to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    return executeRequest(uri, request);
+}
+
 /**
  * This method is executed when the --reconfigure option is used like in 
  * s9s cluster --reinstall-node --cluster-id=X --nodes=
@@ -5717,6 +5774,9 @@ S9sRpcClient::addNode(
 
     if(!options->masterDelay().empty())
         jobData["master_delay"] = options->masterDelay();
+
+    if (options->shardId() > 0)
+        jobData["shard_id"] = options->shardId();
    
     // The jobspec describing the command.
     jobSpec["command"]    = "addnode";

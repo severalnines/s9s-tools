@@ -414,6 +414,7 @@ class S9sOptions
         bool noInstall() const;
         bool noTerminate() const;
         S9sString masterDelay() const;
+        int shardId() const;
         
         S9sString cloudName() const;
         S9sString subnetId() const;
@@ -784,6 +785,7 @@ class S9sOptions
         bool isDeployCmonAgentsRequested() const;
         bool isUninstallCmonAgentsRequested() const;
         bool isAddNodeRequested() const;
+        bool isAddShardRequested() const;
         bool isReinstallNodeRequested() const;
         bool isReconfigureNodeRequested() const;
         bool isRemoveNodeRequested() const;
