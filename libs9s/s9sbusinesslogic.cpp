@@ -1525,7 +1525,8 @@ S9sBusinessLogic::execute()
             } else {
                 // check invalid request error on reply
                 if (!reply.isOk()) {
-                    PRINT_ERROR("Failed to set pool mode: %s", STR(reply.errorString()));
+                    // Also lists the missing prerequisites, if any.
+                    reply.printSetPoolModeError();
                     options->setExitStatus(S9sOptions::Failed);
                 }
                 else {
@@ -1533,6 +1534,55 @@ S9sBusinessLogic::execute()
                     ::printf("Pool mode %s successfully.\n", STR(mode));
                 }
             }
+        }
+        else if (options->isPoolReadiness())
+        {
+            success = client.getPoolModeReadiness(options);
+            S9sRpcReply reply = client.reply();
+            // With --print-json an error reply is printed as JSON too.
+            if (options->isJsonRequested() || (success && reply.isOk()))
+                reply.printPoolModeReadiness();
+            else
+                PRINT_ERROR("Failed to check pool mode readiness: %s",
+                            STR(reply.errorString()));
+
+            if (!success || !reply.isOk())
+                options->setExitStatus(S9sOptions::Failed);
+        }
+        else if (options->isMigrateDb())
+        {
+            success = client.migrateCmonDb(options);
+            S9sRpcReply reply = client.reply();
+            if (options->isJsonRequested()) {
+                reply.printJsonFormat();
+                if (!success || !reply.isOk())
+                    options->setExitStatus(S9sOptions::Failed);
+            }
+            else if (!success || !reply.isOk()) {
+                PRINT_ERROR("Failed to migrate cmon's DB: %s",
+                            STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                const S9sString message = reply["message"].toString();
+                if (!message.empty())
+                    ::printf("%s\n", STR(message));
+
+                // Like --set-pool-mode, the controller goes away for a while.
+                ::printf(
+                    "The migration runs in the background: cmon is stopped "
+                    "for several minutes\n"
+                    "and restarts when it completes. Until then "
+                    "'s9s pool-controllers --pool-readiness'\n"
+                    "fails to connect; wait for the controller to come back, "
+                    "then check again.\n");
+            }
+        }
+        else if (options->isBootstrapDb())
+        {
+            success = client.bootstrapCmonDbCluster(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
         }
         else if (options->isAddController())
         {

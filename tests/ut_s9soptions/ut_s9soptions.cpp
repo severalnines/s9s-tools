@@ -70,6 +70,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddOpenBao, retval);
     PERFORM_TEST(testListOpenBaoOperations, retval);
+    PERFORM_TEST(testPoolModePrerequisites, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
     PERFORM_TEST(testRestoreClusterInfoOptions, retval);
     PERFORM_TEST(testLockAccount, retval);
@@ -1187,6 +1188,127 @@ UtS9sOptions::testListOpenBaoOperations()
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
 
+    return true;
+}
+
+/**
+ * Testing the staged pool mode options on the pool-controllers subcommand:
+ * --bootstrap-db, --migrate-db and --pool-readiness, plus the
+ * --no-require-db-cluster/--no-require-config-storage opt-outs of
+ * --set-pool-mode.
+ */
+bool
+UtS9sOptions::testPoolModePrerequisites()
+{
+    S9sOptions *options;
+
+    // --bootstrap-db is a job acting on the local controller only: no
+    // --nodes, and the usual job options apply.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--bootstrap-db",
+                            "--log",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isBootstrapDb());
+    S9S_VERIFY(options->isLogRequested());
+    S9S_VERIFY(!options->isMigrateDb());
+    S9S_VERIFY(!options->isPoolReadiness());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--migrate-db",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isMigrateDb());
+    S9S_VERIFY(!options->isBootstrapDb());
+
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--pool-readiness",
+                            "--print-json",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isPoolReadiness());
+    S9S_VERIFY(options->isJsonRequested());
+    S9S_VERIFY(!options->isSetPoolModeRequested());
+
+    // They are main options: two at once is a bad command line.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--bootstrap-db",
+                            "--set-pool-mode",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    // The opt-outs belong to --set-pool-mode.
+    const char *argv5[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--set-pool-mode",
+                            "--no-require-db-cluster",
+                            "--no-require-config-storage",
+                            nullptr };
+    int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
+    S9S_VERIFY(options->isSetPoolModeRequested());
+    S9S_VERIFY(options->noRequireDbCluster());
+    S9S_VERIFY(options->noRequireConfigStorage());
+
+    const char *argv6[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--set-pool-mode",
+                            nullptr };
+    int         argc6   = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc6, (char **)argv6));
+    S9S_VERIFY(!options->noRequireDbCluster());
+    S9S_VERIFY(!options->noRequireConfigStorage());
+
+    // ... and are rejected with anything else, even the readiness check.
+    const char *argv7[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--pool-readiness",
+                            "--no-require-db-cluster",
+                            nullptr };
+    int         argc7   = sizeof(argv7) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc7, (char **)argv7));
+
+    const char *argv8[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--unset-pool-mode",
+                            "--no-require-config-storage",
+                            nullptr };
+    int         argc8   = sizeof(argv8) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc8, (char **)argv8));
+
+    S9sOptions::uninit();
     return true;
 }
 

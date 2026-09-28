@@ -2220,6 +2220,317 @@ S9sRpcReply::printCmonDbClusterNodesLong()
     }
 }
 
+/**
+ * Prints which pool mode prerequisites are in place (read-only
+ * getPoolModeReadiness call, "pool-controllers --pool-readiness").
+ *
+ * \code
+ * s9s pool-controllers --pool-readiness
+ * Pool mode readiness: not ready
+ *   CC DB cluster            : missing
+ *     DB backend             : mariadb (migration to Oracle MySQL required)
+ *   CC configuration storage : missing (openbao)
+ *
+ * To set up the missing prerequisites, run in this order:
+ *   s9s pool-controllers --migrate-db
+ *       (cmon is stopped for several minutes; once it is back, check
+ *        --pool-readiness again for the next steps)
+ *   s9s pool-controllers --add-openbao --nodes=HOST --log
+ * then enable pool mode with 's9s pool-controllers --set-pool-mode'.
+ * \endcode
+ */
+void
+S9sRpcReply::printPoolModeReadiness()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    printPoolModeReadinessSummary(*this);
+}
+
+/**
+ * Prints why a setPoolMode request failed. When pool mode could not be
+ * enabled because prerequisites are missing the controller also sends a
+ * "readiness" object (the getPoolModeReadiness reply shape), which is turned
+ * into the s9s commands that set the missing pieces up.
+ */
+void
+S9sRpcReply::printSetPoolModeError()
+{
+    PRINT_ERROR("Failed to set pool mode: %s", STR(errorString()));
+
+    if (contains("readiness") && at("readiness").isVariantMap())
+    {
+        ::printf("\n");
+        printPoolModeReadinessSummary(at("readiness").toVariantMap());
+    }
+}
+
+/**
+ * \returns The s9s commands that set up the pool mode prerequisites a
+ *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
+ *   reports missing, in the order they have to be run.
+ *
+ * --migrate-db is only suggested while cmon's DB still needs migrating, the
+ * controller supports migrating it on this host and no migration is running;
+ * one that failed may be retried. --bootstrap-db is only suggested once cmon's
+ * DB no longer needs migrating and while neither a bootstrap nor a migration
+ * is running. A cmon that does not send "migration_supported" (older than the
+ * key) is taken to support the migration. Prerequisites opted out
+ * of with --no-require-db-cluster/--no-require-config-storage are skipped, and
+ * nothing is suggested when pool mode is on or the readiness is not applicable.
+ */
+S9sStringList
+S9sRpcReply::poolModeSetupCommands(
+        const S9sVariantMap &readiness)
+{
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
+    S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
+    S9sStringList   retval;
+    bool            dbMissing = false;
+    bool            storageMissing = false;
+
+    if (readiness.valueByPath("pool_mode").toBoolean() ||
+            !readiness.valueByPath("applicable").toBoolean())
+    {
+        return retval;
+    }
+
+    for (const auto &item : missing)
+    {
+        if (item.toString() == "cmon_db_cluster")
+            dbMissing = true;
+        else if (item.toString() == "config_storage")
+            storageMissing = true;
+    }
+
+    if (dbMissing && !options->noRequireDbCluster())
+    {
+        const bool migrationRequired =
+            dbCluster["migration_required"].toBoolean();
+        const bool migrationSupported =
+            !dbCluster.contains("migration_supported") ||
+            dbCluster["migration_supported"].toBoolean();
+        const bool migrationRunning =
+            dbCluster["migration_state"].toString() == "running";
+        const bool bootstrapRunning =
+            dbCluster["bootstrap_in_progress"].toBoolean();
+
+        if (migrationRequired && migrationSupported && !migrationRunning)
+            retval << "s9s pool-controllers --migrate-db";
+
+        if (!migrationRequired && !migrationRunning && !bootstrapRunning)
+            retval << "s9s pool-controllers --bootstrap-db --log";
+    }
+
+    if (storageMissing && !options->noRequireConfigStorage())
+        retval << "s9s pool-controllers --add-openbao --nodes=HOST --log";
+
+    return retval;
+}
+
+/**
+ * Prints a getPoolModeReadiness reply (or the "readiness" object of a failed
+ * setPoolMode reply) as a human readable summary, with the command that sets
+ * up each missing prerequisite.
+ *
+ * A prerequisite the user opted out of with --no-require-db-cluster or
+ * --no-require-config-storage is still reported, but no command is suggested
+ * for it.
+ */
+void
+S9sRpcReply::printPoolModeReadinessSummary(
+        const S9sVariantMap &readiness)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
+    S9sVariantMap   storage   = readiness.valueByPath("config_storage").toVariantMap();
+    S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
+    bool            dbMissing = false;
+    bool            storageMissing = false;
+
+    if (readiness.valueByPath("pool_mode").toBoolean())
+    {
+        ::printf("Pool mode is already enabled on this controller.\n");
+        return;
+    }
+
+    if (!readiness.valueByPath("applicable").toBoolean())
+    {
+        ::printf("Pool mode readiness: not applicable\n");
+        ::printf("  Nothing to set up: the controller runs in k8s mode or "
+                "other controllers are already in the pool.\n");
+        return;
+    }
+
+    for (const auto &item : missing)
+    {
+        if (item.toString() == "cmon_db_cluster")
+            dbMissing = true;
+        else if (item.toString() == "config_storage")
+            storageMissing = true;
+    }
+
+    const bool      ready = readiness.valueByPath("ready").toBoolean();
+    const bool      migrationRequired =
+        dbCluster["migration_required"].toBoolean();
+    const bool      migrationSupported =
+        !dbCluster.contains("migration_supported") ||
+        dbCluster["migration_supported"].toBoolean();
+    const S9sString unsupportedReason =
+        dbCluster["migration_unsupported_reason"].toString();
+    const bool      bootstrapRunning =
+        dbCluster["bootstrap_in_progress"].toBoolean();
+    const S9sString dbBackend = dbCluster["db_backend"].toString();
+    const S9sString migrationState = dbCluster["migration_state"].toString();
+
+    ::printf("Pool mode readiness: %s\n", ready ? "ready" : "not ready");
+
+    // The CC DB cluster: cmon's own DB made highly available.
+    ::printf("  CC DB cluster            : %s\n",
+            dbMissing ? "missing" : "ready");
+
+    if (dbMissing && options->noRequireDbCluster())
+        ::printf("    (not required, --no-require-db-cluster)\n");
+
+    if (!dbBackend.empty())
+    {
+        ::printf("    DB backend             : %s%s\n",
+                STR(dbBackend),
+                migrationRequired ?
+                    " (migration to Oracle MySQL required)" : "");
+    }
+
+    if (bootstrapRunning)
+        ::printf("    Bootstrap              : in progress\n");
+
+    if (migrationState == "running")
+    {
+        ::printf("    Migration              : in progress, cmon is stopped "
+                "until it completes\n");
+    }
+    else if (migrationRequired && !migrationSupported)
+    {
+        ::printf("    Migration              : not supported on this host\n");
+
+        if (!unsupportedReason.empty())
+            ::printf("                             %s\n", STR(unsupportedReason));
+    }
+    else if (migrationState == "failed")
+    {
+        // A failure before cmon runs on MySQL again is rolled back to MariaDB.
+        ::printf("    Migration              : the last migration failed; it "
+                "rolls back to MariaDB\n");
+        ::printf("                             unless it failed after cmon was "
+                "restarted on MySQL\n");
+        ::printf("                             check 'journalctl -u "
+                "cmon-db-migration'%s\n",
+                migrationSupported && dbBackend == "mariadb" ?
+                    ", then retry with --migrate-db" : "");
+    }
+
+    if (!dbMissing)
+    {
+        ::printf("    Members online         : %d/%d\n",
+                dbCluster["members_online"].toInt(),
+                dbCluster["members_total"].toInt());
+    }
+
+    // The CC configuration storage: the secret store the pool shares.
+    const S9sString storageType = storage["type"].toString();
+
+    ::printf("  CC configuration storage : %s%s%s%s\n",
+            storageMissing ? "missing" : "ready",
+            storageType.empty() ? "" : " (",
+            STR(storageType),
+            storageType.empty() ? "" : ")");
+
+    if (storageMissing && options->noRequireConfigStorage())
+        ::printf("    (not required, --no-require-config-storage)\n");
+
+    if (!storageMissing && !storage["hostname"].toString().empty())
+    {
+        ::printf("    Address                : %s:%d\n",
+                STR(storage["hostname"].toString()),
+                storage["port"].toInt());
+    }
+
+    if (!storageMissing && !storage["version"].toString().empty())
+    {
+        ::printf("    Version                : %s\n",
+                STR(storage["version"].toString()));
+    }
+
+    const S9sStringList commands = poolModeSetupCommands(readiness);
+
+    // A required CC DB cluster no command can be suggested for yet: a
+    // migration or bootstrap is running, or the migration is not supported.
+    S9sString dbBlocker;
+
+    if (dbMissing && !options->noRequireDbCluster())
+    {
+        if (migrationState == "running")
+            dbBlocker = "wait for the cmon DB migration in progress to finish";
+        else if (bootstrapRunning)
+            dbBlocker = "wait for the CC DB cluster bootstrap in progress to finish";
+        else if (migrationRequired && !migrationSupported)
+            dbBlocker = "move cmon's DB to Oracle MySQL manually (see the reason above)";
+    }
+
+    ::printf("\n");
+    if (commands.empty() && dbBlocker.empty())
+    {
+        ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
+                "pool mode (cmon restarts).\n");
+        return;
+    }
+
+    // Pool mode can not be enabled yet and there is nothing to run for it.
+    if (commands.empty())
+    {
+        ::printf("To set up the missing CC DB cluster, %s,\n"
+                "then re-check with 's9s pool-controllers --pool-readiness'.\n",
+                STR(dbBlocker));
+        return;
+    }
+
+    ::printf("To set up the missing prerequisites, run in this order:\n");
+
+    // A running migration or bootstrap is a step of its own, just not one to
+    // start again.
+    if (!dbBlocker.empty())
+        ::printf("  (%s)\n", STR(dbBlocker));
+
+    for (const auto &command : commands)
+    {
+        ::printf("  %s\n", STR(command));
+
+        // --bootstrap-db can only follow once cmon is back on MySQL.
+        if (command.endsWith("--migrate-db"))
+        {
+            ::printf("      (cmon is stopped for several minutes; once it is "
+                    "back, check\n"
+                    "       --pool-readiness again for the next steps)\n");
+        }
+    }
+
+    ::printf("then enable pool mode with 's9s pool-controllers --set-pool-mode'.\n");
+}
+
 
 
 void
