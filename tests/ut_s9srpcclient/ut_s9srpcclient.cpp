@@ -129,6 +129,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster05,     retval);
     PERFORM_TEST(testCreateCluster06,     retval);
     PERFORM_TEST(testRegisterClickHouse,  retval);
+    PERFORM_TEST(testAddShardClickHouse,  retval);
+    PERFORM_TEST(testAddShardRejectsKeeper, retval);
+    PERFORM_TEST(testAddNodeClickHouseShardId, retval);
 
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
@@ -1301,6 +1304,107 @@ UtS9sRpcClient::testRegisterClickHouse()
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "nodes").toVariantList().size(),
             1);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddShardClickHouse()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantList      nodes;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11;clickhouse://10.0.2.12");
+
+    S9S_VERIFY(client.addShard());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+    S9S_COMPARE(payload["cluster_id"], 5);
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Add Shard to Cluster");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "add_shard");
+
+    nodes = payload.valueByPath(JOB_DATA "nodes").toVariantList();
+    S9S_COMPARE(nodes.size(), 2);
+    S9S_COMPARE(nodes[0]["hostname"].toString(), "10.0.2.11");
+    S9S_COMPARE(nodes[0]["class_name"].toString(), "CmonClickHouseHost");
+    S9S_COMPARE(nodes[1]["hostname"].toString(), "10.0.2.12");
+
+    S9S_VERIFY(payload.valueByPath(JOB_DATA "install_software").toBoolean());
+    S9S_VERIFY(payload.valueByPath(JOB_DATA "disable_firewall").toBoolean());
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddShardRejectsKeeper()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11;clickhouse-keeper://10.0.9.14");
+
+    S9S_VERIFY(!client.addShard());
+    S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    S9S_COMPARE(client.uri(0), "");
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+
+    S9S_VERIFY(!client.addShard());
+    S9S_COMPARE(client.uri(0), "");
+
+    options->setExitStatus(S9sOptions::ExitOk);
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddNodeClickHouseShardId()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sRpcClientTester  clientWithoutShard;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->m_options["shard_id"]   = 2;
+    options->setNodes("clickhouse://10.0.2.13");
+
+    S9S_VERIFY(client.createNode());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "addnode");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "shard_id"), 2);
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.13");
+
+    S9S_VERIFY(clientWithoutShard.createNode());
+
+    payload = clientWithoutShard.lastPayload();
+    S9S_VERIFY(!payload.valueByPath("/job/job_spec/job_data").toVariantMap()
+            .contains("shard_id"));
 
     return true;
 }
