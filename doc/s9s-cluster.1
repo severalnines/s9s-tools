@@ -1045,7 +1045,8 @@ The protocol to install and handle dedicated ClickHouse Keeper servers.
 .BI \-\^\-shard\-id= ID
 The shard of a ClickHouse cluster the node added by \fB\-\-add\-node\fR
 becomes a replica of. Shards are numbered from 1 in the order they were
-created; shard 1 is used when the option is omitted.
+created; shard 1 is used when the option is omitted. Every node in the
+\fB\-\-nodes\fR list has to use the \fBclickhouse://\fR protocol.
 
 .B EXAMPLE
 .nf

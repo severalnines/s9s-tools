@@ -1413,6 +1413,23 @@ UtS9sRpcClient::testAddNodeClickHouseShardId()
     S9S_VERIFY(!payload.valueByPath("/job/job_spec/job_data").toVariantMap()
             .contains("shard_id"));
 
+    const char *nonClickHouseNodes[] = {
+            "mysql://10.0.3.11", "10.0.3.11", "clickhouse-keeper://10.0.9.14" };
+    for (const char *nodes : nonClickHouseNodes)
+    {
+        S9sRpcClientTester rejectedClient;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        options->setNodes(nodes);
+
+        S9S_VERIFY(!rejectedClient.createNode());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(rejectedClient.uri(0), "");
+    }
+
+    options->setExitStatus(S9sOptions::ExitOk);
     return true;
 }
 
