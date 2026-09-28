@@ -216,6 +216,7 @@ function _s9s()
                 opts+="--os-user= "
                 opts+="--output-dir= "
                 opts+="--provider-version= "
+                opts+="--shard-id= "
                 opts+="--subnet-id= "
                 opts+="--template= "
                 opts+="--use-internal-repos "
