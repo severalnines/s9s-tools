@@ -1716,6 +1716,21 @@ UtS9sOptions::testAddShard()
     S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
     S9S_COMPARE(options->errorString(), "The main options are mutually exclusive.");
 
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11",
+                            "--shard-id=3",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+    S9S_COMPARE(options->errorString(),
+            "The --shard-id option can only be used with --add-node.");
+
     S9sOptions::uninit();
     return true;
 }

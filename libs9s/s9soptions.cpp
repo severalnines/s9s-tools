@@ -13450,6 +13450,15 @@ S9sOptions::checkOptionsCluster()
         }
     }
 
+    if (shardId() > 0 && !isAddNodeRequested())
+    {
+        m_errorMessage =
+            "The --shard-id option can only be used with --add-node.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
     return true;
 }
 
