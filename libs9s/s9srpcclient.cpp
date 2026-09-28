@@ -5357,19 +5357,22 @@ S9sRpcClient::createNode()
         return false;
     }
 
-    for (uint idx = 0u; idx < hosts.size() && options->shardId() > 0; ++idx)
+    if (options->shardId() > 0)
     {
-        S9sNode node = hosts[idx].toNode();
-
-        if (node.protocol().toLower() != "clickhouse")
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
         {
-            PRINT_ERROR(
-                    "The --shard-id option can not be used for the node '%s', "
-                    "it applies to clickhouse:// data nodes only.",
-                    STR(node.hostName()));
+            S9sNode node = hosts[idx].toNode();
 
-            options->setExitStatus(S9sOptions::BadOptions);
-            return false;
+            if (node.protocol().toLower() != "clickhouse")
+            {
+                PRINT_ERROR(
+                        "The --shard-id option can not be used for the node "
+                        "'%s', it applies to clickhouse:// data nodes only.",
+                        STR(node.hostName()));
+
+                options->setExitStatus(S9sOptions::BadOptions);
+                return false;
+            }
         }
     }
 

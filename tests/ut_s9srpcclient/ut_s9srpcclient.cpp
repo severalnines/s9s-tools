@@ -130,7 +130,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster06,     retval);
     PERFORM_TEST(testRegisterClickHouse,  retval);
     PERFORM_TEST(testAddShardClickHouse,  retval);
-    PERFORM_TEST(testAddShardRejectsKeeper, retval);
+    PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
 
 
@@ -1349,7 +1349,7 @@ UtS9sRpcClient::testAddShardClickHouse()
 }
 
 bool
-UtS9sRpcClient::testAddShardRejectsKeeper()
+UtS9sRpcClient::testAddShardRejectsNonClickHouseNodes()
 {
     S9sOptions         *options = S9sOptions::instance();
     S9sRpcClientTester  client;
