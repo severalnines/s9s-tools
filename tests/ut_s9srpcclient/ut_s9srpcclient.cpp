@@ -1364,6 +1364,13 @@ UtS9sRpcClient::testAddShardRejectsKeeper()
 
     options->m_options.clear();
     options->m_options["cluster_id"] = 5;
+    options->setNodes("10.0.2.11");
+
+    S9S_VERIFY(!client.addShard());
+    S9S_COMPARE(client.uri(0), "");
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
 
     S9S_VERIFY(!client.addShard());
     S9S_COMPARE(client.uri(0), "");

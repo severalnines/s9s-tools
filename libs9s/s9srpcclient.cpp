@@ -5561,14 +5561,15 @@ S9sRpcClient::addShard()
 
     for (uint idx = 0u; idx < hosts.size(); ++idx)
     {
-        S9sString protocol = hosts[idx].toNode().protocol().toLower();
+        S9sNode   node     = hosts[idx].toNode();
+        S9sString protocol = node.protocol().toLower();
 
-        if (protocol != "clickhouse" && !protocol.empty())
+        if (protocol != "clickhouse")
         {
             PRINT_ERROR(
-                    "The protocol '%s' is not supported for --add-shard, "
-                    "only clickhouse:// data nodes can form a new shard.",
-                    STR(protocol));
+                    "The node '%s' can not be part of a new shard, "
+                    "--add-shard takes clickhouse:// data nodes only.",
+                    STR(node.hostName()));
 
             options->setExitStatus(S9sOptions::BadOptions);
             return false;
