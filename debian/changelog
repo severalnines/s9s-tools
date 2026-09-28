@@ -25,6 +25,10 @@ s9s-tools (1.9.2026092808-testing) UNRELEASED; urgency=medium
   [ Aliaksei Zhordachkin ]
   * Added --auto-agent option for create cluster jobs to leave the agent
     installation decision to the controller.
+  * Added --add-shard option to the cluster command to add a new shard to a
+    ClickHouse cluster.
+  * Added --shard-id option to pick the ClickHouse shard a node added with
+    --add-node becomes a replica of.
 
   [ Severalnines ]
   * Testing release 1.9.2026092808.
