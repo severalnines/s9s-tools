@@ -144,7 +144,7 @@ function _s9s()
             return 0
         elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
             main_opt+="--help "
-            main_opt+="--add-node --create-account --create --create-database "
+            main_opt+="--add-node --add-shard --create-account --create --create-database "
             main_opt+="--create-report --delete-account --drop --list "
             main_opt+="--list-databases --ping "
             main_opt+="--remove-node --rolling-restart --setup-audit-logging "
@@ -216,6 +216,7 @@ function _s9s()
                 opts+="--os-user= "
                 opts+="--output-dir= "
                 opts+="--provider-version= "
+                opts+="--shard-id= "
                 opts+="--subnet-id= "
                 opts+="--template= "
                 opts+="--use-internal-repos "

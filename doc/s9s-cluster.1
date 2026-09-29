@@ -25,6 +25,8 @@ Adds a new node (server) to the cluster or to be more precise creates a new
 job that will eventually add a new node to the cluster. The name (or IP 
 address) of the node should be specified using the \fB\-\-nodes\fR command 
 line option.
+On a sharded ClickHouse cluster the \fB\-\-shard\-id\fR command line option
+selects the shard the new node becomes a replica of (shard 1 when omitted).
 
 .B EXAMPLE
 .nf
@@ -35,6 +37,23 @@ s9s cluster \\
     --master-delay=3600
     --wait
 .fi 
+
+.TP
+.B --add-shard
+Creates a job that adds a new shard to a ClickHouse cluster. Every node given
+in the \fB\-\-nodes\fR command line option becomes a replica of the new shard.
+The new shard uses the Keeper ensemble the cluster already has; Keeper
+nodes cannot be part of the list. ClickHouse does not rebalance existing data,
+rows written before the shard was added stay on the shards that hold them.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-shard \\
+    --cluster-id=1 \\
+    --nodes="clickhouse://192.168.0.211;clickhouse://192.168.0.212" \\
+    --wait
+.fi
 
 .TP
 .B --change-config
@@ -1014,7 +1033,30 @@ The protocol to install and handle mongo config servers.
 .TP
 .B mongodb://
 The protocol to install and handle mongo data servers.
+.TP
+.B clickhouse://
+The protocol to install and handle ClickHouse data servers.
+.TP
+.B clickhouse-keeper://
+The protocol to install and handle dedicated ClickHouse Keeper servers.
 .RE
+
+.TP
+.BI \-\^\-shard\-id= ID
+The shard of a ClickHouse cluster the node added by \fB\-\-add\-node\fR
+becomes a replica of. Shards are numbered from 1 in the order they were
+created; shard 1 is used when the option is omitted. Every node in the
+\fB\-\-nodes\fR list has to use the \fBclickhouse://\fR protocol.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-node \\
+    --cluster-id=1 \\
+    --nodes="clickhouse://192.168.0.213" \\
+    --shard-id=2 \\
+    --wait
+.fi
 
 .TP
 .BI \-\^\-no\-install

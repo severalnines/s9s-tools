@@ -455,6 +455,7 @@ class S9sRpcClient
         bool createCluster();
         bool registerCluster();
         bool createNode();
+        bool addShard();
         bool reinstallNode();
         bool reconfigureNode();
         bool removeNode();

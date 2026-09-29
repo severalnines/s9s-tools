@@ -69,6 +69,7 @@ enum S9sOptionType
     OptionServers,
     OptionContainers,
     OptionAddNode,
+    OptionAddShard,
     OptionReinstallNode,
     OptionReconfigureNode,
     OptionRemoveNode,
@@ -460,6 +461,7 @@ enum S9sOptionType
     OptionHaProxyConfigTemplate,
     OptionNoInstall,
     OptionMasterDelay,
+    OptionShardId,
     OptionNoTerminate,
     OptionNdbDataMemoryRatio,
     OptionWithTimescaleDb,
@@ -3538,6 +3540,12 @@ S9sOptions::masterDelay() const
     if(m_options.contains("master_delay"))
         return getString("master_delay");
     return {};
+}
+
+int
+S9sOptions::shardId() const
+{
+    return getInt("shard_id");
 }
 
 
@@ -7157,6 +7165,12 @@ S9sOptions::isAddNodeRequested() const
     return getBool("add_node");
 }
 
+bool
+S9sOptions::isAddShardRequested() const
+{
+    return getBool("add_shard");
+}
+
 /**
  * \returns true if the reinstall operation was requested using the "--reinstall-node"
  *   command line option.
@@ -8700,6 +8714,7 @@ S9sOptions::printHelpCluster()
     printf(
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
+"  --add-shard                Add a new shard built from --nodes to the cluster.\n"
 "  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
@@ -8838,6 +8853,10 @@ S9sOptions::printHelpCluster()
 "\n"
 "Add replication node related options\n"
 "  --master-delay             Delay in seconds to be set on replica node\n"
+"\n"
+"ClickHouse shard related options\n"
+"  --shard-id=ID              The shard the node added by --add-node becomes a\n"
+"                             replica of.\n"
 "\n"
 "Major upgrade related options\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
@@ -13282,6 +13301,9 @@ S9sOptions::checkOptionsCluster()
     if (isAddNodeRequested())
         countOptions++;
 
+    if (isAddShardRequested())
+        countOptions++;
+
     if (isReinstallNodeRequested())
         countOptions++;
 
@@ -13429,6 +13451,15 @@ S9sOptions::checkOptionsCluster()
             m_exitStatus = BadOptions;
             return false;
         }
+    }
+
+    if (shardId() > 0 && !isAddNodeRequested())
+    {
+        m_errorMessage =
+            "The --shard-id option can only be used with --add-node.";
+
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;
@@ -15628,6 +15659,7 @@ S9sOptions::readOptionsCluster(
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
+        { "add-shard",        no_argument,       0, OptionAddShard        },
         { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
@@ -15829,6 +15861,7 @@ S9sOptions::readOptionsCluster(
 
         // Options for add cluster/node.
         { "master-delay",        required_argument, 0,  OptionMasterDelay  },
+        { "shard-id",            required_argument, 0,  OptionShardId      },
 
         // Options for remove cluster/node.
         { "uninstall",           no_argument,       0,  OptionUninstall     },
@@ -16030,6 +16063,10 @@ S9sOptions::readOptionsCluster(
             case OptionAddNode:
                 // --add-node
                 m_options["add_node"] = true;
+                break;
+
+            case OptionAddShard:
+                m_options["add_shard"] = true;
                 break;
 
             case OptionReinstallNode:
@@ -17023,6 +17060,22 @@ S9sOptions::readOptionsCluster(
             case OptionMasterDelay:
                 // --master-delay=SECONDS
                 m_options["master_delay"] = optarg;
+                break;
+
+            case OptionShardId:
+                // --shard-id=ID
+                if (!S9sString(optarg).looksInteger() || atoi(optarg) < 1)
+                {
+                    m_errorMessage.sprintf(
+                            "The value '%s' is invalid for --shard-id, "
+                            "shards are numbered from 1.",
+                            optarg);
+
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+
+                m_options["shard_id"] = atoi(optarg);
                 break;
 
             case '?':

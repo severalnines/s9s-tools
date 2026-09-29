@@ -77,6 +77,8 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testUnlockAccount, retval);
     PERFORM_TEST(testLockUnlockMutualExclusion, retval);
     PERFORM_TEST(testLockAccountMissingAccount, retval);
+    PERFORM_TEST(testAddShard, retval);
+    PERFORM_TEST(testShardId, retval);
 
     return retval;
 }
@@ -1675,6 +1677,121 @@ UtS9sOptions::testLockAccountMissingAccount()
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
     S9S_COMPARE(options->errorString(), "Account name is not provided.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testAddShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11;clickhouse://10.0.2.12",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddShardRequested());
+    S9S_VERIFY(!options->isAddNodeRequested());
+    S9S_COMPARE(options->nodes().size(), 2);
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--add-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
+    S9S_COMPARE(options->errorString(), "The main options are mutually exclusive.");
+
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11",
+                            "--shard-id=3",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+    S9S_COMPARE(options->errorString(),
+            "The --shard-id option can only be used with --add-node.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testShardId()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.13",
+                            "--shard-id=2",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->shardId(), 2);
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.13",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_COMPARE(options->shardId(), 0);
+
+    const char *invalidValues[] = { "0", "-1", "abc", "2x", "" };
+    for (const char *value : invalidValues)
+    {
+        S9sString   shardOption = S9sString("--shard-id=") + value;
+        const char *argv3[] = { "/bin/s9s",
+                                "cluster",
+                                "--add-node",
+                                "--cluster-id=5",
+                                "--nodes=clickhouse://10.0.2.13",
+                                STR(shardOption),
+                                nullptr };
+        int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+        S9sString   expected;
+
+        expected.sprintf(
+                "The value '%s' is invalid for --shard-id, "
+                "shards are numbered from 1.",
+                value);
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+        S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+        S9S_COMPARE(options->errorString(), expected);
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    }
 
     S9sOptions::uninit();
     return true;
