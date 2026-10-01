@@ -137,6 +137,7 @@ function _s9s()
                 opts+="--full-path= --memory= "
                 opts+="--no-compression --on-node --on-controller "
                 opts+="--parallellism= --title= --use-pigz "
+                opts+="--compression-threads= "
                 opts+="--to-individual-files --pitr-compatible "
             fi
             
