@@ -399,6 +399,7 @@ class S9sRpcClient
         bool getLog();
         bool getLogStatistics();
         bool getAlarms();
+        bool getAlarmHistory();
         bool getAlarm();
         bool ignoreAlarm();
         bool getAlarmStatistics();

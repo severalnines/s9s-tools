@@ -27,6 +27,14 @@ of the option.
 Lists the active alarms.
 
 .TP
+.B --list-history
+Lists the alarms the controller has a record of, within its history retention
+window: the ones that have ended, and the ones still open. An alarm leaves the
+active list the moment it clears, so this is the only way to see what happened
+earlier. Each line reports when the alarm was raised, how it ended and how long
+it lasted; the duration is left blank while an alarm is still open.
+
+.TP
 .B --stat
 Prints a simple list about the number of alarms.
 

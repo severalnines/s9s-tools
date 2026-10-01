@@ -541,6 +541,7 @@ enum S9sOptionType
     OptionStopController,
     OptionRemoveController,
     OptionUpdateCmon,
+    OptionListHistory,
 
     OptionExtensions
 };
@@ -5729,6 +5730,19 @@ S9sOptions::isListGroupsRequested() const
 }
 
 /**
+ * \returns true if the --list-history command line option was provided
+ *
+ * Distinct from --list: that shows the alarms standing right now, this one
+ * shows what the controller has recorded of alarms that already ended, which
+ * it keeps for its own retention window.
+ */
+bool
+S9sOptions::isListHistoryRequested() const
+{
+    return getBool("list_history");
+}
+
+/**
  * \returns true if the --stat command line option was provided to get a
  *   detailed list of something
  */
@@ -8644,6 +8658,8 @@ S9sOptions::printHelpAlarm()
 "Options for the \"alarm\" command:\n"
 "  --delete                   Set the alarm to be ignored.\n"
 "  --list                     List the alarms.\n"
+"  --list-history             List alarms that have ended, and those still\n"
+"                             open, within the history retention window.\n"
 "  --stat                     Prints a short list about the number of alarms.\n"
 "  --cluster-id=ID            List alarms related to specified cluster\n"
 "\n"
@@ -10166,7 +10182,10 @@ S9sOptions::checkOptionsAlarm()
      */
     if (isListRequested())
         countOptions++;
-    
+
+    if (isListHistoryRequested())
+        countOptions++;
+
     if (isDeleteRequested())
         countOptions++;
     
@@ -10933,6 +10952,7 @@ S9sOptions::readOptionsAlarm(
         // Main Option
         { "delete",           no_argument,       0, OptionDelete          },
         { "list",             no_argument,       0, 'L'                   },
+        { "list-history",     no_argument,       0, OptionListHistory     },
         { "stat",             no_argument,       0, OptionStat            },
         
         // Alarm related options.
@@ -11072,7 +11092,12 @@ S9sOptions::readOptionsAlarm(
                 // --delete
                 m_options["delete"] = true;
                 break;
-            
+
+            case OptionListHistory:
+                // --list-history
+                m_options["list_history"] = true;
+                break;
+
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;

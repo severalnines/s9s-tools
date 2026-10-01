@@ -333,6 +333,17 @@ S9sRpcReply::alarms()
 }
 
 S9sVariantList
+S9sRpcReply::alarmHistory()
+{
+    S9sVariantList  theList;
+
+    if (contains("alarm_history"))
+        theList = operator[]("alarm_history").toVariantList();
+
+    return theList;
+}
+
+S9sVariantList
 S9sRpcReply::users()
 {
     S9sVariantList  theList;
@@ -4921,6 +4932,131 @@ S9sRpcReply::printAlarmList()
         printAlarmListLong();
     //else
     //    printClusterListBrief();    
+}
+
+/**
+ * Prints one line per alarm the controller has a record of, ended or not, as
+ * in "s9s alarm --list-history".
+ *
+ * Duration is left blank rather than shown as zero for an alarm that has not
+ * ended: an alarm still firing has not lasted no time at all, and a zero there
+ * would read as one that resolved instantly.
+ */
+void
+S9sRpcReply::printAlarmHistoryListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  theList = alarmHistory();
+    S9sFormat       clusterIdFormat;
+    S9sFormat       severityFormat;
+    S9sFormat       outcomeFormat;
+    S9sFormat       raisedFormat;
+    S9sFormat       durationFormat;
+    S9sFormat       hostNameFormat;
+    int             nLines = 0;
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap entry = theList[idx].toVariantMap();
+
+        clusterIdFormat.widen(entry["cluster_id"].toInt());
+        severityFormat.widen(entry["severity"].toString());
+        outcomeFormat.widen(entry["outcome"].toString());
+        raisedFormat.widen(entry["raised"].toString());
+        durationFormat.widen(alarmHistoryDuration(entry));
+        hostNameFormat.widen(entry["hostname"].toString());
+        ++nLines;
+    }
+
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        clusterIdFormat.printHeader("CID");
+        severityFormat.printHeader("SEVERITY");
+        outcomeFormat.printHeader("OUTCOME");
+        raisedFormat.printHeader("RAISED");
+        durationFormat.printHeader("DURATION");
+        hostNameFormat.printHeader("HOSTNAME");
+        printf("TITLE");
+
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap entry = theList[idx].toVariantMap();
+
+        clusterIdFormat.printf(entry["cluster_id"].toInt());
+        severityFormat.printf(entry["severity"].toString());
+        outcomeFormat.printf(entry["outcome"].toString());
+        raisedFormat.printf(entry["raised"].toString());
+        durationFormat.printf(alarmHistoryDuration(entry));
+        hostNameFormat.printf(entry["hostname"].toString());
+
+        ::printf("%s\n", STR(alarmHistoryTitle(entry)));
+    }
+
+    if (!options->isBatchRequested())
+    {
+        printf("Total: %s%lu%s alarm(s)\n",
+                numberColorBegin(),
+                (unsigned long int) theList.size(),
+                numberColorEnd());
+    }
+}
+
+void
+S9sRpcReply::printAlarmHistoryList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+        printJsonFormat();
+    else if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else
+        printAlarmHistoryListLong();
+}
+
+/**
+ * \returns how long the alarm lasted, or an empty string while it is open.
+ */
+S9sString
+S9sRpcReply::alarmHistoryDuration(
+        S9sVariantMap &entry)
+{
+    S9sString retval;
+
+    if (!entry.contains("duration_seconds"))
+        return retval;
+
+    retval.sprintf("%ds", entry["duration_seconds"].toInt());
+    return retval;
+}
+
+/**
+ * \returns the alarm's title.
+ *
+ * The alarm is carried as a JSON string rather than as nested fields, so that
+ * the history schema does not have to track whatever an alarm holds. A blob
+ * that will not parse costs its row the title, not the row: the timings are
+ * worth listing on their own.
+ */
+S9sString
+S9sRpcReply::alarmHistoryTitle(
+        S9sVariantMap &entry)
+{
+    S9sVariantMap  properties;
+    S9sString      raw = entry["properties"].toString();
+
+    if (raw.empty() || !properties.parse(STR(raw)))
+        return S9sString();
+
+    if (properties.contains("title"))
+        return properties["title"].toString();
+
+    return properties["type_name"].toString();
 }
 
 /**
