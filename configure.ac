@@ -123,6 +123,7 @@ AC_CONFIG_FILES(Makefile                          \
                 tests/ut_s9soptions/Makefile      \
                 tests/ut_s9sgraph/Makefile        \
                 tests/ut_s9srpcclient/Makefile    \
+                tests/ut_s9srpcreply/Makefile     \
                 tests/ut_s9sfile/Makefile         \
                 tests/ut_s9sconfigfile/Makefile   \
                )

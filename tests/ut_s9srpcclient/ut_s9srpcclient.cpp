@@ -183,6 +183,10 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testAddFrontend, retval);
+    PERFORM_TEST(testDeleteFrontend, retval);
+    PERFORM_TEST(testGetCcFrontends, retval);
+    PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
     PERFORM_TEST(testListConfigStorage, retval);
     PERFORM_TEST(testListOpenBaoVersions, retval);
@@ -3258,6 +3262,146 @@ UtS9sRpcClient::testListDb()
 
     S9S_COMPARE(payload["operation"], "getcmondbclusternodes");
 
+    return true;
+}
+
+/**
+ * Testing addFrontEndCCInstance() (the "pool-controllers --add-frontend" job):
+ * command, server_address, web_port from HOST:PORT (443 without one), site,
+ * force, install_software / use_internal_repos - and no SSH credentials,
+ * even when an OS user is configured.
+ */
+bool
+UtS9sRpcClient::testAddFrontend()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.0.12:8443");
+    options->m_options["site"] = "site-b";
+    options->m_options["force"] = true;
+    options->m_options["no_install"] = true;
+    options->m_options["use_internal_repos"] = true;
+    options->m_options["os_user"] = "configured-user";
+    options->m_options["os_key_file"] = "/home/configured-user/.ssh/id_rsa";
+    options->m_options["os_password"] = "configured-password";
+
+    S9S_VERIFY(client.addFrontEndCCInstance(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(),
+            "addFrontEndCCInstance");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Add CC Frontend to Pool");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.0.12");
+    S9S_COMPARE(jobData["web_port"], 8443);
+    S9S_COMPARE(jobData["site"], "site-b");
+    S9S_VERIFY(jobData["force"].toBoolean());
+    S9S_VERIFY(!jobData["install_software"].toBoolean());
+    S9S_VERIFY(jobData["use_internal_repos"].toBoolean());
+    for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
+        S9S_VERIFY(!jobData.contains(key));
+
+    // No port, no site, no force.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.0.13");
+
+    S9S_VERIFY(client.addFrontEndCCInstance(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.0.13");
+    S9S_COMPARE(jobData["web_port"], 443);
+    S9S_VERIFY(!jobData.contains("site"));
+    S9S_VERIFY(!jobData["force"].toBoolean());
+    S9S_VERIFY(!jobData.contains("install_software"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDeleteFrontend()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.0.12");
+    options->m_options["force"] = true;
+    options->m_options["os_user"] = "configured-user";
+
+    S9S_VERIFY(client.deleteFrontEndCCInstance(options));
+    payload = client.lastPayload();
+
+    S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(),
+            "deleteFrontEndCCInstance");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Delete CC Frontend from Pool");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.0.12");
+    S9S_VERIFY(jobData["force"].toBoolean());
+    S9S_VERIFY(!jobData.contains("ssh_user"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetCcFrontends()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.getCcFrontends(options));
+    payload = client.lastPayload();
+
+    S9S_COMPARE(payload["operation"], "getCcFrontends");
+    S9S_COMPARE(client.uri(0u), "/v2/poolcontrollers/");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddControllerSite()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.16.186.1:9500");
+    options->m_options["site"] = "site-b";
+
+    S9S_VERIFY(client.addNewController(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["site"], "site-b");
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.16.186.1:9500");
+    S9S_VERIFY(client.addNewController(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_VERIFY(!jobData.contains("site"));
+
+    S9sOptions::uninit();
     return true;
 }
 

@@ -1050,4 +1050,5 @@ class S9sOptions
 
     friend class UtS9sOptions;
     friend class UtS9sRpcClient;
+    friend class UtS9sRpcReply;
 };

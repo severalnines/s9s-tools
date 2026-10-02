@@ -68,6 +68,11 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testAddFrontend, retval);
+    PERFORM_TEST(testDeleteFrontend, retval);
+    PERFORM_TEST(testListFrontends, retval);
+    PERFORM_TEST(testFrontendOptionErrors, retval);
+    PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testAddOpenBao, retval);
     PERFORM_TEST(testListOpenBaoOperations, retval);
     PERFORM_TEST(testPoolModePrerequisites, retval);
@@ -1033,6 +1038,160 @@ UtS9sOptions::testListDb()
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
     S9S_VERIFY(options->isListDb());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "pool-controllers --add-frontend" (the addFrontEndCCInstance job):
+ * one node with an optional web port, --site, --force, --no-install.
+ */
+bool
+UtS9sOptions::testAddFrontend()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-frontend",
+                            "--nodes=10.0.0.12:8443",
+                            "--site=site-b",
+                            "--force",
+                            "--no-install",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddFrontend());
+    S9S_VERIFY(!options->isDeleteFrontend());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 8443);
+    S9S_COMPARE(options->site(), "site-b");
+    S9S_VERIFY(options->getBool("force"));
+    S9S_VERIFY(options->noInstall());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testDeleteFrontend()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-frontend",
+                            "--nodes=10.0.0.12",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isDeleteFrontend());
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
+    S9S_VERIFY(!options->getBool("force"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * --list-frontends is read-only: no --nodes, --long and --print-json apply.
+ */
+bool
+UtS9sOptions::testListFrontends()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-frontends",
+                            "--long",
+                            "--print-json",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListFrontends());
+    S9S_VERIFY(options->isLongRequested());
+    S9S_VERIFY(options->isJsonRequested());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * The invalid combinations: --site without an add option, a missing or a
+ * second --nodes host, --os-* with a frontend job, two main options.
+ */
+bool
+UtS9sOptions::testFrontendOptionErrors()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *siteAlone[] = { "/bin/s9s", "pool-controllers", "--list-frontends",
+                                "--site=site-b", nullptr };
+    const char *noNodes[] = { "/bin/s9s", "pool-controllers", "--add-frontend", nullptr };
+    const char *twoNodes[] = { "/bin/s9s", "pool-controllers", "--delete-frontend",
+                               "--nodes=10.0.0.12;10.0.0.13", nullptr };
+    const char *withKey[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+                              "--nodes=10.0.0.12", "--os-key-file=/root/.ssh/id_rsa", nullptr };
+    const char *withUser[] = { "/bin/s9s", "pool-controllers", "--delete-frontend",
+                               "--nodes=10.0.0.12", "--os-user=root", nullptr };
+    const char *twoMains[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+                               "--list-frontends", "--nodes=10.0.0.12", nullptr };
+
+    for (const char **argv : { siteAlone, noNodes, twoNodes, withKey, withUser, twoMains })
+    {
+        int argc = 0;
+        while (argv[argc] != nullptr)
+            ++argc;
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+        S9S_VERIFY(!options->readOptions(&argc, (char **)argv));
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    }
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    int argc = 5;
+    S9S_VERIFY(!options->readOptions(&argc, (char **)withKey));
+    S9S_VERIFY(options->errorString().contains("stored credentials"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * --site is accepted with --add-controller too.
+ */
+bool
+UtS9sOptions::testAddControllerSite()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-controller",
+                            "--nodes=10.16.186.1",
+                            "--site=site-b",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddController());
+    S9S_COMPARE(options->site(), "site-b");
 
     S9sOptions::uninit();
     return true;
