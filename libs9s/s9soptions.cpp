@@ -21154,6 +21154,26 @@ S9sOptions::checkOptionsControllers()
         return false;
     }
 
+    // The controller writes the site into shell commands and cmon.cnf.
+    if (m_options.contains("site"))
+    {
+        const S9sString siteName = site();
+        bool valid = !siteName.empty() && siteName.length() <= 64;
+        for (const char c : siteName)
+        {
+            if (!isalnum(static_cast<unsigned char>(c)) && c != '.' && c != '_' && c != '-')
+                valid = false;
+        }
+
+        if (!valid)
+        {
+            m_errorMessage =
+                "The --site value must be 1 to 64 letters, digits, '.', '_' or '-'.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
     if (isAddFrontend() || isDeleteFrontend())
     {
         if (nodes().size() != 1u)

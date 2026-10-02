@@ -1148,8 +1148,15 @@ UtS9sOptions::testFrontendOptionErrors()
                                "--nodes=10.0.0.12", "--os-user=root", nullptr };
     const char *twoMains[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
                                "--list-frontends", "--nodes=10.0.0.12", nullptr };
+    const char *badSite[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+                              "--nodes=10.0.0.12", "--site=b;id", nullptr };
+    const char *spaceSite[] = { "/bin/s9s", "pool-controllers", "--add-controller",
+                                "--nodes=10.0.0.13", "--site=site b", nullptr };
+    const char *emptySite[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+                                "--nodes=10.0.0.12", "--site=", nullptr };
 
-    for (const char **argv : { siteAlone, noNodes, twoNodes, withKey, withUser, twoMains })
+    for (const char **argv : { siteAlone, noNodes, twoNodes, withKey, withUser, twoMains,
+                               badSite, spaceSite, emptySite })
     {
         int argc = 0;
         while (argv[argc] != nullptr)
