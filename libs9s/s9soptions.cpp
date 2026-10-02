@@ -548,6 +548,10 @@ enum S9sOptionType
     OptionAddDb,
     OptionDeleteDb,
     OptionListDb,
+    OptionAddFrontend,
+    OptionDeleteFrontend,
+    OptionListFrontends,
+    OptionSite,
     OptionBootstrapDb,
     OptionMigrateDb,
     OptionPoolReadiness,
@@ -5845,6 +5849,49 @@ S9sOptions::isListDb() const
 }
 
 /**
+ * \returns true if the "add-frontend" function is requested by providing the
+ * --add-frontend command line option (installs a CC frontend on a pool
+ * controller host via the addFrontEndCCInstance job).
+ */
+bool
+S9sOptions::isAddFrontend() const
+{
+    return getBool("add_frontend");
+}
+
+/**
+ * \returns true if the "delete-frontend" function is requested by providing
+ * the --delete-frontend command line option (removes the CC frontend of a
+ * pool controller host via the deleteFrontEndCCInstance job).
+ */
+bool
+S9sOptions::isDeleteFrontend() const
+{
+    return getBool("delete_frontend");
+}
+
+/**
+ * \returns true if the "list-frontends" function is requested by providing
+ * the --list-frontends command line option (lists the pool's CC frontends
+ * via the read-only getCcFrontends RPC call).
+ */
+bool
+S9sOptions::isListFrontends() const
+{
+    return getBool("list_frontends");
+}
+
+/**
+ * \returns the site given by the --site command line option (for
+ * --add-frontend and --add-controller), empty when not given.
+ */
+S9sString
+S9sOptions::site() const
+{
+    return getString("site");
+}
+
+/**
  * \returns true if the "bootstrap-db" function is requested by providing the
  * --bootstrap-db command line option (turns the main controller's own cmon DB
  * into the seed PRIMARY of the pool's cmon DB HA InnoDB Cluster via the
@@ -9408,8 +9455,17 @@ S9sOptions::printHelpControllers()
 "  --list-db                  To retrieve the list of the pool's cmon DB HA InnoDB\n"
 "                             Cluster nodes (read-only, no job is created). Supports\n"
 "                             --print-json like --list.\n"
+"  --list-frontends           To retrieve the list of the pool's CC frontends and their\n"
+"                             health (read-only). Supports --long and --print-json.\n"
 "  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
+"  --add-frontend             To install a CC frontend (cmon-proxy, UI, cmon-ssh,\n"
+"                             cmon-events, cmon-cloud) on a pool controller host\n"
+"                             (requires --nodes=HOST[:WEB_PORT] with exactly one node).\n"
+"                             Uses the controller's stored SSH credentials.\n"
+"  --delete-frontend          To remove the CC frontend of a pool controller host\n"
+"                             (requires --nodes with exactly one node). The last\n"
+"                             frontend of the pool is only deleted with --force.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
@@ -9437,6 +9493,8 @@ S9sOptions::printHelpControllers()
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
 "                             only, alternative to --nodes - no port needed).\n"
+"  --site=SITE                The site of the new frontend (--add-frontend) or\n"
+"                             controller (--add-controller).\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
@@ -9474,6 +9532,11 @@ S9sOptions::printHelpControllers()
 "                             (its data will be overwritten by the join). With --delete-db:\n"
 "                             remove the instance from the cluster's metadata even if it\n"
 "                             cannot be reached (mirrors mysqlsh's remove_instance(force)).\n"
+"                             With --add-frontend: reconfigure an existing frontend,\n"
+"                             accept a busy or inactive target, install the latest\n"
+"                             packages when the pool's versions are not available.\n"
+"                             With --delete-frontend: delete the last frontend too, or\n"
+"                             one whose host cannot be reached.\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -20462,6 +20525,9 @@ S9sOptions::readOptionsControllers(
                     {"add-db",           no_argument, 0,       OptionAddDb},
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"list-db",          no_argument, 0,       OptionListDb},
+                    {"add-frontend",     no_argument, 0,       OptionAddFrontend},
+                    {"delete-frontend",  no_argument, 0,       OptionDeleteFrontend},
+                    {"list-frontends",   no_argument, 0,       OptionListFrontends},
                     {"bootstrap-db",     no_argument, 0,       OptionBootstrapDb},
                     {"migrate-db",       no_argument, 0,       OptionMigrateDb},
                     {"pool-readiness",   no_argument, 0,       OptionPoolReadiness},
@@ -20480,6 +20546,7 @@ S9sOptions::readOptionsControllers(
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"node",             required_argument, 0, OptionNode},
+                    {"site",             required_argument, 0, OptionSite},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
@@ -20720,6 +20787,26 @@ S9sOptions::readOptionsControllers(
                 m_options["list_db"] = true;
                 break;
 
+            case OptionAddFrontend:
+                // --add-frontend
+                m_options["add_frontend"] = true;
+                break;
+
+            case OptionDeleteFrontend:
+                // --delete-frontend
+                m_options["delete_frontend"] = true;
+                break;
+
+            case OptionListFrontends:
+                // --list-frontends
+                m_options["list_frontends"] = true;
+                break;
+
+            case OptionSite:
+                // --site=SITE
+                m_options["site"] = optarg;
+                break;
+
             case OptionBootstrapDb:
                 // --bootstrap-db
                 m_options["bootstrap_db"] = true;
@@ -20945,6 +21032,15 @@ S9sOptions::checkOptionsControllers()
     if (isListDb())
         countOptions++;
 
+    if (isAddFrontend())
+        countOptions++;
+
+    if (isDeleteFrontend())
+        countOptions++;
+
+    if (isListFrontends())
+        countOptions++;
+
     if (isBootstrapDb())
         countOptions++;
 
@@ -21049,6 +21145,37 @@ S9sOptions::checkOptionsControllers()
         m_errorMessage = "The --nodes option must specify exactly one host for --add-openbao.";
         m_exitStatus = BadOptions;
         return false;
+    }
+
+    if (m_options.contains("site") && !isAddFrontend() && !isAddController())
+    {
+        m_errorMessage = "The --site option can only be used with --add-frontend or --add-controller.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isAddFrontend() || isDeleteFrontend())
+    {
+        if (nodes().size() != 1u)
+        {
+            m_errorMessage =
+                "The --nodes option must specify exactly one host for "
+                "--add-frontend and --delete-frontend.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        // The jobs use the SSH credentials stored for the target controller.
+        if (m_options.contains("os_user") || m_options.contains("os_key_file") ||
+                m_options.contains("os_password"))
+        {
+            m_errorMessage =
+                "The --os-user, --os-key-file and --os-password options can not be used "
+                "with --add-frontend or --delete-frontend: the job uses the controller's "
+                "stored credentials.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;
