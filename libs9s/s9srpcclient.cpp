@@ -12918,6 +12918,9 @@ S9sRpcClient::composeBackupJob()
     if (options->hasParallellism())
         jobData["xtrabackup_parallellism"] = options->parallellism();
 
+    if (options->hasCompressionThreads())
+        jobData["compression_threads"] = options->compressionThreads();
+
     if (options->encryptBackup())
         jobData["encrypt_backup"] = true;
     

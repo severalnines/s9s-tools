@@ -2113,6 +2113,7 @@ UtS9sRpcClient::testComposeBackupJob()
     options->m_options["on_node"]             = true;
     options->m_options["on_controller"]       = false;
     options->m_options["parallellism"]        = 10;
+    options->m_options["compression_threads"] = 6;
     options->m_options["encrypt_backup"]      = true;
     options->m_options["backup_retention"]    = 8;
     options->m_options["to_individual_files"] = true;
@@ -2208,6 +2209,10 @@ UtS9sRpcClient::testComposeBackupJob()
     S9S_COMPARE(
             jobData.valueByPath("xtrabackup_parallellism"),
             10);
+
+    S9S_COMPARE(
+            jobData.valueByPath("compression_threads"),
+            6);
 
     return true;
 }

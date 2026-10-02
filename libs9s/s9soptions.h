@@ -514,6 +514,10 @@ class S9sOptions
         bool hasParallellism() const;
         int parallellism() const;
 
+        bool setCompressionThreads(const S9sString &value);
+        bool hasCompressionThreads() const;
+        int compressionThreads() const;
+
         bool setRetention(const S9sString &value);
         bool hasRetention() const;
         int retention() const;

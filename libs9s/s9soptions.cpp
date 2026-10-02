@@ -235,6 +235,7 @@ enum S9sOptionType
     OptionExcludeTables,
     OptionIncludeTables,
     OptionParallellism,
+    OptionCompressionThreads,
     OptionBackupRetention,
     OptionCloudRetention,
     OptionSafetyCopies,
@@ -4748,6 +4749,57 @@ S9sOptions::parallellism() const
     return retval;
 }
 
+/**
+ * \param value The command line option argument of --compression-threads.
+ * \returns True if the value is a positive integer and so it was stored.
+ *
+ * The number of compression threads the backup should use: pigz processes, or
+ * xtrabackup's --compress-threads with its built-in compression. When it is not
+ * set the controller calculates the pigz number (for xtrabackup/mariabackup
+ * from the node's cores, capped by --parallellism); when set it overrides that
+ * calculation.
+ */
+bool
+S9sOptions::setCompressionThreads(
+        const S9sString &value)
+{
+    int integerValue = value.toInt();
+
+    if (integerValue < 1)
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is invalid for compression threads.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["compression_threads"] = integerValue;
+    return true;
+}
+
+bool
+S9sOptions::hasCompressionThreads() const
+{
+    return m_options.contains("compression_threads");
+}
+
+/**
+ * \returns the integer value of the command line option argument for
+ * --compression-threads, 0 if it was not provided.
+ */
+int
+S9sOptions::compressionThreads() const
+{
+    int retval = 0;
+
+    if (m_options.contains("compression_threads"))
+        retval = m_options.at("compression_threads").toInt();
+
+    return retval;
+}
+
 bool
 S9sOptions::setBackupRetention(
         const S9sString &value)
@@ -8540,6 +8592,7 @@ S9sOptions::printHelpBackup()
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --compression-level        Backup compress level value to use (between 1 and 9).\n"
+"  --compression-threads      Number of compression threads.\n"
 "  --no-compression           Do not compress the backup.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
@@ -10065,6 +10118,7 @@ S9sOptions::readOptionsBackup(
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "compression-threads", required_argument, 0, OptionCompressionThreads },
         { "pitr-compatible",  no_argument,       0, OptionPitrCompatible  },
         { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
         { "temp-dir-path",    required_argument, 0, OptionTempDirPath     },
@@ -10517,6 +10571,13 @@ S9sOptions::readOptionsBackup(
             case OptionParallellism:
                 // --parallellism=N
                 if (!setParallellism(optarg))
+                    return false;
+
+                break;
+
+            case OptionCompressionThreads:
+                // --compression-threads
+                if (!setCompressionThreads(optarg))
                     return false;
 
                 break;
