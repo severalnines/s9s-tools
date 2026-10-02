@@ -10958,6 +10958,12 @@ S9sOptions::readOptionsAlarm(
         // Alarm related options.
         { "alarm-id",         required_argument, 0, OptionAlarmId         },
 
+        // Paging, for --list-history: the history covers the controller's
+        // whole retention window, so without these the only way to ask for it
+        // is to ask for all of it.
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
+
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
@@ -11091,6 +11097,16 @@ S9sOptions::readOptionsAlarm(
             case OptionDelete:
                 // --delete
                 m_options["delete"] = true;
+                break;
+
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
                 break;
 
             case OptionListHistory:

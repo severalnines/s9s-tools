@@ -5028,10 +5028,44 @@ S9sRpcReply::alarmHistoryDuration(
 {
     S9sString retval;
 
-    if (!entry.contains("duration_seconds"))
+    // A null counts as absent. The controller omits the field for an alarm
+    // that is still open, but reading a null as 0 would print "0s" -- an alarm
+    // that is still running has not lasted no time, and that is the one
+    // reading this column must never give.
+    if (!entry.contains("duration_seconds") ||
+            entry["duration_seconds"].isInvalid())
         return retval;
 
     retval.sprintf("%ds", entry["duration_seconds"].toInt());
+    return retval;
+}
+
+/**
+ * Reduces a controller-provided string to something safe to put in a column.
+ *
+ * Alarm titles and messages carry newlines and markup -- they are written for
+ * a mail body and a web page, not a terminal. Printed as they arrive they
+ * break the table apart, and a control sequence in one would be handed to the
+ * terminal to act on.
+ */
+static S9sString
+singleLine(
+        const S9sString &text)
+{
+    S9sString retval;
+
+    for (uint idx = 0u; idx < text.length(); ++idx)
+    {
+        const char ch = text[idx];
+
+        // Tab included: it moves the cursor to the next stop and shifts
+        // everything after it out of its column.
+        if (ch == '\n' || ch == '\r' || ch == '\t' || ch == 0x1b)
+            retval += ' ';
+        else if ((unsigned char) ch >= 0x20 || (unsigned char) ch >= 0x80)
+            retval += ch;
+    }
+
     return retval;
 }
 
@@ -5054,9 +5088,9 @@ S9sRpcReply::alarmHistoryTitle(
         return S9sString();
 
     if (properties.contains("title"))
-        return properties["title"].toString();
+        return singleLine(properties["title"].toString());
 
-    return properties["type_name"].toString();
+    return singleLine(properties["type_name"].toString());
 }
 
 /**
