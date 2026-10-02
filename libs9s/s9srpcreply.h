@@ -165,6 +165,11 @@ class S9sRpcReply : public S9sVariantMap
 
         void printCmonDbClusterNodes();
         void printCmonDbClusterNodesLong();
+        void printCcFrontends();
+        static S9sString ccFrontendsTable(
+                const S9sVariantList &frontEnds,
+                bool                  longFormat,
+                bool                  noHeader);
 
         void printPoolModeReadiness();
         void printSetPoolModeError();

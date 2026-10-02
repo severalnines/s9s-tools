@@ -2221,6 +2221,142 @@ S9sRpcReply::printCmonDbClusterNodesLong()
 }
 
 /**
+ * Prints the pool's CC frontends (read-only getCcFrontends call,
+ * "pool-controllers --list-frontends"): only the JSON reply with
+ * --print-json, the table built by ccFrontendsTable() otherwise. An error
+ * reply sets a failing exit status.
+ */
+void
+S9sRpcReply::printCcFrontends()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (!isOk())
+        options->setExitStatus(S9sOptions::Failed);
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    ::printf("%s", STR(ccFrontendsTable(
+            operator[]("cc_frontends").toVariantList(),
+            options->isLongRequested(),
+            options->isNoHeaderRequested())));
+}
+
+/**
+ * The plain-text table of the "pool-controllers --list-frontends" command,
+ * one line per frontend in the order the controller sent them (sorted by
+ * controller id):
+ *
+ * \code
+ * s9s pool-controllers --list-frontends
+ * HOSTNAME  SITE   STATUS
+ * 10.0.0.11 site-a online
+ * 10.0.0.12 site-b offline
+ *
+ * s9s pool-controllers --list-frontends --long
+ * CID HOSTNAME  SITE   STATUS MODE  VERSION    PROXY  SSH    EVENTS CLOUD  URL
+ * 1   10.0.0.11 site-a online fleet 2.5.0-1201 active active active active https://10.0.0.11:443/
+ * \endcode
+ *
+ * Missing values show as "unknown" (states) or "-" (others), the way the
+ * controller reports a frontend whose status report is stale.
+ */
+S9sString
+S9sRpcReply::ccFrontendsTable(
+        const S9sVariantList &frontEnds,
+        bool                  longFormat,
+        bool                  noHeader)
+{
+    std::vector<S9sString> headers;
+    if (longFormat)
+    {
+        headers = { "CID", "HOSTNAME", "SITE", "STATUS", "MODE", "VERSION",
+                    "PROXY", "SSH", "EVENTS", "CLOUD", "URL" };
+    }
+    else
+    {
+        headers = { "HOSTNAME", "SITE", "STATUS" };
+    }
+
+    auto valueOr = [](const S9sVariant &value, const char *fallback)
+    {
+        const S9sString text = value.toString();
+        return text.empty() ? S9sString(fallback) : text;
+    };
+
+    std::vector<std::vector<S9sString> > rows;
+    for (const auto &item : frontEnds)
+    {
+        S9sVariantMap frontEnd = item.toVariantMap();
+        S9sVariantMap services = frontEnd["services"].toVariantMap();
+        std::vector<S9sString> row;
+
+        if (longFormat)
+            row.push_back(valueOr(frontEnd["controller_id"], "-"));
+
+        row.push_back(valueOr(frontEnd["hostname"], "-"));
+        row.push_back(valueOr(frontEnd["site"], "-"));
+        row.push_back(valueOr(frontEnd["status"], "unknown"));
+
+        if (longFormat)
+        {
+            row.push_back(valueOr(frontEnd["proxy_mode"], "unknown"));
+            row.push_back(valueOr(frontEnd["ui_version"], "-"));
+            for (const char *unit : { "cmon-proxy", "cmon-ssh", "cmon-events", "cmon-cloud" })
+                row.push_back(valueOr(services[unit].toVariantMap().valueByPath("status"), "unknown"));
+            row.push_back(valueOr(frontEnd["ui_url"], "-"));
+        }
+
+        rows.push_back(row);
+    }
+
+    std::vector<size_t> widths;
+    for (const auto &header : headers)
+        widths.push_back(header.length());
+
+    for (const auto &row : rows)
+    {
+        for (size_t column = 0; column < row.size(); ++column)
+            widths[column] = std::max(widths[column], row[column].length());
+    }
+
+    auto formatLine = [&widths](const std::vector<S9sString> &cells)
+    {
+        S9sString line;
+        for (size_t column = 0; column < cells.size(); ++column)
+        {
+            if (column + 1 == cells.size())
+                line += cells[column];
+            else
+                line.aprintf("%-*s ", (int) widths[column], STR(cells[column]));
+        }
+
+        return line + "\n";
+    };
+
+    S9sString table;
+    if (!noHeader)
+        table += formatLine(headers);
+
+    for (const auto &row : rows)
+        table += formatLine(row);
+
+    return table;
+}
+
+/**
  * Prints which pool mode prerequisites are in place (read-only
  * getPoolModeReadiness call, "pool-controllers --pool-readiness").
  *

@@ -1514,6 +1514,14 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printCmonDbClusterNodes();
         }
+        else if (options->isListFrontends()) {
+            success = client.getCcFrontends(options);
+            S9sRpcReply reply = client.reply();
+            if (success)
+                reply.printCcFrontends();
+            else
+                options->setExitStatus(S9sOptions::Failed);
+        }
         else if (options->isAssignedController()) {
             client.assignedController(options);
             S9sRpcReply reply = client.reply();
@@ -1603,6 +1611,18 @@ S9sBusinessLogic::execute()
         else if (options->isDeleteDb())
         {
             success = client.deleteCmonDbInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isAddFrontend())
+        {
+            success = client.addFrontEndCCInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isDeleteFrontend())
+        {
+            success = client.deleteFrontEndCCInstance(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
