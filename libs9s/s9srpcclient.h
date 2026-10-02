@@ -380,6 +380,9 @@ class S9sRpcClient
         bool addNewController(S9sOptions *options);
         bool addNewCmonDbInstance(S9sOptions *options);
         bool deleteCmonDbInstance(S9sOptions *options);
+        bool addFrontEndCCInstance(S9sOptions *options);
+        bool deleteFrontEndCCInstance(S9sOptions *options);
+        bool getCcFrontends(S9sOptions *options);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);

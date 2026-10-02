@@ -11972,6 +11972,9 @@ S9sRpcClient::addNewController(S9sOptions *options)
     if (!options->providerVersion().empty())
         jobData["version"] = options->providerVersion();
 
+    if (!options->site().empty())
+        jobData["site"] = options->site();
+
     // The jobspec describing the command.
     jobSpec["command"]  = "addController";
     jobSpec["job_data"] = jobData;
@@ -12103,6 +12106,132 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief install a CC frontend on a pool controller host
+ * (CmdAddFrontEndCCInstance / the addFrontEndCCInstance job).
+ *
+ * The job connects with the SSH credentials the controller stored for the
+ * target when it was added to the pool, so no ssh_* field is sent - not even
+ * one composeJobData() took from the configuration file.
+ */
+bool
+S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() != 1)
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "addFrontEndCCInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
+        jobData.erase(key);
+
+    jobData["server_address"] = hosts[0].toNode().hostName();
+    // S9sNode::port() is 0 when no ':port' was given on --nodes.
+    const int webPort = hosts[0].toNode().port();
+    jobData["web_port"] = webPort > 0 ? webPort : 443;
+
+    if (!options->site().empty())
+        jobData["site"] = options->site();
+
+    jobData["force"] = options->getBool("force");
+
+    if (options->noInstall())
+        jobData["install_software"] = false;
+
+    if (options->useInternalRepos())
+        jobData["use_internal_repos"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "addFrontEndCCInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Add CC Frontend to Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief remove the CC frontend of a pool controller host
+ * (CmdDeleteFrontEndCCInstance / the deleteFrontEndCCInstance job). Like
+ * the add job it sends no SSH credentials.
+ */
+bool
+S9sRpcClient::deleteFrontEndCCInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() != 1)
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "deleteFrontEndCCInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
+        jobData.erase(key);
+
+    jobData["server_address"] = hosts[0].toNode().hostName();
+    jobData["force"]          = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "deleteFrontEndCCInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Delete CC Frontend from Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Lists the pool's CC frontends and their health (the read-only
+ * getCcFrontends call, "pool-controllers --list-frontends").
+ */
+bool
+S9sRpcClient::getCcFrontends(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+
+    S9S_UNUSED(options);
+    request["operation"] = "getCcFrontends";
 
     return executeRequest(uri, request);
 }
