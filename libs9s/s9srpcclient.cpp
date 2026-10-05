@@ -11783,25 +11783,6 @@ S9sRpcClient::getPoolModeReadiness(S9sOptions *options)
 }
 
 /**
- * @brief migrates cmon's MariaDB to Oracle MySQL (migrateCmonDb), the
- * prerequisite of the bootstrapCmonDbCluster job on a MariaDB controller.
- *
- * Not a job: the controller starts the migration asynchronously and replies
- * straight away. cmon restarts when the migration completes.
- */
-bool
-S9sRpcClient::migrateCmonDb(S9sOptions *options)
-{
-    const S9sString uri = "/v2/poolcontrollers/";
-    S9sVariantMap   request;
-
-    (void) options;
-    request["operation"] = "migratecmondb";
-
-    return executeRequest(uri, request);
-}
-
-/**
  * @brief turns the main controller's own cmon DB into the seed PRIMARY of the
  * pool's cmon DB HA InnoDB Cluster behind a local MySQL Router
  * (CmdBootstrapCmonDbCluster / the bootstrapCmonDbCluster job).

@@ -544,7 +544,6 @@ enum S9sOptionType
     OptionDeleteDb,
     OptionListDb,
     OptionBootstrapDb,
-    OptionMigrateDb,
     OptionPoolReadiness,
     OptionNoRequireDbCluster,
     OptionNoRequireConfigStorage,
@@ -5795,18 +5794,6 @@ S9sOptions::isBootstrapDb() const
 }
 
 /**
- * \returns true if the "migrate-db" function is requested by providing the
- * --migrate-db command line option (migrates cmon's MariaDB to Oracle MySQL
- * via the migrateCmonDb RPC call - not a job, and cmon restarts when it
- * completes).
- */
-bool
-S9sOptions::isMigrateDb() const
-{
-    return getBool("migrate_db");
-}
-
-/**
  * \returns true if the --start command line option was provided for controllers
  */
 bool
@@ -9321,9 +9308,9 @@ S9sOptions::printHelpControllers()
 "                             --node instead).\n"
 "  --bootstrap-db             To turn this (main) controller's own cmon DB into the\n"
 "                             pool's cmon DB HA InnoDB Cluster PRIMARY behind a local\n"
-"                             MySQL Router (a job, cmon is not restarted).\n"
-"  --migrate-db               To migrate cmon's MariaDB to Oracle MySQL, needed before\n"
-"                             --bootstrap-db. cmon restarts when it completes.\n"
+"                             MySQL Router (a job, cmon is not restarted). cmon's DB\n"
+"                             must be MySQL 8.4: migrate a MariaDB one manually, see\n"
+"                             https://docs.severalnines.com/clustercontrol/latest/admin-guide/scalable-controllers-pool/\n"
 "  --pool-readiness           To check which pool mode prerequisites (CC DB cluster,\n"
 "                             CC configuration storage) are still missing and how to\n"
 "                             set them up. Supports --print-json like --list.\n"
@@ -20299,7 +20286,6 @@ S9sOptions::readOptionsControllers(
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"list-db",          no_argument, 0,       OptionListDb},
                     {"bootstrap-db",     no_argument, 0,       OptionBootstrapDb},
-                    {"migrate-db",       no_argument, 0,       OptionMigrateDb},
                     {"pool-readiness",   no_argument, 0,       OptionPoolReadiness},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
@@ -20561,11 +20547,6 @@ S9sOptions::readOptionsControllers(
                 m_options["bootstrap_db"] = true;
                 break;
 
-            case OptionMigrateDb:
-                // --migrate-db
-                m_options["migrate_db"] = true;
-                break;
-
             case OptionPoolReadiness:
                 // --pool-readiness
                 m_options["pool_readiness"] = true;
@@ -20782,9 +20763,6 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
 
     if (isBootstrapDb())
-        countOptions++;
-
-    if (isMigrateDb())
         countOptions++;
 
     if (isPoolReadiness())

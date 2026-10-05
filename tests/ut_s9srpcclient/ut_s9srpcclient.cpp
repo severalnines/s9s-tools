@@ -185,7 +185,6 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testListOpenBaoVersions, retval);
     PERFORM_TEST(testBootstrapDb, retval);
     PERFORM_TEST(testGetPoolModeReadiness, retval);
-    PERFORM_TEST(testMigrateCmonDb, retval);
     PERFORM_TEST(testSetPoolModePrerequisites, retval);
     PERFORM_TEST(testPoolModeSetupCommands, retval);
 
@@ -3325,33 +3324,6 @@ UtS9sRpcClient::testGetPoolModeReadiness()
 }
 
 /**
- * Testing migrateCmonDb() (the "pool-controllers --migrate-db" call) request
- * shape: an RPC call of its own, not a job.
- */
-bool
-UtS9sRpcClient::testMigrateCmonDb()
-{
-    S9sOptions         *options = S9sOptions::instance();
-    S9sRpcClientTester  client;
-    S9sVariantMap       payload;
-
-    S9sOptions::uninit();
-    options = S9sOptions::instance();
-
-    S9S_VERIFY(client.migrateCmonDb(options));
-    payload = client.lastPayload();
-
-    if (isVerbose())
-        printDebug(payload);
-
-    S9S_COMPARE(client.uri(0), "/v2/poolcontrollers/");
-    S9S_COMPARE(payload["operation"], "migratecmondb");
-    S9S_VERIFY(!payload.contains("job"));
-
-    return true;
-}
-
-/**
  * Testing setPoolMode() with the --no-require-db-cluster and
  * --no-require-config-storage opt-outs: the require_* fields are only sent,
  * as false, when opted out - the controller defaults both to true.
@@ -3464,8 +3436,8 @@ readinessSummary(
  * Testing S9sRpcReply::poolModeSetupCommands(), the commands the
  * "--pool-readiness" summary (and a failed "--set-pool-mode") suggests for a
  * getPoolModeReadiness reply - in particular how the cmon DB migration and
- * bootstrap state decide whether --migrate-db and --bootstrap-db are
- * suggested.
+ * bootstrap state decide whether --bootstrap-db or the manual migration of
+ * cmon's DB to MySQL is suggested.
  */
 bool
 UtS9sRpcClient::testPoolModeSetupCommands()
@@ -3490,24 +3462,55 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     readiness["missing"]         = missing;
     readiness["cmon_db_cluster"] = dbCluster;
 
-    // MariaDB, nothing migrated yet, a cmon without the migration_supported
-    // key: migrate first, --bootstrap-db only once cmon is back on MySQL.
+    // MariaDB, nothing migrated yet: there is no command to migrate it, and
+    // --bootstrap-db only follows once cmon is back on MySQL.
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
-    S9S_COMPARE(commands.size(), 2);
-    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
-    S9S_COMPARE(commands[1],
+    S9S_COMPARE(commands.size(), 1);
+    S9S_COMPARE(commands[0],
             "s9s pool-controllers --add-openbao --nodes=HOST --log");
 
-    // The same when the controller says it supports the migration.
-    dbCluster["migration_supported"]          = true;
-    dbCluster["migration_unsupported_reason"] = "";
+    // The summary points at the manual procedure for both OS families.
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("migrate cmon's database to MySQL 8.4 manually"));
+    S9S_VERIFY(summary.contains(
+            "#migrating-the-cmon-database-to-mysql-on-rhel-rocky-linux-and-almalinux"));
+    S9S_VERIFY(summary.contains(
+            "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu"));
+    S9S_VERIFY(summary.contains("check --pool-readiness again"));
+    S9S_VERIFY(!summary.contains("--migrate-db"));
+
+    // A docs URL in the controller's reason is the one pointed at.
+    dbCluster["migration_supported"]          = false;
+    dbCluster["migration_unsupported_reason"] =
+        "cmon's DB is migrated manually on this host, see "
+        "https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
+        "scalable-controllers-pool/"
+        "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu.";
     readiness["cmon_db_cluster"] = dbCluster;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
-    S9S_COMPARE(commands.size(), 2);
-    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
+    S9S_COMPARE(commands.size(), 1);
 
-    // A migration in progress must not be started again, and the CC DB
-    // cluster can not be bootstrapped while it runs.
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains(
+            "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu),"));
+    S9S_VERIFY(!summary.contains("on-rhel-rocky-linux-and-almalinux"));
+    S9S_VERIFY(!summary.contains("--migrate-db"));
+
+    // The same from bootstrap_unsupported_reason.
+    dbCluster["migration_unsupported_reason"] = "";
+    dbCluster["bootstrap_unsupported_reason"] =
+        "see https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
+        "scalable-controllers-pool/"
+        "#migrating-the-cmon-database-to-mysql-on-rhel-rocky-linux-and-almalinux";
+    readiness["cmon_db_cluster"] = dbCluster;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("on-rhel-rocky-linux-and-almalinux),"));
+    S9S_VERIFY(!summary.contains("on-debian-and-ubuntu"));
+    dbCluster["migration_supported"]          = true;
+    dbCluster["bootstrap_unsupported_reason"] = "";
+
+    // A migration in progress (run by the operator): the CC DB cluster can
+    // not be bootstrapped while it runs, and no manual step is suggested.
     dbCluster["migration_state"] = "running";
     readiness["cmon_db_cluster"] = dbCluster;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
@@ -3515,38 +3518,32 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     S9S_COMPARE(commands[0],
             "s9s pool-controllers --add-openbao --nodes=HOST --log");
 
-    // A failed one that rolled back to MariaDB is retried.
-    dbCluster["migration_state"] = "failed";
-    readiness["cmon_db_cluster"] = dbCluster;
-    commands = S9sRpcReply::poolModeSetupCommands(readiness);
-    S9S_COMPARE(commands.size(), 2);
-    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
-
     summary = readinessSummary(readiness);
-    S9S_VERIFY(summary.contains("rolls back to MariaDB"));
-    S9S_VERIFY(summary.contains("then retry with --migrate-db"));
-    S9S_VERIFY(!summary.contains("untouched"));
+    S9S_VERIFY(summary.contains("Migration              : in progress"));
+    S9S_VERIFY(summary.contains("wait for the cmon DB migration in progress"));
+    S9S_VERIFY(!summary.contains("MySQL 8.4 manually"));
 
-    // Not supported on this host (e.g. Debian): nothing for the CC DB
-    // cluster is suggested, and the reason is printed.
-    dbCluster["migration_state"]              = "none";
-    dbCluster["migration_supported"]          = false;
-    dbCluster["migration_unsupported_reason"] =
-        "Migrating cmon's DB is only supported on RHEL-family hosts, see "
-        "https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
-        "scalable-controllers-pool/"
-        "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu";
+    // A failed one that rolled back to MariaDB: the outcome is shown and the
+    // manual migration suggested again.
+    dbCluster["migration_state"]   = "failed";
+    dbCluster["migration_outcome"] = "rolled_back";
     readiness["cmon_db_cluster"] = dbCluster;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
     S9S_COMPARE(commands.size(), 1);
-    S9S_COMPARE(commands[0],
-            "s9s pool-controllers --add-openbao --nodes=HOST --log");
 
     summary = readinessSummary(readiness);
-    S9S_VERIFY(summary.contains("Migration              : not supported on this host"));
-    S9S_VERIFY(summary.contains(
-            "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu"));
+    S9S_VERIFY(summary.contains("failed and was rolled back to MariaDB"));
+    S9S_VERIFY(summary.contains("journalctl -u cmon-db-migration' before retrying"));
+    S9S_VERIFY(summary.contains("MySQL 8.4 manually"));
     S9S_VERIFY(!summary.contains("--migrate-db"));
+
+    // Without migration_outcome (an older cmon) the failure is still told.
+    dbCluster.erase("migration_outcome");
+    readiness["cmon_db_cluster"] = dbCluster;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("rolls back to MariaDB"));
+    S9S_VERIFY(!summary.contains("untouched"));
+    dbCluster["migration_state"] = "none";
 
     // Oracle MySQL, not bootstrapped yet: --bootstrap-db.
     dbCluster["db_backend"]                   = "mysql";
@@ -3567,7 +3564,23 @@ UtS9sRpcClient::testPoolModeSetupCommands()
 
     summary = readinessSummary(readiness);
     S9S_VERIFY(summary.contains("the last migration failed"));
-    S9S_VERIFY(!summary.contains("retry with --migrate-db"));
+    S9S_VERIFY(!summary.contains("before retrying"));
+    S9S_VERIFY(!summary.contains("MySQL 8.4 manually"));
+
+    // The same with the outcome reported.
+    dbCluster["migration_outcome"] = "failed_after_cutover";
+    readiness["cmon_db_cluster"] = dbCluster;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("failed after cmon was started on MySQL"));
+    S9S_VERIFY(!summary.contains("before retrying"));
+
+    // A completed one is reported as such.
+    dbCluster["migration_state"]   = "none";
+    dbCluster["migration_outcome"] = "migrated";
+    readiness["cmon_db_cluster"] = dbCluster;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Migration              : the last migration completed"));
+    dbCluster["migration_outcome"] = "none";
 
     // A bootstrap job in progress must not be started again.
     dbCluster["migration_state"]       = "none";
@@ -3595,19 +3608,21 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
     S9S_VERIFY(!summary.contains("--set-pool-mode"));
 
-    // Not supported on this host with the storage ready: the same, with the
-    // manual migration as the way forward.
+    // MariaDB with the storage ready: the manual migration is the way
+    // forward, and pool mode is not suggested yet.
     dbCluster["db_backend"]            = "mariadb";
     dbCluster["migration_required"]    = true;
-    dbCluster["migration_supported"]   = false;
     dbCluster["bootstrap_in_progress"] = false;
     readiness["cmon_db_cluster"] = dbCluster;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
     S9S_VERIFY(commands.empty());
 
     summary = readinessSummary(readiness);
-    S9S_VERIFY(summary.contains("move cmon's DB to Oracle MySQL manually"));
+    S9S_VERIFY(summary.contains("To set up the missing CC DB cluster,"));
+    S9S_VERIFY(summary.contains("migrate cmon's database to MySQL 8.4 manually"));
+    S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
     S9S_VERIFY(!summary.contains("--set-pool-mode"));
+    S9S_VERIFY(!summary.contains("--migrate-db"));
 
     // Nothing required missing: now pool mode is suggested.
     readiness["missing"] = S9sVariantList();

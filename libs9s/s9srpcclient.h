@@ -374,7 +374,6 @@ class S9sRpcClient
         bool assignedController(S9sOptions *options);
         bool setPoolMode(S9sOptions *options);
         bool getPoolModeReadiness(S9sOptions *options);
-        bool migrateCmonDb(S9sOptions *options);
         bool bootstrapCmonDbCluster(S9sOptions *options);
         bool addNewController(S9sOptions *options);
         bool addNewCmonDbInstance(S9sOptions *options);
