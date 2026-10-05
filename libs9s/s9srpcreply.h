@@ -380,6 +380,7 @@ class S9sRpcReply : public S9sVariantMap
         
         void printAlarmListLong();
         void printAlarmHistoryListLong();
+        void printAlarmHistoryListBrief();
         static S9sString alarmHistoryDuration(S9sVariantMap &entry);
         static S9sString alarmHistoryTitle(S9sVariantMap &entry);
         

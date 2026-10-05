@@ -5731,6 +5731,33 @@ S9sRpcReply::printAlarmList()
  * ended: an alarm still firing has not lasted no time at all, and a zero there
  * would read as one that resolved instantly.
  */
+/**
+ * \returns the timestamp as the configured date_format renders it, or empty
+ *   when the field is absent -- an alarm that is still open has no end.
+ *
+ * The controller sends an ISO timestamp; printing it raw ignored
+ * --date-format and the date_format setting, which exist to control exactly
+ * this.
+ */
+static S9sString
+alarmHistoryTime(
+        const S9sVariantMap &entry,
+        const char          *field)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    S9sDateTime  value;
+
+    if (!entry.contains(field))
+        return S9sString();
+
+    const S9sString raw = entry.at(field).toString();
+
+    if (raw.empty() || !value.parse(raw))
+        return raw;
+
+    return options->formatDateTime(value);
+}
+
 void
 S9sRpcReply::printAlarmHistoryListLong()
 {
@@ -5740,6 +5767,7 @@ S9sRpcReply::printAlarmHistoryListLong()
     S9sFormat       severityFormat;
     S9sFormat       outcomeFormat;
     S9sFormat       raisedFormat;
+    S9sFormat       endedFormat;
     S9sFormat       durationFormat;
     S9sFormat       hostNameFormat;
     int             nLines = 0;
@@ -5751,7 +5779,8 @@ S9sRpcReply::printAlarmHistoryListLong()
         clusterIdFormat.widen(entry["cluster_id"].toInt());
         severityFormat.widen(entry["severity"].toString());
         outcomeFormat.widen(entry["outcome"].toString());
-        raisedFormat.widen(entry["raised"].toString());
+        raisedFormat.widen(alarmHistoryTime(entry, "raised"));
+        endedFormat.widen(alarmHistoryTime(entry, "ended"));
         durationFormat.widen(alarmHistoryDuration(entry));
         hostNameFormat.widen(entry["hostname"].toString());
         ++nLines;
@@ -5764,6 +5793,7 @@ S9sRpcReply::printAlarmHistoryListLong()
         severityFormat.printHeader("SEVERITY");
         outcomeFormat.printHeader("OUTCOME");
         raisedFormat.printHeader("RAISED");
+        endedFormat.printHeader("ENDED");
         durationFormat.printHeader("DURATION");
         hostNameFormat.printHeader("HOSTNAME");
         printf("TITLE");
@@ -5779,7 +5809,8 @@ S9sRpcReply::printAlarmHistoryListLong()
         clusterIdFormat.printf(entry["cluster_id"].toInt());
         severityFormat.printf(entry["severity"].toString());
         outcomeFormat.printf(entry["outcome"].toString());
-        raisedFormat.printf(entry["raised"].toString());
+        raisedFormat.printf(alarmHistoryTime(entry, "raised"));
+        endedFormat.printf(alarmHistoryTime(entry, "ended"));
         durationFormat.printf(alarmHistoryDuration(entry));
         hostNameFormat.printf(entry["hostname"].toString());
 
@@ -5795,6 +5826,27 @@ S9sRpcReply::printAlarmHistoryListLong()
     }
 }
 
+/**
+ * Prints one line per alarm: when it was raised and what it was.
+ *
+ * The brief form of a list is what the other list commands give without
+ * --long, and this one was printing the full table either way.
+ */
+void
+S9sRpcReply::printAlarmHistoryListBrief()
+{
+    S9sVariantList theList = alarmHistory();
+
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap entry = theList[idx].toVariantMap();
+
+        ::printf("%s %s\n",
+                STR(alarmHistoryTime(entry, "raised")),
+                STR(alarmHistoryTitle(entry)));
+    }
+}
+
 void
 S9sRpcReply::printAlarmHistoryList()
 {
@@ -5804,8 +5856,10 @@ S9sRpcReply::printAlarmHistoryList()
         printJsonFormat();
     else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
-    else
+    else if (options->isLongRequested())
         printAlarmHistoryListLong();
+    else
+        printAlarmHistoryListBrief();
 }
 
 /**

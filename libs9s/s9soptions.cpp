@@ -9280,6 +9280,8 @@ S9sOptions::printHelpAlarm()
 "                             open, within the history retention window.\n"
 "  --stat                     Prints a short list about the number of alarms.\n"
 "  --cluster-id=ID            List alarms related to specified cluster\n"
+"  --limit=NUMBER             The number of history entries to return.\n"
+"  --offset=NUMBER            The index of the first history entry returned.\n"
 "\n"
     );
 }
