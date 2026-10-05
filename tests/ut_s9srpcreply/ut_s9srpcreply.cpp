@@ -71,25 +71,27 @@ twoFrontEnds()
 }
 
 /*
- * Runs \p print with stdout redirected to a file and returns what it wrote.
+ * Runs \p print with \p stream (stdout or stderr) redirected to a file and
+ * returns what it wrote.
  */
 template <typename Function>
 S9sString
-captureStdout(Function print)
+captureStream(FILE *stream, Function print)
 {
     char path[] = "/tmp/ut_s9srpcreply_XXXXXX";
     const int fd = mkstemp(path);
     if (fd < 0)
         return S9sString();
 
-    fflush(stdout);
-    const int saved = dup(STDOUT_FILENO);
-    dup2(fd, STDOUT_FILENO);
+    const int streamFd = fileno(stream);
+    fflush(stream);
+    const int saved = dup(streamFd);
+    dup2(fd, streamFd);
 
     print();
 
-    fflush(stdout);
-    dup2(saved, STDOUT_FILENO);
+    fflush(stream);
+    dup2(saved, streamFd);
     close(saved);
 
     S9sString content;
@@ -106,6 +108,20 @@ captureStdout(Function print)
     close(fd);
     unlink(path);
     return content;
+}
+
+template <typename Function>
+S9sString
+captureStdout(Function print)
+{
+    return captureStream(stdout, print);
+}
+
+template <typename Function>
+S9sString
+captureStderr(Function print)
+{
+    return captureStream(stderr, print);
 }
 
 } // namespace
@@ -128,6 +144,8 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testCcFrontendsStale,    retval);
     PERFORM_TEST(testCcFrontendsJsonOnly, retval);
     PERFORM_TEST(testCcFrontendsError,    retval);
+    PERFORM_TEST(testCcFrontendsConnectionError, retval);
+    PERFORM_TEST(testSetPoolModeWarnings, retval);
 
     return retval;
 }
@@ -234,6 +252,78 @@ UtS9sRpcReply::testCcFrontendsError()
     const S9sString output = captureStdout([&reply]() { reply.printCcFrontends(); });
     S9S_VERIFY(!output.contains("HOSTNAME"));
     S9S_VERIFY(options->exitStatus() != 0);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * When the controller can't be reached the client puts the error into the
+ * reply: it is printed to the standard error and the ConnectionError exit
+ * status the client set is kept.
+ */
+bool
+UtS9sRpcReply::testCcFrontendsConnectionError()
+{
+    S9sOptions::uninit();
+    S9sOptions *options = S9sOptions::instance();
+    options->setExitStatus(S9sOptions::ConnectionError);
+
+    S9sRpcReply reply;
+    reply["request_status"] = "ConnectError";
+    reply["error_string"]   = "Connect to 127.0.0.1:9501 failed: Connection refused.";
+
+    S9sString output;
+    const S9sString errors = captureStderr([&reply, &output]() {
+        output = captureStdout([&reply]() { reply.printCcFrontends(); });
+    });
+
+    S9S_VERIFY(errors.contains("Connection refused"));
+    S9S_VERIFY(!output.contains("HOSTNAME"));
+    S9S_COMPARE(options->exitStatus(), S9sOptions::ConnectionError);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * The "warnings" of a successful setPoolMode reply go to the standard error,
+ * one per line, and do not change the exit status.
+ */
+bool
+UtS9sRpcReply::testSetPoolModeWarnings()
+{
+    S9sOptions::uninit();
+    S9sOptions *options = S9sOptions::instance();
+
+    S9sVariantList warnings;
+    warnings << "The CC frontend on 10.0.0.11 can't be used in pool mode: "
+                "cmon-proxy 2.4.0 is older than 2.5.0. Upgrade clustercontrol-proxy "
+                "and clustercontrol-mcc on 10.0.0.11 to 2.5.0 or later.";
+    warnings << "Second warning.";
+
+    S9sRpcReply reply;
+    reply["request_status"] = "Ok";
+    reply["warnings"]       = warnings;
+
+    S9sString output;
+    S9sString errors = captureStderr([&reply, &output]() {
+        output = captureStdout([&reply]() { reply.printSetPoolModeWarnings(); });
+    });
+
+    S9S_COMPARE(errors,
+            "Warning: The CC frontend on 10.0.0.11 can't be used in pool mode: "
+            "cmon-proxy 2.4.0 is older than 2.5.0. Upgrade clustercontrol-proxy "
+            "and clustercontrol-mcc on 10.0.0.11 to 2.5.0 or later.\n"
+            "Warning: Second warning.\n");
+    S9S_COMPARE(output, "");
+    S9S_COMPARE(options->exitStatus(), 0);
+
+    // A reply without warnings prints nothing.
+    S9sRpcReply plain;
+    plain["request_status"] = "Ok";
+    errors = captureStderr([&plain]() { plain.printSetPoolModeWarnings(); });
+    S9S_COMPARE(errors, "");
 
     S9sOptions::uninit();
     return true;

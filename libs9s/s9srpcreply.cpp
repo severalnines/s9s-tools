@@ -2233,7 +2233,8 @@ S9sRpcReply::printCcFrontends()
 
     printDebugMessages();
 
-    if (!isOk())
+    // Keeps the ConnectionError a transport error already set.
+    if (!isOk() && options->exitStatus() == S9sOptions::ExitOk)
         options->setExitStatus(S9sOptions::Failed);
 
     if (options->isJsonRequested())
@@ -2413,6 +2414,21 @@ S9sRpcReply::printSetPoolModeError()
         ::printf("\n");
         printPoolModeReadinessSummary(at("readiness").toVariantMap());
     }
+}
+
+/**
+ * Prints the "warnings" a successful setPoolMode reply may carry (e.g. the
+ * main controller's CC frontend is too old to be registered) to the standard
+ * error, one per line. They do not make the command fail.
+ */
+void
+S9sRpcReply::printSetPoolModeWarnings()
+{
+    if (!contains("warnings") || !at("warnings").isVariantList())
+        return;
+
+    for (const S9sVariant &warning : at("warnings").toVariantList())
+        PRINT_ERROR("Warning: %s", STR(warning.toString()));
 }
 
 /**

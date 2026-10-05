@@ -1515,12 +1515,10 @@ S9sBusinessLogic::execute()
             reply.printCmonDbClusterNodes();
         }
         else if (options->isListFrontends()) {
-            success = client.getCcFrontends(options);
+            // A transport error is in the reply too, so it is printed.
+            client.getCcFrontends(options);
             S9sRpcReply reply = client.reply();
-            if (success)
-                reply.printCcFrontends();
-            else
-                options->setExitStatus(S9sOptions::Failed);
+            reply.printCcFrontends();
         }
         else if (options->isAssignedController()) {
             client.assignedController(options);
@@ -1534,6 +1532,8 @@ S9sBusinessLogic::execute()
                 reply.printJsonFormat();
                 if (!reply.isOk())
                     options->setExitStatus(S9sOptions::Failed);
+                else
+                    reply.printSetPoolModeWarnings();
             } else {
                 // check invalid request error on reply
                 if (!reply.isOk()) {
@@ -1544,6 +1544,7 @@ S9sBusinessLogic::execute()
                 else {
                     const S9sString mode = options->isSetPoolModeRequested() ? "set" : "unset";
                     ::printf("Pool mode %s successfully.\n", STR(mode));
+                    reply.printSetPoolModeWarnings();
                 }
             }
         }
