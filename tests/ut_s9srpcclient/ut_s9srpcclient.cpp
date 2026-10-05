@@ -3286,7 +3286,7 @@ UtS9sRpcClient::testBootstrapDb()
     S9S_COMPARE(payload["operation"], "createJobInstance");
     S9S_COMPARE(
             payload.valueByPath("/job/job_spec/command").toString(),
-            "bootstrapCmonDbCluster");
+            "bootstrap_cmondb_cluster");
     S9S_COMPARE(
             payload.valueByPath("/job/title").toString(),
             "Bootstrap CC DB Cluster");

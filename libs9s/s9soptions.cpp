@@ -5785,7 +5785,7 @@ S9sOptions::isListDb() const
  * \returns true if the "bootstrap-db" function is requested by providing the
  * --bootstrap-db command line option (turns the main controller's own cmon DB
  * into the seed PRIMARY of the pool's cmon DB HA InnoDB Cluster via the
- * bootstrapCmonDbCluster job).
+ * bootstrap_cmondb_cluster job).
  */
 bool
 S9sOptions::isBootstrapDb() const

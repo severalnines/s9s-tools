@@ -11785,7 +11785,8 @@ S9sRpcClient::getPoolModeReadiness(S9sOptions *options)
 /**
  * @brief turns the main controller's own cmon DB into the seed PRIMARY of the
  * pool's cmon DB HA InnoDB Cluster behind a local MySQL Router
- * (CmdBootstrapCmonDbCluster / the bootstrapCmonDbCluster job).
+ * (CmdBootstrapCmonDbCluster / the bootstrap_cmondb_cluster job; cmon also
+ * accepts the old bootstrapCmonDbCluster name).
  *
  * The job only ever acts on the local host, so it takes no job_data of its
  * own and there is no cluster_id: like addCmonDbInstance it targets the pool.
@@ -11802,7 +11803,7 @@ S9sRpcClient::bootstrapCmonDbCluster(S9sOptions *options)
     (void) options;
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "bootstrapCmonDbCluster";
+    jobSpec["command"]  = "bootstrap_cmondb_cluster";
     jobSpec["job_data"] = S9sVariantMap();
 
     // The job instance describing how the job will be executed.
