@@ -2323,8 +2323,11 @@ S9sRpcReply::poolModeSetupCommands(
     {
         const bool migrationRequired =
             dbCluster["migration_required"].toBoolean();
+        // "unknown" (systemd could not be asked) is taken as running, like
+        // the controller does.
         const bool migrationRunning =
-            dbCluster["migration_state"].toString() == "running";
+            dbCluster["migration_state"].toString() == "running" ||
+            dbCluster["migration_state"].toString() == "unknown";
         const bool bootstrapRunning =
             dbCluster["bootstrap_in_progress"].toBoolean();
 
@@ -2524,6 +2527,10 @@ S9sRpcReply::printPoolModeReadinessSummary(
         ::printf("    Migration              : in progress, cmon is stopped "
                 "until it completes\n");
     }
+    else if (migrationState == "unknown")
+    {
+        ::printf("    Migration              : state unknown\n");
+    }
     else if (!migrationOutcome.empty())
     {
         ::printf("    Migration              : %s\n", STR(migrationOutcome));
@@ -2591,6 +2598,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
     {
         if (migrationState == "running")
             dbBlocker = "wait for the cmon DB migration in progress to finish";
+        else if (migrationState == "unknown")
+            dbBlocker = "wait until the cmon DB migration state is known";
         else if (bootstrapRunning)
             dbBlocker = "wait for the CC DB cluster bootstrap in progress to finish";
         else if (migrationRequired)

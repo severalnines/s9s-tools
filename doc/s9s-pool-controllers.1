@@ -118,7 +118,8 @@ controller points at, when its reply carries one) and \fB--bootstrap-db\fP is no
 suggested yet: check \fB--pool-readiness\fP again once cmon is back on MySQL.
 
 While a migration or a \fB--bootstrap-db\fP job is running it is reported as in
-progress and \fB--bootstrap-db\fP is not suggested. The outcome of the last
+progress and \fB--bootstrap-db\fP is not suggested; the same holds while the
+migration state is unknown. The outcome of the last
 migration is reported too. A failed migration rolls back to MariaDB unless it
 failed after cmon was restarted on MySQL; check the unit with
 journalctl -u cmon-db-migration before retrying it.

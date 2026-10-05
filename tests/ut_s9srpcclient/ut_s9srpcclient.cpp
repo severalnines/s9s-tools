@@ -3523,6 +3523,30 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     S9S_VERIFY(summary.contains("wait for the cmon DB migration in progress"));
     S9S_VERIFY(!summary.contains("MySQL 8.4 manually"));
 
+    // An unknown migration state is taken as running: nothing is started.
+    dbCluster["migration_state"] = "unknown";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 1);
+    S9S_COMPARE(commands[0],
+            "s9s pool-controllers --add-openbao --nodes=HOST --log");
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Migration              : state unknown"));
+    S9S_VERIFY(summary.contains("wait until the cmon DB migration state is known"));
+    S9S_VERIFY(!summary.contains("MySQL 8.4 manually"));
+
+    // The same with only the CC DB cluster missing: wait, then re-check.
+    S9sVariantList dbMissingOnly;
+
+    dbMissingOnly << S9sVariant("cmon_db_cluster");
+    readiness["missing"] = dbMissingOnly;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("wait until the cmon DB migration state is known"));
+    S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+    readiness["missing"] = missing;
+
     // A failed one that rolled back to MariaDB: the outcome is shown and the
     // manual migration suggested again.
     dbCluster["migration_state"]   = "failed";
