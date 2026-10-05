@@ -38,6 +38,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testReadOptions05();
         bool testReadOptions06();
         bool testReadOptions07();
+        bool testJobStuck();
         bool testSetNodes();
         bool testPerconaProCluster();
         bool testPostgreSqlReplication();
@@ -46,4 +47,18 @@ class UtS9sOptions : public S9sUnitTest
         bool testExternalBackup();
         bool testConfigureWalOptions();
         bool testAddController();
+        bool testAddDb();
+        bool testDeleteDb();
+        bool testListDb();
+        bool testAddOpenBao();
+        bool testListOpenBaoOperations();
+        bool testPoolModePrerequisites();
+        bool testVirtualRouterId();
+        bool testRestoreClusterInfoOptions();
+        bool testLockAccount();
+        bool testUnlockAccount();
+        bool testLockUnlockMutualExclusion();
+        bool testLockAccountMissingAccount();
+        bool testAddShard();
+        bool testShardId();
 };

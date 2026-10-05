@@ -178,6 +178,18 @@ S9sRpcReply::errorString() const
     return S9sString();
 }
 
+/**
+ * \returns The error_id sent by the controller in the reply, or 0 if not set.
+ */
+int
+S9sRpcReply::errorId() const
+{
+    if (contains("error_id"))
+        return at("error_id").toInt();
+
+    return 0;
+}
+
 S9sString
 S9sRpcReply::uuid() const
 {
@@ -195,7 +207,7 @@ S9sRpcReply::uuid() const
  * It is either one job coming from the "job" field of the reply or zero to many
  * maps coming from the "jobs" field. This depends on the request we sent.
  */
-S9sVariantList 
+S9sVariantList
 S9sRpcReply::jobs()
 {
     S9sVariantList retval;
@@ -206,6 +218,24 @@ S9sRpcReply::jobs()
         retval = operator[]("jobs").toVariantList();
 
     return retval;
+}
+
+/**
+ * \returns The variant list that contains variant maps with the jobs
+ *   currently considered "stuck" (running longer than their command
+ *   class's configured threshold), as returned by a "getStuckJobs" request.
+ *   Each map has the same fields as jobs(), plus "elapsed_seconds",
+ *   "stuck_threshold_hours", "job_class", and - when the job reported a
+ *   forward-progress heartbeat - "last_progress_at". "elapsed_seconds" is
+ *   measured from "last_progress_at" when present, else from the start time.
+ */
+S9sVariantList
+S9sRpcReply::stuckJobs()
+{
+    if (contains("stuck_jobs"))
+        return operator[]("stuck_jobs").toVariantList();
+
+    return S9sVariantList();
 }
 
 /**
@@ -483,10 +513,22 @@ S9sRpcReply::printClusterInfoCacheStatistics()
         printf("  %-30s %s%llu%s\n", 
             "Total Refreshes:", 
             numberBegin, stats["total_refreshes"].toULongLong(), numberEnd);
-        printf("  %-30s %s%d%s seconds\n", 
-            "Refresh Interval:", 
+        printf("  %-30s %s%d%s seconds\n",
+            "Refresh Interval:",
             numberBegin, stats["refresh_interval_seconds"].toInt(), numberEnd);
-        
+        if (stats.contains("min_refresh_interval_seconds"))
+        {
+            printf("  %-30s %s%d%s seconds\n",
+                "Min Refresh Interval:",
+                numberBegin, stats["min_refresh_interval_seconds"].toInt(), numberEnd);
+        }
+        if (stats.contains("max_refresh_interval_seconds"))
+        {
+            printf("  %-30s %s%d%s seconds\n",
+                "Max Refresh Interval:",
+                numberBegin, stats["max_refresh_interval_seconds"].toInt(), numberEnd);
+        }
+
         if (stats.contains("hit_rate_percent"))
         {
             printf("  %-30s %s%.2f%%%s\n", 
@@ -1511,14 +1553,17 @@ S9sRpcReply::printMessages(
         }
     }
 
-    // And if error string is set, pint out it as well
+    // And if error string is set, print it out as well
     if (!errorString().empty())
     {
         if (isOk())
         {
             ::printf("%s\n", STR(S9sString::html2ansi(errorString())));
         } else {
-            PRINT_ERROR("%s", STR(errorString()));
+            if (errorId() != 0)
+                PRINT_ERROR("%s (error_id: %d)", STR(errorString()), errorId());
+            else
+                PRINT_ERROR("%s", STR(errorString()));
         }
     }
 }
@@ -1586,14 +1631,129 @@ S9sRpcReply::printSupportedClusterList()
 void 
 S9sRpcReply::printCloudCredentials()
 {
+    S9sOptions *options = S9sOptions::instance();
 
     printDebugMessages();
-    if (!isOk())
+    if (options->isJsonRequested())
+        printJsonFormat();
+    else if (!isOk())
         PRINT_ERROR("%s", STR(errorString()));
     else
         printCloudCredentialsLong();
 }
  
+/**
+ * Prints the OpenBao versions the controller has been exercised against.
+ *
+ * \code
+ * s9s pool-controllers --list-openbao-versions
+ * 2.5.4 (default)
+ * 2.4.1
+ * \endcode
+ *
+ * The list is advisory: --provider-version accepts any version the OpenBao
+ * release page publishes.
+ */
+void
+S9sRpcReply::printOpenBaoVersionList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    const S9sVariantList versions = operator[]("openbao_versions").toVariantList();
+    const S9sString defaultVersion = operator[]("default_version").toString();
+
+    for (uint idx = 0; idx < versions.size(); ++idx)
+    {
+        const S9sString version = versions[idx].toString();
+
+        if (!options->isBatchRequested() && version == defaultVersion)
+            printf("%s (default)\n", STR(version));
+        else
+            printf("%s\n", STR(version));
+    }
+}
+
+/**
+ * Prints the configuration/secret storage instances the controller knows about.
+ *
+ * \code
+ * s9s pool-controllers --list-config-storage
+ * TYPE    HOSTNAME    PORT VERSION MOUNT  NAMESPACE CREDS
+ * openbao 10.0.3.163  8300 2.6.2   ftbao  -         yes
+ * \endcode
+ *
+ * CREDS says whether the controller has ssh credentials recorded for the
+ * instance, which is what lets a pool-mode switch read the token by itself.
+ * The token is never part of the reply and is never printed.
+ */
+void
+S9sRpcReply::printConfigStorageList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    const S9sVariantList storageList = operator[]("config_storage").toVariantList();
+
+    if (storageList.empty())
+    {
+        if (!options->isBatchRequested())
+        {
+            printf("No configuration storage is registered.\n");
+        }
+        return;
+    }
+
+    if (!options->isBatchRequested())
+    {
+        printf("%-8s %-24s %5s %-8s %-16s %-12s %s\n",
+               "TYPE", "HOSTNAME", "PORT", "VERSION", "MOUNT", "NAMESPACE", "CREDS");
+    }
+
+    for (uint idx = 0; idx < storageList.size(); ++idx)
+    {
+        S9sVariantMap entry = storageList[idx].toVariantMap();
+        const S9sString nameSpace = entry["namespace"].toString();
+
+        const S9sString version = entry["version"].toString();
+
+        printf("%-8s %-24s %5d %-8s %-16s %-12s %s\n",
+               STR(entry["type"].toString()),
+               STR(entry["hostname"].toString()),
+               entry["port"].toInt(),
+               version.empty() ? "-" : STR(version),
+               STR(entry["mount"].toString()),
+               nameSpace.empty() ? "-" : STR(nameSpace),
+               entry["credentials_stored"].toBoolean() ? "yes" : "no");
+    }
+}
+
 /**
  * Lists the cloud credentials stored on the controller (excluding sensitive info)
  *
@@ -1692,6 +1852,34 @@ S9sRpcReply::printCloudCredentialsLong()
    
 }
 
+// Maximum number of cluster IDs shown per row before wrapping the rest onto
+// continuation rows.
+static const int c_clusterIdsPerRow = 10;
+
+// Returns a formatted slice of up to `count` cluster IDs starting at `start`.
+// A trailing "..." is appended when more IDs follow the slice, making it clear
+// that the list continues.
+static S9sString
+clusterIdsSlice(const S9sVariantList &list, int start, int count)
+{
+    const int total = (int)list.size();
+    if (start >= total)
+        return S9sString();
+
+    const int end = (start + count < total) ? (start + count) : total;
+    S9sString retval = "[";
+    for (int i = start; i < end; ++i)
+    {
+        if (i > start)
+            retval += ", ";
+        retval += list[i].toString();
+    }
+    if (end < total)
+        retval += ", ...";
+    retval += "]";
+    return retval;
+}
+
 void
 S9sRpcReply::printPoolControllers()
 {
@@ -1711,8 +1899,8 @@ S9sRpcReply::printPoolControllers()
  *
  * \code
  * s9s controllers --list --controller-id="2"
- * ID HOSTNAME  POTRT STATUS ROLE  CLUSTERS
- * 2  localhost 9500  active main  1, 2, 3
+ * SID ID HOSTNAME  PORT STATUS ROLE COUNT/MAX CLUSTERS
+ * 2   2  localhost 9500 active main      3/10 [1, 2, 3]
  *
  * \endcode
  *
@@ -1729,7 +1917,6 @@ S9sRpcReply::printPoolControllers()
 void
 S9sRpcReply::printPoolControllersLong()
 {
-
     S9sOptions    *options = S9sOptions::instance();
     S9sVariantList  controllers = operator[]("controllers").toVariantList();
     if(controllers.size() == 0)
@@ -1740,8 +1927,22 @@ S9sRpcReply::printPoolControllersLong()
     S9sFormat      portFormat("\033[94m", TERM_NORMAL);
     S9sFormat      statusFormat("\033[94m", TERM_NORMAL);
     S9sFormat      roleFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      countFormat;
     S9sFormat      clustersFormat("\033[33m", TERM_NORMAL);
 
+    countFormat.setRightJustify();
+
+    // A controller participates in the dynamic cluster pool only in these
+    // states. Static controllers (e.g. 'nfs_member') do not own pool clusters,
+    // so their COUNT/MAX and CLUSTERS columns are rendered as '-'.
+    auto isDynamicStatus = [](const S9sString &status) -> bool
+    {
+        return status == "stopped"    ||
+               status == "starting"   ||
+               status == "active"     ||
+               status == "standalone" ||
+               status == "inactive";
+    };
 
     // Filter controllers depending on requested output mode (only for list operation)
     const bool printAll = options->isPrintDeploymentInfoRequested();
@@ -1752,13 +1953,7 @@ S9sRpcReply::printPoolControllersLong()
         for (const auto & c : controllers)
         {
             S9sVariantMap  w = c.toVariantMap();
-            S9sString      status = w["status"].toString();
-            const bool isDynamic =
-                    status == "stopped" ||
-                    status == "starting" ||
-                    status == "active" ||
-                    status == "standalone";
-            if (printAll || isDynamic)
+            if (printAll || isDynamicStatus(w["status"].toString()))
                 filtered << w;
         }
     }
@@ -1776,14 +1971,25 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      hostname = w["hostname"].toString();
         S9sString      port = w["port"].toString();
         S9sString      status = w["status"].toString();
-        S9sString      clusters = w["clusters"].toString();
         S9sString      role;
 
+        const bool clustersIsList = w["clusters"].isVariantList();
+        const S9sVariantList clusterList = clustersIsList
+            ? w["clusters"].toVariantList() : S9sVariantList();
+        S9sString clusters = clusterIdsSlice(clusterList, 0, c_clusterIdsPerRow);
+        if (clusters.empty())
+            clusters = w["clusters"].toString();
+
+        S9sString maxClusters = "-";
         if (w.contains("properties"))
         {
             S9sVariantMap props = w["properties"].toVariantMap();
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
+            if (props.contains("max_clusters"))
+                maxClusters = props["max_clusters"].toInt() < 0
+                    ? S9sString("inf")            // -1 = unlimited
+                    : props["max_clusters"].toString();  // 0 = inactive, >0 = cap
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1795,14 +2001,31 @@ S9sRpcReply::printPoolControllersLong()
         else
             role = "";
 
+        // COUNT/MAX: current number of owned clusters over the configured cap
+        S9sString count;
+        if (clustersIsList)
+            count.sprintf("%d", (int)clusterList.size());
+        else
+            count = "-";
+        count += "/" + maxClusters;
+
+        // Static controllers do not own pool clusters: blank these columns.
+        if (!isDynamicStatus(status))
+        {
+            count = "-";
+            clusters = "-";
+        }
+
         sidFormat.widen(sid);
         idFormat.widen(id);
         hostnameFormat.widen(hostname);
         portFormat.widen(port);
         statusFormat.widen(status);
         roleFormat.widen(role);
+        countFormat.widen(count);
         clustersFormat.widen(clusters);
     }
+
     // print header
     if (!options->isNoHeaderRequested())
     {
@@ -1813,10 +2036,21 @@ S9sRpcReply::printPoolControllersLong()
         portFormat.printHeader("PORT");
         statusFormat.printHeader("STATUS");
         roleFormat.printHeader("ROLE");
+        countFormat.printHeader("COUNT/MAX");
         clustersFormat.printHeader("CLUSTERS");
         ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
+
+    // computed after header printing so printHeader() widen calls are included
+    int nColumnsWithCount = 0;
+    nColumnsWithCount += sidFormat.realWidth();
+    nColumnsWithCount += idFormat.realWidth();
+    nColumnsWithCount += hostnameFormat.realWidth();
+    nColumnsWithCount += portFormat.realWidth();
+    nColumnsWithCount += statusFormat.realWidth();
+    nColumnsWithCount += roleFormat.realWidth();
+    nColumnsWithCount += countFormat.realWidth();
     // print data
     for (const auto & cl : filtered)
     {
@@ -1826,15 +2060,27 @@ S9sRpcReply::printPoolControllersLong()
         S9sString      hostname = c["hostname"].toString();
         S9sString      port = c["port"].toString();
         S9sString      status = c["status"].toString();
-        S9sString      clusters = c["clusters"].toString();
+
+        const bool clustersIsList = c["clusters"].isVariantList();
+        const S9sVariantList clusterList = clustersIsList
+            ? c["clusters"].toVariantList() : S9sVariantList();
+        const int total = (int)clusterList.size();
+        S9sString clusters = clusterIdsSlice(clusterList, 0, c_clusterIdsPerRow);
+        if (clusters.empty())
+            clusters = c["clusters"].toString();
 
         // role
         S9sString      role;
+        S9sString      maxClusters = "-";
         if (c.contains("properties"))
         {
             S9sVariantMap props = c["properties"].toVariantMap();
             if (props.contains("static_id") && !props["static_id"].toString().empty())
                 sid = props["static_id"].toString();
+            if (props.contains("max_clusters"))
+                maxClusters = props["max_clusters"].toInt() < 0
+                    ? S9sString("inf")            // -1 = unlimited
+                    : props["max_clusters"].toString();  // 0 = inactive, >0 = cap
             S9sString roleRaw = props["role"].toString();
             if (roleRaw == "full_controller")
                 role = "member";
@@ -1846,16 +2092,454 @@ S9sRpcReply::printPoolControllersLong()
         else
             role = "";
 
+        // COUNT/MAX: current number of owned clusters over the configured cap
+        S9sString count;
+        if (clustersIsList)
+            count.sprintf("%d", total);
+        else
+            count = "-";
+        count += "/" + maxClusters;
+
+        // Static controllers do not own pool clusters: blank these columns.
+        const bool isDynamic = isDynamicStatus(status);
+        if (!isDynamic)
+        {
+            count = "-";
+            clusters = "-";
+        }
+
         sidFormat.printf(sid);
         idFormat.printf(id);
         hostnameFormat.printf(hostname);
         portFormat.printf(port);
         statusFormat.printf(status);
         roleFormat.printf(role);
+        countFormat.printf(count);
         clustersFormat.printf(clusters);
+        ::printf("\n");
+
+        // continuation rows for clusters beyond the first row
+        for (int offset = c_clusterIdsPerRow; isDynamic && offset < total;
+                offset += c_clusterIdsPerRow)
+        {
+            S9sString cont = clusterIdsSlice(clusterList, offset,
+                    c_clusterIdsPerRow);
+            ::printf("%-*s", nColumnsWithCount, "");
+            clustersFormat.printf(cont);
+            ::printf("\n");
+        }
+    }
+
+}
+
+void
+S9sRpcReply::printCmonDbClusterNodes()
+{
+    printDebugMessages();
+    S9sOptions *options = S9sOptions::instance();
+    if (options->isJsonRequested())
+        printJsonFormat();
+    if (!isOk())
+        PRINT_ERROR("%s", STR(errorString()));
+    else
+        printCmonDbClusterNodesLong();
+}
+
+/**
+ * Lists the pool's cmon DB HA InnoDB Cluster nodes (read-only
+ * getCmonDbClusterNodes call, "pool-controllers --list-db").
+ *
+ * Each record is cross-referenced by the controller against the InnoDB
+ * Cluster's own live Group Replication view for a "status"/"role" pair -
+ * the same STATUS/ROLE columns "pool-controllers --list" already prints
+ * for controllers (see printPoolControllersLong()):
+ *
+ * \code{.js}
+ * {
+ *   "cmon_db_cluster_nodes": [
+ *     {"class_name": "CmonPoolModeDbClusterNodeHost", "cluster_id": 0,
+ *      "hostname": "10.0.1.42", "port": 3306, "status": "ONLINE",
+ *      "role": "Primary"},
+ *     ...
+ *   ],
+ *   "total": 2
+ * }
+ * \endcode
+ *
+ * class_name/cluster_id are internal bookkeeping, not surfaced in the
+ * plain-text table - they're still visible via --print-json.
+ *
+ * \code
+ * s9s pool-controllers --list-db
+ * HOSTNAME  PORT STATUS ROLE
+ * 10.0.1.42 3306 ONLINE Primary
+ * 10.0.1.87 3306 ONLINE Secondary
+ * \endcode
+ */
+void
+S9sRpcReply::printCmonDbClusterNodesLong()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantList  nodes = operator[]("cmon_db_cluster_nodes").toVariantList();
+
+    S9sFormat      hostnameFormat("\033[93m", TERM_NORMAL);
+    S9sFormat      portFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      statusFormat("\033[94m", TERM_NORMAL);
+    S9sFormat      roleFormat("\033[94m", TERM_NORMAL);
+
+    // set width
+    for (const auto & n : nodes)
+    {
+        S9sVariantMap  w = n.toVariantMap();
+        S9sString      hostname = w["hostname"].toString();
+        S9sString      port     = w["port"].toString();
+        S9sString      status   = w["status"].toString();
+        S9sString      role     = w["role"].toString();
+
+        hostnameFormat.widen(hostname);
+        portFormat.widen(port);
+        statusFormat.widen(status);
+        roleFormat.widen(role);
+    }
+
+    // print header
+    if (!options->isNoHeaderRequested())
+    {
+        ::printf("%s", headerColorBegin());
+        hostnameFormat.printHeader("HOSTNAME");
+        portFormat.printHeader("PORT");
+        statusFormat.printHeader("STATUS");
+        roleFormat.printHeader("ROLE");
+        ::printf("%s", headerColorEnd());
         ::printf("\n");
     }
 
+    // print data
+    for (const auto & n : nodes)
+    {
+        S9sVariantMap  w = n.toVariantMap();
+        S9sString      hostname = w["hostname"].toString();
+        S9sString      port     = w["port"].toString();
+        S9sString      status   = w["status"].toString();
+        S9sString      role     = w["role"].toString();
+
+        hostnameFormat.printf(hostname);
+        portFormat.printf(port);
+        statusFormat.printf(status);
+        roleFormat.printf(role);
+        ::printf("\n");
+    }
+}
+
+/**
+ * Prints which pool mode prerequisites are in place (read-only
+ * getPoolModeReadiness call, "pool-controllers --pool-readiness").
+ *
+ * \code
+ * s9s pool-controllers --pool-readiness
+ * Pool mode readiness: not ready
+ *   CC DB cluster            : missing
+ *     DB backend             : mariadb (migration to Oracle MySQL required)
+ *   CC configuration storage : missing (openbao)
+ *
+ * To set up the missing prerequisites, run in this order:
+ *   s9s pool-controllers --migrate-db
+ *       (cmon is stopped for several minutes; once it is back, check
+ *        --pool-readiness again for the next steps)
+ *   s9s pool-controllers --add-openbao --nodes=HOST --log
+ * then enable pool mode with 's9s pool-controllers --set-pool-mode'.
+ * \endcode
+ */
+void
+S9sRpcReply::printPoolModeReadiness()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    printPoolModeReadinessSummary(*this);
+}
+
+/**
+ * Prints why a setPoolMode request failed. When pool mode could not be
+ * enabled because prerequisites are missing the controller also sends a
+ * "readiness" object (the getPoolModeReadiness reply shape), which is turned
+ * into the s9s commands that set the missing pieces up.
+ */
+void
+S9sRpcReply::printSetPoolModeError()
+{
+    PRINT_ERROR("Failed to set pool mode: %s", STR(errorString()));
+
+    if (contains("readiness") && at("readiness").isVariantMap())
+    {
+        ::printf("\n");
+        printPoolModeReadinessSummary(at("readiness").toVariantMap());
+    }
+}
+
+/**
+ * \returns The s9s commands that set up the pool mode prerequisites a
+ *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
+ *   reports missing, in the order they have to be run.
+ *
+ * --migrate-db is only suggested while cmon's DB still needs migrating, the
+ * controller supports migrating it on this host and no migration is running;
+ * one that failed may be retried. --bootstrap-db is only suggested once cmon's
+ * DB no longer needs migrating and while neither a bootstrap nor a migration
+ * is running. A cmon that does not send "migration_supported" (older than the
+ * key) is taken to support the migration. Prerequisites opted out
+ * of with --no-require-db-cluster/--no-require-config-storage are skipped, and
+ * nothing is suggested when pool mode is on or the readiness is not applicable.
+ */
+S9sStringList
+S9sRpcReply::poolModeSetupCommands(
+        const S9sVariantMap &readiness)
+{
+    S9sOptions     *options   = S9sOptions::instance();
+    S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
+    S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
+    S9sStringList   retval;
+    bool            dbMissing = false;
+    bool            storageMissing = false;
+
+    if (readiness.valueByPath("pool_mode").toBoolean() ||
+            !readiness.valueByPath("applicable").toBoolean())
+    {
+        return retval;
+    }
+
+    for (const auto &item : missing)
+    {
+        if (item.toString() == "cmon_db_cluster")
+            dbMissing = true;
+        else if (item.toString() == "config_storage")
+            storageMissing = true;
+    }
+
+    if (dbMissing && !options->noRequireDbCluster())
+    {
+        const bool migrationRequired =
+            dbCluster["migration_required"].toBoolean();
+        const bool migrationSupported =
+            !dbCluster.contains("migration_supported") ||
+            dbCluster["migration_supported"].toBoolean();
+        const bool migrationRunning =
+            dbCluster["migration_state"].toString() == "running";
+        const bool bootstrapRunning =
+            dbCluster["bootstrap_in_progress"].toBoolean();
+
+        if (migrationRequired && migrationSupported && !migrationRunning)
+            retval << "s9s pool-controllers --migrate-db";
+
+        if (!migrationRequired && !migrationRunning && !bootstrapRunning)
+            retval << "s9s pool-controllers --bootstrap-db --log";
+    }
+
+    if (storageMissing && !options->noRequireConfigStorage())
+        retval << "s9s pool-controllers --add-openbao --nodes=HOST --log";
+
+    return retval;
+}
+
+/**
+ * Prints a getPoolModeReadiness reply (or the "readiness" object of a failed
+ * setPoolMode reply) as a human readable summary, with the command that sets
+ * up each missing prerequisite.
+ *
+ * A prerequisite the user opted out of with --no-require-db-cluster or
+ * --no-require-config-storage is still reported, but no command is suggested
+ * for it.
+ */
+void
+S9sRpcReply::printPoolModeReadinessSummary(
+        const S9sVariantMap &readiness)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
+    S9sVariantMap   storage   = readiness.valueByPath("config_storage").toVariantMap();
+    S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
+    bool            dbMissing = false;
+    bool            storageMissing = false;
+
+    if (readiness.valueByPath("pool_mode").toBoolean())
+    {
+        ::printf("Pool mode is already enabled on this controller.\n");
+        return;
+    }
+
+    if (!readiness.valueByPath("applicable").toBoolean())
+    {
+        ::printf("Pool mode readiness: not applicable\n");
+        ::printf("  Nothing to set up: the controller runs in k8s mode or "
+                "other controllers are already in the pool.\n");
+        return;
+    }
+
+    for (const auto &item : missing)
+    {
+        if (item.toString() == "cmon_db_cluster")
+            dbMissing = true;
+        else if (item.toString() == "config_storage")
+            storageMissing = true;
+    }
+
+    const bool      ready = readiness.valueByPath("ready").toBoolean();
+    const bool      migrationRequired =
+        dbCluster["migration_required"].toBoolean();
+    const bool      migrationSupported =
+        !dbCluster.contains("migration_supported") ||
+        dbCluster["migration_supported"].toBoolean();
+    const S9sString unsupportedReason =
+        dbCluster["migration_unsupported_reason"].toString();
+    const bool      bootstrapRunning =
+        dbCluster["bootstrap_in_progress"].toBoolean();
+    const S9sString dbBackend = dbCluster["db_backend"].toString();
+    const S9sString migrationState = dbCluster["migration_state"].toString();
+
+    ::printf("Pool mode readiness: %s\n", ready ? "ready" : "not ready");
+
+    // The CC DB cluster: cmon's own DB made highly available.
+    ::printf("  CC DB cluster            : %s\n",
+            dbMissing ? "missing" : "ready");
+
+    if (dbMissing && options->noRequireDbCluster())
+        ::printf("    (not required, --no-require-db-cluster)\n");
+
+    if (!dbBackend.empty())
+    {
+        ::printf("    DB backend             : %s%s\n",
+                STR(dbBackend),
+                migrationRequired ?
+                    " (migration to Oracle MySQL required)" : "");
+    }
+
+    if (bootstrapRunning)
+        ::printf("    Bootstrap              : in progress\n");
+
+    if (migrationState == "running")
+    {
+        ::printf("    Migration              : in progress, cmon is stopped "
+                "until it completes\n");
+    }
+    else if (migrationRequired && !migrationSupported)
+    {
+        ::printf("    Migration              : not supported on this host\n");
+
+        if (!unsupportedReason.empty())
+            ::printf("                             %s\n", STR(unsupportedReason));
+    }
+    else if (migrationState == "failed")
+    {
+        // A failure before cmon runs on MySQL again is rolled back to MariaDB.
+        ::printf("    Migration              : the last migration failed; it "
+                "rolls back to MariaDB\n");
+        ::printf("                             unless it failed after cmon was "
+                "restarted on MySQL\n");
+        ::printf("                             check 'journalctl -u "
+                "cmon-db-migration'%s\n",
+                migrationSupported && dbBackend == "mariadb" ?
+                    ", then retry with --migrate-db" : "");
+    }
+
+    if (!dbMissing)
+    {
+        ::printf("    Members online         : %d/%d\n",
+                dbCluster["members_online"].toInt(),
+                dbCluster["members_total"].toInt());
+    }
+
+    // The CC configuration storage: the secret store the pool shares.
+    const S9sString storageType = storage["type"].toString();
+
+    ::printf("  CC configuration storage : %s%s%s%s\n",
+            storageMissing ? "missing" : "ready",
+            storageType.empty() ? "" : " (",
+            STR(storageType),
+            storageType.empty() ? "" : ")");
+
+    if (storageMissing && options->noRequireConfigStorage())
+        ::printf("    (not required, --no-require-config-storage)\n");
+
+    if (!storageMissing && !storage["hostname"].toString().empty())
+    {
+        ::printf("    Address                : %s:%d\n",
+                STR(storage["hostname"].toString()),
+                storage["port"].toInt());
+    }
+
+    if (!storageMissing && !storage["version"].toString().empty())
+    {
+        ::printf("    Version                : %s\n",
+                STR(storage["version"].toString()));
+    }
+
+    const S9sStringList commands = poolModeSetupCommands(readiness);
+
+    // A required CC DB cluster no command can be suggested for yet: a
+    // migration or bootstrap is running, or the migration is not supported.
+    S9sString dbBlocker;
+
+    if (dbMissing && !options->noRequireDbCluster())
+    {
+        if (migrationState == "running")
+            dbBlocker = "wait for the cmon DB migration in progress to finish";
+        else if (bootstrapRunning)
+            dbBlocker = "wait for the CC DB cluster bootstrap in progress to finish";
+        else if (migrationRequired && !migrationSupported)
+            dbBlocker = "move cmon's DB to Oracle MySQL manually (see the reason above)";
+    }
+
+    ::printf("\n");
+    if (commands.empty() && dbBlocker.empty())
+    {
+        ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
+                "pool mode (cmon restarts).\n");
+        return;
+    }
+
+    // Pool mode can not be enabled yet and there is nothing to run for it.
+    if (commands.empty())
+    {
+        ::printf("To set up the missing CC DB cluster, %s,\n"
+                "then re-check with 's9s pool-controllers --pool-readiness'.\n",
+                STR(dbBlocker));
+        return;
+    }
+
+    ::printf("To set up the missing prerequisites, run in this order:\n");
+
+    // A running migration or bootstrap is a step of its own, just not one to
+    // start again.
+    if (!dbBlocker.empty())
+        ::printf("  (%s)\n", STR(dbBlocker));
+
+    for (const auto &command : commands)
+    {
+        ::printf("  %s\n", STR(command));
+
+        // --bootstrap-db can only follow once cmon is back on MySQL.
+        if (command.endsWith("--migrate-db"))
+        {
+            ::printf("      (cmon is stopped for several minutes; once it is "
+                    "back, check\n"
+                    "       --pool-readiness again for the next steps)\n");
+        }
+    }
+
+    ::printf("then enable pool mode with 's9s pool-controllers --set-pool-mode'.\n");
 }
 
 
@@ -3204,8 +3888,93 @@ S9sRpcReply::printSnapshotRepositoriesLong(bool allClusters)
         ::printf("\nTotal: %d snapshot repository(ies)\n", nLines);
 }
 
+/**
+ * Prints the pgBackRest repositories (repo1/repo2) of a PostgreSQL cluster,
+ * as returned by the "getPgBackRestRepositories" operation.
+ */
+void
+S9sRpcReply::printPgBackRestRepositories()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sVariantMap  repositories;
+    S9sFormat      nameFormat;
+    S9sFormat      typeFormat;
+    S9sFormat      storageHostFormat;
+    S9sFormat      locationFormat;
+    S9sFormat      defaultFormat;
+    S9sString      defaultRepo;
+    int            nLines = 0;
 
-void 
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    if (contains("repositories"))
+        repositories = operator[]("repositories").toVariantMap();
+
+    defaultRepo = repositories["default_backup_repo"].toString();
+
+    for (S9sString key : repositories.keys())
+    {
+        if (key == "default_backup_repo")
+            continue;
+
+        S9sVariantMap repoMap   = repositories[key].toVariantMap();
+        S9sString     type      = repoMap["type"].toString();
+        S9sString     location  =
+            type == "s3" ? repoMap["bucket"].toString() : repoMap["path"].toString();
+
+        nameFormat.widen(key);
+        typeFormat.widen(type);
+        storageHostFormat.widen(repoMap["storage_host"].toString());
+        locationFormat.widen(location);
+        defaultFormat.widen(key == defaultRepo ? "yes" : "no");
+        ++nLines;
+    }
+
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        nameFormat.printHeader("REPO");
+        typeFormat.printHeader("TYPE");
+        storageHostFormat.printHeader("STORAGE HOST");
+        locationFormat.printHeader("LOCATION");
+        defaultFormat.printHeader("DEFAULT");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    for (S9sString key : repositories.keys())
+    {
+        if (key == "default_backup_repo")
+            continue;
+
+        S9sVariantMap repoMap  = repositories[key].toVariantMap();
+        S9sString     type     = repoMap["type"].toString();
+        S9sString     location =
+            type == "s3" ? repoMap["bucket"].toString() : repoMap["path"].toString();
+
+        nameFormat.printf(key);
+        typeFormat.printf(type);
+        storageHostFormat.printf(repoMap["storage_host"].toString());
+        locationFormat.printf(location);
+        defaultFormat.printf(key == defaultRepo ? "yes" : "no");
+        printf("\n");
+    }
+
+    if (!options->isBatchRequested())
+        ::printf("\nTotal: %d pgBackRest repository(ies), default: %s\n",
+                nLines, STR(defaultRepo));
+}
+
+
+void
 S9sRpcReply::printBackupList()
 {
     S9sOptions *options = S9sOptions::instance();
@@ -3239,6 +4008,26 @@ S9sRpcReply::printBackupList()
             printBackupListLong();
         else
             printBackupListBrief();
+    }
+}
+
+void
+S9sRpcReply::printBinlogBackupList()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+    } else if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+    } else {
+        // Print binlog backup list
+        if (options->isLongRequested())
+            printBinlogBackupListLong();
+        else
+            printBinlogBackupListBrief();
     }
 }
 
@@ -9756,7 +10545,164 @@ S9sRpcReply::printJobListLong()
         printf("-");
 
     printf("\n");
-    
+
+    if (!options->isBatchRequested())
+        printf("Total: %d\n", total);
+}
+
+// Formats a duration in seconds as "HH:MM:SS" - hours are not capped at 24,
+// so a job stuck for multiple days still prints as a single number of hours
+// (e.g. "50:23:11") rather than rolling over into a separate day count.
+static S9sString
+elapsedTimeString(ulonglong seconds)
+{
+    S9sString retval;
+
+    retval.sprintf(
+            "%02llu:%02llu:%02llu",
+            seconds / 3600ull,
+            (seconds % 3600ull) / 60ull,
+            seconds % 60ull);
+
+    return retval;
+}
+
+// The job's last forward-progress heartbeat as a printable timestamp, or "-"
+// when it reported none (elapsed time is then measured from its start).
+static S9sString
+lastProgressString(S9sVariantMap &jobMap)
+{
+    S9sString value = jobMap["last_progress_at"].toString();
+    if (value.empty())
+        return "-";
+
+    S9sDateTime tmp;
+    tmp.parse(value);
+    return tmp.toString(S9sDateTime::MySqlLogFileFormat);
+}
+
+/**
+ * Prints the jobs currently running longer than their command class's
+ * stuck-job threshold (reply of a "getStuckJobs" request, e.g.
+ * s9s job --stuck).
+ */
+void
+S9sRpcReply::printStuckJobList()
+{
+    S9sOptions     *options         = S9sOptions::instance();
+    S9sVariantList  theList         = stuckJobs();
+    bool            syntaxHighlight = options->useSyntaxHighlight();
+    int             total           = operator[]("total").toInt();
+    int             nLines          = 0;
+    S9sFormat       idFormat;
+    S9sFormat       cidFormat;
+    S9sFormat       classFormat;
+    S9sFormat       elapsedFormat;
+    S9sFormat       thresholdFormat;
+    S9sFormat       lastProgressFormat;
+    S9sFormat       stateFormat;
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    //
+    // First run, collecting some information.
+    //
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap       = theList[idx].toVariantMap();
+        S9sJob        job          = theMap;
+        int           jobId        = job.jobId();
+        int           cid          = job.clusterId();
+        S9sString     status       = job.status();
+        S9sString     jobClass     = theMap["job_class"].toString();
+        S9sString     elapsed      = elapsedTimeString(
+                theMap["elapsed_seconds"].toULongLong());
+        S9sString     threshold;
+
+        threshold.sprintf(
+                "%lluh", theMap["stuck_threshold_hours"].toULongLong());
+
+        idFormat.widen(jobId);
+        cidFormat.widen(cid);
+        classFormat.widen(jobClass);
+        elapsedFormat.widen(elapsed);
+        thresholdFormat.widen(threshold);
+        lastProgressFormat.widen(lastProgressString(theMap));
+        stateFormat.widen(status);
+
+        ++nLines;
+    }
+
+    //
+    // Printing the header. If we have no lines to print we won't print the
+    // header either.
+    //
+    if (!options->isNoHeaderRequested() && nLines > 0)
+    {
+        printf("%s", headerColorBegin());
+        idFormat.printHeader("ID");
+        cidFormat.printHeader("CID");
+        classFormat.printHeader("CLASS");
+        elapsedFormat.printHeader("ELAPSED");
+        thresholdFormat.printHeader("THRESHOLD");
+        lastProgressFormat.printHeader("LAST PROGRESS");
+        stateFormat.printHeader("STATE");
+        printf("TITLE");
+        printf("%s", headerColorEnd());
+
+        printf("\n");
+    }
+
+    //
+    // Second run, doing the actual printing.
+    //
+    for (uint idx = 0; idx < theList.size(); ++idx)
+    {
+        S9sVariantMap theMap       = theList[idx].toVariantMap();
+        S9sJob        job          = theMap;
+        int           jobId        = job.jobId();
+        int           cid          = job.clusterId();
+        S9sString     status       = job.status();
+        S9sString     title        = job.title();
+        S9sString     jobClass     = theMap["job_class"].toString();
+        S9sString     elapsed      = elapsedTimeString(
+                theMap["elapsed_seconds"].toULongLong());
+        S9sString     threshold;
+        const char   *stateColorStart = "";
+        const char   *stateColorEnd   = "";
+
+        threshold.sprintf(
+                "%lluh", theMap["stuck_threshold_hours"].toULongLong());
+
+        if (title.empty())
+            title = "Untitled Job";
+
+        if (syntaxHighlight)
+        {
+            // Every job here is "running", but it's stuck, so this is
+            // reported as a warning rather than the usual green.
+            stateColorStart = XTERM_COLOR_YELLOW;
+            stateColorEnd   = TERM_NORMAL;
+        }
+
+        idFormat.printf(jobId);
+        cidFormat.printf(cid);
+        classFormat.printf(jobClass);
+        elapsedFormat.printf(elapsed);
+        thresholdFormat.printf(threshold);
+        lastProgressFormat.printf(lastProgressString(theMap));
+
+        printf("%s", stateColorStart);
+        stateFormat.printf(status);
+        printf("%s", stateColorEnd);
+
+        printf("%s\n", STR(title));
+    }
+
     if (!options->isBatchRequested())
         printf("Total: %d\n", total);
 }
@@ -9766,7 +10712,7 @@ S9sRpcReply::printJobListLong()
 
 {
     "cc_timestamp": 1475228277,
-    "data": [ 
+    "data": [
     {
         "busy": 0.0482585,
         "cpuid": 7,
@@ -9988,6 +10934,7 @@ S9sRpcReply::printBackupListLong()
     S9sFormat       stateFormat;
     S9sFormat       createdFormat;
     S9sFormat       ownerFormat;
+    S9sFormat       expiresFormat;
    
     // One is RPC 1.0, the other is 2.0.
     if (contains("data"))
@@ -10042,6 +10989,14 @@ S9sRpcReply::printBackupListLong()
                 
         created = backup.beginAsString();
         createdFormat.widen(created);
+
+        /*
+         * The same three answers as the %x format field: a date, "NEVER", or
+         * "-" when the controller does not report expiries at all. An older
+         * controller therefore leaves a column of dashes rather than a blank
+         * one, which would read as "no retention".
+         */
+        expiresFormat.widen(backup.expiresAsString());
     }
 
     /*
@@ -10060,6 +11015,7 @@ S9sRpcReply::printBackupListLong()
         hostNameFormat.printHeader("HOSTNAME");
         createdFormat.printHeader("CREATED");
         sizeFormat.printHeader("SIZE");
+        expiresFormat.printHeader("EXPIRES");
         printf("TITLE");
  
         printf("%s", headerColorEnd());
@@ -10176,6 +11132,12 @@ S9sRpcReply::printBackupListLong()
         
         createdFormat.printf(created);
         sizeFormat.printf(sizeString);
+
+        /*
+         * Before the title, which is last and printed without padding: a
+         * column after it would be pushed around by every title in the list.
+         */
+        expiresFormat.printf(backup.expiresAsString());
         printf("%s", STR(backup.title()));
         printf("\n");
     }
@@ -10490,9 +11452,248 @@ S9sRpcReply::printBackupListDatabasesLong()
 }
 
 /**
+ * Prints the list of binlog backups in brief format.
+ */
+void
+S9sRpcReply::printBinlogBackupListBrief()
+{
+    S9sVariantList  binlogList;
+
+    // Get the binlog backup list from the reply
+    if (contains("binlog_backups"))
+        binlogList = operator[]("binlog_backups").toVariantList();
+    else if (contains("data"))
+        binlogList = operator[]("data").toVariantList();
+
+    // Print each binlog backup
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        S9sString fileName;
+
+        // Get the file name from the binlog backup record
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else if (binlog.contains("path"))
+            fileName = binlog["path"].toString();
+        else
+            fileName = "Unknown";
+
+        printf("%s\n", STR(fileName));
+    }
+}
+
+/**
+ * Prints the list of binlog backups in long format with size information.
+ */
+void
+S9sRpcReply::printBinlogBackupListLong()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  binlogList;
+    S9sFormat       cidFormat;
+    S9sFormat       fileNameFormat;
+    S9sFormat       sizeFormat;
+    S9sFormat       createdFormat;
+    S9sFormat       hostNameFormat;
+    S9sFormat       pidFormat;
+    int             totalCount = 0;
+    ulonglong       totalSize = 0;
+
+    // Get the binlog backup list from the reply
+    if (contains("binlog_backups"))
+        binlogList = operator[]("binlog_backups").toVariantList();
+    else if (contains("data"))
+        binlogList = operator[]("data").toVariantList();
+
+    // First pass: collect formatting information
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        int cid = 0;
+        ulonglong size = 0;
+        S9sString fileName;
+        S9sString created;
+        S9sString hostName;
+        int fullBackupId = 0;
+        S9sDateTime timeStamp;
+
+        // Get cluster ID
+        if (binlog.contains("cid"))
+            cid = binlog["cid"].toInt();
+        else if (binlog.contains("cluster_id"))
+            cid = binlog["cluster_id"].toInt();
+
+        // Get file size
+        if (binlog.contains("size"))
+            size = binlog["size"].toULongLong();
+
+        // Get file name
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+
+        // Get hostname
+        if (binlog.contains("hostname"))
+            hostName = binlog["hostname"].toString();
+
+        // Get full backup ID
+        if (binlog.contains("full_bid"))
+            fullBackupId = binlog["full_bid"].toInt();
+
+        // Get created timestamp and format it as human-readable
+        if (binlog.contains("created"))
+            created = binlog["created"].toString();
+
+        // Parse and format the timestamp
+        if (!created.empty())
+        {
+            bool isNumeric = true;
+            for (uint i = 0; i < created.length(); ++i)
+            {
+                if (!isdigit(created[i]))
+                {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            if (isNumeric)
+            {
+                S9sDateTime tmp((time_t)created.toULongLong());
+                created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+            } else {
+                timeStamp.parse(created);
+                created = timeStamp.toString(S9sDateTime::MySqlLogFileFormat);
+            }
+        }
+
+        cidFormat.widen(cid);
+        fileNameFormat.widen(fileName);
+        sizeFormat.widen(S9sFormat::toSizeString(size));
+        createdFormat.widen(created);
+        hostNameFormat.widen(hostName);
+        pidFormat.widen(fullBackupId);
+
+        totalSize += size;
+        totalCount++;
+    }
+
+    // Print header
+    if (!options->isBatchRequested())
+    {
+        cidFormat.widen("CID");
+        fileNameFormat.widen("BINLOG FILE");
+        sizeFormat.widen("SIZE");
+        createdFormat.widen("CREATED");
+        hostNameFormat.widen("HOSTNAME");
+        pidFormat.widen("PID");
+
+        printf("%s", headerColorBegin());
+        cidFormat.printf("CID");
+        fileNameFormat.printf("BINLOG FILE");
+        sizeFormat.printf("SIZE");
+        createdFormat.printf("CREATED");
+        hostNameFormat.printf("HOSTNAME");
+        pidFormat.printf("PID");
+        printf("%s", headerColorEnd());
+        printf("\n");
+    }
+
+    // Second pass: print the data
+    for (uint idx = 0; idx < binlogList.size(); ++idx)
+    {
+        S9sVariantMap binlog = binlogList[idx].toVariantMap();
+        int cid = 0;
+        ulonglong size = 0;
+        S9sString fileName;
+        S9sString created;
+        S9sString sizeString;
+        S9sString hostName;
+        int fullBackupId = 0;
+        S9sDateTime timeStamp;
+
+        // Get cluster ID
+        if (binlog.contains("cid"))
+            cid = binlog["cid"].toInt();
+        else if (binlog.contains("cluster_id"))
+            cid = binlog["cluster_id"].toInt();
+
+        // Get file size
+        if (binlog.contains("size"))
+            size = binlog["size"].toULongLong();
+
+        // Get file name
+        if (binlog.contains("file_name"))
+            fileName = binlog["file_name"].toString();
+        else
+            fileName = "Unknown";
+
+        // Get hostname
+        if (binlog.contains("hostname"))
+            hostName = binlog["hostname"].toString();
+        if (hostName.empty())
+            hostName = "-";
+
+        // Get full backup ID
+        if (binlog.contains("full_bid"))
+            fullBackupId = binlog["full_bid"].toInt();
+
+        // Get created timestamp and format it as human-readable
+        if (binlog.contains("created"))
+            created = binlog["created"].toString();
+        else
+            created = "-";
+
+        // Parse and format the timestamp
+        if (created != "-" && !created.empty())
+        {
+            bool isNumeric = true;
+            for (uint i = 0; i < created.length(); ++i)
+            {
+                if (!isdigit(created[i]))
+                {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            if (isNumeric)
+            {
+                S9sDateTime tmp((time_t)created.toULongLong());
+                created = tmp.toString(S9sDateTime::MySqlLogFileFormat);
+            } else {
+                timeStamp.parse(created);
+                created = timeStamp.toString(S9sDateTime::MySqlLogFileFormat);
+            }
+        }
+
+        sizeString = S9sFormat::toSizeString(size);
+
+        cidFormat.printf(cid);
+        fileNameFormat.printf(fileName);
+        sizeFormat.printf(sizeString);
+        createdFormat.printf(created);
+        hostNameFormat.printf(hostName);
+        if (fullBackupId > 0)
+            pidFormat.printf(fullBackupId);
+        else
+            pidFormat.printf("-");
+        printf("\n");
+    }
+
+    // Print footer with totals
+    if (!options->isBatchRequested())
+    {
+        S9sString totalSizeStr = S9sFormat::toSizeString(totalSize);
+        printf("\nTotal: %d binlog backup(s), %s\n",
+               totalCount, STR(totalSizeStr));
+    }
+}
+
+/**
  * Prints the list of backups in its brief format.
  */
-void 
+void
 S9sRpcReply::printBackupListFilesBrief()
 {
     S9sOptions     *options = S9sOptions::instance();

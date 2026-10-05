@@ -69,6 +69,7 @@ enum S9sOptionType
     OptionServers,
     OptionContainers,
     OptionAddNode,
+    OptionAddShard,
     OptionReinstallNode,
     OptionReconfigureNode,
     OptionRemoveNode,
@@ -151,13 +152,17 @@ enum S9sOptionType
     OptionSnapshotRepo,
     OptionSnapshotRepoType,
     OptionSnapshotLocation,
+    OptionAddRepo,
+    OptionDropRepo,
+    OptionBackupRepo,
+    OptionRepoPath,
     OptionS3Bucket,
     OptionS3Region,
     OptionS3AccessKeyId,
     OptionS3SecretKey,
     OptionEndpoint,
-    OptionS3UseSsl,
-    OptionS3InsecureSsl,
+    OptionUseSsl,
+    OptionInsecureSsl,
     OptionComment,
     OptionOnlyCloud,
     OptionDeleteAfterUpload,
@@ -211,6 +216,7 @@ enum S9sOptionType
     OptionUninstall,
     OptionUnregisterOnly,
     OptionRemoveBackups,
+    OptionRemoveCertificates,
     OptionUuid,
     OptionDateFormat,
     OptionFullUuid,
@@ -229,6 +235,7 @@ enum S9sOptionType
     OptionExcludeTables,
     OptionIncludeTables,
     OptionParallellism,
+    OptionCompressionThreads,
     OptionBackupRetention,
     OptionCloudRetention,
     OptionSafetyCopies,
@@ -241,6 +248,8 @@ enum S9sOptionType
     OptionCreateAccount,
     OptionGrant,
     OptionRevoke,
+    OptionLock,
+    OptionUnlock,
     OptionCheckHosts,
     OptionDeleteAccount,
     OptionCreateDatabase,
@@ -250,6 +259,7 @@ enum S9sOptionType
     OptionCheckPkgUpgrades,
     OptionListDatabases,
     OptionListFiles,
+    OptionListBinlogBackups,
     OptionAccount,
     OptionWithDatabase,
     OptionObjects,
@@ -307,6 +317,7 @@ enum S9sOptionType
     OptionDisableSsl,
     OptionCreateReport,
     OptionNoAgent,
+    OptionAutoAgent,
     OptionMaskPasswords,
     OptionDeployAgents,
     OptionDeployCmonAgents,
@@ -360,6 +371,7 @@ enum S9sOptionType
     OptionIncludeDatabasesInfo,
     OptionFail,
     OptionSuccess,
+    OptionStuck,
     OptionAccess,
     OptionTemplate,
     OptionSubnetId,
@@ -444,12 +456,15 @@ enum S9sOptionType
     OptionCreateSnaphotRepository,
     OptionListSnaphotRepository,
     OptionDeleteSnaphotRepository,
+    OptionListPgBackRestRepositories,
 
     OptionConfigTemplate,
     OptionHaProxyConfigTemplate,
     OptionNoInstall,
     OptionMasterDelay,
+    OptionShardId,
     OptionNoTerminate,
+    OptionNdbDataMemoryRatio,
     OptionWithTimescaleDb,
     OptionUpgradeToVersion,
     OptionUpgradeMethod,
@@ -498,6 +513,7 @@ enum S9sOptionType
 
     OptionVirtualIp,
     OptionEthInterface,
+    OptionVirtualRouterId,
     OptionLicense,
     OptionRenewCert,
 
@@ -529,6 +545,15 @@ enum S9sOptionType
     OptionWatchlistProperties,
 
     OptionAddController,
+    OptionAddDb,
+    OptionDeleteDb,
+    OptionListDb,
+    OptionBootstrapDb,
+    OptionMigrateDb,
+    OptionPoolReadiness,
+    OptionNoRequireDbCluster,
+    OptionNoRequireConfigStorage,
+    OptionNode,
     OptionControllersList,
     OptionPrintDeploymentInfo,
     OptionAssignedController,
@@ -541,9 +566,22 @@ enum S9sOptionType
     OptionStopController,
     OptionRemoveController,
     OptionUpdateCmon,
+    OptionSetMaxClustersCapacity,
+    OptionAddOpenBao,
+    OptionListConfigStorage,
+    OptionListOpenBaoVersions,
+    OptionOpenBaoMount,
+    OptionOpenBaoNamespace,
+    OptionOpenBaoPackagePath,
+    OptionOpenBaoPackage,
+    OptionOpenBaoForceReinit,
     OptionListHistory,
 
-    OptionExtensions
+    OptionExtensions,
+    OptionPgHbaRules,
+    OptionPgHbaPreset,
+    OptionSaveAsHbaPreset,
+    OptionHbaPresetName
 };
 
 /**
@@ -2592,6 +2630,22 @@ S9sOptions::hasRemoveBackupsOption() const
     return m_options.contains("remove_backups");
 }
 
+/**
+ * \returns true if the --remove-certificates command line option was
+ *   provided.
+ */
+bool
+S9sOptions::hasRemoveCertificatesOption() const
+{
+    return m_options.contains("remove_certificates");
+}
+
+bool
+S9sOptions::removeCertificates() const
+{
+    return getBool("remove_certificates");
+}
+
 bool
 S9sOptions::removeBackups() const
 {
@@ -2684,6 +2738,30 @@ S9sOptions::credentialId() const
 }
 
 bool
+S9sOptions::addRepo() const
+{
+    return getBool("add_repo");
+}
+
+S9sString
+S9sOptions::dropRepo() const
+{
+    return getString("drop_repo");
+}
+
+S9sString
+S9sOptions::backupRepo() const
+{
+    return getString("backup_repo");
+}
+
+S9sString
+S9sOptions::repoPath() const
+{
+    return getString("repo_path");
+}
+
+bool
 S9sOptions::hasCredentialNameOption() const
 {
     return m_options.contains("credential_name");
@@ -2734,6 +2812,30 @@ S9sOptions::controllerId() const
     if(!hasControllerIdOption())
         return 0;
     return m_options.at("controller_id").toInt();
+}
+
+
+/**
+ * \returns True if the --node command line option was provided.
+ */
+bool
+S9sOptions::hasNodeOption() const
+{
+    return m_options.contains("node");
+}
+
+/**
+ * \returns The hostname/IP (from --node) of the pool's cmon DB HA InnoDB
+ * Cluster node --delete-db should target, or an empty string if --node
+ * wasn't given - an alternative to --nodes (hostname[:port]) that skips
+ * having to also specify the port.
+ */
+S9sString
+S9sOptions::node() const
+{
+    if (!hasNodeOption())
+        return S9sString();
+    return m_options.at("node").toString();
 }
 
 
@@ -3349,6 +3451,15 @@ S9sOptions::noAgent() const
 }
 
 /**
+ * \returns true if the --auto-agent command line option was provided.
+ */
+bool
+S9sOptions::autoAgent() const
+{
+    return getBool("auto_agent");
+}
+
+/**
  * \returns the presence of the command line option --mask-passwords.
  */
 bool
@@ -3433,6 +3544,12 @@ S9sOptions::masterDelay() const
     return {};
 }
 
+int
+S9sOptions::shardId() const
+{
+    return getInt("shard_id");
+}
+
 
 bool
 S9sOptions::noInstall() const
@@ -3494,6 +3611,94 @@ S9sOptions::extensions() const
 {
     return getString("extensions");
 }
+
+/**
+ * \returns The value for the --pghba-preset= command line option.
+ */
+S9sString
+S9sOptions::pgHbaPreset() const
+{
+    return getString("pghba_preset");
+}
+
+/**
+ * \returns True if the --save-as-hba-preset flag was provided.
+ */
+bool
+S9sOptions::saveAsHbaPreset() const
+{
+    return getBool("save_as_hba_preset");
+}
+
+/**
+ * \returns The value for the --hba-preset-name= command line option.
+ */
+S9sString
+S9sOptions::hbaPresetName() const
+{
+    return getString("hba_preset_name");
+}
+
+S9sVariantList
+S9sOptions::pgHbaRules() const
+{
+    if (m_options.contains("pghba_rules"))
+        return m_options.at("pghba_rules").toVariantList();
+    return S9sVariantList();
+}
+
+/**
+ * Parses --pghba-rules entries using pg_hba.conf native space-separated format.
+ * Multiple rules are semicolon-separated.
+ * local rules:      "local database user method"             (4 tokens, no address)
+ * all other types:  "type database user address method"      (5 tokens)
+ * Example: "host all viafirma 192.168.201.0/24 md5;local all all trust"
+ */
+bool
+S9sOptions::appendPgHbaRules(
+        const S9sString &stringRep)
+{
+    S9sVariantList entries    = stringRep.split(";");
+    S9sVariantList rulesToSet = pgHbaRules();
+
+    for (uint idx = 0u; idx < entries.size(); ++idx)
+    {
+        S9sString      entryString = entries[idx].toString().trim();
+        S9sVariantList parts       = entryString.split(" \t");
+        S9sVariantMap  rule;
+
+        if (parts.size() == 4)
+        {
+            if (parts[0].toString().toLower() != "local")
+                return false;
+
+            rule["type"]     = parts[0].toString().toLower();
+            rule["database"] = parts[1].toString();
+            rule["user"]     = parts[2].toString();
+            rule["address"]  = "";
+            rule["method"]   = parts[3].toString();
+        } else if (parts.size() == 5)
+        {
+            // local connections never carry an address field
+            if (parts[0].toString().toLower() == "local")
+                return false;
+
+            rule["type"]     = parts[0].toString().toLower();
+            rule["database"] = parts[1].toString();
+            rule["user"]     = parts[2].toString();
+            rule["address"]  = parts[3].toString();
+            rule["method"]   = parts[4].toString();
+        } else {
+            return false;
+        }
+
+        rulesToSet << rule;
+    }
+
+    m_options["pghba_rules"] = rulesToSet;
+    return true;
+}
+
 /**
  *
  * \code{.js}
@@ -3973,7 +4178,10 @@ S9sOptions::comment() const
 }
 
 /**
- * \returns The argument for the --use-ssl option
+ * \returns true if the --use-ssl option was given, with or without a value.
+ *
+ * The property is left out of the request when it was not given, so the
+ * controller applies its own default, which is the same true.
  */
 bool
 S9sOptions::hasUseSsl() const
@@ -3982,12 +4190,41 @@ S9sOptions::hasUseSsl() const
 }
 
 /**
- * \returns The argument for the --insecure-ssl option
+ * \returns The value of the --use-ssl option, true when it carried no value.
+ */
+bool
+S9sOptions::useSsl() const
+{
+    if (m_options.contains("use_ssl"))
+        return m_options.at("use_ssl").toBoolean();
+
+    return true;
+}
+
+/**
+ * \returns true if the --insecure-ssl option was given, with or without a value.
+ *
+ * The property is left out of the request when it was not given, so the
+ * controller applies its own default, which is the same false.
  */
 bool
 S9sOptions::hasInsecureSsl() const
 {
     return m_options.contains("insecure_ssl");
+}
+
+/**
+ * \returns The value of the --insecure-ssl option, false when it carried no
+ *   value. Skipping certificate verification must always be spelled out as
+ *   --insecure-ssl=true.
+ */
+bool
+S9sOptions::insecureSsl() const
+{
+    if (m_options.contains("insecure_ssl"))
+        return m_options.at("insecure_ssl").toBoolean();
+
+    return false;
 }
 
 /**
@@ -4513,6 +4750,57 @@ S9sOptions::parallellism() const
     return retval;
 }
 
+/**
+ * \param value The command line option argument of --compression-threads.
+ * \returns True if the value is a positive integer and so it was stored.
+ *
+ * The number of compression threads the backup should use: pigz processes, or
+ * xtrabackup's --compress-threads with its built-in compression. When it is not
+ * set the controller calculates the pigz number (for xtrabackup/mariabackup
+ * from the node's cores, capped by --parallellism); when set it overrides that
+ * calculation.
+ */
+bool
+S9sOptions::setCompressionThreads(
+        const S9sString &value)
+{
+    int integerValue = value.toInt();
+
+    if (integerValue < 1)
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is invalid for compression threads.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["compression_threads"] = integerValue;
+    return true;
+}
+
+bool
+S9sOptions::hasCompressionThreads() const
+{
+    return m_options.contains("compression_threads");
+}
+
+/**
+ * \returns the integer value of the command line option argument for
+ * --compression-threads, 0 if it was not provided.
+ */
+int
+S9sOptions::compressionThreads() const
+{
+    int retval = 0;
+
+    if (m_options.contains("compression_threads"))
+        retval = m_options.at("compression_threads").toInt();
+
+    return retval;
+}
+
 bool
 S9sOptions::setBackupRetention(
         const S9sString &value)
@@ -4541,6 +4829,37 @@ int
 S9sOptions::backupRetention() const
 {
     return getInt("backup_retention");
+}
+
+bool
+S9sOptions::setVirtualRouterId(
+        const S9sString &value)
+{
+    if (!value.looksInteger())
+    {
+        m_errorMessage.sprintf(
+                "The value '%s' is not a valid integer for "
+                "--virtual-router-id.",
+                STR(value));
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    int id = value.toInt();
+    if (id < 1 || id > 255)
+    {
+        m_errorMessage.sprintf(
+                "The value %d is out of range for "
+                "--virtual-router-id (must be 1-255).",
+                id);
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    m_options["virtual_router_id"] = id;
+    return true;
 }
 
 bool
@@ -5062,6 +5381,16 @@ S9sOptions::isCreateSnapshotRepositoryRequested() const
     return getBool("create_snapshot_repository");
 }
 
+/**
+ * \returns True if the --list-pgbackrest-repositories command line option
+ *   is provided.
+ */
+bool
+S9sOptions::isListPgBackRestRepositoriesRequested() const
+{
+    return getBool("list_pgbackrest_repositories");
+}
+
 
 /**
  * \returns True if the --get-acl command line option is provided.
@@ -5440,6 +5769,39 @@ S9sOptions::isUnsetPoolModeRequested() const
 }
 
 /**
+ * \returns true if the --pool-readiness command line option was provided
+ *   (asks the controller which pool mode prerequisites are still missing via
+ *   the read-only getPoolModeReadiness RPC call).
+ */
+bool
+S9sOptions::isPoolReadiness() const
+{
+    return getBool("pool_readiness");
+}
+
+/**
+ * \returns true if the --no-require-db-cluster command line option was
+ *   provided: --set-pool-mode then sends require_cmon_db_cluster=false, for a
+ *   caller that manages the CC DB cluster itself.
+ */
+bool
+S9sOptions::noRequireDbCluster() const
+{
+    return getBool("no_require_db_cluster");
+}
+
+/**
+ * \returns true if the --no-require-config-storage command line option was
+ *   provided: --set-pool-mode then sends require_config_storage=false, for a
+ *   caller that manages the CC configuration storage itself.
+ */
+bool
+S9sOptions::noRequireConfigStorage() const
+{
+    return getBool("no_require_config_storage");
+}
+
+/**
  * \returns true if the "add-controller" function is requested by providing
  * the --add-controller command line option.
  */
@@ -5447,6 +5809,64 @@ bool
 S9sOptions::isAddController() const
 {
     return getBool("add_controller");
+}
+
+/**
+ * \returns true if the "add-db" function is requested by providing the
+ * --add-db command line option (joins the given node into the pool's
+ * cmon DB HA InnoDB Cluster as a SECONDARY, via the addCmonDbInstance job).
+ */
+bool
+S9sOptions::isAddDb() const
+{
+    return getBool("add_db");
+}
+
+/**
+ * \returns true if the "delete-db" function is requested by providing the
+ * --delete-db command line option (removes a cmon DB instance from the
+ * pool's cmon DB HA InnoDB Cluster via the deleteCmonDbInstance job).
+ */
+bool
+S9sOptions::isDeleteDb() const
+{
+    return getBool("delete_db");
+}
+
+/**
+ * \returns true if the "list-db" function is requested by providing the
+ * --list-db command line option (lists the pool's cmon DB HA InnoDB
+ * Cluster nodes via the read-only getCmonDbClusterNodes RPC call - not a
+ * job, unlike --add-db/--delete-db).
+ */
+bool
+S9sOptions::isListDb() const
+{
+    return getBool("list_db");
+}
+
+/**
+ * \returns true if the "bootstrap-db" function is requested by providing the
+ * --bootstrap-db command line option (turns the main controller's own cmon DB
+ * into the seed PRIMARY of the pool's cmon DB HA InnoDB Cluster via the
+ * bootstrapCmonDbCluster job).
+ */
+bool
+S9sOptions::isBootstrapDb() const
+{
+    return getBool("bootstrap_db");
+}
+
+/**
+ * \returns true if the "migrate-db" function is requested by providing the
+ * --migrate-db command line option (migrates cmon's MariaDB to Oracle MySQL
+ * via the migrateCmonDb RPC call - not a job, and cmon restarts when it
+ * completes).
+ */
+bool
+S9sOptions::isMigrateDb() const
+{
+    return getBool("migrate_db");
 }
 
 /**
@@ -5476,13 +5896,122 @@ S9sOptions::isRemoveController() const
     return getBool("remove_controller");
 }
 
-/*  
+/*
  * \returns true if the --update-cmon command line option was provided for controllers
  */
 bool
 S9sOptions::isUpdateCmon() const
 {
     return getBool("update_cmon");
+}
+
+bool
+S9sOptions::isSetMaxClustersCapacityRequested() const
+{
+    return m_options.contains("max_clusters_capacity");
+}
+
+int
+S9sOptions::getMaxClustersCapacity() const
+{
+    if (!m_options.contains("max_clusters_capacity"))
+        return -1;
+    return m_options.at("max_clusters_capacity").toInt();
+}
+
+/**
+ * \returns true if the "installOpenBao" job is requested by providing the
+ *   --add-openbao command line option on the "pool-controllers" subcommand.
+ */
+bool
+S9sOptions::isAddOpenBao() const
+{
+    return getBool("add_openbao");
+}
+
+/**
+ * \returns true if the --list-config-storage command line option was provided.
+ */
+bool
+S9sOptions::isListConfigStorage() const
+{
+    return getBool("list_config_storage");
+}
+
+/**
+ * \returns true if the --list-openbao-versions command line option was provided.
+ */
+bool
+S9sOptions::isListOpenBaoVersions() const
+{
+    return getBool("list_openbao_versions");
+}
+
+/**
+ * \returns true if any of the --openbao-* command line options was provided.
+ *
+ * Used by the option check to reject the parameters of the OpenBao installation
+ * when no OpenBao installation was requested at all.
+ */
+bool
+S9sOptions::hasOpenBaoOption() const
+{
+    return m_options.contains("openbao_mount")
+        || m_options.contains("openbao_namespace")
+        || m_options.contains("openbao_package_path")
+        || m_options.contains("openbao_package")
+        || m_options.contains("openbao_force_reinit");
+}
+
+/**
+ * \returns The value of the --openbao-mount command line option or the empty
+ *   string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoMount() const
+{
+    return getString("openbao_mount");
+}
+
+/**
+ * \returns The value of the --openbao-namespace command line option or the empty
+ *   string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoNamespace() const
+{
+    return getString("openbao_namespace");
+}
+
+/**
+ * \returns The value of the --openbao-package-path command line option or the
+ *   empty string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoPackagePath() const
+{
+    return getString("openbao_package_path");
+}
+
+
+
+/**
+ * \returns The value of the --openbao-package command line option or the empty
+ *   string if no such an option is used.
+ */
+S9sString
+S9sOptions::openBaoPackage() const
+{
+    return getString("openbao_package");
+}
+
+/**
+ * \returns true if the --openbao-force-reinit command line option was provided.
+ */
+bool
+S9sOptions::openBaoForceReinit() const
+{
+    return getBool("openbao_force_reinit");
 }
 
 /**
@@ -6267,6 +6796,26 @@ S9sOptions::isDeleteRequested() const
 }
 
 /**
+ * \returns True if the --lock command line option was provided when the
+ *   program was started (e.g. "s9s account --lock").
+ */
+bool
+S9sOptions::isLockRequested() const
+{
+    return getBool("lock");
+}
+
+/**
+ * \returns True if the --unlock command line option was provided when the
+ *   program was started (e.g. "s9s account --unlock").
+ */
+bool
+S9sOptions::isUnlockRequested() const
+{
+    return getBool("unlock");
+}
+
+/**
  * \returns True if the --clone command line option was provided when the
  *   program was started.
  */
@@ -6292,6 +6841,15 @@ bool
 S9sOptions::isSuccessRequested() const
 {
     return getBool("success");
+}
+
+/**
+ * \returns True if the --stuck command line option was provided.
+ */
+bool
+S9sOptions::isStuckRequested() const
+{
+    return getBool("stuck");
 }
 
 /**
@@ -6673,6 +7231,12 @@ S9sOptions::isAddNodeRequested() const
     return getBool("add_node");
 }
 
+bool
+S9sOptions::isAddShardRequested() const
+{
+    return getBool("add_shard");
+}
+
 /**
  * \returns true if the reinstall operation was requested using the "--reinstall-node"
  *   command line option.
@@ -6910,6 +7474,12 @@ bool
 S9sOptions::isListFilesRequested() const
 {
     return getBool("list_files");
+}
+
+bool
+S9sOptions::isListBinlogBackupsRequested() const
+{
+    return getBool("list_binlog_backups");
 }
 
 /**
@@ -7917,6 +8487,7 @@ S9sOptions::printHelpJob()
 "  --list                     List the jobs.\n"
 "  --log                      Print the job log messages.\n"
 "  --success                  Create a job that does nothing and succeeds.\n"
+"  --stuck                    List jobs running longer than their stuck-job threshold.\n"
 "  --wait                     Wait for the job referenced by the job ID.\n"
 "  --disable                  Disable or pause a recurring/scheduled job instance.\n"
 "  --enable                   Enable/resume a recurring/scheduled job instance.\n"
@@ -7984,18 +8555,23 @@ S9sOptions::printHelpBackup()
 "  --delete-old                   Delete old backups.\n"
 "  --list-databases               List the backups in database format.\n"
 "  --list-files                   List the backups in backup file format.\n"
+"  --list-binlog-backups          List binlog backups.\n"
 "  --list                         List the backups.\n"
 "  --list-schedules               List the backup schedules.\n"
 "  --delete-schedules             Delete the job-id of the backup schedule.\n"
 "  --restore-cluster-info         Restores a saved cluster object.\n"
 "  --restore-controller           Restores the controller from a file.\n"
 "  --restore                      Restore an existing backup.\n"
+"  --force                        Overwrite conflicting files left behind by a\n"
+"                                  previous restore (with --restore-controller).\n"
 "  --save-cluster-info            Saves the information about one cluster.\n"
 "  --save-controller              Saves the entire controller into a file.\n"
 "  --verify                       Verify an existing backup on a test server.\n"
 "  --create-snapshot-repository   Create a snapshot repository on elastisearch cluster.\n"
 "  --list-snapshot-repository     List the snapshot repositories on elastisearch cluster.\n"
 "  --delete-snapshot-repository   Deletes a snapshot repository on elastisearch cluster.\n"
+"  --list-pgbackrest-repositories List the pgBackRest repositories (repo1/repo2)\n"
+"                                 configured on a PostgreSQL cluster.\n"
 "\n"
 "  --backup-id=ID             The ID of the backup.\n"
 "  --backup-list=\"ID1, ID2\"   The list of IDs of the backups.\n"
@@ -8014,6 +8590,9 @@ S9sOptions::printHelpBackup()
 "  --backup-method=METHOD     Defines the backup program to be used.\n"
 "                             See s9s-backup(1) for supported values.\n"
 "  --backup-password=PASSWD   The password for the backup user.\n"
+"  --backup-repo=REPO         (PgBackRest only, optional) Target repository for\n"
+"                             the backup: 'repo1' (default) or 'repo2'. Has no\n"
+"                             meaning for other backup methods for now.\n"
 "  --backup-retention=DAYS    How many days before the backup is removed.\n"
 "  --backup-user=USERNAME     The SQL account name creates the backup.\n"
 "  --cloud-retention=DAYS     Retention used when the backup is on a cloud.\n"
@@ -8027,6 +8606,7 @@ S9sOptions::printHelpBackup()
 "  --encrypt-backup           Encrypt the files using AES-256 encryption.\n"
 "  --full-path                Print the full path of the files.\n"
 "  --compression-level        Backup compress level value to use (between 1 and 9).\n"
+"  --compression-threads      Number of compression threads.\n"
 "  --no-compression           Do not compress the backup.\n"
 "  --on-controller            Stream the backup to the controller host.\n"
 "  --on-node                  Store the archive file on the node itself.\n"
@@ -8042,6 +8622,7 @@ S9sOptions::printHelpBackup()
 "  --s3-region=STRING         The name of the region storing s3 bucket. (example: eu-west-3)\n"
 "  --cloud-only               Flag to indicate that backup will be directly streamed to cloud (no files generated)\n"
 "  --cloud-provider=STRING    Identifier of the cloud storage provider to be used\n"
+"  --delete-after-upload      Delete backup from local storage after uploading to cloud.\n"
 "  --test-server=HOSTNAME     Verify the backup by restoring on this server.\n"
 "  --title=STRING             Title for the backup.\n"
 "  --to-individual-files      Archive every database into individual files.\n"
@@ -8180,7 +8761,9 @@ S9sOptions::printHelpAccount()
 "  --delete                   Remove the account from the cluster.\n"
 "  --grant                    Grant privileges for the account.\n"
 "  --list                     List the accounts on the cluster.\n"
+"  --lock                     Lock the account (ACCOUNT LOCK).\n"
 "  --revoke                   Revoke privileges of the account.\n"
+"  --unlock                   Unlock the account (ACCOUNT UNLOCK).\n"
 "\n"
 "  --account=ACCOUNT          The account itself.\n"
 "  --force                    Force the delete even if the account owns objects.\n"
@@ -8198,6 +8781,7 @@ S9sOptions::printHelpCluster()
     printf(
 "Options for the \"cluster\" command:\n"
 "  --add-node                 Add a new node to the cluster.\n"
+"  --add-shard                Add a new shard built from --nodes to the cluster.\n"
 "  --change-config            Changes the configuration for the cluster.\n"
 "  --check-hosts              Check the hosts before installing a cluster.\n"
 "  --collect-logs             Collects logs from the nodes.\n"
@@ -8213,6 +8797,7 @@ S9sOptions::printHelpCluster()
 "  --disable-recovery         Disable automatic recovery from a job.\n"
 "  --disable-ssl              Disable SSL connections on the nodes.\n"
 "  --drop                     Drop cluster from the controller.\n"
+"  --remove                   Alias for --drop.\n"
 "  --enable-recovery          Enable automatic recovery from a job.\n"
 "  --enable-ssl               Enable SSL connections on the nodes.\n"
 "  --import-config            Collects configuration files from the nodes.\n"
@@ -8254,15 +8839,32 @@ S9sOptions::printHelpCluster()
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
+"  --add-repo                 pgBackRest: add a second repository on --reconfigure-node\n"
+"                             (S3 via --credential-id + --s3-bucket, or local via --repo-path).\n"
+"  --drop-repo=repo1|repo2    pgBackRest: drop the named repository on --reconfigure-node.\n"
+"  --repo-path=PATH           pgBackRest: local repository path for --add-repo.\n"
+"  --s3-bucket=NAME           The S3 bucket for a pgBackRest S3 repository.\n"
 "  --datadir=DIRECTORY        The directory on the node that holds the data.\n"
 "  --db-admin-passwd=PASSWD   The password for the database admin.\n"
 "  --db-admin=USERNAME        The database admin user name.\n"
 "  --repl-user=USERNAME       The user name for the cluster's replication user.\n"
 "  --repl-passwd=PASSWD       The password for the cluster's replication user.\n"
+"  --redis-port=INT           The port for the Redis sharded cluster.\n"
 "  --db-name=NAME             The name of the database.\n"
 "  --db-owner=NAME            The owner of the database. PostgreSQL only.\n"
 "  --donor=ADDRESS            The address of the donor node when starting.\n"
 "  --extensions=LIST          PostgresSQL extensions (postgis, pgvector).\n"
+"  --pghba-rules=LIST         Custom pg_hba.conf entries (PostgreSQL deployment).\n"
+"                             Format: \"type database user address method\"\n"
+"                             Local connections: \"local database user method\"\n"
+"                             Semicolon-separated for multiple rules.\n"
+"                             Example: \"host all myuser 192.168.1.0/24 md5\"\n"
+"  --pghba-preset=FILENAME    pg_hba.conf preset file to apply at deployment.\n"
+"                             File must exist in /etc/cmon/templates/ or\n"
+"                             /usr/share/cmon/templates/ on the controller.\n"
+"  --save-as-hba-preset       Save --pghba-rules as a reusable preset file.\n"
+"  --hba-preset-name=NAME     Filename stem for the saved preset (requires\n"
+"                             --save-as-hba-preset and --pghba-rules).\n"
 "  --firewalls=LIST           ID of the firewalls of the new container.\n"
 "  --generate-key             Generate an SSH key when creating containers.\n"
 "  --image=NAME               The name of the image for the container.\n"
@@ -8304,14 +8906,24 @@ S9sOptions::printHelpCluster()
 "  --with-ssl                 Set up ssl while installing cluster.\n"
 "  --with-tags=LIST           Limit the list of printed clusters by tags.\n"
 "  --with-timescaledb         Enable TimescaleDb when the cluster is created.\n"
+"  --ndb-data-memory-ratio=RATIO\n"
+"                             For NDB cluster --create: fraction of host\n"
+"                             system memory used as auto DataMemory.\n"
+"                             Default 0.5. Persists into the cluster's\n"
+"                             cmon_N.cnf.\n"
 "  --uninstall                Uninstall software when removing a node.\n"
 
 "\n"
 " Options for cluster creation\n"
 "  --no-agent                 Do not install prometheus agents during create cluster.\n"
+"  --auto-agent               Let the prometheus agent deployment be decided automatically.\n"
 "\n"
 "Add replication node related options\n"
 "  --master-delay             Delay in seconds to be set on replica node\n"
+"\n"
+"ClickHouse shard related options\n"
+"  --shard-id=ID              The shard the node added by --add-node becomes a\n"
+"                             replica of.\n"
 "\n"
 "Major upgrade related options\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
@@ -8326,14 +8938,17 @@ S9sOptions::printHelpCluster()
 "                             memory, performance) from old to new PostgreSQL version.\n"
 "\n"
 "Load balancer related options\n"
-"  --admin-password=USERNAME  Admin password for ProxySql or Maxscale.\n"
-"  --admin-user=USERNAME      Admin user for ProxySql or Maxscale.\n"
+"  --admin-password=USERNAME  Admin password for ProxySql, Maxscale or PgBouncer.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql, Maxscale or PgBouncer.\n"
 "  --dont-import-accounts     Do not import users into loadbalancer.\n"
 "  --haproxy-config-template=FILENAME Config template for HaProxy install.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
 "  --maxscale-mysql-user=USERNAME mysql user for Maxscale.\n"
 "  --maxscale-mysql-password=PASSWD mysql user password for Maxscale.\n"
+"  --virtual-router-id=ID     VRRP virtual router ID for keepalived (1-255).\n"
+"                             If omitted, CMON auto-assigns a deterministic\n"
+"                             default from the cluster ID.\n"
 "\n"
 "SSL related options (for create and enable-ssl)\n"
 "  --ssl-ca=STRING            The SSL CA file path on controller.\n"
@@ -8446,11 +9061,14 @@ S9sOptions::printHelpNode()
 "  --properties=ASSIGNMENTS   Names and values of the properties to change.\n"
 "\n"
 "Load balancer related options\n"
-"  --admin-password=USERNAME  Admin password for ProxySql.\n"
-"  --admin-user=USERNAME      Admin user for ProxySql.\n"
+"  --admin-password=USERNAME  Admin password for ProxySql or PgBouncer.\n"
+"  --admin-user=USERNAME      Admin user for ProxySql or PgBouncer.\n"
 "  --dont-import-accounts     Do not import users into loadbalancer.\n"
 "  --monitor-password=STRING  Monitor password for proxysql.\n"
 "  --monitor-user=STRING      Monitor user for ProxySql.\n"
+"  --virtual-router-id=ID     VRRP virtual router ID for keepalived (1-255).\n"
+"                             If omitted, CMON auto-assigns a deterministic\n"
+"                             default from the cluster ID.\n"
 "\n");
 }
 
@@ -8803,19 +9421,75 @@ S9sOptions::printHelpControllers()
     printf(
 "Options for the \"pool-controllers\" command:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
+"  --list-db                  To retrieve the list of the pool's cmon DB HA InnoDB\n"
+"                             Cluster nodes (read-only, no job is created). Supports\n"
+"                             --print-json like --list.\n"
 "  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
+"  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
+"                             as a SECONDARY (requires --nodes with exactly one node).\n"
+"  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
+"                             InnoDB Cluster (requires --nodes with exactly one node, or\n"
+"                             --node instead).\n"
+"  --bootstrap-db             To turn this (main) controller's own cmon DB into the\n"
+"                             pool's cmon DB HA InnoDB Cluster PRIMARY behind a local\n"
+"                             MySQL Router (a job, cmon is not restarted).\n"
+"  --migrate-db               To migrate cmon's MariaDB to Oracle MySQL, needed before\n"
+"                             --bootstrap-db. cmon restarts when it completes.\n"
+"  --pool-readiness           To check which pool mode prerequisites (CC DB cluster,\n"
+"                             CC configuration storage) are still missing and how to\n"
+"                             set them up. Supports --print-json like --list.\n"
+"  --set-pool-mode            To enable pool mode on this controller (cmon restarts).\n"
+"  --unset-pool-mode          To disable pool mode on this controller (cmon restarts).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --remove-controller        To remove a controller (requires --controller-id).\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
+"  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
+"  --list-config-storage      List the configuration/secret storage instances the\n"
+"                             controller knows about.\n"
+"  --list-openbao-versions    List the available OpenBao versions.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
+"  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
+"                             only, alternative to --nodes - no port needed).\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
 "  --use-internal-repos       Use local repos when installing software.\n"
 "  --uninstall                Uninstall software when removing controller.\n"
+"  --no-require-db-cluster    With --set-pool-mode: do not require the CC DB cluster\n"
+"                             (--bootstrap-db), for a DB cluster managed elsewhere.\n"
+"  --no-require-config-storage\n"
+"                             With --set-pool-mode: do not require the CC configuration\n"
+"                             storage (--add-openbao), for a storage managed elsewhere.\n"
+"  --openbao-mount=MOUNT      The KV v2 mount to create (default: clustercontrol).\n"
+"  --openbao-namespace=NAME   The OpenBao namespace to create (default: none).\n"
+"  --openbao-package-path=PATH\n"
+"                             Install a package already staged on the target host\n"
+"                             instead of downloading one.\n"
+"  --openbao-force-reinit     Discard any existing OpenBao storage on the host and\n"
+"                             initialise a fresh instance. The previous data\n"
+"                             directory is renamed, not deleted, but its secrets\n"
+"                             become unreachable. Use only on a scratch instance.\n"
+"  --no-install               Do not install the openbao package; it must already\n"
+"                             be present on the host.\n"
+"  --openbao-package=SPEC     With --use-internal-repos, the exact package spec to\n"
+"                             install (e.g. openbao=2.5.4-1). Default: openbao.\n"
+"  --set-max-clusters-capacity=N  Set how many clusters this controller can own. Sentinels:\n"
+"                             -2 = auto (RAM-based), -1 = unlimited, 0 = inactive (own no\n"
+"                             clusters: abandon all, acquire none), >0 = explicit cap. Takes\n"
+"                             effect immediately but is NOT persisted: on cmon restart the\n"
+"                             configured controllers_pool_max_clusters wins. For a persistent\n"
+"                             value set that key in cmon.cnf. Requires admin privileges.\n"
+"  --force                    With --set-max-clusters-capacity: allow a value that drops\n"
+"                             currently-owned clusters (a cap below the owned count, or 0 to\n"
+"                             go inactive); the pool thread abandons the affected clusters on\n"
+"                             its next cycle. With --add-db: proceed even if an existing,\n"
+"                             unrelated MySQL installation is detected on the target host\n"
+"                             (its data will be overwritten by the join). With --delete-db:\n"
+"                             remove the instance from the cluster's metadata even if it\n"
+"                             cannot be reached (mirrors mysqlsh's remove_instance(force)).\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -8925,6 +9599,7 @@ S9sOptions::readOptionsNode(
         { "master-delay",     required_argument, 0, OptionMasterDelay     },
         { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
+        { "virtual-router-id",   required_argument, 0, OptionVirtualRouterId },
 
         { 0, 0, 0, 0 }
     };
@@ -9272,6 +9947,12 @@ S9sOptions::readOptionsNode(
                 m_options["eth_interface"] = optarg;
                 break;
 
+            case OptionVirtualRouterId:
+                // --virtual-router-id=ID
+                if (!setVirtualRouterId(optarg))
+                    return false;
+                break;
+
             /*
              * Options for ProxySql / Maxscale
              */
@@ -9387,9 +10068,11 @@ S9sOptions::readOptionsBackup(
         { "delete-old",       no_argument,       0, OptionDeleteOld       },
         { "delete-all",       no_argument,       0, OptionDeleteAll       },
         { "db-cluster-id",    required_argument, 0, OptionDbClusterId     },
+        { "force",            no_argument,       0, OptionForce           },
         { "forced",           no_argument,       0, OptionForce           },
         { "list-databases",   no_argument,       0, OptionListDatabases   },
         { "list-files",       no_argument,       0, OptionListFiles       },
+        { "list-binlog-backups", no_argument,    0, OptionListBinlogBackups },
         { "list",             no_argument,       0, 'L'                   },
         { "list-schedules",   no_argument,       0, OptionListSchedules   },
         { "delete-schedules", no_argument,       0, OptionDeleteSchedules },
@@ -9402,7 +10085,8 @@ S9sOptions::readOptionsBackup(
         { "create-snapshot-repository", no_argument, 0, OptionCreateSnaphotRepository},
         { "list-snapshot-repository",   no_argument, 0, OptionListSnaphotRepository},
         { "delete-snapshot-repository", no_argument, 0, OptionDeleteSnaphotRepository},
-        
+        { "list-pgbackrest-repositories", no_argument, 0, OptionListPgBackRestRepositories},
+
         // Job Related Options
         { "wait",             no_argument,       0, OptionWait            },
         { "log",              no_argument,       0, 'G'                   },
@@ -9428,6 +10112,7 @@ S9sOptions::readOptionsBackup(
         { "backup-method",    required_argument, 0, OptionBackupMethod    },
         { "backup-path",      required_argument, 0, OptionBackupPath      },
         { "backup-password",  required_argument, 0, OptionBackupPassword  },
+        { "backup-repo",      required_argument, 0, OptionBackupRepo      },
         { "backup-retention", required_argument, 0, OptionBackupRetention },
         { "backup-source-address", required_argument, 0, OptionBackupSourceAddress},
         { "backup-user",      required_argument, 0, OptionBackupUser      },
@@ -9449,6 +10134,7 @@ S9sOptions::readOptionsBackup(
         { "on-controller",    no_argument,       0, OptionOnController    },
         { "on-node",          no_argument,       0, OptionOnNode          },
         { "parallellism",     required_argument, 0, OptionParallellism    },
+        { "compression-threads", required_argument, 0, OptionCompressionThreads },
         { "pitr-compatible",  no_argument,       0, OptionPitrCompatible  },
         { "safety-copies",    required_argument, 0, OptionSafetyCopies    },
         { "temp-dir-path",    required_argument, 0, OptionTempDirPath     },
@@ -9556,7 +10242,12 @@ S9sOptions::readOptionsBackup(
                 // --list-files
                 m_options["list_files"] = true;
                 break;
-            
+
+            case OptionListBinlogBackups:
+                // --list-binlog-backups
+                m_options["list_binlog_backups"] = true;
+                break;
+
             case OptionListSchedules:
                 // --list-schedules
                 m_options["list_schedules"] = true;
@@ -9782,6 +10473,11 @@ S9sOptions::readOptionsBackup(
                 setBackupRetention(optarg);
                 break;
 
+            case OptionBackupRepo:
+                // --backup-repo=N  (pgBackRest target repository index)
+                m_options["backup_repo"] = optarg;
+                break;
+
             case OptionCloudRetention:
                 // --cloud-retention=DAYS
                 setCloudRetention(optarg);
@@ -9895,6 +10591,13 @@ S9sOptions::readOptionsBackup(
 
                 break;
 
+            case OptionCompressionThreads:
+                // --compression-threads
+                if (!setCompressionThreads(optarg))
+                    return false;
+
+                break;
+
             case OptionPitrCompatible:
                 // --pitr-compatible
                 m_options["pitr_compatible"] = true;
@@ -9949,6 +10652,11 @@ S9sOptions::readOptionsBackup(
             case OptionDeleteSnaphotRepository:
                 // --delete-snapshot-repository
                 m_options["delete_snapshot_repository"] = true;
+                break;
+
+            case OptionListPgBackRestRepositories:
+                // --list-pgbackrest-repositories
+                m_options["list_pgbackrest_repositories"] = true;
                 break;
 
             case OptionCredentialId:
@@ -12427,6 +13135,9 @@ S9sOptions::checkOptionsBackup()
     if (isListFilesRequested())
         countOptions++;
 
+    if (isListBinlogBackupsRequested())
+        countOptions++;
+
     if (isCreateRequested())
         countOptions++;
 
@@ -12475,6 +13186,9 @@ S9sOptions::checkOptionsBackup()
     if (isDeleteSnapshotRepositoryRequested())
         countOptions++;
 
+    if (isListPgBackRestRepositoriesRequested())
+        countOptions++;
+
     if (countOptions > 1)
     {
         m_errorMessage = "The main options are mutually exclusive.";
@@ -12483,6 +13197,26 @@ S9sOptions::checkOptionsBackup()
     } else if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
+     * The --cluster-id is misleading with --restore-cluster-info: the
+     * cluster ID is stored in the archive itself, and passing --cluster-id
+     * either targets a cluster that is not registered yet (so the controller
+     * rejects it before even reading the archive) or a cluster that is
+     * already registered (so the restore fails trying to re-add hosts that
+     * are "already part of some other cluster"). There is no state in which
+     * the option has a valid effect.
+     */
+    if (isRestoreClusterRequested() && hasClusterIdOption())
+    {
+        m_errorMessage =
+            "The --cluster-id option can not be used with "
+            "--restore-cluster-info, the cluster ID is read from the "
+            "archive given in --input-file.";
+
         m_exitStatus = BadOptions;
         return false;
     }
@@ -12539,10 +13273,13 @@ S9sOptions::checkOptionsJob()
      */
     if (isListRequested())
         countOptions++;
-    
+
+    if (isStuckRequested())
+        countOptions++;
+
     if (isKillRequested())
         countOptions++;
-    
+
     if (isEnableRequested())
         countOptions++;
 
@@ -12664,6 +13401,9 @@ S9sOptions::checkOptionsCluster()
         countOptions++;
 
     if (isAddNodeRequested())
+        countOptions++;
+
+    if (isAddShardRequested())
         countOptions++;
 
     if (isReinstallNodeRequested())
@@ -12813,6 +13553,15 @@ S9sOptions::checkOptionsCluster()
             m_exitStatus = BadOptions;
             return false;
         }
+    }
+
+    if (shardId() > 0 && !isAddNodeRequested())
+    {
+        m_errorMessage =
+            "The --shard-id option can only be used with --add-node.";
+
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;
@@ -13217,19 +13966,25 @@ S9sOptions::checkOptionsAccount()
     
     if (isDeleteRequested())
         countOptions++;
-    
+
+    if (isLockRequested())
+        countOptions++;
+
+    if (isUnlockRequested())
+        countOptions++;
+
     if (isSetRequested())
         countOptions++;
-    
+
     if (isChangePasswordRequested())
         countOptions++;
-    
+
     if (isWhoAmIRequested())
         countOptions++;
 
     if (isListKeysRequested())
         countOptions++;
-    
+
     if (isAddKeyRequested())
         countOptions++;
 
@@ -13242,6 +13997,14 @@ S9sOptions::checkOptionsAccount()
     } else if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    if ((isLockRequested() || isUnlockRequested()) && account().userName().empty())
+    {
+        m_errorMessage = "Account name is not provided.";
         m_exitStatus = BadOptions;
 
         return false;
@@ -14161,7 +14924,9 @@ S9sOptions::readOptionsAccount(
         { "grant",            no_argument,       0, OptionGrant           },
         { "list",             no_argument,       0, 'L'                   },
         { "revoke",           no_argument,       0, OptionRevoke          },
-        
+        { "lock",             no_argument,       0, OptionLock            },
+        { "unlock",           no_argument,       0, OptionUnlock          },
+
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
         { "cluster-name",     required_argument, 0, 'n'                   },
@@ -14320,11 +15085,21 @@ S9sOptions::readOptionsAccount(
                 m_options["delete"] = true;
                 break;
 
+            case OptionLock:
+                // --lock
+                m_options["lock"] = true;
+                break;
+
+            case OptionUnlock:
+                // --unlock
+                m_options["unlock"] = true;
+                break;
+
             case OptionSet:
                 // --set
                 m_options["set"]  = true;
                 break;
-           
+
             case OptionChangePassword:
                 // --change-password
                 m_options["change_password"] = true;
@@ -14986,6 +15761,7 @@ S9sOptions::readOptionsCluster(
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
+        { "add-shard",        no_argument,       0, OptionAddShard        },
         { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
@@ -15007,6 +15783,7 @@ S9sOptions::readOptionsCluster(
         { "uninstall-cmonagents",no_argument,    0, OptionUninstallCmonAgents},
         { "disable-ssl",      no_argument,       0, OptionDisableSsl      },
         { "drop",             no_argument,       0, OptionDrop            },
+        { "remove",           no_argument,       0, OptionDrop            },
         { "enable-ssl",       no_argument,       0, OptionEnableSsl       },
         { "grant",            no_argument,       0, OptionGrant           },
         { "revoke",           no_argument,       0, OptionRevoke          },
@@ -15034,6 +15811,7 @@ S9sOptions::readOptionsCluster(
 
         // Options for cluster creation
         { "no-agent",         no_argument,    0, OptionNoAgent            },
+        { "auto-agent",       no_argument,    0, OptionAutoAgent          },
 
         // Option(s) for error-report generation
         { "mask-passwords",   no_argument,       0, OptionMaskPasswords   },
@@ -15105,6 +15883,8 @@ S9sOptions::readOptionsCluster(
         { "percona-pro-token", required_argument, 0, OptionPerconaProToken },
         { "with-database",    no_argument,       0, OptionWithDatabase    },
         { "with-timescaledb", no_argument,       0, OptionWithTimescaleDb },
+        { "ndb-data-memory-ratio",
+                              required_argument, 0, OptionNdbDataMemoryRatio },
         { "upgrade-to-version",required_argument, 0, OptionUpgradeToVersion },
         { "upgrade-method",   required_argument, 0, OptionUpgradeMethod   },
         { "delete-old-node",  no_argument,       0, OptionDeleteOldNode   },
@@ -15130,8 +15910,12 @@ S9sOptions::readOptionsCluster(
         { "cloud",            required_argument, 0, OptionCloud           },
         { "containers",       required_argument, 0, OptionContainers      },
         { "credential-id",    required_argument, 0, OptionCredentialId    },
+        { "s3-bucket",        required_argument, 0, OptionS3Bucket        },
+        { "add-repo",         no_argument,       0, OptionAddRepo         },
+        { "drop-repo",        required_argument, 0, OptionDropRepo        },
+        { "repo-path",        required_argument, 0, OptionRepoPath        },
         { "firewalls",        required_argument, 0, OptionFirewalls       },
-        { "generate-key",     no_argument,       0, 'g'                   }, 
+        { "generate-key",     no_argument,       0, 'g'                   },
         { "image",            required_argument, 0, OptionImage           },
         { "image-os-user",    required_argument, 0, OptionImageOsUser     },
            { "os-sudo-password", required_argument, 0, OptionOsSudoPassword  },
@@ -15152,7 +15936,11 @@ S9sOptions::readOptionsCluster(
         { "keep-firewall",    no_argument,       0, OptionKeepFirewall     },
         { "volumes",          required_argument, 0, OptionVolumes          },
         { "extensions",       required_argument, 0, OptionExtensions       },
-        { "vpc-id",           required_argument, 0, OptionVpcId            },
+        { "pghba-rules",        required_argument, 0, OptionPgHbaRules      },
+        { "pghba-preset",       required_argument, 0, OptionPgHbaPreset     },
+        { "save-as-hba-preset", no_argument,       0, OptionSaveAsHbaPreset },
+        { "hba-preset-name",    required_argument, 0, OptionHbaPresetName   },
+        { "vpc-id",             required_argument, 0, OptionVpcId           },
         { "template",         required_argument, 0, OptionTemplate         },
         
         { "with-ssl",         no_argument,       0, OptionWithSsl          },
@@ -15171,14 +15959,17 @@ S9sOptions::readOptionsCluster(
         
         { "virtual-ip",          required_argument, 0, OptionVirtualIp     },
         { "eth-interface",       required_argument, 0, OptionEthInterface  },
+        { "virtual-router-id",   required_argument, 0, OptionVirtualRouterId },
 
         // Options for add cluster/node.
         { "master-delay",        required_argument, 0,  OptionMasterDelay  },
+        { "shard-id",            required_argument, 0,  OptionShardId      },
 
         // Options for remove cluster/node.
         { "uninstall",           no_argument,       0,  OptionUninstall     },
         { "unregister-only",     no_argument,       0,  OptionUnregisterOnly },
         { "remove-backups",      required_argument, 0,  OptionRemoveBackups },
+        { "remove-certificates", no_argument,       0,  OptionRemoveCertificates },
 
         // Options for mssql
         { "license",     required_argument, 0, OptionLicense     },
@@ -15346,6 +16137,11 @@ S9sOptions::readOptionsCluster(
                 m_options["no_agent"] = true;
                 break;
 
+            case OptionAutoAgent:
+                // --auto-agent
+                m_options["auto_agent"] = true;
+                break;
+
             case OptionMaskPasswords:
                 // --mask-passwords
                 m_options["mask_passwords"] = true;
@@ -15371,6 +16167,10 @@ S9sOptions::readOptionsCluster(
                 m_options["add_node"] = true;
                 break;
 
+            case OptionAddShard:
+                m_options["add_shard"] = true;
+                break;
+
             case OptionReinstallNode:
                 // --reinstall-node
                 m_options["reinstall_node"] = true;
@@ -15392,7 +16192,7 @@ S9sOptions::readOptionsCluster(
                 break;
 
             case OptionDrop:
-                // --drop
+                // --drop, --remove
                 m_options["drop"] = true;
                 break;
             
@@ -15791,6 +16591,11 @@ S9sOptions::readOptionsCluster(
                 m_options["with_timescaledb"] = true;
                 break;
 
+            case OptionNdbDataMemoryRatio:
+                // --ndb-data-memory-ratio
+                m_options["ndb_data_memory_ratio"] = optarg;
+                break;
+
             case OptionUpgradeToVersion:
                 // --upgrade-to-version
                 m_options["upgrade_to_version"] = optarg;
@@ -15972,10 +16777,31 @@ S9sOptions::readOptionsCluster(
                 // --containers=LIST
                 setContainers(optarg);
                 break;
-            
+
             case OptionCredentialId:
                 // --credential-id=ID
                 m_options["credential_id"] = optarg;
+                break;
+
+            case OptionS3Bucket:
+                // --s3-bucket=NAME
+                m_options["s3_bucket"] = optarg;
+                break;
+
+            case OptionAddRepo:
+                // --add-repo  (pgBackRest: add a second repository)
+                m_options["add_repo"] = true;
+                break;
+
+            case OptionDropRepo:
+                // --drop-repo=repo1|repo2  (pgBackRest: drop a repository; the
+                // repository to drop must be named explicitly)
+                m_options["drop_repo"] = optarg;
+                break;
+
+            case OptionRepoPath:
+                // --repo-path=PATH  (pgBackRest: local repo path for --add-repo)
+                m_options["repo_path"] = optarg;
                 break;
 
             case OptionFirewalls:
@@ -16076,6 +16902,31 @@ S9sOptions::readOptionsCluster(
             case OptionExtensions:
                     // --extensions=STRING
                 m_options["extensions"] = optarg;
+                break;
+
+            case OptionPgHbaRules:
+                // --pghba-rules=STRING
+                if (!appendPgHbaRules(optarg))
+                {
+                    PRINT_ERROR("Invalid argument for --pghba-rules.");
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
+            case OptionPgHbaPreset:
+                // --pghba-preset=FILENAME
+                m_options["pghba_preset"] = optarg;
+                break;
+
+            case OptionSaveAsHbaPreset:
+                // --save-as-hba-preset
+                m_options["save_as_hba_preset"] = true;
+                break;
+
+            case OptionHbaPresetName:
+                // --hba-preset-name=NAME
+                m_options["hba_preset_name"] = optarg;
                 break;
 
             case OptionVpcId:
@@ -16224,6 +17075,11 @@ S9sOptions::readOptionsCluster(
                 m_options["remove_backups"] = optarg;
                 break;
 
+            case OptionRemoveCertificates:
+                // --remove-certificates
+                m_options["remove_certificates"] = true;
+                break;
+
 
             case OptionSslCaFile:
                 // --ssl-ca
@@ -16260,7 +17116,13 @@ S9sOptions::readOptionsCluster(
                 m_options["eth_interface"] = optarg;
                 break;
 
-            case OptionLicense: 
+            case OptionVirtualRouterId:
+                // --virtual-router-id=ID
+                if (!setVirtualRouterId(optarg))
+                    return false;
+                break;
+
+            case OptionLicense:
                 // --license=STRING
                 m_options["license"] = optarg;
                 break;
@@ -16300,6 +17162,22 @@ S9sOptions::readOptionsCluster(
             case OptionMasterDelay:
                 // --master-delay=SECONDS
                 m_options["master_delay"] = optarg;
+                break;
+
+            case OptionShardId:
+                // --shard-id=ID
+                if (!S9sString(optarg).looksInteger() || atoi(optarg) < 1)
+                {
+                    m_errorMessage.sprintf(
+                            "The value '%s' is invalid for --shard-id, "
+                            "shards are numbered from 1.",
+                            optarg);
+
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+
+                m_options["shard_id"] = atoi(optarg);
                 break;
 
             case '?':
@@ -16727,6 +17605,7 @@ S9sOptions::readOptionsJob(
         { "log",              no_argument,       0, 'G'                   },
         { "follow",           no_argument,       0, 'f'                   },
         { "success",          no_argument,       0,  OptionSuccess        },
+        { "stuck",            no_argument,       0,  OptionStuck          },
         { "wait",             no_argument,       0,  5                    },
         { "disable",          no_argument,       0, OptionDisable         },
         { "enable",           no_argument,       0, OptionEnable          },
@@ -16865,6 +17744,11 @@ S9sOptions::readOptionsJob(
             case OptionSuccess:
                 // --success
                 m_options["success"] = true;
+                break;
+
+            case OptionStuck:
+                // --stuck
+                m_options["stuck"] = true;
                 break;
 
             case OptionConfigFile:
@@ -19028,8 +19912,8 @@ S9sOptions::readOptionsCloudCredentials(
                     {"s3-access-key-id", required_argument, 0, OptionS3AccessKeyId},
                     {"s3-secret-key",    required_argument, 0, OptionS3SecretKey},
                     {"endpoint",         required_argument, 0, OptionEndpoint},
-                    {"s3-use-ssl",       no_argument,       0, OptionS3UseSsl},
-                    {"s3-insecure-ssl",  no_argument,       0, OptionS3InsecureSsl},
+                    {"use-ssl",          optional_argument, 0, OptionUseSsl},
+                    {"insecure-ssl",     optional_argument, 0, OptionInsecureSsl},
                     {"credential-id",    required_argument, 0, OptionCredentialId},
                     // optionals
                     {"comment",          required_argument, 0, OptionComment},
@@ -19177,14 +20061,20 @@ S9sOptions::readOptionsCloudCredentials(
                 m_options["endpoint"] = optarg;
                 break;
 
-            case OptionS3UseSsl:
-                // --s3-use-ssl
-                m_options["s3_use_ssl"] = true;
+            case OptionUseSsl:
+                // --use-ssl[=BOOLEAN]
+                if (optarg)
+                    m_options["use_ssl"] = S9sString(optarg).toBoolean();
+                else
+                    m_options["use_ssl"] = true;
                 break;
 
-            case OptionS3InsecureSsl:
-                // --s3-insecure-ssl
-                m_options["s3_insecure_ssl"] = true;
+            case OptionInsecureSsl:
+                // --insecure-ssl[=BOOLEAN]
+                if (optarg)
+                    m_options["insecure_ssl"] = S9sString(optarg).toBoolean();
+                else
+                    m_options["insecure_ssl"] = false;
                 break;
 
             case OptionCredentialId:
@@ -19610,6 +20500,12 @@ S9sOptions::readOptionsControllers(
                     {"list",             no_argument, 0,       OptionControllersList},
                     {"print-deployment-info", no_argument, 0,  OptionPrintDeploymentInfo},
                     {"add-controller",   no_argument, 0,       OptionAddController},
+                    {"add-db",           no_argument, 0,       OptionAddDb},
+                    {"delete-db",        no_argument, 0,       OptionDeleteDb},
+                    {"list-db",          no_argument, 0,       OptionListDb},
+                    {"bootstrap-db",     no_argument, 0,       OptionBootstrapDb},
+                    {"migrate-db",       no_argument, 0,       OptionMigrateDb},
+                    {"pool-readiness",   no_argument, 0,       OptionPoolReadiness},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
                     {"set-pool-mode",   no_argument,  0,       OptionSetPoolMode},
                     {"unset-pool-mode", no_argument,  0,       OptionUnsetPoolMode},
@@ -19617,14 +20513,29 @@ S9sOptions::readOptionsControllers(
                     {"stop",             no_argument, 0,       OptionStopController},
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
+                    {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
+                    {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
+                    {"list-config-storage", no_argument, 0,    OptionListConfigStorage},
+                    {"list-openbao-versions", no_argument, 0,  OptionListOpenBaoVersions},
+                    {"force",                    no_argument,       0, OptionForce},
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
+                    {"node",             required_argument, 0, OptionNode},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"granted-network-mask", required_argument, 0, OptionGrantedNetworkMask},
+                    {"no-require-db-cluster", no_argument, 0,  OptionNoRequireDbCluster},
+                    {"no-require-config-storage", no_argument, 0, OptionNoRequireConfigStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     {"uninstall",        no_argument,       0, OptionUninstall},
+                    // Arguments when installing an OpenBao instance
+                    {"openbao-mount",    required_argument, 0, OptionOpenBaoMount},
+                    {"openbao-namespace", required_argument, 0, OptionOpenBaoNamespace},
+                    {"openbao-package-path", required_argument, 0, OptionOpenBaoPackagePath},
+                    {"openbao-package",  required_argument, 0, OptionOpenBaoPackage},
+                    {"openbao-force-reinit", no_argument, 0, OptionOpenBaoForceReinit},
+                    { "no-install",      no_argument,       0, OptionNoInstall },
                     
                     // Job Related Options
                     {"log",              no_argument,       0, 'G'},
@@ -19835,6 +20746,46 @@ S9sOptions::readOptionsControllers(
                 m_options["add_controller"] = true;
                 break;
 
+            case OptionAddDb:
+                // --add-db
+                m_options["add_db"] = true;
+                break;
+
+            case OptionDeleteDb:
+                // --delete-db
+                m_options["delete_db"] = true;
+                break;
+
+            case OptionListDb:
+                // --list-db
+                m_options["list_db"] = true;
+                break;
+
+            case OptionBootstrapDb:
+                // --bootstrap-db
+                m_options["bootstrap_db"] = true;
+                break;
+
+            case OptionMigrateDb:
+                // --migrate-db
+                m_options["migrate_db"] = true;
+                break;
+
+            case OptionPoolReadiness:
+                // --pool-readiness
+                m_options["pool_readiness"] = true;
+                break;
+
+            case OptionNoRequireDbCluster:
+                // --no-require-db-cluster
+                m_options["no_require_db_cluster"] = true;
+                break;
+
+            case OptionNoRequireConfigStorage:
+                // --no-require-config-storage
+                m_options["no_require_config_storage"] = true;
+                break;
+
             case OptionStartController:
                 // --start
                 m_options["start_controller"] = true;
@@ -19854,12 +20805,51 @@ S9sOptions::readOptionsControllers(
                 m_options["update_cmon"] = true;
                 break;
 
+            case OptionAddOpenBao:
+                // --add-openbao
+                m_options["add_openbao"] = true;
+                break;
+
+            case OptionListConfigStorage:
+                // --list-config-storage
+                m_options["list_config_storage"] = true;
+                break;
+
+            case OptionListOpenBaoVersions:
+                // --list-openbao-versions
+                m_options["list_openbao_versions"] = true;
+                break;
+
+            case OptionSetMaxClustersCapacity:
+                // --set-max-clusters-capacity=N
+                if (optarg)
+                {
+                    m_options["max_clusters_capacity"] = optarg;
+                }
+                else
+                {
+                    m_errorMessage = "Missing value for --set-max-clusters-capacity.";
+                    m_exitStatus = BadOptions;
+                    return false;
+                }
+                break;
+
+            case OptionForce:
+                // --force
+                m_options["force"] = true;
+                break;
+
             /*
              * Other options
              */
             case OptionControllerId:
                 // --controller-id
                 m_options["controller_id"] = optarg;
+                break;
+
+            case OptionNode:
+                // --node
+                m_options["node"] = optarg;
                 break;
 
             case OptionDbClusterId:
@@ -19893,6 +20883,36 @@ S9sOptions::readOptionsControllers(
             case OptionUninstall:
                 // --uninstall
                 m_options["uninstall"] = true;
+                break;
+
+            case OptionOpenBaoMount:
+                // --openbao-mount=MOUNT
+                m_options["openbao_mount"] = optarg;
+                break;
+
+            case OptionOpenBaoNamespace:
+                // --openbao-namespace=NAMESPACE
+                m_options["openbao_namespace"] = optarg;
+                break;
+
+                // --openbao-package-path=PATH
+            case OptionOpenBaoPackagePath:
+                m_options["openbao_package_path"] = optarg;
+                break;
+
+                // --openbao-package=SPEC
+            case OptionOpenBaoPackage:
+                m_options["openbao_package"] = optarg;
+                break;
+
+                // --openbao-force-reinit
+            case OptionOpenBaoForceReinit:
+                m_options["openbao_force_reinit"] = true;
+                break;
+
+            case OptionNoInstall:
+                // --no-install
+                m_options["no_install"] = true;
                 break;
 
             /*
@@ -19957,6 +20977,24 @@ S9sOptions::checkOptionsControllers()
     if (isAddController())
         countOptions++;
 
+    if (isAddDb())
+        countOptions++;
+
+    if (isDeleteDb())
+        countOptions++;
+
+    if (isListDb())
+        countOptions++;
+
+    if (isBootstrapDb())
+        countOptions++;
+
+    if (isMigrateDb())
+        countOptions++;
+
+    if (isPoolReadiness())
+        countOptions++;
+
     if (isStartController())
         countOptions++;
 
@@ -19967,6 +21005,18 @@ S9sOptions::checkOptionsControllers()
         countOptions++;
   
     if (isUpdateCmon())
+        countOptions++;
+
+    if (isSetMaxClustersCapacityRequested())
+        countOptions++;
+
+    if (isAddOpenBao())
+        countOptions++;
+
+    if (isListConfigStorage())
+        countOptions++;
+
+    if (isListOpenBaoVersions())
         countOptions++;
 
     if (countOptions == 0)
@@ -20000,6 +21050,17 @@ S9sOptions::checkOptionsControllers()
         }
     }
 
+    // The prerequisite opt-outs only mean something to the pool mode switch.
+    if ((noRequireDbCluster() || noRequireConfigStorage()) &&
+            !isSetPoolModeRequested())
+    {
+        m_errorMessage =
+            "The --no-require-db-cluster and --no-require-config-storage "
+            "options can only be used with --set-pool-mode.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
     /*
      * Validate that --controller-id is provided for start/stop/remove operations
      */
@@ -20011,6 +21072,24 @@ S9sOptions::checkOptionsControllers()
             m_exitStatus = BadOptions;
             return false;
         }
+    }
+
+    // Validate the OpenBao options only when relevant
+    if (hasOpenBaoOption())
+    {
+        if (!isAddOpenBao())
+        {
+            m_errorMessage = "The --openbao-* options can only be used with --add-openbao.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if (isAddOpenBao() && nodes().size() != 1u)
+    {
+        m_errorMessage = "The --nodes option must specify exactly one host for --add-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
     }
 
     return true;

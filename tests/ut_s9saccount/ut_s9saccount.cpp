@@ -46,6 +46,7 @@ UtS9sAccount::runTest(const char *testName)
     PERFORM_TEST(testParse05,         retval);
     PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testMap,             retval);
+    PERFORM_TEST(testLocked,          retval);
 
     return retval;
 }
@@ -192,6 +193,38 @@ UtS9sAccount::testMap()
     S9S_VERIFY(string.contains("\"host_allow\": \"1.2.3.4\""));
     S9S_VERIFY(string.contains("\"password\": \"pwd\""));
     S9S_VERIFY(string.contains("\"user_name\": \"pipas\""));
+
+    return true;
+}
+
+/**
+ * Checks that an account's locked state (native MariaDB/MySQL ACCOUNT
+ * LOCK/UNLOCK, "account_locked") round-trips through setLocked()/isLocked()
+ * and is serialized without requiring a password to be set (CLUS-7664:
+ * "s9s account --lock/--unlock" must work without resupplying a password).
+ */
+bool
+UtS9sAccount::testLocked()
+{
+    S9sAccount    account("joe");
+    S9sVariantMap map;
+    S9sString     string;
+
+    S9S_VERIFY(!account.isLocked());
+    S9S_COMPARE(account.password(), "");
+
+    account.setLocked(true);
+    S9S_VERIFY(account.isLocked());
+
+    map["account"] = account;
+    string = map.toString();
+
+    S9S_VERIFY(string.contains("\"account_locked\": true"));
+    S9S_VERIFY(string.contains("\"user_name\": \"joe\""));
+    S9S_VERIFY(!string.contains("\"password\""));
+
+    account.setLocked(false);
+    S9S_VERIFY(!account.isLocked());
 
     return true;
 }

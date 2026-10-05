@@ -1539,6 +1539,39 @@ S9sRpcClient::getJobInstances(
 }
 
 /**
+ * \param clusterId the ID of the cluster for which stuck jobs will be
+ *   fetched, or 0 for every cluster the authenticated user has read access
+ *   to.
+ * \returns true if the request sent and a return is received (even if the
+ *   reply is an error message).
+ *
+ * Sends a "getStuckJobs" request, receives the reply. We use this RPC call
+ * to get the jobs currently running longer than their command class's
+ * configured stuck-job threshold (e.g. s9s job --stuck).
+ */
+bool
+S9sRpcClient::getStuckJobs(
+        const S9sString  &clusterName,
+        const int         clusterId)
+{
+    S9sString      uri = "/v2/jobs/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getStuckJobs";
+
+    if (S9S_CLUSTER_ID_IS_VALID(clusterId) ||
+        clusterId == 0)
+        request["cluster_id"] = clusterId;
+
+    if (!clusterName.empty())
+        request["cluster_name"] = clusterName;
+
+    retval = executeRequest(uri, request);
+    return retval;
+}
+
+/**
  * \param jobId the ID of the job
  * \returns true if the operation was successful, a reply is received from the
  *   controller (even if the reply is an error reply).
@@ -2962,6 +2995,9 @@ S9sRpcClient::restoreController()
     if (!options->tempDirPath().empty())
         jobData["temp_dir_path"] = options->tempDirPath();
 
+    if (options->force())
+        jobData["force"] = true;
+
     jobSpec["command"]    = "restore_controller";
     jobSpec["job_data"]   = jobData;
     
@@ -3504,6 +3540,10 @@ S9sRpcClient::registerCluster()
     {
         success = registerElasticsearchCluster(hosts, osUserName);
     }
+    else if (options->clusterType() == "clickhouse")
+    {
+        success = registerClickHouseCluster(hosts, osUserName);
+    }
     else {
         PRINT_ERROR("Register cluster is currently not implemented for "
                 " cluster type '%s'.",
@@ -3566,6 +3606,17 @@ S9sRpcClient::getStats(
 }
 
 
+// Omitted on --auto-agent so the controller applies its own default.
+static void
+setDeployAgentsIfRequested(
+        S9sVariantMap &jobData)
+{
+    S9sOptions *options = S9sOptions::instance();
+    if (!options->autoAgent())
+        jobData["deploy_agents"] = !options->noAgent();
+}
+
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -3608,7 +3659,7 @@ S9sRpcClient::createGaleraCluster(
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3690,7 +3741,7 @@ S9sRpcClient::createMySqlSingleCluster(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -3891,9 +3942,13 @@ S9sRpcClient::registerHost()
         command = "keepalived";
         title   = "Register Keepalived Node";
         registerAction = true;
-    
+
         jobData["eth_interface"] = options->getString("eth_interface");
         jobData["virtual_ip"]    = options->getString("virtual_ip");
+
+        int vrid = options->getInt("virtual_router_id");
+        if (vrid > 0)
+            jobData["virtual_router_id"] = vrid;
     } else if (protocol == "postgresql")
     {
         command = "registernode";
@@ -3986,7 +4041,7 @@ S9sRpcClient::createMySqlReplication(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4150,7 +4205,7 @@ S9sRpcClient::createGroupReplication(
     jobData["mysql_user"]       = options->dbAdminUserName();
     jobData["mysql_password"]   = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->hasSemiSync())
         jobData["mysql_semi_sync"] = options->isSemiSync();
@@ -4310,7 +4365,24 @@ S9sRpcClient::createNdbCluster(
     jobData["version"]          = mySqlVersion;
     jobData["disable_selinux"]  = true;
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
+
+    // --ndb-data-memory-ratio=RATIO -- forwarded to cmon as
+    // /job_data/ndb_data_memory_ratio so the auto-calculated NDB
+    // DataMemory can be tuned without resorting to an explicit absolute
+    // value. cmon also persists this into the per-cluster cmon_N.cnf
+    // (PropNdbDataMemoryRatio) so subsequent operations on the cluster
+    // re-use the same sizing.
+    {
+        const S9sString ratioStr = options->getString(
+                "ndb_data_memory_ratio", "");
+        if (!ratioStr.empty())
+        {
+            const double ratio = ratioStr.toDouble();
+            if (ratio > 0.0)
+                jobData["ndb_data_memory_ratio"] = ratio;
+        }
+    }
 
     if (options->hasRemoteClusterIdOption())
         jobData["remote_cluster_id"] = options->remoteClusterId();
@@ -4455,6 +4527,22 @@ S9sRpcClient::createPostgreSql(
         return false;
     }
 
+    if (!options->hbaPresetName().empty() && !options->saveAsHbaPreset())
+    {
+        PRINT_ERROR(
+            "--hba-preset-name requires --save-as-hba-preset.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (options->saveAsHbaPreset() && options->pgHbaRules().empty())
+    {
+        PRINT_ERROR(
+            "--save-as-hba-preset requires --pghba-rules.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
     addCredentialsToJobData(jobData);
 
     // 
@@ -4471,10 +4559,22 @@ S9sRpcClient::createPostgreSql(
     jobData["postgre_user"]     = options->dbAdminUserName();
     jobData["postgre_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
     if (!options->extensions().empty())
         jobData["pg_extensions"]     = options->extensions();
-    
+
+    if (!options->pgHbaPreset().empty())
+        jobData["hba_preset"]        = options->pgHbaPreset();
+
+    if (options->saveAsHbaPreset())
+        jobData["save_as_hba_preset"] = true;
+
+    if (!options->hbaPresetName().empty())
+        jobData["hba_preset_name"]   = options->hbaPresetName();
+
+    if (!options->pgHbaRules().empty())
+        jobData["extra_hba_rules"]   = options->pgHbaRules();
+
     if (options->withTimescaleDb())
         jobData["install_timescaledb"] = true;
     
@@ -4838,7 +4938,7 @@ S9sRpcClient::createRedisOrValkeySharded(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->noInstall())
     {
@@ -4932,7 +5032,7 @@ S9sRpcClient::createRedisOrValkeySentinel(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->noInstall())
     {
@@ -5008,7 +5108,7 @@ S9sRpcClient::createElasticsearch(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->noInstall())
     {
@@ -5070,7 +5170,7 @@ S9sRpcClient::createClickHouseCluster(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->hasProviderVersion())
         jobData["version"]      = version;
@@ -5139,7 +5239,7 @@ S9sRpcClient::createMsSqlSingle(
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
 
     if (options->noInstall())
     {
@@ -5221,7 +5321,7 @@ S9sRpcClient::createMongoCluster(
     jobData["mongodb_user"]     = options->dbAdminUserName();
     jobData["mongodb_password"] = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
-    jobData["deploy_agents"]    = !options->noAgent();
+    setDeployAgentsIfRequested(jobData);
    
     if (options->noInstall())
     {
@@ -5288,6 +5388,25 @@ S9sRpcClient::createNode()
         return false;
     }
 
+    if (options->shardId() > 0)
+    {
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
+        {
+            S9sNode node = hosts[idx].toNode();
+
+            if (node.protocol().toLower() != "clickhouse")
+            {
+                PRINT_ERROR(
+                        "The --shard-id option can not be used for the node "
+                        "'%s', it applies to clickhouse:// data nodes only.",
+                        STR(node.hostName()));
+
+                options->setExitStatus(S9sOptions::BadOptions);
+                return false;
+            }
+        }
+    }
+
     for (uint idx = 0u; idx < hosts.size(); ++idx)
     {
         S9sString protocol = hosts[idx].toNode().protocol().toLower();
@@ -5346,6 +5465,8 @@ S9sRpcClient::createNode()
         } else if (protocol == "elastic")
         {            
             hasElastic = true;
+        } else if (protocol == "clickhouse" || protocol == "clickhouse-keeper")
+        {
         } else if (protocol.empty())
         {
         } else {
@@ -5463,6 +5584,64 @@ S9sRpcClient::createNode()
     }
 
     return success;
+}
+
+bool
+S9sRpcClient::addShard()
+{
+    S9sOptions    *options   = S9sOptions::instance();
+    S9sVariantList hosts     = options->nodes();
+    S9sVariantMap  request   = composeRequest();
+    S9sVariantMap  job       = composeJob();
+    S9sVariantMap  jobData   = composeJobData();
+    S9sVariantMap  jobSpec;
+    S9sVariantList nodes;
+    S9sString      uri = "/v2/jobs/";
+
+    if (hosts.empty())
+    {
+        PRINT_ERROR(
+                "Node list is empty while adding a shard.\n"
+                "Use the --nodes command line option to provide the node list."
+                );
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode   node     = hosts[idx].toNode();
+        S9sString protocol = node.protocol().toLower();
+
+        if (protocol != "clickhouse")
+        {
+            PRINT_ERROR(
+                    "The node '%s' can not be part of a new shard, "
+                    "--add-shard takes clickhouse:// data nodes only.",
+                    STR(node.hostName()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+
+        nodes << hosts[idx].toVariantMap();
+    }
+
+    jobData["nodes"]            = nodes;
+    jobData["install_software"] = !options->noInstall();
+    jobData["disable_firewall"] = !options->keepFirewall();
+
+    jobSpec["command"]    = "add_shard";
+    jobSpec["job_data"]   = jobData;
+
+    job["title"]          = "Add Shard to Cluster";
+    job["job_spec"]       = jobSpec;
+
+    request["operation"]  = "createJobInstance";
+    request["job"]        = job;
+
+    return executeRequest(uri, request);
 }
 
 /**
@@ -5646,6 +5825,9 @@ S9sRpcClient::addNode(
 
     if(!options->masterDelay().empty())
         jobData["master_delay"] = options->masterDelay();
+
+    if (options->shardId() > 0)
+        jobData["shard_id"] = options->shardId();
    
     // The jobspec describing the command.
     jobSpec["command"]    = "addnode";
@@ -5859,7 +6041,11 @@ S9sRpcClient::addKeepalived(
     // These are for keepalived.
     jobData["eth_interface"] = options->getString("eth_interface");
     jobData["virtual_ip"]    = options->getString("virtual_ip");
-    
+
+    int vrid = options->getInt("virtual_router_id");
+    if (vrid > 0)
+        jobData["virtual_router_id"] = vrid;
+
     for (uint idx = 0u; idx < otherNodes.size(); ++idx)
     {
         int       port;
@@ -5898,6 +6084,28 @@ S9sRpcClient::addKeepalived(
 }
 
 /**
+ * CLUS-7060: An S3 (object store) backup repository is referenced by a
+ * registered cloud credential id; only the bucket is passed alongside (the
+ * credential has no bucket). Shared by the pgbackrest setup, reconfigure and
+ * reinstall job builders. When no credential id is given nothing is added, so
+ * reconfigure/reinstall keep the repository configuration stored at install
+ * time.
+ */
+void
+S9sRpcClient::addPgBackRestS3RepoToJobData(
+        S9sVariantMap &jobData)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->hasCredentialIdOption())
+    {
+        jobData["credential_id"] = options->credentialId();
+        if (!options->s3bucket().empty())
+            jobData["s3_bucket"] = options->s3bucket();
+    }
+}
+
+/**
  * \param clusterId The ID of the cluster.
  * \returns true if the request sent and a return is received (even if the reply
  *   is an error message).
@@ -5929,12 +6137,14 @@ S9sRpcClient::addPgBackRest(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setup";
-    jobData["nodes"]    = nodesField(nodes);        
+    jobData["nodes"]    = nodesField(nodes);
+
+    addPgBackRestS3RepoToJobData(jobData);
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
     jobSpec["job_data"]   = jobData;
-    
+
     // The job instance describing how the job will be executed.
     job["title"]          = "Add PgBackRest to Cluster";
     job["job_spec"]       = jobSpec;
@@ -5980,7 +6190,24 @@ S9sRpcClient::addPgBouncer(
     
     // The job_data describing the cluster.
     jobData["action"]   = "setup";
-    jobData["nodes"]    = nodesField(nodes);        
+    jobData["nodes"]    = nodesField(nodes);
+
+    // Forward the admin account. cmon reads /job_data/admin_username and
+    // /job_data/admin_password (the same keys the web UI sends). Without
+    // this the --admin-user/--admin-password options are dropped and the
+    // admin silently falls back to 'pgbadmin' (CLUS-6881/CLUS-6892: the
+    // name may legitimately contain '-').
+    {
+        S9sOptions *options         = S9sOptions::instance();
+        S9sString   adminUser       = options->getString("admin_user", "");
+        S9sString   adminPassword   = options->getString("admin_password", "");
+
+        if (!adminUser.empty())
+            jobData["admin_username"] = adminUser;
+
+        if (!adminPassword.empty())
+            jobData["admin_password"] = adminPassword;
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbouncer";
@@ -6701,6 +6928,34 @@ S9sRpcClient::reconfigurePgBackRest(
     jobData["action"]   = "reconfigure";
     jobData["nodes"]    = nodesField(nodes);
 
+    addPgBackRestS3RepoToJobData(jobData);
+
+    // pgBackRest multi-repository: add or drop the second repository. The repo
+    // parameters (credential_id + s3_bucket for S3, added above; or repo_path
+    // for local) describe the repository being added.
+    {
+        S9sOptions *options = S9sOptions::instance();
+        if (options->addRepo())
+        {
+            jobData["repo_action"] = "add";
+            if (!options->repoPath().empty())
+                jobData["repo_path"] = options->repoPath();
+        }
+        else if (!options->dropRepo().empty())
+        {
+            jobData["repo_action"] = "drop";
+            const S9sString which = options->dropRepo();
+            // The repository to drop must be named explicitly; there is no safe
+            // default for a destructive operation.
+            if (which != "repo1" && which != "repo2")
+            {
+                PRINT_ERROR("--drop-repo requires 'repo1' or 'repo2'.");
+                return false;
+            }
+            jobData["repo_name"] = which;
+        }
+    }
+
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
     jobSpec["job_data"]   = jobData;
@@ -6853,6 +7108,8 @@ S9sRpcClient::reinstallPgBackRest(
     // The job_data describing the cluster.
     jobData["action"]   = "reinstall";
     jobData["nodes"]    = nodesField(nodes);
+
+    addPgBackRestS3RepoToJobData(jobData);
 
     // The jobspec describing the command.
     jobSpec["command"]    = "pgbackrest";
@@ -8080,6 +8337,9 @@ S9sRpcClient::dropCluster()
     if (options->hasRemoveBackupsOption())
         jobData["remove_backups"]  = options->removeBackups() ? "true" : "false";
 
+    if (options->hasRemoveCertificatesOption())
+        jobData["remove_certificates"] = options->removeCertificates();
+
     // Well, this is not going to work.
     if (options->hasClusterNameOption())
         jobData["cluster_name"] = options->clusterName();
@@ -8133,7 +8393,7 @@ S9sRpcClient::checkHosts()
         jobData["nodes"]          = nodesField(hosts);
         jobData["vendor"]         = options->vendor();
         jobData["version"]        = options->providerVersion();
-        jobData["deploy_agents"]  = !options->noAgent();
+        setDeployAgentsIfRequested(jobData);
     
         jobSpec["command"]        = "create_cluster";
         jobSpec["job_data"]       = jobData;
@@ -9575,6 +9835,33 @@ S9sRpcClient::getBackups(
 }
 
 /**
+ * \param clusterId the cluster ID to get binlog backups for (optional, 0 for
+ *   all clusters).
+ * \returns True if the request was successful (even if the reply contains
+ *   is an error message).
+ *
+ * The method that gets the list of binlog backups from the server.
+ */
+bool
+S9sRpcClient::getBinlogBackups(
+        const int clusterId)
+{
+    S9sString      uri = "/v2/backup/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"] = "getBinlogBackups";
+    request["ascending"] = true;
+
+    if (clusterId > 0)
+        request["cluster_id"] = clusterId;
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
  * Gets the list of backup schedules from the controller.
  */
 bool
@@ -9615,6 +9902,26 @@ S9sRpcClient::getSnapshotRepositories(
     }
     else
         request["operation"] = "getAllSnapshotRepositories";
+
+    retval = executeRequest(uri, request);
+
+    return retval;
+}
+
+/**
+ * Gets the pgBackRest repositories (repo1/repo2) configured for a
+ * PostgreSQL cluster from the controller.
+ */
+bool
+S9sRpcClient::getPgBackRestRepositories(
+        const int clusterId)
+{
+    S9sString      uri = "/v2/backup/";
+    S9sVariantMap  request;
+    bool           retval;
+
+    request["operation"]  = "getPgBackRestRepositories";
+    request["cluster_id"] = clusterId;
 
     retval = executeRequest(uri, request);
 
@@ -9793,6 +10100,30 @@ S9sRpcClient::createAccount()
     retval = executeRequest(uri, request);
 
     return retval;
+}
+
+/**
+ * \param account The account to update (e.g. carrying the new locked state).
+ *
+ * \returns true if the request sent and a return is received (even if the reply
+ *   is an error message).
+ *
+ * A function to update an existing account on the cluster, e.g. to lock or
+ * unlock it (native MariaDB/MySQL ACCOUNT LOCK/UNLOCK). The password is not
+ * sent unless explicitly set on the account, in which case the server will
+ * also change the password.
+ */
+bool
+S9sRpcClient::updateAccount(
+        const S9sAccount &account)
+{
+    S9sString      uri     = "/v2/clusters/";
+    S9sVariantMap  request = composeRequest();
+
+    request["operation"]  = "updateAccount";
+    request["account"]    = account;
+
+    return executeRequest(uri, request);
 }
 
 bool
@@ -11369,8 +11700,13 @@ S9sRpcClient::createCloudCredentials(S9sOptions *options)
     if(provider == "s3")
     {
         credentialsMap["endpoint"] = options->endpoint();
-        credentialsMap["use_ssl"] = options->hasUseSsl();
-        credentialsMap["insecure_ssl"] = options->hasInsecureSsl();
+        // Both are optional in the controller's credential schema and its
+        // defaults are the same as ours, so an option that was not given is
+        // left out instead of pinning the property to our default.
+        if (options->hasUseSsl())
+            credentialsMap["use_ssl"] = options->useSsl();
+        if (options->hasInsecureSsl())
+            credentialsMap["insecure_ssl"] = options->insecureSsl();
     }
     request["credentials"] = credentialsMap;
     if(options->hasCommentOption())
@@ -11514,6 +11850,24 @@ S9sRpcClient::assignedController(S9sOptions *options)
 }
 
 /**
+ * @brief lists the pool's cmon DB HA InnoDB Cluster nodes
+ * (getCmonDbClusterNodes - a read-only query, unlike the job-creating
+ * addCmonDbInstance/DeleteCmonDbInstance calls).
+ *
+ * Mirrors listControllers()'s own wiring: same "/v2/poolcontrollers/"
+ * endpoint, same fire-and-render pattern (no job to wait on).
+ */
+bool
+S9sRpcClient::listDbClusterNodes(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "getcmondbclusternodes";
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns set or unset pool mode on a specific controller
  */
 bool
@@ -11534,8 +11888,84 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
         const S9sString grantedNetworkMask = options->grantedNetworkMask();
         if (!grantedNetworkMask.empty())
             request["controllers_network_mask"] = grantedNetworkMask;
+
+        // Both prerequisites are required by default controller-side; only
+        // an opt-out needs to be transmitted.
+        if (options->noRequireDbCluster())
+            request["require_cmon_db_cluster"] = false;
+
+        if (options->noRequireConfigStorage())
+            request["require_config_storage"] = false;
     }
-    
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief asks which pool mode prerequisites are still missing
+ * (getPoolModeReadiness - a read-only query, allowed while pool mode is off).
+ */
+bool
+S9sRpcClient::getPoolModeReadiness(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "getpoolmodereadiness";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief migrates cmon's MariaDB to Oracle MySQL (migrateCmonDb), the
+ * prerequisite of the bootstrapCmonDbCluster job on a MariaDB controller.
+ *
+ * Not a job: the controller starts the migration asynchronously and replies
+ * straight away. cmon restarts when the migration completes.
+ */
+bool
+S9sRpcClient::migrateCmonDb(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "migratecmondb";
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief turns the main controller's own cmon DB into the seed PRIMARY of the
+ * pool's cmon DB HA InnoDB Cluster behind a local MySQL Router
+ * (CmdBootstrapCmonDbCluster / the bootstrapCmonDbCluster job).
+ *
+ * The job only ever acts on the local host, so it takes no job_data of its
+ * own and there is no cluster_id: like addCmonDbInstance it targets the pool.
+ */
+bool
+S9sRpcClient::bootstrapCmonDbCluster(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobSpec;
+
+    (void) options;
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "bootstrapCmonDbCluster";
+    jobSpec["job_data"] = S9sVariantMap();
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Bootstrap CC DB Cluster";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
     return executeRequest(uri, request);
 }
 
@@ -11580,6 +12010,127 @@ S9sRpcClient::addNewController(S9sOptions *options)
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
     job["title"]    = "Create Controller";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief join a bare host into the pool's cmon DB HA InnoDB Cluster as a
+ * SECONDARY (CmdAddCmonDbInstance / the addCmonDbInstance job).
+ *
+ * SSH credentials (ssh_user/ssh_keyfile/ssh_keydata/ssh_password, from the
+ * standard --os-user/--os-key-file/--os-password options) are already
+ * added to jobData by composeJobData() itself (via
+ * addCredentialsToJobData()), the same way every other node-adding command
+ * gets them - nothing extra needed here for that.
+ */
+bool
+S9sRpcClient::addNewCmonDbInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+        // S9sNode::port() defaults to 0 when no ':port' was given on
+        // --nodes, unlike the addCmonDbInstance job's own 3306 default.
+        int port = hosts[0].toNode().port();
+        jobData["port"] = port > 0 ? port : 3306;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "addCmonDbInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["force"] = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "addCmonDbInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Add DB Instance to Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief remove a cmon DB instance from the pool's cmon DB HA InnoDB
+ * Cluster (CmdDeleteCmonDbInstance / the DeleteCmonDbInstance job).
+ *
+ * Uses composeJobData() the same way removeController() does for its own
+ * "remove something" job: SSH credentials are only added when the caller
+ * actually passed --os-user/--os-key-file/--os-password, so this stays
+ * harmless even though a delete typically does not need them - the
+ * server-side job decides whether it uses them, not this call.
+ *
+ * --force is meaningful here too: it mirrors mysqlsh's
+ * cluster.remove_instance(force) option, letting the instance be dropped
+ * from the cluster's metadata even when it cannot be reached.
+ */
+bool
+S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    // --node is an alternative to --nodes: identifies the same pool DB HA
+    // node by hostname/IP alone (no port needed), a separate "node" job_data
+    // field so the BE never confuses it with server_address/port. Mutually
+    // exclusive with --nodes - takes priority if both were somehow given,
+    // since it's the more specific of the two.
+    if (options->hasNodeOption())
+    {
+        jobData["node"] = options->node();
+    }
+    else if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+        int port = hosts[0].toNode().port();
+        jobData["port"] = port > 0 ? port : 3306;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node (via --nodes) or --node must be "
+                "specified for the deleteCmonDbInstance operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["force"] = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "DeleteCmonDbInstance";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Delete DB Instance from Pool";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
@@ -11710,6 +12261,86 @@ S9sRpcClient::updateCmon(S9sOptions *options)
     request["operation"] = "createJobInstance";
     request["job"]       = job;
     
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Creates the job that installs an OpenBao instance on the host given by the
+ * --nodes command line option. The job only produces the instance: it does not
+ * point this controller at it, so nothing here writes the vaultkv_* settings.
+ *
+ * Every --openbao-* parameter is optional and is only put into the job_data when
+ * it was actually given on the command line - an absent key means the controller
+ * applies its own default. The root token and the unseal keys are left on the
+ * target host by the job, so there is nothing sensitive to send or to receive
+ * here.
+ */
+bool
+S9sRpcClient::installOpenBao(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList  hosts = options->nodes();
+
+    S9sVariantMap   job     = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+
+        const int port = hosts[0].toNode().port();
+        if (port > 0)
+            jobData["port"] = port;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "installOpenBao operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (!options->providerVersion().empty())
+        jobData["version"] = options->providerVersion();
+
+    if (!options->openBaoMount().empty())
+        jobData["openbao_mount"] = options->openBaoMount();
+
+    if (!options->openBaoNamespace().empty())
+        jobData["openbao_namespace"] = options->openBaoNamespace();
+
+    if (!options->openBaoPackagePath().empty())
+        jobData["openbao_package_path"] = options->openBaoPackagePath();
+
+    if (!options->openBaoPackage().empty())
+        jobData["openbao_package"] = options->openBaoPackage();
+
+    // install_software defaults to true controller-side; only --no-install needs
+    // to be transmitted.
+    if (options->noInstall())
+        jobData["install_software"] = false;
+
+    if (options->openBaoForceReinit())
+        jobData["openbao_force_reinit"] = true;
+
+    // The jobspec describing the command. The controller registers this job
+    // under the SETUP_OPENBAO action and uppercases what it receives.
+    jobSpec["command"]  = "setup_openbao";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Setup OpenBao";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
     return executeRequest(uri, request);
 }
 
@@ -12151,7 +12782,12 @@ S9sRpcClient::composeBackupJob()
 
     if (!backupMethod.empty())
         jobData["backup_method"] = backupMethod;
-    
+
+    // pgBackRest multi-repository: select which repository the backup goes to
+    // (e.g. "repo1"/"repo2"). Optional; pgBackRest only. Default is repo1.
+    if (!S9sOptions::instance()->backupRepo().empty())
+        jobData["backup_repo"] = S9sOptions::instance()->backupRepo();
+
     // The job_data describing how the backup will be created.
     jobData["description"]       = "Backup created by s9s-tools.";
 
@@ -12312,6 +12948,9 @@ S9sRpcClient::composeBackupJob()
 
     if (options->hasParallellism())
         jobData["xtrabackup_parallellism"] = options->parallellism();
+
+    if (options->hasCompressionThreads())
+        jobData["compression_threads"] = options->compressionThreads();
 
     if (options->encryptBackup())
         jobData["encrypt_backup"] = true;
@@ -13513,6 +14152,65 @@ S9sRpcClient::registerElasticsearchCluster(
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::registerClickHouseCluster(
+        const S9sVariantList &hosts,
+        const S9sString      &osUserName)
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantMap   request;
+    S9sVariantMap   job = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+    S9sString       uri = "/v2/jobs/";
+
+    if (hosts.size() < 1u)
+    {
+        PRINT_ERROR("Node is not specified while registering existing cluster.");
+        return false;
+    }
+    else if (hosts.size() > 1u)
+    {
+
+        PRINT_ERROR("ClickHouse clusters requires only one cluster's node to discover topology");
+        return false;
+    }
+
+    addCredentialsToJobData(jobData);
+
+    //
+    // The job_data describing the cluster.
+    //
+    jobData["cluster_type"]     = "clickhouse";
+    jobData["type"]             = "clickhouse";
+    jobData["nodes"]            = nodesField(hosts);
+    
+    if (!options->clusterName().empty())
+        jobData["cluster_name"] = options->clusterName();
+
+    // Database credentials are optional for ClickHouse import.
+    // CMON uses them for the HTTP discovery queries and fails
+    // closed if the endpoint rejects them.
+    if (!options->dbAdminUserName().empty())
+        jobData["db_user"]      = options->dbAdminUserName();
+    if (!options->dbAdminPassword().empty())
+        jobData["db_password"]  = options->dbAdminPassword();
+
+    // The jobspec describing the command.
+    jobSpec["command"]          = "add_cluster";
+    jobSpec["job_data"]         = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["title"]                = "Register ClickHouse Cluster";
+    job["job_spec"]             = jobSpec;
+
+    // The request describing we want to register a job instance.
+    request["operation"]        = "createJobInstance";
+    request["job"]              = job;
+
+    return executeRequest(uri, request);
+}
+
 
 bool
 S9sRpcClient::registerRedisOrValkeyShardedCluster(
@@ -13552,6 +14250,13 @@ S9sRpcClient::registerRedisOrValkeyShardedCluster(
     jobData["type"]             = isValkeyCluster ? "valkey_sharded" : "redis_sharded";
     jobData["nodes"]            = nodesField(hosts);
     jobData["db_user"]          = options->dbAdminUserName();
+
+    if (options->dbAdminPassword().empty())
+    {
+        PRINT_ERROR("%s sharded cluster requires '--db-admin-passwd' option",
+                    isValkeyCluster ? "Valkey" : "Redis");
+        return false;
+    }
     jobData["db_password"]      = options->dbAdminPassword();
 
     if (!providerVersion.empty())
@@ -13567,7 +14272,7 @@ S9sRpcClient::registerRedisOrValkeyShardedCluster(
     else
     {
         S9sString clusterName = isValkeyCluster ? "valkey" : "redis";
-        PRINT_ERROR("%s sharded cluster requires '--%s-sharded-port' option",
+        PRINT_ERROR("%s sharded cluster requires '--%s-port' option",
                     STR(clusterName),
                     STR(clusterName));
         return false;
@@ -13629,6 +14334,13 @@ S9sRpcClient::registerRedisOrValkeyCluster(
     jobData["nodes"]            = nodesField(hosts);
 
     jobData["db_user"]          = options->dbAdminUserName();
+
+    if (options->dbAdminPassword().empty())
+    {
+        PRINT_ERROR("%s cluster requires '--db-admin-passwd' option",
+                    isValkeyCluster ? "Valkey" : "Redis");
+        return false;
+    }
     jobData["db_password"]      = options->dbAdminPassword();
 
     if(!options->replicationPassword().empty())
@@ -13669,6 +14381,52 @@ S9sRpcClient::registerRedisOrValkeyCluster(
     //
     request["operation"]        = "createJobInstance";
     request["job"]              = job;
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::listConfigStorage(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "listconfigstorage";
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::listOpenBaoVersions(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap   request;
+
+    (void) options;
+    request["operation"] = "listopenbaoversions";
+
+    return executeRequest(uri, request);
+}
+
+bool
+S9sRpcClient::setMaxClustersCapacity(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+    request["operation"] = "setmaxclusterscapacity";
+
+    const int capacity = options->getMaxClustersCapacity();
+    if (capacity < -2)
+    {
+        PRINT_ERROR("The --set-max-clusters-capacity option requires an integer >= -2 "
+                    "(-2 = auto, -1 = unlimited, 0 = inactive, >0 = cap).");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+    request["max_clusters"] = capacity;
+    if (options->force())
+        request["force"] = true;
 
     return executeRequest(uri, request);
 }

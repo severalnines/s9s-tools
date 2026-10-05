@@ -22,6 +22,7 @@
 #include "s9soptions.h"
 #include "s9snode.h"
 #include "s9sfile.h"
+#include "s9saccount.h"
 
 #include <cstdio>
 #include <cstring>
@@ -55,6 +56,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testReadOptions05, retval);
     PERFORM_TEST(testReadOptions06, retval);
     PERFORM_TEST(testReadOptions07, retval);
+    PERFORM_TEST(testJobStuck,      retval);
     PERFORM_TEST(testSetNodes,      retval);
     PERFORM_TEST(testPerconaProCluster, retval);
     PERFORM_TEST(testPostgreSqlReplication, retval);
@@ -63,6 +65,20 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testExternalBackup, retval);
     PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
+    PERFORM_TEST(testAddDb, retval);
+    PERFORM_TEST(testDeleteDb, retval);
+    PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testAddOpenBao, retval);
+    PERFORM_TEST(testListOpenBaoOperations, retval);
+    PERFORM_TEST(testPoolModePrerequisites, retval);
+    PERFORM_TEST(testVirtualRouterId, retval);
+    PERFORM_TEST(testRestoreClusterInfoOptions, retval);
+    PERFORM_TEST(testLockAccount, retval);
+    PERFORM_TEST(testUnlockAccount, retval);
+    PERFORM_TEST(testLockUnlockMutualExclusion, retval);
+    PERFORM_TEST(testLockAccountMissingAccount, retval);
+    PERFORM_TEST(testAddShard, retval);
+    PERFORM_TEST(testShardId, retval);
 
     return retval;
 }
@@ -422,6 +438,56 @@ UtS9sOptions::testReadOptions07()
 
     S9sOptions::uninit();
 #endif
+    return true;
+}
+
+/**
+ * Checking that "job --stuck" is recognized as its own main option (not
+ * requiring --list), and that it's mutually exclusive with --list.
+ */
+bool
+UtS9sOptions::testJobStuck()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        success;
+
+    {
+        const char *argv[] =
+        {
+            "/bin/s9s", "job", "--stuck", "--controller=localhost:9555",
+            "--cluster-id=1",
+            NULL
+        };
+        int argc = sizeof(argv) / sizeof(char *) - 1;
+
+        success = options->readOptions(&argc, (char**)argv);
+        S9S_VERIFY(success);
+
+        S9S_COMPARE(options->m_operationMode, S9sOptions::Job);
+        S9S_VERIFY(options->isStuckRequested());
+        S9S_VERIFY(!options->isListRequested());
+        S9S_COMPARE(options->clusterId(), 1);
+
+        S9sOptions::uninit();
+    }
+
+    {
+        // --stuck and --list are mutually exclusive main options.
+        options = S9sOptions::instance();
+        const char *argv[] =
+        {
+            "/bin/s9s", "job", "--stuck", "--list",
+            "--controller=localhost:9555",
+            NULL
+        };
+        int argc = sizeof(argv) / sizeof(char *) - 1;
+
+        success = options->readOptions(&argc, (char**)argv);
+        S9S_VERIFY(!success);
+
+        S9sOptions::uninit();
+    }
+
     return true;
 }
 
@@ -843,6 +909,412 @@ UtS9sOptions::testAddController()
 }
 
 /**
+ * Testing the "pool-controllers --add-db" option (joins a bare host into
+ * the pool's cmon DB HA InnoDB Cluster via the addCmonDbInstance job).
+ */
+bool
+UtS9sOptions::testAddDb()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-db",
+                            "--nodes=10.16.186.1:3306",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddDb());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 3306);
+    S9S_VERIFY(!options->getBool("force"));
+
+    S9sOptions::uninit();
+
+    // --force must also be accepted and readable via the generic
+    // getBool("force") accessor, the same way addNewCmonDbInstance() reads
+    // it when building the job's job_data.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-db",
+                            "--nodes=10.16.186.1:3306",
+                            "--force",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isAddDb());
+    S9S_VERIFY(options->getBool("force"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testDeleteDb()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-db",
+                            "--nodes=10.16.186.1:3306",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isDeleteDb());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 3306);
+    S9S_VERIFY(!options->getBool("force"));
+
+    S9sOptions::uninit();
+
+    // --force must also be accepted and readable via the generic
+    // getBool("force") accessor, the same way deleteCmonDbInstance() reads
+    // it when building the job's job_data.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-db",
+                            "--nodes=10.16.186.1:3306",
+                            "--force",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isDeleteDb());
+    S9S_VERIFY(options->getBool("force"));
+
+    S9sOptions::uninit();
+
+    // --node is an alternative to --nodes, identifying the pool DB HA node
+    // by hostname/IP alone, without needing a port.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-db",
+                            "--node=10.16.186.1",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isDeleteDb());
+    S9S_VERIFY(options->hasNodeOption());
+    S9S_COMPARE(options->node(), "10.16.186.1");
+    S9S_VERIFY(options->nodes().empty());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testListDb()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // --list-db is a read-only query: no --nodes required, unlike
+    // --add-db/--delete-db.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-db",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListDb());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the --add-openbao option and its parameters on the pool-controllers
+ * subcommand.
+ *
+ * The version and the listener port are deliberately not openbao-specific
+ * options: they ride --provider-version and the node specification, the same way
+ * --add-controller takes them.
+ */
+bool
+UtS9sOptions::testAddOpenBao()
+{
+    S9sOptions *options;
+
+    // Every parameter given.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1:8300",
+                            "--provider-version=2.5.4",
+                            "--openbao-mount=clustercontrol",
+                            "--openbao-namespace=tenant1",
+                            "--openbao-force-reinit",
+                            "--no-install",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddOpenBao());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.16.186.1");
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 8300);
+    S9S_COMPARE(options->providerVersion(), "2.5.4");
+    S9S_COMPARE(options->openBaoMount(), "clustercontrol");
+    S9S_COMPARE(options->openBaoNamespace(), "tenant1");
+    S9S_VERIFY(options->openBaoForceReinit());
+    S9S_VERIFY(options->noInstall());
+
+    // No parameter given: the controller's own defaults must be used, so
+    // nothing is set here.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isAddOpenBao());
+    S9S_VERIFY(!options->hasOpenBaoOption());
+    S9S_COMPARE(options->providerVersion(""), "");
+    S9S_COMPARE(options->openBaoMount(), "");
+    S9S_VERIFY(!options->openBaoForceReinit());
+    S9S_VERIFY(!options->noInstall());
+
+    // The host is mandatory.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+
+    // The parameters are meaningless without --add-openbao.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list",
+                            "--openbao-mount=clustercontrol",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the two read-only OpenBao options on the pool-controllers
+ * subcommand: --list-config-storage and --list-openbao-versions.
+ *
+ * Both take no arguments and neither needs --nodes: they ask the controller
+ * what it already knows, which is the point of having them before a host is
+ * chosen.
+ */
+bool
+UtS9sOptions::testListOpenBaoOperations()
+{
+    S9sOptions *options;
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-config-storage",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListConfigStorage());
+    S9S_VERIFY(!options->isListOpenBaoVersions());
+    S9S_VERIFY(!options->isAddOpenBao());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-openbao-versions",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isListOpenBaoVersions());
+    S9S_VERIFY(!options->isListConfigStorage());
+    S9S_VERIFY(!options->isAddOpenBao());
+
+    // Neither is set when another operation was asked for, so the dispatch
+    // cannot fall into a listing by accident.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.1",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(!options->isListConfigStorage());
+    S9S_VERIFY(!options->isListOpenBaoVersions());
+
+    // They are operations in their own right, so asking for two at once is a
+    // bad command line rather than a silent precedence.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-config-storage",
+                            "--list-openbao-versions",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    return true;
+}
+
+/**
+ * Testing the staged pool mode options on the pool-controllers subcommand:
+ * --bootstrap-db, --migrate-db and --pool-readiness, plus the
+ * --no-require-db-cluster/--no-require-config-storage opt-outs of
+ * --set-pool-mode.
+ */
+bool
+UtS9sOptions::testPoolModePrerequisites()
+{
+    S9sOptions *options;
+
+    // --bootstrap-db is a job acting on the local controller only: no
+    // --nodes, and the usual job options apply.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--bootstrap-db",
+                            "--log",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isBootstrapDb());
+    S9S_VERIFY(options->isLogRequested());
+    S9S_VERIFY(!options->isMigrateDb());
+    S9S_VERIFY(!options->isPoolReadiness());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--migrate-db",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isMigrateDb());
+    S9S_VERIFY(!options->isBootstrapDb());
+
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--pool-readiness",
+                            "--print-json",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isPoolReadiness());
+    S9S_VERIFY(options->isJsonRequested());
+    S9S_VERIFY(!options->isSetPoolModeRequested());
+
+    // They are main options: two at once is a bad command line.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--bootstrap-db",
+                            "--set-pool-mode",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    // The opt-outs belong to --set-pool-mode.
+    const char *argv5[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--set-pool-mode",
+                            "--no-require-db-cluster",
+                            "--no-require-config-storage",
+                            nullptr };
+    int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
+    S9S_VERIFY(options->isSetPoolModeRequested());
+    S9S_VERIFY(options->noRequireDbCluster());
+    S9S_VERIFY(options->noRequireConfigStorage());
+
+    const char *argv6[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--set-pool-mode",
+                            nullptr };
+    int         argc6   = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc6, (char **)argv6));
+    S9S_VERIFY(!options->noRequireDbCluster());
+    S9S_VERIFY(!options->noRequireConfigStorage());
+
+    // ... and are rejected with anything else, even the readiness check.
+    const char *argv7[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--pool-readiness",
+                            "--no-require-db-cluster",
+                            nullptr };
+    int         argc7   = sizeof(argv7) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc7, (char **)argv7));
+
+    const char *argv8[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--unset-pool-mode",
+                            "--no-require-config-storage",
+                            nullptr };
+    int         argc8   = sizeof(argv8) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc8, (char **)argv8));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
  * Testing the --configure-wal option with --archive-mode and --summarize-wal.
  */
 bool
@@ -940,6 +1412,386 @@ UtS9sOptions::testConfigureWalOptions()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc5, (char **)argv5));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that --restore-cluster-info rejects --cluster-id: the cluster ID
+ * is stored in the archive, and passing --cluster-id has no state on the
+ * controller in which the restore can succeed.
+ */
+bool
+UtS9sOptions::testRestoreClusterInfoOptions()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // --restore-cluster-info without --cluster-id should succeed.
+    const char *argv1[] = {
+        "/bin/s9s", "backup",
+        "--restore-cluster-info",
+        "--input-file=/tmp/cluster-1.tar.gz",
+        nullptr
+    };
+    int argc1 = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+
+    // --restore-cluster-info with --cluster-id should fail.
+    const char *argv2[] = {
+        "/bin/s9s", "backup",
+        "--restore-cluster-info",
+        "--input-file=/tmp/cluster-1.tar.gz",
+        "--cluster-id=1",
+        nullptr
+    };
+    int argc2 = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the --virtual-router-id option parsing and validation.
+ */
+bool
+UtS9sOptions::testVirtualRouterId()
+{
+    S9sOptions *options;
+    bool        success;
+
+    // Test valid value (42)
+    const char *argv1[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=42",
+        nullptr
+    };
+    int argc1 = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc1, (char **)argv1);
+    S9S_VERIFY(success);
+    S9S_COMPARE(options->getInt("virtual_router_id"), 42);
+
+    // Test boundary value: 1 (minimum)
+    const char *argv2[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=1",
+        nullptr
+    };
+    int argc2 = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc2, (char **)argv2);
+    S9S_VERIFY(success);
+    S9S_COMPARE(options->getInt("virtual_router_id"), 1);
+
+    // Test boundary value: 255 (maximum)
+    const char *argv3[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=255",
+        nullptr
+    };
+    int argc3 = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc3, (char **)argv3);
+    S9S_VERIFY(success);
+    S9S_COMPARE(options->getInt("virtual_router_id"), 255);
+
+    // Test out-of-range: 0 (below minimum)
+    const char *argv4[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=0",
+        nullptr
+    };
+    int argc4 = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc4, (char **)argv4);
+    S9S_VERIFY(!success);
+
+    // Test out-of-range: 256 (above maximum)
+    const char *argv5[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=256",
+        nullptr
+    };
+    int argc5 = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc5, (char **)argv5);
+    S9S_VERIFY(!success);
+
+    // Test non-integer value
+    const char *argv6[] = {
+        "/bin/s9s", "node",
+        "--register",
+        "--cluster-id=1",
+        "--nodes=keepalived://1.2.3.4",
+        "--virtual-router-id=abc",
+        nullptr
+    };
+    int argc6 = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    success = options->readOptions(&argc6, (char **)argv6);
+    S9S_VERIFY(!success);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "s9s account --lock --account=USERNAME" parses correctly
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testLockAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--lock",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isLockRequested());
+    S9S_VERIFY(!options->isUnlockRequested());
+    S9S_COMPARE(options->account().userName(), "joe");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "s9s account --unlock --account=USERNAME" parses correctly
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testUnlockAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--unlock",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isUnlockRequested());
+    S9S_VERIFY(!options->isLockRequested());
+    S9S_COMPARE(options->account().userName(), "joe");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--lock" and "--unlock" given together are rejected the
+ * same way every other pair of the account command's mutually exclusive
+ * main options is (checkOptionsAccount() counts all main options and
+ * refuses more than one with "The main options are mutually exclusive.")
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testLockUnlockMutualExclusion()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--lock",
+                            "--unlock",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(), "The main options are mutually exclusive.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--lock"/"--unlock" without "--account=" is rejected with
+ * the account-name-is-not-provided check in checkOptionsAccount()
+ * (CLUS-7664).
+ */
+bool
+UtS9sOptions::testLockAccountMissingAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--lock",
+                            "--cluster-id=1",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(), "Account name is not provided.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testAddShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11;clickhouse://10.0.2.12",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddShardRequested());
+    S9S_VERIFY(!options->isAddNodeRequested());
+    S9S_COMPARE(options->nodes().size(), 2);
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--add-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
+    S9S_COMPARE(options->errorString(), "The main options are mutually exclusive.");
+
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-shard",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.11",
+                            "--shard-id=3",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+    S9S_COMPARE(options->errorString(),
+            "The --shard-id option can only be used with --add-node.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testShardId()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.13",
+                            "--shard-id=2",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->shardId(), 2);
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--add-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.2.13",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_COMPARE(options->shardId(), 0);
+
+    const char *invalidValues[] = { "0", "-1", "abc", "2x", "" };
+    for (const char *value : invalidValues)
+    {
+        S9sString   shardOption = S9sString("--shard-id=") + value;
+        const char *argv3[] = { "/bin/s9s",
+                                "cluster",
+                                "--add-node",
+                                "--cluster-id=5",
+                                "--nodes=clickhouse://10.0.2.13",
+                                STR(shardOption),
+                                nullptr };
+        int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+        S9sString   expected;
+
+        expected.sprintf(
+                "The value '%s' is invalid for --shard-id, "
+                "shards are numbered from 1.",
+                value);
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+        S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+        S9S_COMPARE(options->errorString(), expected);
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    }
 
     S9sOptions::uninit();
     return true;

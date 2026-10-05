@@ -34,6 +34,7 @@ class UtS9sAccount : public S9sUnitTest
         bool testParse05();
         bool testCreate();
         bool testMap();
+        bool testLocked();
 };
 
 

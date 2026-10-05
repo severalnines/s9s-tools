@@ -205,6 +205,10 @@ S9sBusinessLogic::execute()
         {
             success = client.createNode();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isAddShardRequested())
+        {
+            success = client.addShard();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isReinstallNodeRequested())
         {
             success = client.reinstallNode();
@@ -899,6 +903,9 @@ S9sBusinessLogic::execute()
         if (options->isListRequested())
         {
             executeJobList(client);
+        } else if (options->isStuckRequested())
+        {
+            executeJobStuckList(client);
         } else if (options->isFailRequested())
         {
             success = client.createFailJob();
@@ -953,11 +960,15 @@ S9sBusinessLogic::execute()
         }
     } else if (options->isBackupOperation())
     {
-        if (options->isListRequested() || 
+        if (options->isListRequested() ||
                 options->isListFilesRequested() ||
                 options->isListDatabasesRequested())
         {
             executeBackupList(client);
+            client.setExitStatus();
+        } else if (options->isListBinlogBackupsRequested())
+        {
+            executeBinlogBackupList(client);
             client.setExitStatus();
         } else if (options->isCreateScheduleRequested())
         {
@@ -986,6 +997,10 @@ S9sBusinessLogic::execute()
         {
             success = deleteSnapshotRepository(client);
             client.printMessages(success ? "Deleted." : "Failed",success);
+            client.setExitStatus();
+        } else if (options->isListPgBackRestRepositoriesRequested())
+        {
+            printPgBackRestRepositories(client);
             client.setExitStatus();
         } else if (options->isCreateRequested())
         {
@@ -1237,6 +1252,22 @@ S9sBusinessLogic::execute()
             success = client.deleteAccount();
             client.printMessages("Created.", success);
             client.setExitStatus();
+        } else if (options->isLockRequested())
+        {
+            S9sAccount account = options->account();
+            account.setLocked(true);
+
+            success = client.updateAccount(account);
+            client.printMessages("Locked.", success);
+            client.setExitStatus();
+        } else if (options->isUnlockRequested())
+        {
+            S9sAccount account = options->account();
+            account.setLocked(false);
+
+            success = client.updateAccount(account);
+            client.printMessages("Unlocked.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
             options->setExitStatus(S9sOptions::BadOptions);
@@ -1417,23 +1448,34 @@ S9sBusinessLogic::execute()
             S9sString provider = options->cloudProvider();
             success = client.createCloudCredentials(options);
             S9sRpcReply reply = client.reply();
-            reply.isOk() ? ::printf("Cloud credential '%s' saved.\n", STR(options->credentialName())) : 
-                           ::printf("Cloud credential could not be saved. Error: %s.\n",
-                           STR(reply.errorString()));
+            // The controller's error string is a sentence of its own, so it is
+            // printed as it stands instead of getting another period appended.
+            if (options->isJsonRequested())
+                reply.printJsonFormat();
+            else
+                reply.isOk() ? ::printf("Cloud credential '%s' saved.\n", STR(options->credentialName())) : 
+                               ::printf("Cloud credential could not be saved. Error: %s\n",
+                               STR(reply.errorString()));
+            client.setExitStatus();
         }
         else if(options->isListCloudCredentials()) {
             success = client.listCloudCredentials();
             S9sRpcReply reply = client.reply();
             reply.printCloudCredentials();
+            client.setExitStatus();
         }
         else if(options->isDeleteCloudCredential()) {
             const int id = options->credentialId();
             const S9sString provider = options->cloudProvider();
             success = client.deleteCloudCredentials(id, provider);
             S9sRpcReply reply = client.reply();
-            reply.isOk() ? ::printf("Cloud credential %d deleted.\n", id) : 
-                           ::printf("Cloud credential could not be deleted. Error: %s.\n",
-                           STR(reply.errorString()));
+            if (options->isJsonRequested())
+                reply.printJsonFormat();
+            else
+                reply.isOk() ? ::printf("Cloud credential %d deleted.\n", id) : 
+                               ::printf("Cloud credential could not be deleted. Error: %s\n",
+                               STR(reply.errorString()));
+            client.setExitStatus();
         }
         else 
             PRINT_ERROR("Unknown cloud-credentials operation.");
@@ -1475,6 +1517,11 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printPoolControllers();
         }
+        else if (options->isListDb()) {
+            client.listDbClusterNodes(options);
+            S9sRpcReply reply = client.reply();
+            reply.printCmonDbClusterNodes();
+        }
         else if (options->isAssignedController()) {
             client.assignedController(options);
             S9sRpcReply reply = client.reply();
@@ -1490,7 +1537,8 @@ S9sBusinessLogic::execute()
             } else {
                 // check invalid request error on reply
                 if (!reply.isOk()) {
-                    PRINT_ERROR("Failed to set pool mode: %s", STR(reply.errorString()));
+                    // Also lists the missing prerequisites, if any.
+                    reply.printSetPoolModeError();
                     options->setExitStatus(S9sOptions::Failed);
                 }
                 else {
@@ -1499,9 +1547,70 @@ S9sBusinessLogic::execute()
                 }
             }
         }
+        else if (options->isPoolReadiness())
+        {
+            success = client.getPoolModeReadiness(options);
+            S9sRpcReply reply = client.reply();
+            // With --print-json an error reply is printed as JSON too.
+            if (options->isJsonRequested() || (success && reply.isOk()))
+                reply.printPoolModeReadiness();
+            else
+                PRINT_ERROR("Failed to check pool mode readiness: %s",
+                            STR(reply.errorString()));
+
+            if (!success || !reply.isOk())
+                options->setExitStatus(S9sOptions::Failed);
+        }
+        else if (options->isMigrateDb())
+        {
+            success = client.migrateCmonDb(options);
+            S9sRpcReply reply = client.reply();
+            if (options->isJsonRequested()) {
+                reply.printJsonFormat();
+                if (!success || !reply.isOk())
+                    options->setExitStatus(S9sOptions::Failed);
+            }
+            else if (!success || !reply.isOk()) {
+                PRINT_ERROR("Failed to migrate cmon's DB: %s",
+                            STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                const S9sString message = reply["message"].toString();
+                if (!message.empty())
+                    ::printf("%s\n", STR(message));
+
+                // Like --set-pool-mode, the controller goes away for a while.
+                ::printf(
+                    "The migration runs in the background: cmon is stopped "
+                    "for several minutes\n"
+                    "and restarts when it completes. Until then "
+                    "'s9s pool-controllers --pool-readiness'\n"
+                    "fails to connect; wait for the controller to come back, "
+                    "then check again.\n");
+            }
+        }
+        else if (options->isBootstrapDb())
+        {
+            success = client.bootstrapCmonDbCluster(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
         else if (options->isAddController())
         {
             success = client.addNewController(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isAddDb())
+        {
+            success = client.addNewCmonDbInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isDeleteDb())
+        {
+            success = client.deleteCmonDbInstance(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
@@ -1540,6 +1649,50 @@ S9sBusinessLogic::execute()
             success = client.updateCmon(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isListOpenBaoVersions())
+        {
+            success = client.listOpenBaoVersions(options);
+            S9sRpcReply reply = client.reply();
+            if (success && reply.isOk())
+                reply.printOpenBaoVersionList();
+            else
+            {
+                PRINT_ERROR("Failed to list OpenBao versions: %s",
+                            STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+        }
+        else if (options->isListConfigStorage())
+        {
+            success = client.listConfigStorage(options);
+            S9sRpcReply reply = client.reply();
+            if (success && reply.isOk())
+                reply.printConfigStorageList();
+            else
+            {
+                PRINT_ERROR("Failed to list configuration storage: %s",
+                            STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+        }
+        else if (options->isAddOpenBao())
+        {
+            success = client.installOpenBao(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isSetMaxClustersCapacityRequested())
+        {
+            client.setMaxClustersCapacity(options);
+            S9sRpcReply reply = client.reply();
+            if (!reply.isOk()) {
+                PRINT_ERROR("Failed to set max clusters capacity: %s", STR(reply.errorString()));
+                options->setExitStatus(S9sOptions::Failed);
+            }
+            else {
+                ::printf("Max clusters capacity set to %d.\n", options->getMaxClustersCapacity());
+            }
         }
         else
             PRINT_ERROR("Unknown controllers operation.");
@@ -2197,7 +2350,26 @@ S9sBusinessLogic::printSnapshotRepositories(
     }
 }
 
-bool 
+void
+S9sBusinessLogic::printPgBackRestRepositories(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getPgBackRestRepositories(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printPgBackRestRepositories();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+bool
 S9sBusinessLogic::deleteSnapshotRepository(
         S9sRpcClient &client)
 {
@@ -2233,11 +2405,30 @@ S9sBusinessLogic::executeBackupList(
     }
 }
 
+void
+S9sBusinessLogic::executeBinlogBackupList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options = S9sOptions::instance();
+    int         clusterId = options->clusterId();
+    S9sRpcReply reply;
+    bool        success;
+
+    success = client.getBinlogBackups(clusterId);
+    if (success)
+    {
+        reply = client.reply();
+        reply.printBinlogBackupList();
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
 /**
  * This function will execute the listing of the users that can be requested by
  * the --list and --whoami command line options.
  */
-void 
+void
 S9sBusinessLogic::executeUserList(
         S9sRpcClient &client)
 {
@@ -2333,10 +2524,47 @@ S9sBusinessLogic::executeJobList(
         }
     } else {
         PRINT_ERROR("%s", STR(client.errorString()));
-    } 
+    }
 }
 
-void 
+/**
+ * \param client A client for the communication.
+ *
+ * Executes the --stuck operation on the jobs, listing the jobs currently
+ * running longer than their command class's configured stuck-job
+ * threshold.
+ */
+void
+S9sBusinessLogic::executeJobStuckList(
+        S9sRpcClient &client)
+{
+    S9sOptions  *options     = S9sOptions::instance();
+    int          clusterId   = options->clusterId();
+    S9sString    clusterName = options->clusterName();
+    S9sRpcReply  reply;
+    bool         success;
+
+    success = client.getStuckJobs(clusterName, clusterId);
+
+    if (success)
+    {
+        reply = client.reply();
+        success = reply.isOk();
+        if (success)
+        {
+            reply.printStuckJobList();
+        } else {
+            if (options->isJsonRequested())
+                reply.printJsonFormat();
+            else
+                PRINT_ERROR("%s", STR(reply.errorString()));
+        }
+    } else {
+        PRINT_ERROR("%s", STR(client.errorString()));
+    }
+}
+
+void
 S9sBusinessLogic::executeLogList(
         S9sRpcClient &client)
 {

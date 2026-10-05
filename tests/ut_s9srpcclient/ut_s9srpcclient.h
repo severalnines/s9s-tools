@@ -65,6 +65,10 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateCluster04();
         bool testCreateCluster05();
         bool testCreateCluster06();
+        bool testRegisterClickHouse();
+        bool testAddShardClickHouse();
+        bool testAddShardRejectsNonClickHouseNodes();
+        bool testAddNodeClickHouseShardId();
 
         bool testGetAllClusterInfo();
         bool testGetCluster();
@@ -84,6 +88,9 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateServer();
         bool testSetHost();
         bool testCreateGalera();
+        bool testDeployAgentsDefault();
+        bool testDeployAgentsNoAgent();
+        bool testDeployAgentsAutoAgent();
         bool testCreateReplication();
         bool testCreateNdbCluster();
         bool testAddNode();
@@ -109,6 +116,17 @@ class UtS9sRpcClient : public S9sUnitTest
 
         bool testConfigureWal();
         bool testAddController();
+        bool testAddDb();
+        bool testDeleteDb();
+        bool testListDb();
+        bool testInstallOpenBao();
+        bool testListConfigStorage();
+        bool testListOpenBaoVersions();
+        bool testBootstrapDb();
+        bool testGetPoolModeReadiness();
+        bool testMigrateCmonDb();
+        bool testSetPoolModePrerequisites();
+        bool testPoolModeSetupCommands();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

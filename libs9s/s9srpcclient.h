@@ -185,7 +185,11 @@ class S9sRpcClient
 
         // Methods related to jobs.
         bool getJobInstances(
-                const S9sString  &clusterName, 
+                const S9sString  &clusterName,
+                const int         clusterId);
+
+        bool getStuckJobs(
+                const S9sString  &clusterName,
                 const int         clusterId);
 
         bool deleteJobInstance(const int jobId);
@@ -207,8 +211,10 @@ class S9sRpcClient
         bool deleteAllBackups();
         
         bool getBackups(const int clusterId);
+        bool getBinlogBackups(const int clusterId);
         bool getBackupSchedules(const int clusterId);
         bool getSnapshotRepositories(const int clusterId);
+        bool getPgBackRestRepositories(const int clusterId);
 
         bool deleteBackupRecord();
         bool deleteSnapshotRepository();
@@ -217,6 +223,7 @@ class S9sRpcClient
          * Account&database handling.
          */
         bool createAccount();
+        bool updateAccount(const S9sAccount &account);
         bool getAccounts();
 
         bool getClusterConfig();
@@ -364,13 +371,23 @@ class S9sRpcClient
          * Requests related to controllers operations
          */
         bool listControllers(S9sOptions *options);
+        bool listDbClusterNodes(S9sOptions *options);
         bool assignedController(S9sOptions *options);
         bool setPoolMode(S9sOptions *options);
+        bool getPoolModeReadiness(S9sOptions *options);
+        bool migrateCmonDb(S9sOptions *options);
+        bool bootstrapCmonDbCluster(S9sOptions *options);
         bool addNewController(S9sOptions *options);
+        bool addNewCmonDbInstance(S9sOptions *options);
+        bool deleteCmonDbInstance(S9sOptions *options);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);
         bool updateCmon(S9sOptions *options);
+        bool listConfigStorage(S9sOptions *options);
+        bool listOpenBaoVersions(S9sOptions *options);
+        bool setMaxClustersCapacity(S9sOptions *options);
+        bool installOpenBao(S9sOptions *options);
 
         /*
          * Requests related to logical replication
@@ -439,6 +456,7 @@ class S9sRpcClient
         bool createCluster();
         bool registerCluster();
         bool createNode();
+        bool addShard();
         bool reinstallNode();
         bool reconfigureNode();
         bool removeNode();
@@ -652,6 +670,10 @@ class S9sRpcClient
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName);
 
+        bool registerClickHouseCluster(
+                const S9sVariantList &hosts,
+                const S9sString      &osUserName);
+
         bool createMsSqlSingle(
                 const S9sVariantList &hosts,
                 const S9sString      &osUserName,
@@ -702,6 +724,11 @@ class S9sRpcClient
 
         bool addPgBackRest(
                 const S9sVariantList &hosts);
+
+        // CLUS-7060: add the S3 backup-repository reference (cloud credential id
+        // + bucket) to a pgbackrest setup/reconfigure/reinstall job_data.
+        static void addPgBackRestS3RepoToJobData(
+                S9sVariantMap &jobData);
 
         bool addPBMAgent(
                 const S9sVariantList &hosts);

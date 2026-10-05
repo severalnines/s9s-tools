@@ -21,6 +21,10 @@
 
 #include "s9snode.h"
 #include "s9soptions.h"
+#include "s9srpcreply.h"
+
+#include <cstdio>
+#include <unistd.h>
 
 //#define DEBUG
 #define WARNING
@@ -124,6 +128,10 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster04,     retval);
     PERFORM_TEST(testCreateCluster05,     retval);
     PERFORM_TEST(testCreateCluster06,     retval);
+    PERFORM_TEST(testRegisterClickHouse,  retval);
+    PERFORM_TEST(testAddShardClickHouse,  retval);
+    PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
+    PERFORM_TEST(testAddNodeClickHouseShardId, retval);
 
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
@@ -144,6 +152,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateServer,        retval);
     PERFORM_TEST(testSetHost,             retval);
     PERFORM_TEST(testCreateGalera,        retval);
+    PERFORM_TEST(testDeployAgentsDefault, retval);
+    PERFORM_TEST(testDeployAgentsNoAgent, retval);
+    PERFORM_TEST(testDeployAgentsAutoAgent, retval);
     PERFORM_TEST(testCreateReplication,   retval);
     PERFORM_TEST(testCreateNdbCluster,    retval);
     PERFORM_TEST(testAddNode,             retval);
@@ -169,6 +180,17 @@ UtS9sRpcClient::runTest(
 
     PERFORM_TEST(testConfigureWal, retval);
     PERFORM_TEST(testAddController, retval);
+    PERFORM_TEST(testAddDb, retval);
+    PERFORM_TEST(testDeleteDb, retval);
+    PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testInstallOpenBao, retval);
+    PERFORM_TEST(testListConfigStorage, retval);
+    PERFORM_TEST(testListOpenBaoVersions, retval);
+    PERFORM_TEST(testBootstrapDb, retval);
+    PERFORM_TEST(testGetPoolModeReadiness, retval);
+    PERFORM_TEST(testMigrateCmonDb, retval);
+    PERFORM_TEST(testSetPoolModePrerequisites, retval);
+    PERFORM_TEST(testPoolModeSetupCommands, retval);
 
     return retval;
 }
@@ -1054,6 +1076,72 @@ UtS9sRpcClient::testCreateCluster04()
             payload.valueByPath(JOB_DATA "version").toString(),
             "myversion");
 
+    // Test hba_preset is passed when pghba_preset option is set.
+    {
+        options->m_options["pghba_preset"] = "my_hba_preset.conf";
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "hba_preset").toString(),
+                "my_hba_preset.conf");
+
+        options->m_options.erase("pghba_preset");
+    }
+
+    // Test save_as_hba_preset and hba_preset_name are passed when set.
+    {
+        S9sVariantMap rule;
+        S9sVariantList rules;
+
+        rule["type"]     = "host";
+        rule["database"] = "all";
+        rule["user"]     = "save_preset_user";
+        rule["address"]  = "192.0.2.0/24";
+        rule["method"]   = "md5";
+        rules << rule;
+        options->m_options["pghba_rules"]        = rules;
+        options->m_options["save_as_hba_preset"] = true;
+        options->m_options["hba_preset_name"]    = "viafirma";
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "save_as_hba_preset").toBoolean(),
+                true);
+        S9S_COMPARE(
+                payload.valueByPath(
+                    JOB_DATA "hba_preset_name").toString(),
+                "viafirma");
+
+        options->m_options.erase("pghba_rules");
+        options->m_options.erase("save_as_hba_preset");
+        options->m_options.erase("hba_preset_name");
+    }
+
+    // Test extra_hba_rules is passed when pghba_rules option is set.
+    {
+        S9S_VERIFY(options->appendPgHbaRules("host all viafirma 192.168.201.0/24 md5"));
+
+        S9S_VERIFY(client.createCluster());
+        payload = client.lastPayload();
+
+        S9sVariantList hbaRules =
+            payload.valueByPath(JOB_DATA "extra_hba_rules").toVariantList();
+        S9S_COMPARE(hbaRules.size(), 1);
+        S9sVariantMap firstRule = hbaRules[0].toVariantMap();
+        S9S_COMPARE(firstRule["type"].toString(),    "host");
+        S9S_COMPARE(firstRule["user"].toString(),    "viafirma");
+        S9S_COMPARE(firstRule["address"].toString(), "192.168.201.0/24");
+        S9S_COMPARE(firstRule["method"].toString(),  "md5");
+
+        options->m_options.erase("pghba_rules");
+    }
+
     return true;
 }
 
@@ -1159,6 +1247,189 @@ UtS9sRpcClient::testCreateCluster06()
             payload.valueByPath(JOB_DATA "version").toString(),
             "myversion");
 
+    return true;
+}
+
+bool
+UtS9sRpcClient::testRegisterClickHouse()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options["cluster_type"]       = "clickhouse";
+    options->m_options["cluster_name"]       = "ch_001";
+    options->m_options["db_admin_user_name"] = "default";
+    options->m_options["db_admin_password"]  = "secret";
+    options->setNodes("NODE1:9440");
+
+    S9S_VERIFY(client.registerCluster());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Register ClickHouse Cluster");
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "add_cluster");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_type").toString(),
+            "clickhouse");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "type").toString(),
+            "clickhouse");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "cluster_name").toString(),
+            "ch_001");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "db_user").toString(),
+            "default");
+
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "db_password").toString(),
+            "secret");
+
+    // Exactly one node was forwarded for topology discovery.
+    S9S_COMPARE(
+            payload.valueByPath(JOB_DATA "nodes").toVariantList().size(),
+            1);
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddShardClickHouse()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantList      nodes;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11;clickhouse://10.0.2.12");
+
+    S9S_VERIFY(client.addShard());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+    S9S_COMPARE(payload["cluster_id"], 5);
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Add Shard to Cluster");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "add_shard");
+
+    nodes = payload.valueByPath(JOB_DATA "nodes").toVariantList();
+    S9S_COMPARE(nodes.size(), 2);
+    S9S_COMPARE(nodes[0]["hostname"].toString(), "10.0.2.11");
+    S9S_COMPARE(nodes[0]["class_name"].toString(), "CmonClickHouseHost");
+    S9S_COMPARE(nodes[1]["hostname"].toString(), "10.0.2.12");
+
+    S9S_VERIFY(payload.valueByPath(JOB_DATA "install_software").toBoolean());
+    S9S_VERIFY(payload.valueByPath(JOB_DATA "disable_firewall").toBoolean());
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddShardRejectsNonClickHouseNodes()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11;clickhouse-keeper://10.0.9.14");
+
+    S9S_VERIFY(!client.addShard());
+    S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    S9S_COMPARE(client.uri(0), "");
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("10.0.2.11");
+
+    S9S_VERIFY(!client.addShard());
+    S9S_COMPARE(client.uri(0), "");
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+
+    S9S_VERIFY(!client.addShard());
+    S9S_COMPARE(client.uri(0), "");
+
+    options->setExitStatus(S9sOptions::ExitOk);
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddNodeClickHouseShardId()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sRpcClientTester  clientWithoutShard;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->m_options["shard_id"]   = 2;
+    options->setNodes("clickhouse://10.0.2.13");
+
+    S9S_VERIFY(client.createNode());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "addnode");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "shard_id"), 2);
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.13");
+
+    S9S_VERIFY(clientWithoutShard.createNode());
+
+    payload = clientWithoutShard.lastPayload();
+    S9S_VERIFY(!payload.valueByPath("/job/job_spec/job_data").toVariantMap()
+            .contains("shard_id"));
+
+    const char *nonClickHouseNodes[] = {
+            "mysql://10.0.3.11", "10.0.3.11", "clickhouse-keeper://10.0.9.14" };
+    for (const char *nodes : nonClickHouseNodes)
+    {
+        S9sRpcClientTester rejectedClient;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        options->setNodes(nodes);
+
+        S9S_VERIFY(!rejectedClient.createNode());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(rejectedClient.uri(0), "");
+    }
+
+    options->setExitStatus(S9sOptions::ExitOk);
     return true;
 }
 
@@ -1569,6 +1840,73 @@ UtS9sRpcClient::testCreateGalera()
 }
 
 /**
+ * Checking that a plain create cluster asks for the agents.
+ */
+bool
+UtS9sRpcClient::testDeployAgentsDefault()
+{
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          payload;
+
+    hosts << S9sNode("192.168.1.191");
+
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
+    payload = client.payload(0u);
+
+    S9S_VERIFY(payload.contains("\"deploy_agents\": true"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Checking that --no-agent refuses the agents.
+ */
+bool
+UtS9sRpcClient::testDeployAgentsNoAgent()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          payload;
+
+    options->m_options["no_agent"] = true;
+    hosts << S9sNode("192.168.1.191");
+
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
+    payload = client.payload(0u);
+
+    S9S_VERIFY(payload.contains("\"deploy_agents\": false"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Checking that --auto-agent leaves the key out of the request.
+ */
+bool
+UtS9sRpcClient::testDeployAgentsAutoAgent()
+{
+    S9sOptions        *options = S9sOptions::instance();
+    S9sRpcClientTester client;
+    S9sVariantList     hosts;
+    S9sString          payload;
+
+    options->m_options["auto_agent"] = true;
+    hosts << S9sNode("192.168.1.191");
+
+    S9S_VERIFY(client.createGaleraCluster(hosts, "pi", "percona", "5.6"));
+    payload = client.payload(0u);
+
+    S9S_VERIFY(!payload.contains("deploy_agents"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
  * Testing the createMySqlReplication() call.
  */
 bool
@@ -1775,6 +2113,7 @@ UtS9sRpcClient::testComposeBackupJob()
     options->m_options["on_node"]             = true;
     options->m_options["on_controller"]       = false;
     options->m_options["parallellism"]        = 10;
+    options->m_options["compression_threads"] = 6;
     options->m_options["encrypt_backup"]      = true;
     options->m_options["backup_retention"]    = 8;
     options->m_options["to_individual_files"] = true;
@@ -1870,6 +2209,10 @@ UtS9sRpcClient::testComposeBackupJob()
     S9S_COMPARE(
             jobData.valueByPath("xtrabackup_parallellism"),
             10);
+
+    S9S_COMPARE(
+            jobData.valueByPath("compression_threads"),
+            6);
 
     return true;
 }
@@ -2766,6 +3109,661 @@ UtS9sRpcClient::testAddController()
     S9S_COMPARE(jobData["version"], "2.3.4-17176");
     S9S_COMPARE(jobData["server_address"], "10.16.186.1");
     S9S_COMPARE(jobData["port"], 9500);
+
+    return true;
+}
+
+/**
+ * Testing addNewCmonDbInstance() (the "pool-controllers --add-db" job -
+ * CmdAddCmonDbInstance) request shape: job_spec.command, and job_data's
+ * server_address/port/force fields.
+ */
+bool
+UtS9sRpcClient::testAddDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    // Explicit port, force omitted (must default to false).
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+
+    S9S_VERIFY(client.addNewCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "addCmonDbInstance");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3307);
+    S9S_VERIFY(!jobData["force"].toBoolean());
+
+    // No port on --nodes -> must default to 3306 (S9sNode::port() itself
+    // defaults to 0, not 3306, so addNewCmonDbInstance() must apply the
+    // fallback itself). --force must also come through.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87");
+    options->m_options["force"] = true;
+
+    S9S_VERIFY(client.addNewCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3306);
+    S9S_VERIFY(jobData["force"].toBoolean());
+
+    return true;
+}
+
+/**
+ * Testing deleteCmonDbInstance() (the "pool-controllers --delete-db" job -
+ * CmdDeleteCmonDbInstance) request shape: job_spec.command, and job_data's
+ * server_address/port/force fields.
+ */
+bool
+UtS9sRpcClient::testDeleteDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    // Explicit port, force omitted (must default to false).
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+
+    S9S_VERIFY(client.deleteCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "DeleteCmonDbInstance");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3307);
+    S9S_VERIFY(!jobData["force"].toBoolean());
+
+    // No port on --nodes -> must default to 3306 (S9sNode::port() itself
+    // defaults to 0, not 3306, so deleteCmonDbInstance() must apply the
+    // fallback itself). --force must also come through.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87");
+    options->m_options["force"] = true;
+
+    S9S_VERIFY(client.deleteCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.1.87");
+    S9S_COMPARE(jobData["port"], 3306);
+    S9S_VERIFY(jobData["force"].toBoolean());
+
+    // --node is an alternative to --nodes: it must send "node" instead of
+    // server_address/port, and take priority even if --nodes was also set.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.1.87:3307");
+    options->m_options["node"] = "10.0.1.87";
+
+    S9S_VERIFY(client.deleteCmonDbInstance(options));
+    payload = client.lastPayload();
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["node"], "10.0.1.87");
+    S9S_VERIFY(!jobData.contains("server_address"));
+    S9S_VERIFY(!jobData.contains("port"));
+
+    return true;
+}
+
+/**
+ * Testing listDbClusterNodes() (the "pool-controllers --list-db" call -
+ * the read-only getCmonDbClusterNodes RPC) request shape: unlike
+ * add/import/deleteCmonDbInstance this is not a job, just a flat request
+ * with the operation name.
+ */
+bool
+UtS9sRpcClient::testListDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listDbClusterNodes(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "getcmondbclusternodes");
+
+    return true;
+}
+
+/**
+ * Testing installOpenBao() (the "pool-controllers --add-openbao" job -
+ * CmdSetupOpenBao) request shape.
+ *
+ * The version and the listener port are deliberately NOT openbao-specific
+ * options: they ride the standard --provider-version option and the node
+ * specification, exactly as the add-controller job takes them.
+ */
+bool
+UtS9sRpcClient::testInstallOpenBao()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    // Port from the node spec, version from --provider-version.
+    options->setNodes("10.16.186.1:8300");
+    options->m_options["provider_version"]      = "2.5.4";
+    options->m_options["openbao_mount"]         = "clustercontrol";
+    options->m_options["openbao_namespace"]     = "tenant1";
+    options->m_options["openbao_force_reinit"]  = true;
+    options->m_options["no_install"]            = true;
+
+    S9S_VERIFY(client.installOpenBao(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    // The controller registers the action as SETUP_OPENBAO and uppercases
+    // whatever it receives, so this must not be camel-cased.
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "setup_openbao");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Setup OpenBao");
+
+    auto jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.16.186.1");
+    S9S_COMPARE(jobData["port"], 8300);
+    S9S_COMPARE(jobData["version"], "2.5.4");
+    S9S_COMPARE(jobData["openbao_mount"], "clustercontrol");
+    S9S_COMPARE(jobData["openbao_namespace"], "tenant1");
+    S9S_COMPARE(jobData["openbao_force_reinit"], true);
+    S9S_COMPARE(jobData["install_software"], false);
+
+    /*
+     * Without the parameters the job_data must carry no openbao_* key and no
+     * version, so that the controller applies its own defaults.
+     */
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.16.186.1");
+
+    S9S_VERIFY(client.installOpenBao(options));
+    payload = client.lastPayload();
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+
+    S9S_COMPARE(jobData["server_address"], "10.16.186.1");
+    // No port in the node spec: the key is omitted so the controller uses its
+    // own OpenBao default rather than being handed a 0.
+    S9S_VERIFY(!jobData.contains("port"));
+    S9S_VERIFY(!jobData.contains("version"));
+    S9S_VERIFY(!jobData.contains("openbao_mount"));
+    S9S_VERIFY(!jobData.contains("openbao_namespace"));
+    S9S_VERIFY(!jobData.contains("openbao_force_reinit"));
+    S9S_VERIFY(!jobData.contains("install_software"));
+
+    return true;
+}
+
+/**
+ * Testing listConfigStorage() (the "pool-controllers --list-config-storage"
+ * call) request shape.
+ *
+ * A read of what the controller already knows: it takes no arguments, so the
+ * only thing that can be wrong is the endpoint and the operation name, and the
+ * controller lower-cases nothing - it compares the operation as sent.
+ */
+bool
+UtS9sRpcClient::testListConfigStorage()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listConfigStorage(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "listconfigstorage");
+
+    // Nothing else belongs in the request: adding a filter here would have to
+    // be matched on the controller side, and it is not.
+    S9S_VERIFY(!payload.contains("job"));
+    S9S_VERIFY(!payload.contains("cluster_id"));
+
+    return true;
+}
+
+/**
+ * Testing listOpenBaoVersions() (the "pool-controllers
+ * --list-openbao-versions" call) request shape.
+ */
+bool
+UtS9sRpcClient::testListOpenBaoVersions()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.listOpenBaoVersions(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "listopenbaoversions");
+    S9S_VERIFY(!payload.contains("job"));
+
+    return true;
+}
+
+/**
+ * Testing bootstrapCmonDbCluster() (the "pool-controllers --bootstrap-db"
+ * job - CmdBootstrapCmonDbCluster) request shape: a pool-level job with no
+ * cluster_id and an empty job_data.
+ */
+bool
+UtS9sRpcClient::testBootstrapDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.bootstrapCmonDbCluster(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "bootstrapCmonDbCluster");
+    S9S_COMPARE(
+            payload.valueByPath("/job/title").toString(),
+            "Bootstrap CC DB Cluster");
+    S9S_VERIFY(payload["job"]["job_spec"]["job_data"].toVariantMap().empty());
+    S9S_VERIFY(!payload.contains("cluster_id"));
+
+    return true;
+}
+
+/**
+ * Testing getPoolModeReadiness() (the "pool-controllers --pool-readiness"
+ * call) request shape: a flat, read-only request, not a job.
+ */
+bool
+UtS9sRpcClient::testGetPoolModeReadiness()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.getPoolModeReadiness(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/poolcontrollers/");
+    S9S_COMPARE(payload["operation"], "getpoolmodereadiness");
+    S9S_VERIFY(!payload.contains("job"));
+
+    return true;
+}
+
+/**
+ * Testing migrateCmonDb() (the "pool-controllers --migrate-db" call) request
+ * shape: an RPC call of its own, not a job.
+ */
+bool
+UtS9sRpcClient::testMigrateCmonDb()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.migrateCmonDb(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/poolcontrollers/");
+    S9S_COMPARE(payload["operation"], "migratecmondb");
+    S9S_VERIFY(!payload.contains("job"));
+
+    return true;
+}
+
+/**
+ * Testing setPoolMode() with the --no-require-db-cluster and
+ * --no-require-config-storage opt-outs: the require_* fields are only sent,
+ * as false, when opted out - the controller defaults both to true.
+ */
+bool
+UtS9sRpcClient::testSetPoolModePrerequisites()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    // No opt-out: neither field is sent.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["set_pool_mode"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "setPoolMode");
+    S9S_VERIFY(payload["pool_mode"].toBoolean());
+    S9S_VERIFY(!payload.contains("require_cmon_db_cluster"));
+    S9S_VERIFY(!payload.contains("require_config_storage"));
+    // The old setPoolMode-side bootstrap is gone.
+    S9S_VERIFY(!payload.contains("bootstrap_db_ha"));
+
+    // Both opted out.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["set_pool_mode"]             = true;
+    options->m_options["no_require_db_cluster"]     = true;
+    options->m_options["no_require_config_storage"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    S9S_VERIFY(payload.contains("require_cmon_db_cluster"));
+    S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
+    S9S_VERIFY(payload.contains("require_config_storage"));
+    S9S_VERIFY(!payload["require_config_storage"].toBoolean());
+
+    // Only one opted out.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["set_pool_mode"]         = true;
+    options->m_options["no_require_db_cluster"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
+    S9S_VERIFY(!payload.contains("require_config_storage"));
+
+    // Disabling pool mode has no prerequisites to check.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["unset_pool_mode"]       = true;
+    options->m_options["no_require_db_cluster"] = true;
+
+    S9S_VERIFY(client.setPoolMode(options));
+    payload = client.lastPayload();
+
+    S9S_VERIFY(!payload["pool_mode"].toBoolean());
+    S9S_VERIFY(!payload.contains("require_cmon_db_cluster"));
+
+    return true;
+}
+
+/**
+ * \returns What S9sRpcReply::printPoolModeReadiness() prints for the given
+ *   getPoolModeReadiness reply.
+ */
+static S9sString
+readinessSummary(
+        const S9sVariantMap &readiness)
+{
+    S9sRpcReply  reply;
+    S9sString    retval;
+    FILE        *output = ::tmpfile();
+    int          savedStdout;
+    char         buffer[1024];
+
+    for (const auto &key : readiness.keys())
+        reply[key] = readiness.at(key);
+
+    reply["request_status"] = "ok";
+
+    ::fflush(stdout);
+    savedStdout = ::dup(STDOUT_FILENO);
+    ::dup2(::fileno(output), STDOUT_FILENO);
+
+    reply.printPoolModeReadiness();
+
+    ::fflush(stdout);
+    ::dup2(savedStdout, STDOUT_FILENO);
+    ::close(savedStdout);
+
+    ::rewind(output);
+    while (::fgets(buffer, sizeof(buffer), output) != NULL)
+        retval += buffer;
+
+    ::fclose(output);
+    return retval;
+}
+
+/**
+ * Testing S9sRpcReply::poolModeSetupCommands(), the commands the
+ * "--pool-readiness" summary (and a failed "--set-pool-mode") suggests for a
+ * getPoolModeReadiness reply - in particular how the cmon DB migration and
+ * bootstrap state decide whether --migrate-db and --bootstrap-db are
+ * suggested.
+ */
+bool
+UtS9sRpcClient::testPoolModeSetupCommands()
+{
+    S9sVariantMap  readiness;
+    S9sVariantMap  dbCluster;
+    S9sVariantList missing;
+    S9sStringList  commands;
+    S9sString      summary;
+
+    S9sOptions::uninit();
+
+    missing << S9sVariant("cmon_db_cluster") << S9sVariant("config_storage");
+    dbCluster["ready"]              = false;
+    dbCluster["db_backend"]         = "mariadb";
+    dbCluster["migration_required"] = true;
+    dbCluster["migration_state"]    = "none";
+
+    readiness["pool_mode"]       = false;
+    readiness["applicable"]      = true;
+    readiness["ready"]           = false;
+    readiness["missing"]         = missing;
+    readiness["cmon_db_cluster"] = dbCluster;
+
+    // MariaDB, nothing migrated yet, a cmon without the migration_supported
+    // key: migrate first, --bootstrap-db only once cmon is back on MySQL.
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
+    S9S_COMPARE(commands[1],
+            "s9s pool-controllers --add-openbao --nodes=HOST --log");
+
+    // The same when the controller says it supports the migration.
+    dbCluster["migration_supported"]          = true;
+    dbCluster["migration_unsupported_reason"] = "";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
+
+    // A migration in progress must not be started again, and the CC DB
+    // cluster can not be bootstrapped while it runs.
+    dbCluster["migration_state"] = "running";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 1);
+    S9S_COMPARE(commands[0],
+            "s9s pool-controllers --add-openbao --nodes=HOST --log");
+
+    // A failed one that rolled back to MariaDB is retried.
+    dbCluster["migration_state"] = "failed";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --migrate-db");
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("rolls back to MariaDB"));
+    S9S_VERIFY(summary.contains("then retry with --migrate-db"));
+    S9S_VERIFY(!summary.contains("untouched"));
+
+    // Not supported on this host (e.g. Debian): nothing for the CC DB
+    // cluster is suggested, and the reason is printed.
+    dbCluster["migration_state"]              = "none";
+    dbCluster["migration_supported"]          = false;
+    dbCluster["migration_unsupported_reason"] =
+        "Migrating cmon's DB is only supported on RHEL-family hosts, see "
+        "https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
+        "scalable-controllers-pool/"
+        "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 1);
+    S9S_COMPARE(commands[0],
+            "s9s pool-controllers --add-openbao --nodes=HOST --log");
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Migration              : not supported on this host"));
+    S9S_VERIFY(summary.contains(
+            "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu"));
+    S9S_VERIFY(!summary.contains("--migrate-db"));
+
+    // Oracle MySQL, not bootstrapped yet: --bootstrap-db.
+    dbCluster["db_backend"]                   = "mysql";
+    dbCluster["migration_required"]           = false;
+    dbCluster["migration_supported"]          = true;
+    dbCluster["migration_unsupported_reason"] = "";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --bootstrap-db --log");
+
+    // A migration that failed after cmon ran on MySQL: nothing to retry.
+    dbCluster["migration_state"] = "failed";
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 2);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --bootstrap-db --log");
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("the last migration failed"));
+    S9S_VERIFY(!summary.contains("retry with --migrate-db"));
+
+    // A bootstrap job in progress must not be started again.
+    dbCluster["migration_state"]       = "none";
+    dbCluster["bootstrap_in_progress"] = true;
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 1);
+    S9S_COMPARE(commands[0],
+            "s9s pool-controllers --add-openbao --nodes=HOST --log");
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Bootstrap              : in progress"));
+
+    // The same with the storage ready: pool mode can not be enabled yet, so
+    // it is not suggested either.
+    S9sVariantList dbOnly;
+
+    dbOnly << S9sVariant("cmon_db_cluster");
+    readiness["missing"] = dbOnly;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_VERIFY(commands.empty());
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("wait for the CC DB cluster bootstrap in progress"));
+    S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+
+    // Not supported on this host with the storage ready: the same, with the
+    // manual migration as the way forward.
+    dbCluster["db_backend"]            = "mariadb";
+    dbCluster["migration_required"]    = true;
+    dbCluster["migration_supported"]   = false;
+    dbCluster["bootstrap_in_progress"] = false;
+    readiness["cmon_db_cluster"] = dbCluster;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_VERIFY(commands.empty());
+
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("move cmon's DB to Oracle MySQL manually"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+
+    // Nothing required missing: now pool mode is suggested.
+    readiness["missing"] = S9sVariantList();
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Run 's9s pool-controllers --set-pool-mode'"));
+
+    readiness["missing"] = missing;
+
+    // An opted-out prerequisite gets no command.
+    dbCluster["db_backend"]            = "mysql";
+    dbCluster["migration_required"]    = false;
+    dbCluster["migration_supported"]   = true;
+    readiness["cmon_db_cluster"] = dbCluster;
+    S9sOptions::instance()->m_options["no_require_config_storage"] = true;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_COMPARE(commands.size(), 1);
+    S9S_COMPARE(commands[0], "s9s pool-controllers --bootstrap-db --log");
+    S9sOptions::uninit();
+
+    // Nothing to do when not applicable.
+    readiness["applicable"] = false;
+    commands = S9sRpcReply::poolModeSetupCommands(readiness);
+    S9S_VERIFY(commands.empty());
 
     return true;
 }

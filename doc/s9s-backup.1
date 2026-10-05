@@ -181,8 +181,50 @@ archive files of the backups.
 .nf
 s9s backup \\
     --list-files \\
-    --long 
+    --long
 .fi
+
+.TP
+.B \-\^\-list\-binlog\-backups
+List binlog backups. This option lists binary log backup files along with their
+size and cluster information, useful for accounting and monitoring purposes.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-binlog-backups \\
+    --cluster-id=1 \\
+    --long
+.fi
+
+When listing binlog backups with the \fB\-\^\-long\fP option the following
+columns are listed:
+
+.RS 7
+.TP
+.B CID
+The numerical ID of the cluster to which the binlog backup belongs.
+
+.TP
+.B BINLOG FILE
+The name of the binary log file.
+
+.TP
+.B SIZE
+The size of the binlog backup file.
+
+.TP
+.B CREATED
+The date and time showing when the binlog backup was created.
+
+.TP
+.B HOSTNAME
+The hostname of the node where the binlog backup was created.
+
+.TP
+.B PID
+The parent/full backup ID, used to identify which full backup this binlog is associated with.
+.RE
 
 .TP
 .B \-L, \-\^\-list
@@ -475,7 +517,26 @@ s9s backup \\
     --delete-snapshot-repository \\
     --cluster-id=1 \\
     --snapshot-repository=mySnapshotRepository \\
-    --wait 
+    --wait
+.fi
+
+.TP
+.B \-\^\-list-pgbackrest-repositories
+Lists the pgBackRest repositories (repo1 and, if configured, repo2) of a
+PostgreSQL cluster: the storage type ("posix"/"s3"), the host the
+repository is served from, and either its local path or its S3 bucket, as
+well as which repository new backups target by default. The repo1/repo2
+slot a given storage type ends up in is not a fixed convention (it depends
+on the order the repositories were added), so this is the only reliable way
+to learn what "repo1"/"repo2" mean for a given cluster. When this main
+option is used the \fB\-\^\-cluster\-id\fP option has to be used to
+identify the cluster.
+
+.B EXAMPLE
+.nf
+s9s backup \\
+    --list-pgbackrest-repositories \\
+    --cluster-id=1
 .fi
 
 .\"
@@ -651,6 +712,12 @@ The strings in the node list are urls that can have the following protocols:
 Sets where the created archive files are going to be placed.
 
 .TP
+.BI \-\^\-backup\-repo= REPO
+(PgBackRest only, optional.) Selects which repository the backup is written to
+when the stanza has more than one: \fBrepo1\fP (the default) or \fBrepo2\fP. It
+has no meaning for other backup methods for now.
+
+.TP
 .BI \-\^\-temp\-dir\-path= DIR
 By default, s9s backup creates temporary backup files to /var/tmp/cmon-% path. Specify
 this option with your desired path if you want to target to another location.
@@ -772,6 +839,22 @@ The verification status of the backup. Possible values are "Unverified",
 "Verified" and "Failed".
 
 .TP
+.B x
+The same value the EXPIRES column of the long backup list shows: the date and
+time when the controller will delete the backup, formatted as the
+\fB\-\-date\-format\fP asks for. The word "NEVER" is shown for a backup the
+controller keeps forever, and "-" when the controller does not report an expiry
+at all - an older controller, from before the feature. A date in the
+past means the backup is eligible for deletion and the controller has not swept
+it yet - or is keeping it on purpose, see the "X" field.
+
+.TP
+.B X
+The word "KEPT" when the controller found the backup past its retention and kept
+it anyway, to honour the cluster's minimum number of backups
+(backup_n_safety_copies), "-" otherwise.
+
+.TP
 .B %
 The percent sign itself. Use two percent signs, "%%" the same way the standard
 printf() function interprets it as one percent sign.
@@ -862,6 +945,11 @@ Stream and store the created backup files on the controller.
 .BI \-\^\-parallellism= N
 Controls how many threads are used while creating backup. Please note that not
 all the backup methods support multi-thread operations.
+
+.TP
+.BI \-\^\-compression-threads= N
+Controls how many threads are used to compress the backup. Please note that not
+all the compression methods support multi-thread operations.
 
 .TP 
 .BI \-\^\-subdirectory= MARKUPSTRING

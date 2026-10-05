@@ -1,6 +1,8 @@
-s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
+s9s-tools (1.9.2026093018-testing) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
+  * Added PgBackRest multi-repository options: --add-repo/--drop-repo/--repo-path
+    for cluster reconfigure and --backup-repo=repo1|repo2 for backups.
   * Added --exclude-hosts-info option for cluster listing to reduce
     response size.
   * Added --exclude-sheet-info option for cluster listing to improve
@@ -9,14 +11,32 @@ s9s-tools (1.9.2026011315-release1) UNRELEASED; urgency=medium
     container details.
   * Added --include-databases-info option for cluster listing to include
     database information.
-  * CLUS-6902: Added --no-agent option for create cluster jobs to skip
+  * Added --no-agent option for create cluster jobs to skip
     agent installation on nodes.
   * Added --refresh option to cluster and node operations to force fresh
     data collection instead of using cached information.
-  * CLUS-6878: Added --refresh option to replication command to bypass
+  * Added --refresh option to replication command to bypass
     cluster info cache and get live data.
+  * Added --credential-id and --s3-bucket options to the cluster
+    command so PgBackRest can use an S3 (object store) backup repository
+    referenced by a registered cloud credential, on add-node, reconfigure
+    and reinstall.
 
- -- Peter Csaszar <peter@severalnines.com>  Tue, 13 Jan 2026 15:21:55 +0100
+  [ Aliaksei Zhordachkin ]
+  * Added --auto-agent option for create cluster jobs to leave the agent
+    installation decision to the controller.
+  * Added --add-shard option to the cluster command to add a new shard to a
+    ClickHouse cluster.
+  * Added --shard-id option to pick the ClickHouse shard a node added with
+    --add-node becomes a replica of.
+
+  [ Severalnines ]
+  * Testing release 1.9.2026092808.
+  * Testing release 1.9.2026092909.
+  * Testing release 1.9.2026093007.
+  * Testing release 1.9.2026093018.
+
+ -- Severalnines <support@severalnines.com>  Wed, 30 Sep 2026 18:49:55 +0200
 
 s9s-tools (1.9.2025061016-testingubuntu1) unstable; urgency=medium
 

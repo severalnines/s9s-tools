@@ -137,6 +137,7 @@ function _s9s()
                 opts+="--full-path= --memory= "
                 opts+="--no-compression --on-node --on-controller "
                 opts+="--parallellism= --title= --use-pigz "
+                opts+="--compression-threads= "
                 opts+="--to-individual-files --pitr-compatible "
             fi
             
@@ -144,7 +145,7 @@ function _s9s()
             return 0
         elif [[ ${COMP_WORDS[i]} == "cluster" ]]; then
             main_opt+="--help "
-            main_opt+="--add-node --create-account --create --create-database "
+            main_opt+="--add-node --add-shard --create-account --create --create-database "
             main_opt+="--create-report --delete-account --drop --list "
             main_opt+="--list-databases --ping "
             main_opt+="--remove-node --rolling-restart --setup-audit-logging "
@@ -190,6 +191,7 @@ function _s9s()
                 opts+="--remote-cluster-id= "
 
                 opts+="--account= "
+                opts+="--auto-agent "
                 opts+="--cloud= "
                 opts+="--cluster-format= "
                 opts+="--cluster-name= "
@@ -205,6 +207,7 @@ function _s9s()
                 opts+="--image= "
                 opts+="--image-os-user= "
                 opts+="--job-tags= "
+                opts+="--no-agent "
                 opts+="--nodes= "
                 opts+="--opt-group= "
                 opts+="--opt-name= "
@@ -214,6 +217,7 @@ function _s9s()
                 opts+="--os-user= "
                 opts+="--output-dir= "
                 opts+="--provider-version= "
+                opts+="--shard-id= "
                 opts+="--subnet-id= "
                 opts+="--template= "
                 opts+="--use-internal-repos "

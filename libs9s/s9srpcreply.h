@@ -24,6 +24,7 @@
 #include "s9sobject.h"
 #include "s9sformatter.h"
 #include "s9sdbgrowthreport.h"
+#include "s9sstringlist.h"
 
 class S9sNode;
 class S9sCluster;
@@ -62,11 +63,13 @@ class S9sRpcReply : public S9sVariantMap
         bool isRedirect() const;
 
         S9sString errorString() const;
+        int errorId() const;
         S9sString uuid() const;
 
         S9sTreeNode tree();
 
         S9sVariantList jobs();
+        S9sVariantList stuckJobs();
         int jobId() const;
         S9sString jobTitle() const;
         bool isJobFailed() const;
@@ -134,11 +137,15 @@ class S9sRpcReply : public S9sVariantMap
         void printLogList();
         void printNodeList();
         void printJobList();
+        void printStuckJobList();
         void printBackupList();
+        void printBinlogBackupList();
 
         void printSnapshotRepositories(bool allClusters=false);
         void printSnapshotRepositoriesBrief(bool allClusters=false);
         void printSnapshotRepositoriesLong(bool allClusters=false);
+
+        void printPgBackRestRepositories();
         
         void printBackupSchedules();
         void printBackupSchedulesBrief();
@@ -153,9 +160,19 @@ class S9sRpcReply : public S9sVariantMap
         void printWatchlists();
         void printWatchlistsLong();
 
+        void printConfigStorageList();
+        void printOpenBaoVersionList();
         void printPoolControllers();
         void printPoolControllersLong();
-        
+
+        void printCmonDbClusterNodes();
+        void printCmonDbClusterNodesLong();
+
+        void printPoolModeReadiness();
+        void printSetPoolModeError();
+        static S9sStringList poolModeSetupCommands(
+                const S9sVariantMap &readiness);
+
         // Methods handling users.
         void printUserList();
         void printUsersStat();
@@ -324,6 +341,8 @@ class S9sRpcReply : public S9sVariantMap
     private:
         void printServersStat();
 
+        static void printPoolModeReadinessSummary(const S9sVariantMap &readiness);
+
         
         void printLogBrief();
         void printLogLong();
@@ -385,7 +404,10 @@ class S9sRpcReply : public S9sVariantMap
 
         void printBackupListFilesBrief();
         void printBackupListFilesLong();
-        
+
+        void printBinlogBackupListBrief();
+        void printBinlogBackupListLong();
+
         void printUserListBrief();
         void printUserListLong();
 

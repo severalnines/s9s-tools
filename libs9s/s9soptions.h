@@ -252,6 +252,8 @@ class S9sOptions
 
         bool removeBackups() const;
         bool hasRemoveBackupsOption() const;
+        bool removeCertificates() const;
+        bool hasRemoveCertificatesOption() const;
 
         bool forceOption() const;
         bool hasForceOption() const;
@@ -267,6 +269,11 @@ class S9sOptions
 
         bool hasCredentialIdOption() const;
         int credentialId() const;
+        // pgBackRest multi-repository.
+        bool addRepo() const;
+        S9sString dropRepo() const;
+        S9sString backupRepo() const;
+        S9sString repoPath() const;
 
         bool hasCredentialNameOption() const;
         S9sString credentialName() const;
@@ -279,7 +286,10 @@ class S9sOptions
 
         bool hasControllerIdOption() const;
         int controllerId() const;
-        
+
+        bool hasNodeOption() const;
+        S9sString node() const;
+
         bool hasBackupId() const;
         int backupId() const;
 
@@ -292,6 +302,8 @@ class S9sOptions
         bool setBackupRetention(const S9sString &value);
         bool hasBackupRetention() const;
         int backupRetention() const;
+
+        bool setVirtualRouterId(const S9sString &value);
 
         bool setCloudRetention(const S9sString &value);
         bool hasCloudRetention() const;
@@ -393,6 +405,7 @@ class S9sOptions
         S9sString optValue() const;
         S9sString outputDir() const;
         bool noAgent() const;
+        bool autoAgent() const;
         bool maskPasswords() const;
         S9sString donor() const;
         S9sString templateName() const;
@@ -401,6 +414,7 @@ class S9sOptions
         bool noInstall() const;
         bool noTerminate() const;
         S9sString masterDelay() const;
+        int shardId() const;
         
         S9sString cloudName() const;
         S9sString subnetId() const;
@@ -420,6 +434,11 @@ class S9sOptions
         bool createLocalRepo() const;
         bool keepFirewall() const;
         S9sString extensions() const;
+        S9sString pgHbaPreset() const;
+        bool saveAsHbaPreset() const;
+        S9sString hbaPresetName() const;
+        S9sVariantList pgHbaRules() const;
+        bool appendPgHbaRules(const S9sString &stringRep);
 
         bool uninstall() const;
         bool unregisterOnly() const;
@@ -447,7 +466,9 @@ class S9sOptions
         bool      hasCommentOption() const;
         S9sString comment() const;
         bool      hasUseSsl() const;
+        bool      useSsl() const;
         bool      hasInsecureSsl() const;
+        bool      insecureSsl() const;
         bool      cloudOnly() const;
         bool      deleteAfterUpload() const;
         bool      hasCloudProviderOption() const;
@@ -493,6 +514,10 @@ class S9sOptions
         bool hasParallellism() const;
         int parallellism() const;
 
+        bool setCompressionThreads(const S9sString &value);
+        bool hasCompressionThreads() const;
+        int compressionThreads() const;
+
         bool setRetention(const S9sString &value);
         bool hasRetention() const;
         int retention() const;
@@ -535,11 +560,30 @@ class S9sOptions
         bool isAssignedController() const;
         bool isSetPoolModeRequested() const;
         bool isUnsetPoolModeRequested() const;
+        bool isPoolReadiness() const;
+        bool noRequireDbCluster() const;
+        bool noRequireConfigStorage() const;
         bool isAddController() const;
+        bool isAddDb() const;
+        bool isDeleteDb() const;
+        bool isListDb() const;
+        bool isBootstrapDb() const;
+        bool isMigrateDb() const;
         bool isStartController() const;
         bool isStopController() const;
         bool isRemoveController() const;
         bool isUpdateCmon() const;
+        bool isSetMaxClustersCapacityRequested() const;
+        int  getMaxClustersCapacity() const;
+        bool isAddOpenBao() const;
+        bool isListConfigStorage() const;
+        bool isListOpenBaoVersions() const;
+        bool hasOpenBaoOption() const;
+        S9sString openBaoMount() const;
+        S9sString openBaoNamespace() const;
+        S9sString openBaoPackagePath() const;
+        S9sString openBaoPackage() const;
+        bool openBaoForceReinit() const;
 
         bool isGenerateKeyRequested() const;
         S9sString group() const;
@@ -580,6 +624,7 @@ class S9sOptions
         bool isListSnapshotRepositoryRequested() const;
         bool isCreateSnapshotRepositoryRequested() const;
         bool isDeleteSnapshotRepositoryRequested() const;
+        bool isListPgBackRestRepositoriesRequested() const;
         bool isGetAclRequested() const;
         bool isCatRequested() const;
         bool isAccessRequested() const;
@@ -700,9 +745,12 @@ class S9sOptions
         bool isInspectRequested() const;
         bool isMoveRequested() const;
         bool isDeleteRequested() const;
+        bool isLockRequested() const;
+        bool isUnlockRequested() const;
         bool isCloneRequested() const;
         bool isFailRequested() const;
         bool isSuccessRequested() const;
+        bool isStuckRequested() const;
         bool isEnableRequested() const;
         bool isSetGroupRequested() const;
         bool isAddToGroupRequested() const;
@@ -742,6 +790,7 @@ class S9sOptions
         bool isDeployCmonAgentsRequested() const;
         bool isUninstallCmonAgentsRequested() const;
         bool isAddNodeRequested() const;
+        bool isAddShardRequested() const;
         bool isReinstallNodeRequested() const;
         bool isReconfigureNodeRequested() const;
         bool isRemoveNodeRequested() const;
@@ -763,8 +812,9 @@ class S9sOptions
         bool isUpgradeClusterRequested() const; 
         bool isCheckPkgUpgradesRequested() const; 
         bool isRenewCertRequested() const;
-        bool isListDatabasesRequested() const; 
-        bool isListFilesRequested() const; 
+        bool isListDatabasesRequested() const;
+        bool isListFilesRequested() const;
+        bool isListBinlogBackupsRequested() const;
         bool isDropRequested() const;
         bool isExecuteRequested() const;
         bool isRunRequested() const;

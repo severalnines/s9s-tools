@@ -25,6 +25,8 @@ Adds a new node (server) to the cluster or to be more precise creates a new
 job that will eventually add a new node to the cluster. The name (or IP 
 address) of the node should be specified using the \fB\-\-nodes\fR command 
 line option.
+On a sharded ClickHouse cluster the \fB\-\-shard\-id\fR command line option
+selects the shard the new node becomes a replica of (shard 1 when omitted).
 
 .B EXAMPLE
 .nf
@@ -35,6 +37,23 @@ s9s cluster \\
     --master-delay=3600
     --wait
 .fi 
+
+.TP
+.B --add-shard
+Creates a job that adds a new shard to a ClickHouse cluster. Every node given
+in the \fB\-\-nodes\fR command line option becomes a replica of the new shard.
+The new shard uses the Keeper ensemble the cluster already has; Keeper
+nodes cannot be part of the list. ClickHouse does not rebalance existing data,
+rows written before the shard was added stay on the shards that hold them.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-shard \\
+    --cluster-id=1 \\
+    --nodes="clickhouse://192.168.0.211;clickhouse://192.168.0.212" \\
+    --wait
+.fi
 
 .TP
 .B --change-config
@@ -294,6 +313,25 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-auto-agent
+When creating a new cluster this option leaves the decision about the agent
+installation to the controller instead of requesting or refusing it. Without
+this option the client always asks for the agents to be installed, unless
+\fB\-\-no-agent\fP is provided.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=postgresql \\
+    --nodes="10.67.199.164" \\
+    --db-admin=postgres \\
+    --db-admin-passwd=secret \\
+    --provider-version=17 \\
+    --auto-agent
+.fi
+
+.TP
 .B --create-report
 When this command line option is provided a new job will be started that will
 create an error-report. After the job is executed the error-report will be
@@ -354,13 +392,34 @@ s9s cluster \\
 Removes the cluster from the Cmon controller. The cluster remains operational,
 but the controller will no longer manage or monitor it.
 
+Without \fB\-\-force\fR the first failing removal step (stopping the cluster
+management, deleting the backups) fails the job and the cleanup stops there.
+The removal can be repeated any time \(em also for a cluster whose metadata
+was only partially removed by an earlier, interrupted attempt \(em until all
+metadata is gone.
+
+With \fB\-\-force\fR a failing step is reported as a warning in the job log
+and the cleanup continues. If the cluster management cannot be stopped, the
+cluster configuration file is archived right away \(em so the cluster cannot
+come back after a controller restart \(em and the removal is re\-attempted
+automatically a few times by the job retry mechanism.
+
+With \fB\-\-remove\-certificates\fR the controller\-side certificate store
+of the cluster \(em the certificate files the controller generated for it
+and their database records \(em is deleted; every removed file is listed in
+the job log. By default the store is kept untouched so the certificates can
+still be used to access the cluster outside of ClusterControl and a later
+re\-import of the cluster keeps working with them. The certificate files
+that were deployed onto the database nodes are never touched: the database
+keeps running with them.
+
 .B EXAMPLE
 .nf
 s9s cluster \\
     --drop \\
     --cluster-id=1 \\
     --remove-backups=true \\
-    --wait 
+    --wait
 .fi
 
 .TP 
@@ -476,6 +535,21 @@ s9s cluster \\
     --nodes=192.168.0.196 \\
     --vendor=percona \\
     --cluster-name=my_cluster_32265 \\
+    --wait
+.fi
+
+An existing ClickHouse cluster can be registered by giving a single node endpoint.
+The controller discovers the remaining nodes and their roles.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --register \\
+    --cluster-type=clickhouse \\
+    --nodes=192.168.0.196 \\
+    --db-admin=default \\
+    --db-admin-passwd=secret \\
+    --cluster-name=clickhouse_001 \\
     --wait
 .fi
 
@@ -959,7 +1033,30 @@ The protocol to install and handle mongo config servers.
 .TP
 .B mongodb://
 The protocol to install and handle mongo data servers.
+.TP
+.B clickhouse://
+The protocol to install and handle ClickHouse data servers.
+.TP
+.B clickhouse-keeper://
+The protocol to install and handle dedicated ClickHouse Keeper servers.
 .RE
+
+.TP
+.BI \-\^\-shard\-id= ID
+The shard of a ClickHouse cluster the node added by \fB\-\-add\-node\fR
+becomes a replica of. Shards are numbered from 1 in the order they were
+created; shard 1 is used when the option is omitted. Every node in the
+\fB\-\-nodes\fR list has to use the \fBclickhouse://\fR protocol.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --add-node \\
+    --cluster-id=1 \\
+    --nodes="clickhouse://192.168.0.213" \\
+    --shard-id=2 \\
+    --wait
+.fi
 
 .TP
 .BI \-\^\-no\-install
@@ -1124,8 +1221,9 @@ supported:
 \fBmysqlreplication\fP,
 \fBgroupreplication\fP (or \fBgroup_replication\fP),
 \fBndb\fP (or \fBndbcluster\fP),
-\fBpostgresql\fP
-and \fBpostgresql_logical\fP.
+\fBpostgresql\fP,
+\fBpostgresql_logical\fP
+and \fBclickhouse\fP.
 
 .TP
 .BI --config-template= FILENAME
@@ -1587,11 +1685,13 @@ proper default values.
 
 .TP
 .BI --admin-password= PASSWORD
-The password for the administrator of load balancers.
+The password for the administrator of load balancers (ProxySQL, MaxScale or
+PgBouncer).
 
 .TP
 .BI --admin-user= USERNAME
-The username for the administrator of load balancers.
+The username for the administrator of load balancers (ProxySQL, MaxScale or
+PgBouncer).
 
 .TP
 .B --dont-import-accounts
@@ -1619,6 +1719,50 @@ The mysql username of the maxscale balancer.
 .TP
 .BI --maxscale-mysql-password= PASSWORD
 The password of the mysql user of the maxscale balancer.
+
+.TP
+.BI --credential-id= ID
+When adding, reconfiguring or reinstalling PgBackRest, this selects a previously
+registered cloud credential (see
+.BR s9s-cloud-credentials (1))
+to use an S3 (object store) backup repository instead of a local directory. The
+credential provides the S3 endpoint, region, access key, secret and TLS
+settings. On reconfigure or reinstall it may be omitted to keep the current
+repository.
+
+.TP
+.BI --s3-bucket= NAME
+The S3 bucket that holds the PgBackRest backup repository, used together with
+.BR --credential-id .
+Required when first configuring an S3 repository; on reconfigure or reinstall it
+may be omitted to reuse the bucket stored at install time.
+
+.TP
+.B --add-repo
+With
+.BR --reconfigure-node ,
+adds a further PgBackRest repository alongside the existing one (filling the
+empty repository slot), so backups are kept in two places. Requires pgBackRest
+2.33 or newer. The added repository is S3 when given with
+.B --credential-id
+(and
+.BR --s3-bucket ),
+or local when given with
+.BR --repo-path .
+
+.TP
+.B --drop-repo=repo1|repo2
+With
+.BR --reconfigure-node ,
+removes the named PgBackRest repository. Either repository may be dropped
+(pgBackRest tolerates a repo2-only stanza), provided that at least two
+repositories are configured and the repository that will remain has at least one
+full backup. The repository to drop must be given explicitly.
+
+.TP
+.BI --repo-path= PATH
+The local directory of the second PgBackRest repository, used with
+.BR --add-repo .
 
 
 \"
