@@ -83,6 +83,13 @@ On the first controller of a pool this requires the CC DB cluster
 set up beforehand; \fB--set-pool-mode\fP does not set them up itself. When one is
 missing the request fails, and the missing prerequisites are printed together with
 the commands that set them up (see \fB--pool-readiness\fP).
+
+Enabling pool mode also registers the main controller's CC frontend, so it is
+listed by \fB--list-frontends\fP. It is registered only when it runs a cmon-proxy
+and a clustercontrol-mcc of the minimum version pool mode needs; otherwise it is
+not registered, the command still succeeds and prints a warning that names the
+packages to upgrade on that host. With \fB--print-json\fP the warnings are also in
+the reply's 'warnings' list.
 .RS
 .TP
 .B --conf-storage=MODE
@@ -188,6 +195,8 @@ s9s pool-controllers --bootstrap-db --log
 Installs and sets up new controller instance running in pool mode.
 Providing node hostname with '--nodes' is mandatory. '--site' sets the site of the
 new controller; without it the controller gets the site of the one running the job.
+\&'--site' needs a controller with CLUS-8519 or newer: an older one ignores it, and
+the new controller gets the site of the one running the job without a warning.
 .nf
 s9s pool-controllers --add-controller --nodes=10.16.186.189 --provider-version=2.3.4-17176
 s9s pool-controllers --add-controller --nodes=10.16.186.190 --site=site-b --log
@@ -198,18 +207,27 @@ s9s pool-controllers --add-controller --nodes=10.16.186.190 --site=site-b --log
 Installs a CC frontend (cmon-proxy with the MCC UI in fleet mode, cmon-ssh in pool
 mode, cmon-events and cmon-cloud) on a host that already runs a controller of the
 pool, and registers it. Requires \fB--nodes\fP with exactly one node, optionally
-with the web port (default 443). The job uses the SSH credentials the controller
-stored for that host when it was added to the pool, so '--os-user', '--os-key-file'
-and '--os-password' are refused. Requires super admin privileges and OpenBao as the
+with the web port (default 443). Requires super admin privileges and OpenBao as the
 pool's configuration storage.
 
-The first frontend must be the controller that created the pool: after
-\fB--set-pool-mode\fP convert it with \fB--add-frontend\fP on its own host; its
-cmon restarts when the job ends. Packages are installed at the versions the other
-frontends run, from the repositories already configured on the host.
+Only the SSH connection settings are taken from the credentials the controller
+stored for that host when it was added to the pool, so '--os-user', '--os-key-file'
+and '--os-password' are refused. Sudo and elevation settings ('--os-sudo-user',
+\&'--os-sudo-password', '--os-elevation', '--access-check-cmd', or their s9s.conf
+equivalents) are still sent with the job and override the stored ones; note that
+an 'os_sudo_password' in s9s.conf is sent in the job data too.
+
+The main controller can't be a target: its frontend is registered when pool mode
+is enabled (see \fB--set-pool-mode\fP). Importing a frontend that already runs on
+another host is not supported: add the controller with \fB--add-controller\fP, then
+its frontend with \fB--add-frontend\fP. A host that already runs cmon-proxy is
+refused unless '--force' is given; an existing cmon-ssh, cmon-events or cmon-cloud
+is not reinstalled (the job log shows it as a failed step) but is still configured,
+and the job goes on. Packages are installed at the versions the other frontends
+run, and the s9s repository is set up unless '--use-internal-repos' is given.
 .nf
-s9s pool-controllers --add-frontend --nodes=10.0.0.11 --log
-s9s pool-controllers --add-frontend --nodes=10.0.0.12 --site=site-b --log
+s9s pool-controllers --add-frontend --nodes=10.0.0.12 --log
+s9s pool-controllers --add-frontend --nodes=10.0.0.13 --site=site-b --log
 .fi
 
 .RS
@@ -225,16 +243,21 @@ Do not install packages; they must already be on the host.
 Do not set up the s9s repository; install from the configured repositories.
 .TP
 .B --force
-Reconfigure a frontend that is already registered on the host, accept a target
-controller that is not active or runs jobs, install the latest packages when the
-pool's versions are not available, and skip the IdP setup when ccmgradm cannot do it.
+Force: reinstall and reconfigure existing services (cmon-proxy, cmon-ssh,
+cmon-events and cmon-cloud), downgrading a package to the pool's version when
+needed (each downgrade is logged). It also accepts a target controller that is not
+active or runs jobs, installs the latest packages when the pool's versions are not
+available, and skips the IdP setup when ccmgradm cannot do it. The main controller
+is refused even with '--force'.
 .RE
 
 .TP
 .B --delete-frontend
 Stops and disables the CC frontend services on a pool controller host, points its
 cmon at another frontend's cmon-events and cmon-cloud, and unregisters the frontend.
-Packages are kept. Requires \fB--nodes\fP with exactly one node. Deleting the last
+Packages are kept. Requires \fB--nodes\fP with exactly one node. Like
+\fB--add-frontend\fP it takes only the SSH connection settings from the stored
+credentials. The main controller's frontend can't be deleted. Deleting the last
 frontend of the pool is refused unless '--force' is given; '--force' also unregisters
 a frontend whose host cannot be reached.
 .nf
@@ -260,6 +283,8 @@ Controller stopped successfully.
 .TP
 .B --remove-controller
 Removes a controller instance. The '--controller-id' option is mandatory.
+A controller whose host runs a CC frontend is refused: run \fB--delete-frontend\fP
+first, or give '--force' to unregister the frontend with the controller.
 .nf
 s9s pool-controllers --remove-controller --controller-id=2
 Controller removed successfully.

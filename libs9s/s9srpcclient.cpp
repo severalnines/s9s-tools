@@ -12114,9 +12114,12 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
  * @brief install a CC frontend on a pool controller host
  * (CmdAddFrontEndCCInstance / the addFrontEndCCInstance job).
  *
- * The job connects with the SSH credentials the controller stored for the
- * target when it was added to the pool, so no ssh_* field is sent - not even
- * one composeJobData() took from the configuration file.
+ * The job takes the SSH connection settings from the credentials the
+ * controller stored for the target when it was added to the pool, so no
+ * ssh_* field is sent - not even one composeJobData() took from the
+ * configuration file. The sudo/elevation settings (sudo_user, sudo_password,
+ * elevation_option, access_check_cmd) are still sent and override the stored
+ * ones.
  */
 bool
 S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
@@ -12175,7 +12178,8 @@ S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
 /**
  * @brief remove the CC frontend of a pool controller host
  * (CmdDeleteFrontEndCCInstance / the deleteFrontEndCCInstance job). Like
- * the add job it sends no SSH credentials.
+ * the add job it sends no SSH connection settings (sudo/elevation ones are
+ * still sent).
  */
 bool
 S9sRpcClient::deleteFrontEndCCInstance(S9sOptions *options)
