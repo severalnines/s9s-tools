@@ -131,7 +131,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testMigrateCmonDb();
         bool testSetPoolModePrerequisites();
         bool testPoolModeSetupCommands();
-        bool testPoolModeReadinessCcFrontend();
+        bool testPoolModeReadinessMccPackage();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

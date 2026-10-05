@@ -2417,21 +2417,6 @@ S9sRpcReply::printSetPoolModeError()
 }
 
 /**
- * Prints the "warnings" a successful setPoolMode reply may carry (e.g. the
- * main controller's CC frontend is too old to be registered) to the standard
- * error, one per line. They do not make the command fail.
- */
-void
-S9sRpcReply::printSetPoolModeWarnings()
-{
-    if (!contains("warnings") || !at("warnings").isVariantList())
-        return;
-
-    for (const S9sVariant &warning : at("warnings").toVariantList())
-        PRINT_ERROR("Warning: %s", STR(warning.toString()));
-}
-
-/**
  * \returns The s9s commands that set up the pool mode prerequisites a
  *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
  *   reports missing, in the order they have to be run.
@@ -2511,11 +2496,11 @@ S9sRpcReply::printPoolModeReadinessSummary(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
     S9sVariantMap   storage   = readiness.valueByPath("config_storage").toVariantMap();
-    S9sVariantMap   frontEnd  = readiness.valueByPath("cc_frontend").toVariantMap();
+    S9sVariantMap   mcc       = readiness.valueByPath("mcc_package").toVariantMap();
     S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
     bool            dbMissing = false;
     bool            storageMissing = false;
-    bool            frontEndMissing = false;
+    bool            mccMissing = false;
 
     if (readiness.valueByPath("pool_mode").toBoolean())
     {
@@ -2537,8 +2522,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
             dbMissing = true;
         else if (item.toString() == "config_storage")
             storageMissing = true;
-        else if (item.toString() == "cc_frontend")
-            frontEndMissing = true;
+        else if (item.toString() == "mcc_package")
+            mccMissing = true;
     }
 
     const bool      ready = readiness.valueByPath("ready").toBoolean();
@@ -2631,20 +2616,20 @@ S9sRpcReply::printPoolModeReadinessSummary(
                 STR(storage["version"].toString()));
     }
 
-    // The CC frontend: the MCC UI package on this host. A cmon older than the
+    // The clustercontrol-mcc package on this host. A cmon older than the
     // check does not send it.
-    if (readiness.contains("cc_frontend") || frontEndMissing)
+    if (readiness.contains("mcc_package") || mccMissing)
     {
-        S9sString package = frontEnd["package"].toString();
+        S9sString package = mcc["package"].toString();
         if (package.empty())
             package = "clustercontrol-mcc";
 
-        ::printf("  CC frontend              : %s (%s)\n",
-                frontEndMissing ? "missing" : "ready", STR(package));
+        ::printf("  MCC package              : %s (%s)\n",
+                mccMissing ? "missing" : "ready", STR(package));
 
-        if (frontEndMissing && !frontEnd["reason"].toString().empty())
+        if (mccMissing && !mcc["reason"].toString().empty())
             ::printf("                             %s\n",
-                    STR(frontEnd["reason"].toString()));
+                    STR(mcc["reason"].toString()));
     }
 
     const S9sStringList commands = poolModeSetupCommands(readiness);
@@ -2663,12 +2648,12 @@ S9sRpcReply::printPoolModeReadinessSummary(
             dbBlocker = "move cmon's DB to Oracle MySQL manually (see the reason above)";
     }
 
-    // No s9s command installs the MCC UI and there is no opt-out for it.
-    const S9sString frontEndBlocker = frontEndMissing ?
+    // No s9s command installs clustercontrol-mcc and there is no opt-out for it.
+    const S9sString mccBlocker = mccMissing ?
         "install the clustercontrol-mcc package on this host" : "";
 
     ::printf("\n");
-    if (commands.empty() && dbBlocker.empty() && frontEndBlocker.empty())
+    if (commands.empty() && dbBlocker.empty() && mccBlocker.empty())
     {
         ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
                 "pool mode (cmon restarts).\n");
@@ -2681,8 +2666,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
         if (!dbBlocker.empty())
             ::printf("To set up the missing CC DB cluster, %s,\n", STR(dbBlocker));
 
-        if (!frontEndBlocker.empty())
-            ::printf("To set up the missing CC frontend, %s,\n", STR(frontEndBlocker));
+        if (!mccBlocker.empty())
+            ::printf("To set up the missing MCC package, %s,\n", STR(mccBlocker));
 
         ::printf("then re-check with 's9s pool-controllers --pool-readiness'.\n");
         return;
@@ -2691,9 +2676,9 @@ S9sRpcReply::printPoolModeReadinessSummary(
     ::printf("To set up the missing prerequisites, run in this order:\n");
 
     // A running migration or bootstrap is a step of its own, just not one to
-    // start again; installing the MCC UI is a manual one.
-    if (!frontEndBlocker.empty())
-        ::printf("  (%s)\n", STR(frontEndBlocker));
+    // start again; installing clustercontrol-mcc is a manual one.
+    if (!mccBlocker.empty())
+        ::printf("  (%s)\n", STR(mccBlocker));
 
     if (!dbBlocker.empty())
         ::printf("  (%s)\n", STR(dbBlocker));

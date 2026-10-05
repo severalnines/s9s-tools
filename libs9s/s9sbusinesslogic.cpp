@@ -1532,8 +1532,6 @@ S9sBusinessLogic::execute()
                 reply.printJsonFormat();
                 if (!reply.isOk())
                     options->setExitStatus(S9sOptions::Failed);
-                else
-                    reply.printSetPoolModeWarnings();
             } else {
                 // check invalid request error on reply
                 if (!reply.isOk()) {
@@ -1544,7 +1542,6 @@ S9sBusinessLogic::execute()
                 else {
                     const S9sString mode = options->isSetPoolModeRequested() ? "set" : "unset";
                     ::printf("Pool mode %s successfully.\n", STR(mode));
-                    reply.printSetPoolModeWarnings();
                 }
             }
         }

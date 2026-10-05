@@ -145,7 +145,6 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testCcFrontendsJsonOnly, retval);
     PERFORM_TEST(testCcFrontendsError,    retval);
     PERFORM_TEST(testCcFrontendsConnectionError, retval);
-    PERFORM_TEST(testSetPoolModeWarnings, retval);
 
     return retval;
 }
@@ -281,49 +280,6 @@ UtS9sRpcReply::testCcFrontendsConnectionError()
     S9S_VERIFY(errors.contains("Connection refused"));
     S9S_VERIFY(!output.contains("HOSTNAME"));
     S9S_COMPARE(options->exitStatus(), S9sOptions::ConnectionError);
-
-    S9sOptions::uninit();
-    return true;
-}
-
-/**
- * The "warnings" of a successful setPoolMode reply go to the standard error,
- * one per line, and do not change the exit status.
- */
-bool
-UtS9sRpcReply::testSetPoolModeWarnings()
-{
-    S9sOptions::uninit();
-    S9sOptions *options = S9sOptions::instance();
-
-    S9sVariantList warnings;
-    warnings << "The CC frontend on 10.0.0.11 can't be used in pool mode: "
-                "cmon-proxy 2.4.0 is older than 2.5.0. Upgrade clustercontrol-proxy "
-                "and clustercontrol-mcc on 10.0.0.11 to 2.5.0 or later.";
-    warnings << "Second warning.";
-
-    S9sRpcReply reply;
-    reply["request_status"] = "Ok";
-    reply["warnings"]       = warnings;
-
-    S9sString output;
-    S9sString errors = captureStderr([&reply, &output]() {
-        output = captureStdout([&reply]() { reply.printSetPoolModeWarnings(); });
-    });
-
-    S9S_COMPARE(errors,
-            "Warning: The CC frontend on 10.0.0.11 can't be used in pool mode: "
-            "cmon-proxy 2.4.0 is older than 2.5.0. Upgrade clustercontrol-proxy "
-            "and clustercontrol-mcc on 10.0.0.11 to 2.5.0 or later.\n"
-            "Warning: Second warning.\n");
-    S9S_COMPARE(output, "");
-    S9S_COMPARE(options->exitStatus(), 0);
-
-    // A reply without warnings prints nothing.
-    S9sRpcReply plain;
-    plain["request_status"] = "Ok";
-    errors = captureStderr([&plain]() { plain.printSetPoolModeWarnings(); });
-    S9S_COMPARE(errors, "");
 
     S9sOptions::uninit();
     return true;

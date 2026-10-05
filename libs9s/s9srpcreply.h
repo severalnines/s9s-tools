@@ -173,7 +173,6 @@ class S9sRpcReply : public S9sVariantMap
 
         void printPoolModeReadiness();
         void printSetPoolModeError();
-        void printSetPoolModeWarnings();
         static S9sStringList poolModeSetupCommands(
                 const S9sVariantMap &readiness);
 

@@ -195,7 +195,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testMigrateCmonDb, retval);
     PERFORM_TEST(testSetPoolModePrerequisites, retval);
     PERFORM_TEST(testPoolModeSetupCommands, retval);
-    PERFORM_TEST(testPoolModeReadinessCcFrontend, retval);
+    PERFORM_TEST(testPoolModeReadinessMccPackage, retval);
 
     return retval;
 }
@@ -3914,17 +3914,17 @@ UtS9sRpcClient::testPoolModeSetupCommands()
 }
 
 /**
- * The "cc_frontend" prerequisite (clustercontrol-mcc installed) of a
+ * The "mcc_package" prerequisite (clustercontrol-mcc installed) of a
  * getPoolModeReadiness reply: shown in the summary, and while it is missing
  * pool mode is not suggested. No s9s command sets it up.
  */
 bool
-UtS9sRpcClient::testPoolModeReadinessCcFrontend()
+UtS9sRpcClient::testPoolModeReadinessMccPackage()
 {
     S9sVariantMap  readiness;
     S9sVariantMap  dbCluster;
     S9sVariantMap  storage;
-    S9sVariantMap  frontEnd;
+    S9sVariantMap  mcc;
     S9sVariantList missing;
     S9sString      summary;
 
@@ -3934,10 +3934,10 @@ UtS9sRpcClient::testPoolModeReadinessCcFrontend()
     dbCluster["db_backend"] = "mysql";
     storage["ready"]        = true;
     storage["type"]         = "openbao";
-    frontEnd["ready"]       = false;
-    frontEnd["package"]     = "clustercontrol-mcc";
-    frontEnd["reason"]      = "clustercontrol-mcc is not installed on this controller";
-    missing << S9sVariant("cc_frontend");
+    mcc["ready"]            = false;
+    mcc["package"]          = "clustercontrol-mcc";
+    mcc["reason"]           = "clustercontrol-mcc is not installed on this controller";
+    missing << S9sVariant("mcc_package");
 
     readiness["pool_mode"]       = false;
     readiness["applicable"]      = true;
@@ -3945,15 +3945,15 @@ UtS9sRpcClient::testPoolModeReadinessCcFrontend()
     readiness["missing"]         = missing;
     readiness["cmon_db_cluster"] = dbCluster;
     readiness["config_storage"]  = storage;
-    readiness["cc_frontend"]     = frontEnd;
+    readiness["mcc_package"]     = mcc;
 
-    // Only the frontend missing: no command, no --set-pool-mode either.
+    // Only the package missing: no command, no --set-pool-mode either.
     S9S_VERIFY(S9sRpcReply::poolModeSetupCommands(readiness).empty());
     summary = readinessSummary(readiness);
     S9S_VERIFY(summary.contains("Pool mode readiness: not ready"));
-    S9S_VERIFY(summary.contains("CC frontend              : missing (clustercontrol-mcc)"));
+    S9S_VERIFY(summary.contains("MCC package              : missing (clustercontrol-mcc)"));
     S9S_VERIFY(summary.contains("clustercontrol-mcc is not installed on this controller"));
-    S9S_VERIFY(summary.contains("To set up the missing CC frontend, install the "
+    S9S_VERIFY(summary.contains("To set up the missing MCC package, install the "
                 "clustercontrol-mcc package on this host,"));
     S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
     S9S_VERIFY(!summary.contains("--set-pool-mode"));
@@ -3970,19 +3970,19 @@ UtS9sRpcClient::testPoolModeReadinessCcFrontend()
                 "  s9s pool-controllers --add-openbao --nodes=HOST --log\n"));
 
     // Installed: reported ready, pool mode can be enabled.
-    frontEnd["ready"]        = true;
-    frontEnd["reason"]       = "";
-    readiness["cc_frontend"] = frontEnd;
+    mcc["ready"]             = true;
+    mcc["reason"]            = "";
+    readiness["mcc_package"] = mcc;
     readiness["missing"]     = S9sVariantList();
     readiness["ready"]       = true;
     summary = readinessSummary(readiness);
-    S9S_VERIFY(summary.contains("CC frontend              : ready (clustercontrol-mcc)"));
+    S9S_VERIFY(summary.contains("MCC package              : ready (clustercontrol-mcc)"));
     S9S_VERIFY(summary.contains("Run 's9s pool-controllers --set-pool-mode'"));
 
-    // A cmon older than the check sends no cc_frontend: no line for it.
-    readiness.erase("cc_frontend");
+    // A cmon older than the check sends no mcc_package: no line for it.
+    readiness.erase("mcc_package");
     summary = readinessSummary(readiness);
-    S9S_VERIFY(!summary.contains("CC frontend"));
+    S9S_VERIFY(!summary.contains("MCC package"));
 
     S9sOptions::uninit();
     return true;

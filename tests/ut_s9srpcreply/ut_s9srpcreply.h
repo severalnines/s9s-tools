@@ -34,5 +34,4 @@ class UtS9sRpcReply : public S9sUnitTest
         bool testCcFrontendsJsonOnly();
         bool testCcFrontendsError();
         bool testCcFrontendsConnectionError();
-        bool testSetPoolModeWarnings();
 };
