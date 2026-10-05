@@ -195,6 +195,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testMigrateCmonDb, retval);
     PERFORM_TEST(testSetPoolModePrerequisites, retval);
     PERFORM_TEST(testPoolModeSetupCommands, retval);
+    PERFORM_TEST(testPoolModeReadinessCcFrontend, retval);
 
     return retval;
 }
@@ -3909,6 +3910,81 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
     S9S_VERIFY(commands.empty());
 
+    return true;
+}
+
+/**
+ * The "cc_frontend" prerequisite (clustercontrol-mcc installed) of a
+ * getPoolModeReadiness reply: shown in the summary, and while it is missing
+ * pool mode is not suggested. No s9s command sets it up.
+ */
+bool
+UtS9sRpcClient::testPoolModeReadinessCcFrontend()
+{
+    S9sVariantMap  readiness;
+    S9sVariantMap  dbCluster;
+    S9sVariantMap  storage;
+    S9sVariantMap  frontEnd;
+    S9sVariantList missing;
+    S9sString      summary;
+
+    S9sOptions::uninit();
+
+    dbCluster["ready"]      = true;
+    dbCluster["db_backend"] = "mysql";
+    storage["ready"]        = true;
+    storage["type"]         = "openbao";
+    frontEnd["ready"]       = false;
+    frontEnd["package"]     = "clustercontrol-mcc";
+    frontEnd["reason"]      = "clustercontrol-mcc is not installed on this controller";
+    missing << S9sVariant("cc_frontend");
+
+    readiness["pool_mode"]       = false;
+    readiness["applicable"]      = true;
+    readiness["ready"]           = false;
+    readiness["missing"]         = missing;
+    readiness["cmon_db_cluster"] = dbCluster;
+    readiness["config_storage"]  = storage;
+    readiness["cc_frontend"]     = frontEnd;
+
+    // Only the frontend missing: no command, no --set-pool-mode either.
+    S9S_VERIFY(S9sRpcReply::poolModeSetupCommands(readiness).empty());
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Pool mode readiness: not ready"));
+    S9S_VERIFY(summary.contains("CC frontend              : missing (clustercontrol-mcc)"));
+    S9S_VERIFY(summary.contains("clustercontrol-mcc is not installed on this controller"));
+    S9S_VERIFY(summary.contains("To set up the missing CC frontend, install the "
+                "clustercontrol-mcc package on this host,"));
+    S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+
+    // Missing together with the storage: the manual step comes with the
+    // command list.
+    missing << S9sVariant("config_storage");
+    storage["ready"]            = false;
+    readiness["missing"]        = missing;
+    readiness["config_storage"] = storage;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("run in this order:\n"
+                "  (install the clustercontrol-mcc package on this host)\n"
+                "  s9s pool-controllers --add-openbao --nodes=HOST --log\n"));
+
+    // Installed: reported ready, pool mode can be enabled.
+    frontEnd["ready"]        = true;
+    frontEnd["reason"]       = "";
+    readiness["cc_frontend"] = frontEnd;
+    readiness["missing"]     = S9sVariantList();
+    readiness["ready"]       = true;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("CC frontend              : ready (clustercontrol-mcc)"));
+    S9S_VERIFY(summary.contains("Run 's9s pool-controllers --set-pool-mode'"));
+
+    // A cmon older than the check sends no cc_frontend: no line for it.
+    readiness.erase("cc_frontend");
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(!summary.contains("CC frontend"));
+
+    S9sOptions::uninit();
     return true;
 }
 
