@@ -85,11 +85,14 @@ missing the request fails, and the missing prerequisites are printed together wi
 the commands that set them up (see \fB--pool-readiness\fP).
 
 Enabling pool mode also registers the main controller's CC frontend, so it is
-listed by \fB--list-frontends\fP. It is registered only when it runs a cmon-proxy
-and a clustercontrol-mcc of the minimum version pool mode needs; otherwise it is
-not registered, the command still succeeds and prints a warning that names the
-packages to upgrade on that host. With \fB--print-json\fP the warnings are also in
-the reply's 'warnings' list.
+listed by \fB--list-frontends\fP (not on a k8s pool, where nothing is registered).
+It is registered only when its clustercontrol-proxy (cmon-proxy) is at least the
+minimum version pool mode needs and clustercontrol-mcc is installed; otherwise it
+is not registered and a warning names the packages to upgrade on that host. The
+controller can send other warnings too, e.g. 'Could not register the CC frontend
+of HOST: ERROR' (or 'unregister' with \fB--unset-pool-mode\fP). Warnings are
+printed to the standard error and do not make the command fail; with
+\fB--print-json\fP they are also in the reply's 'warnings' list.
 .RS
 .TP
 .B --conf-storage=MODE
@@ -245,7 +248,9 @@ Do not set up the s9s repository; install from the configured repositories.
 .B --force
 Force: reinstall and reconfigure existing services (cmon-proxy, cmon-ssh,
 cmon-events and cmon-cloud), downgrading a package to the pool's version when
-needed (each downgrade is logged). It also accepts a target controller that is not
+needed (each downgrade is logged). A frontend that is already registered on the
+host is refused without '--force' and reinstalled and reconfigured with it. It
+also accepts a target controller that is not
 active or runs jobs, installs the latest packages when the pool's versions are not
 available, and skips the IdP setup when ccmgradm cannot do it. The main controller
 is refused even with '--force'.
