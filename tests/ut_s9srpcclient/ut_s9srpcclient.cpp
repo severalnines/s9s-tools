@@ -130,6 +130,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster06,     retval);
     PERFORM_TEST(testRegisterClickHouse,  retval);
     PERFORM_TEST(testAddShardClickHouse,  retval);
+    PERFORM_TEST(testGetAlarmHistory,     retval);
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
 
@@ -1344,6 +1345,50 @@ UtS9sRpcClient::testAddShardClickHouse()
 
     S9S_VERIFY(payload.valueByPath(JOB_DATA "install_software").toBoolean());
     S9S_VERIFY(payload.valueByPath(JOB_DATA "disable_firewall").toBoolean());
+
+    return true;
+}
+
+/**
+ * Checks the request getAlarmHistory builds: the endpoint, the operation, and
+ * that paging only appears when it was asked for.
+ *
+ * The endpoint is one letter from the existing /v2/events, the live
+ * service-event stream, so a typo here would reach a real handler with the
+ * opposite meaning rather than failing.
+ */
+bool
+UtS9sRpcClient::testGetAlarmHistory()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 7;
+
+    S9S_VERIFY(client.getAlarmHistory());
+
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/eventhistory/");
+    S9S_COMPARE(payload["operation"].toString(), "getAlarmHistory");
+    S9S_COMPARE(payload["cluster_id"], 7);
+
+    // Absent, not zero: the controller treats a limit of 0 as a limit.
+    S9S_VERIFY(!payload.contains("limit"));
+    S9S_VERIFY(!payload.contains("offset"));
+
+    options->m_options["limit"]  = 25;
+    options->m_options["offset"] = 50;
+
+    S9S_VERIFY(client.getAlarmHistory());
+    payload = client.lastPayload();
+
+    S9S_COMPARE(payload["limit"], 25);
+    S9S_COMPARE(payload["offset"], 50);
 
     return true;
 }
