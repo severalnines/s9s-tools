@@ -567,9 +567,9 @@ class S9sOptions
         bool isAddDb() const;
         bool isDeleteDb() const;
         bool isListDb() const;
-        bool isAddFrontend() const;
-        bool isDeleteFrontend() const;
-        bool isListFrontends() const;
+        bool isAddServicesBundle() const;
+        bool isDeleteServicesBundle() const;
+        bool isListServicesBundles() const;
         S9sString site() const;
         bool isBootstrapDb() const;
         bool isMigrateDb() const;

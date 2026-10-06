@@ -119,9 +119,9 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testAddDb();
         bool testDeleteDb();
         bool testListDb();
-        bool testAddFrontend();
-        bool testDeleteFrontend();
-        bool testGetCcFrontends();
+        bool testAddServicesBundle();
+        bool testDeleteServicesBundle();
+        bool testGetServicesBundles();
         bool testAddControllerSite();
         bool testInstallOpenBao();
         bool testListConfigStorage();

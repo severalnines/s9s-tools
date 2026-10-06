@@ -1514,11 +1514,11 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printCmonDbClusterNodes();
         }
-        else if (options->isListFrontends()) {
+        else if (options->isListServicesBundles()) {
             // A transport error is in the reply too, so it is printed.
-            client.getCcFrontends(options);
+            client.getServicesBundles(options);
             S9sRpcReply reply = client.reply();
-            reply.printCcFrontends();
+            reply.printServicesBundles();
         }
         else if (options->isAssignedController()) {
             client.assignedController(options);
@@ -1612,15 +1612,15 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
-        else if (options->isAddFrontend())
+        else if (options->isAddServicesBundle())
         {
-            success = client.addFrontEndCCInstance(options);
+            success = client.addServicesBundle(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
-        else if (options->isDeleteFrontend())
+        else if (options->isDeleteServicesBundle())
         {
-            success = client.deleteFrontEndCCInstance(options);
+            success = client.deleteServicesBundle(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }

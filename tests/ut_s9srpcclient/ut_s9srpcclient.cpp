@@ -183,9 +183,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
-    PERFORM_TEST(testAddFrontend, retval);
-    PERFORM_TEST(testDeleteFrontend, retval);
-    PERFORM_TEST(testGetCcFrontends, retval);
+    PERFORM_TEST(testAddServicesBundle, retval);
+    PERFORM_TEST(testDeleteServicesBundle, retval);
+    PERFORM_TEST(testGetServicesBundles, retval);
     PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
     PERFORM_TEST(testListConfigStorage, retval);
@@ -3267,13 +3267,13 @@ UtS9sRpcClient::testListDb()
 }
 
 /**
- * Testing addFrontEndCCInstance() (the "pool-controllers --add-frontend" job):
+ * Testing addServicesBundle() (the "pool-controllers --add-services-bundle" job):
  * command, server_address, web_port from HOST:PORT (443 without one), site,
  * force, install_software / use_internal_repos - and no SSH credentials,
  * even when an OS user is configured.
  */
 bool
-UtS9sRpcClient::testAddFrontend()
+UtS9sRpcClient::testAddServicesBundle()
 {
     S9sOptions         *options;
     S9sRpcClientTester  client;
@@ -3291,7 +3291,7 @@ UtS9sRpcClient::testAddFrontend()
     options->m_options["os_key_file"] = "/home/configured-user/.ssh/id_rsa";
     options->m_options["os_password"] = "configured-password";
 
-    S9S_VERIFY(client.addFrontEndCCInstance(options));
+    S9S_VERIFY(client.addServicesBundle(options));
     payload = client.lastPayload();
 
     if (isVerbose())
@@ -3299,8 +3299,8 @@ UtS9sRpcClient::testAddFrontend()
 
     S9S_COMPARE(payload["operation"], "createJobInstance");
     S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(),
-            "addFrontEndCCInstance");
-    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Add CC Frontend to Pool");
+            "addServicesBundle");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Add Services Bundle to Pool");
 
     jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
     S9S_COMPARE(jobData["server_address"], "10.0.0.12");
@@ -3317,7 +3317,7 @@ UtS9sRpcClient::testAddFrontend()
     options = S9sOptions::instance();
     options->setNodes("10.0.0.13");
 
-    S9S_VERIFY(client.addFrontEndCCInstance(options));
+    S9S_VERIFY(client.addServicesBundle(options));
     jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
     S9S_COMPARE(jobData["server_address"], "10.0.0.13");
     S9S_COMPARE(jobData["web_port"], 443);
@@ -3330,7 +3330,7 @@ UtS9sRpcClient::testAddFrontend()
 }
 
 bool
-UtS9sRpcClient::testDeleteFrontend()
+UtS9sRpcClient::testDeleteServicesBundle()
 {
     S9sOptions         *options;
     S9sRpcClientTester  client;
@@ -3343,12 +3343,12 @@ UtS9sRpcClient::testDeleteFrontend()
     options->m_options["force"] = true;
     options->m_options["os_user"] = "configured-user";
 
-    S9S_VERIFY(client.deleteFrontEndCCInstance(options));
+    S9S_VERIFY(client.deleteServicesBundle(options));
     payload = client.lastPayload();
 
     S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(),
-            "deleteFrontEndCCInstance");
-    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Delete CC Frontend from Pool");
+            "deleteServicesBundle");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Delete Services Bundle from Pool");
 
     jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
     S9S_COMPARE(jobData["server_address"], "10.0.0.12");
@@ -3360,7 +3360,7 @@ UtS9sRpcClient::testDeleteFrontend()
 }
 
 bool
-UtS9sRpcClient::testGetCcFrontends()
+UtS9sRpcClient::testGetServicesBundles()
 {
     S9sOptions         *options;
     S9sRpcClientTester  client;
@@ -3369,10 +3369,10 @@ UtS9sRpcClient::testGetCcFrontends()
     S9sOptions::uninit();
     options = S9sOptions::instance();
 
-    S9S_VERIFY(client.getCcFrontends(options));
+    S9S_VERIFY(client.getServicesBundles(options));
     payload = client.lastPayload();
 
-    S9S_COMPARE(payload["operation"], "getCcFrontends");
+    S9S_COMPARE(payload["operation"], "getServicesBundles");
     S9S_COMPARE(client.uri(0u), "/v2/poolcontrollers/");
 
     S9sOptions::uninit();

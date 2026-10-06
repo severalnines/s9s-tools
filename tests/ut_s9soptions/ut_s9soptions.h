@@ -50,10 +50,10 @@ class UtS9sOptions : public S9sUnitTest
         bool testAddDb();
         bool testDeleteDb();
         bool testListDb();
-        bool testAddFrontend();
-        bool testDeleteFrontend();
-        bool testListFrontends();
-        bool testFrontendOptionErrors();
+        bool testAddServicesBundle();
+        bool testDeleteServicesBundle();
+        bool testListServicesBundles();
+        bool testServicesBundleOptionErrors();
         bool testAddControllerSite();
         bool testAddOpenBao();
         bool testListOpenBaoOperations();

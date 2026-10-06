@@ -28,10 +28,10 @@ class UtS9sRpcReply : public S9sUnitTest
         virtual bool runTest(const char *testName = 0);
 
     protected:
-        bool testCcFrontendsShort();
-        bool testCcFrontendsLong();
-        bool testCcFrontendsStale();
-        bool testCcFrontendsJsonOnly();
-        bool testCcFrontendsError();
-        bool testCcFrontendsConnectionError();
+        bool testServicesBundlesShort();
+        bool testServicesBundlesLong();
+        bool testServicesBundlesStale();
+        bool testServicesBundlesJsonOnly();
+        bool testServicesBundlesError();
+        bool testServicesBundlesConnectionError();
 };

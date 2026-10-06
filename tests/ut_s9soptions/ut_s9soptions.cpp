@@ -68,10 +68,10 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
-    PERFORM_TEST(testAddFrontend, retval);
-    PERFORM_TEST(testDeleteFrontend, retval);
-    PERFORM_TEST(testListFrontends, retval);
-    PERFORM_TEST(testFrontendOptionErrors, retval);
+    PERFORM_TEST(testAddServicesBundle, retval);
+    PERFORM_TEST(testDeleteServicesBundle, retval);
+    PERFORM_TEST(testListServicesBundles, retval);
+    PERFORM_TEST(testServicesBundleOptionErrors, retval);
     PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testAddOpenBao, retval);
     PERFORM_TEST(testListOpenBaoOperations, retval);
@@ -1044,17 +1044,17 @@ UtS9sOptions::testListDb()
 }
 
 /**
- * Testing "pool-controllers --add-frontend" (the addFrontEndCCInstance job):
+ * Testing "pool-controllers --add-services-bundle" (the addServicesBundle job):
  * one node with an optional web port, --site, --force, --no-install.
  */
 bool
-UtS9sOptions::testAddFrontend()
+UtS9sOptions::testAddServicesBundle()
 {
     S9sOptions *options = S9sOptions::instance();
 
     const char *argv1[] = { "/bin/s9s",
                             "pool-controllers",
-                            "--add-frontend",
+                            "--add-services-bundle",
                             "--nodes=10.0.0.12:8443",
                             "--site=site-b",
                             "--force",
@@ -1065,8 +1065,8 @@ UtS9sOptions::testAddFrontend()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
-    S9S_VERIFY(options->isAddFrontend());
-    S9S_VERIFY(!options->isDeleteFrontend());
+    S9S_VERIFY(options->isAddServicesBundle());
+    S9S_VERIFY(!options->isDeleteServicesBundle());
     S9S_COMPARE(options->nodes().size(), 1);
     S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
     S9S_COMPARE(options->nodes()[0].toNode().port(), 8443);
@@ -1079,13 +1079,13 @@ UtS9sOptions::testAddFrontend()
 }
 
 bool
-UtS9sOptions::testDeleteFrontend()
+UtS9sOptions::testDeleteServicesBundle()
 {
     S9sOptions *options = S9sOptions::instance();
 
     const char *argv1[] = { "/bin/s9s",
                             "pool-controllers",
-                            "--delete-frontend",
+                            "--delete-services-bundle",
                             "--nodes=10.0.0.12",
                             nullptr };
     int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
@@ -1093,7 +1093,7 @@ UtS9sOptions::testDeleteFrontend()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
-    S9S_VERIFY(options->isDeleteFrontend());
+    S9S_VERIFY(options->isDeleteServicesBundle());
     S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
     S9S_VERIFY(!options->getBool("force"));
 
@@ -1102,16 +1102,16 @@ UtS9sOptions::testDeleteFrontend()
 }
 
 /**
- * --list-frontends is read-only: no --nodes, --long and --print-json apply.
+ * --list-services-bundles is read-only: no --nodes, --long and --print-json apply.
  */
 bool
-UtS9sOptions::testListFrontends()
+UtS9sOptions::testListServicesBundles()
 {
     S9sOptions *options = S9sOptions::instance();
 
     const char *argv1[] = { "/bin/s9s",
                             "pool-controllers",
-                            "--list-frontends",
+                            "--list-services-bundles",
                             "--long",
                             "--print-json",
                             nullptr };
@@ -1120,7 +1120,7 @@ UtS9sOptions::testListFrontends()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
-    S9S_VERIFY(options->isListFrontends());
+    S9S_VERIFY(options->isListServicesBundles());
     S9S_VERIFY(options->isLongRequested());
     S9S_VERIFY(options->isJsonRequested());
 
@@ -1130,29 +1130,29 @@ UtS9sOptions::testListFrontends()
 
 /**
  * The invalid combinations: --site without an add option, a missing or a
- * second --nodes host, --os-* with a frontend job, two main options.
+ * second --nodes host, --os-* with a services bundle job, two main options.
  */
 bool
-UtS9sOptions::testFrontendOptionErrors()
+UtS9sOptions::testServicesBundleOptionErrors()
 {
     S9sOptions *options = S9sOptions::instance();
 
-    const char *siteAlone[] = { "/bin/s9s", "pool-controllers", "--list-frontends",
+    const char *siteAlone[] = { "/bin/s9s", "pool-controllers", "--list-services-bundles",
                                 "--site=site-b", nullptr };
-    const char *noNodes[] = { "/bin/s9s", "pool-controllers", "--add-frontend", nullptr };
-    const char *twoNodes[] = { "/bin/s9s", "pool-controllers", "--delete-frontend",
+    const char *noNodes[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle", nullptr };
+    const char *twoNodes[] = { "/bin/s9s", "pool-controllers", "--delete-services-bundle",
                                "--nodes=10.0.0.12;10.0.0.13", nullptr };
-    const char *withKey[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+    const char *withKey[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
                               "--nodes=10.0.0.12", "--os-key-file=/root/.ssh/id_rsa", nullptr };
-    const char *withUser[] = { "/bin/s9s", "pool-controllers", "--delete-frontend",
+    const char *withUser[] = { "/bin/s9s", "pool-controllers", "--delete-services-bundle",
                                "--nodes=10.0.0.12", "--os-user=root", nullptr };
-    const char *twoMains[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
-                               "--list-frontends", "--nodes=10.0.0.12", nullptr };
-    const char *badSite[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+    const char *twoMains[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
+                               "--list-services-bundles", "--nodes=10.0.0.12", nullptr };
+    const char *badSite[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
                               "--nodes=10.0.0.12", "--site=b;id", nullptr };
     const char *spaceSite[] = { "/bin/s9s", "pool-controllers", "--add-controller",
                                 "--nodes=10.0.0.13", "--site=site b", nullptr };
-    const char *emptySite[] = { "/bin/s9s", "pool-controllers", "--add-frontend",
+    const char *emptySite[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
                                 "--nodes=10.0.0.12", "--site=", nullptr };
 
     for (const char **argv : { siteAlone, noNodes, twoNodes, withKey, withUser, twoMains,

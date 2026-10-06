@@ -12111,8 +12111,8 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
 }
 
 /**
- * @brief install a CC frontend on a pool controller host
- * (CmdAddFrontEndCCInstance / the addFrontEndCCInstance job).
+ * @brief install a services bundle on a pool controller host
+ * (CmdAddServicesBundle / the addServicesBundle job).
  *
  * The job takes the SSH connection settings from the credentials the
  * controller stored for the target when it was added to the pool, so no
@@ -12122,7 +12122,7 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
  * ones.
  */
 bool
-S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
+S9sRpcClient::addServicesBundle(S9sOptions *options)
 {
     const S9sString uri = "/v2/jobs/";
     S9sVariantMap   request;
@@ -12137,7 +12137,7 @@ S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
     {
         PRINT_ERROR(
                 "Exactly one node must specified for "
-                "addFrontEndCCInstance operation.");
+                "addServicesBundle operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
@@ -12162,12 +12162,12 @@ S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
         jobData["use_internal_repos"] = true;
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "addFrontEndCCInstance";
+    jobSpec["command"]  = "addServicesBundle";
     jobSpec["job_data"] = jobData;
 
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
-    job["title"]    = "Add CC Frontend to Pool";
+    job["title"]    = "Add Services Bundle to Pool";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
@@ -12176,13 +12176,13 @@ S9sRpcClient::addFrontEndCCInstance(S9sOptions *options)
 }
 
 /**
- * @brief remove the CC frontend of a pool controller host
- * (CmdDeleteFrontEndCCInstance / the deleteFrontEndCCInstance job). Like
+ * @brief remove the services bundle of a pool controller host
+ * (CmdDeleteServicesBundle / the deleteServicesBundle job). Like
  * the add job it sends no SSH connection settings (sudo/elevation ones are
  * still sent).
  */
 bool
-S9sRpcClient::deleteFrontEndCCInstance(S9sOptions *options)
+S9sRpcClient::deleteServicesBundle(S9sOptions *options)
 {
     const S9sString uri = "/v2/jobs/";
     S9sVariantMap   request;
@@ -12197,7 +12197,7 @@ S9sRpcClient::deleteFrontEndCCInstance(S9sOptions *options)
     {
         PRINT_ERROR(
                 "Exactly one node must specified for "
-                "deleteFrontEndCCInstance operation.");
+                "deleteServicesBundle operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
@@ -12209,12 +12209,12 @@ S9sRpcClient::deleteFrontEndCCInstance(S9sOptions *options)
     jobData["force"]          = options->getBool("force");
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "deleteFrontEndCCInstance";
+    jobSpec["command"]  = "deleteServicesBundle";
     jobSpec["job_data"] = jobData;
 
     // The job instance describing how the job will be executed.
     job["job_spec"] = jobSpec;
-    job["title"]    = "Delete CC Frontend from Pool";
+    job["title"]    = "Delete Services Bundle from Pool";
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
@@ -12225,17 +12225,17 @@ S9sRpcClient::deleteFrontEndCCInstance(S9sOptions *options)
 /**
  * \returns true if the request was successfully sent
  *
- * Lists the pool's CC frontends and their health (the read-only
- * getCcFrontends call, "pool-controllers --list-frontends").
+ * Lists the pool's services bundles and their health (the read-only
+ * getServicesBundles call, "pool-controllers --list-services-bundles").
  */
 bool
-S9sRpcClient::getCcFrontends(S9sOptions *options)
+S9sRpcClient::getServicesBundles(S9sOptions *options)
 {
     const S9sString uri = "/v2/poolcontrollers/";
     S9sVariantMap  request;
 
     S9S_UNUSED(options);
-    request["operation"] = "getCcFrontends";
+    request["operation"] = "getServicesBundles";
 
     return executeRequest(uri, request);
 }

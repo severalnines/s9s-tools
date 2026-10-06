@@ -2221,13 +2221,13 @@ S9sRpcReply::printCmonDbClusterNodesLong()
 }
 
 /**
- * Prints the pool's CC frontends (read-only getCcFrontends call,
- * "pool-controllers --list-frontends"): only the JSON reply with
- * --print-json, the table built by ccFrontendsTable() otherwise. An error
+ * Prints the pool's services bundles (read-only getServicesBundles call,
+ * "pool-controllers --list-services-bundles"): only the JSON reply with
+ * --print-json, the table built by servicesBundlesTable() otherwise. An error
  * reply sets a failing exit status.
  */
 void
-S9sRpcReply::printCcFrontends()
+S9sRpcReply::printServicesBundles()
 {
     S9sOptions *options = S9sOptions::instance();
 
@@ -2249,34 +2249,34 @@ S9sRpcReply::printCcFrontends()
         return;
     }
 
-    ::printf("%s", STR(ccFrontendsTable(
-            operator[]("cc_frontends").toVariantList(),
+    ::printf("%s", STR(servicesBundlesTable(
+            operator[]("services_bundles").toVariantList(),
             options->isLongRequested(),
             options->isNoHeaderRequested())));
 }
 
 /**
- * The plain-text table of the "pool-controllers --list-frontends" command,
- * one line per frontend in the order the controller sent them (sorted by
+ * The plain-text table of the "pool-controllers --list-services-bundles" command,
+ * one line per services bundle in the order the controller sent them (sorted by
  * controller id):
  *
  * \code
- * s9s pool-controllers --list-frontends
+ * s9s pool-controllers --list-services-bundles
  * HOSTNAME  SITE   STATUS
  * 10.0.0.11 site-a online
  * 10.0.0.12 site-b offline
  *
- * s9s pool-controllers --list-frontends --long
+ * s9s pool-controllers --list-services-bundles --long
  * CID HOSTNAME  SITE   STATUS MODE  VERSION    PROXY  SSH    EVENTS CLOUD  URL
  * 1   10.0.0.11 site-a online fleet 2.5.0-1201 active active active active https://10.0.0.11:443/
  * \endcode
  *
  * Missing values show as "unknown" (states) or "-" (others), the way the
- * controller reports a frontend whose status report is stale.
+ * controller reports a services bundle whose status report is stale.
  */
 S9sString
-S9sRpcReply::ccFrontendsTable(
-        const S9sVariantList &frontEnds,
+S9sRpcReply::servicesBundlesTable(
+        const S9sVariantList &bundles,
         bool                  longFormat,
         bool                  noHeader)
 {
@@ -2298,26 +2298,26 @@ S9sRpcReply::ccFrontendsTable(
     };
 
     std::vector<std::vector<S9sString> > rows;
-    for (const auto &item : frontEnds)
+    for (const auto &item : bundles)
     {
-        S9sVariantMap frontEnd = item.toVariantMap();
-        S9sVariantMap services = frontEnd["services"].toVariantMap();
+        S9sVariantMap bundle = item.toVariantMap();
+        S9sVariantMap services = bundle["services"].toVariantMap();
         std::vector<S9sString> row;
 
         if (longFormat)
-            row.push_back(valueOr(frontEnd["controller_id"], "-"));
+            row.push_back(valueOr(bundle["controller_id"], "-"));
 
-        row.push_back(valueOr(frontEnd["hostname"], "-"));
-        row.push_back(valueOr(frontEnd["site"], "-"));
-        row.push_back(valueOr(frontEnd["status"], "unknown"));
+        row.push_back(valueOr(bundle["hostname"], "-"));
+        row.push_back(valueOr(bundle["site"], "-"));
+        row.push_back(valueOr(bundle["status"], "unknown"));
 
         if (longFormat)
         {
-            row.push_back(valueOr(frontEnd["proxy_mode"], "unknown"));
-            row.push_back(valueOr(frontEnd["ui_version"], "-"));
+            row.push_back(valueOr(bundle["proxy_mode"], "unknown"));
+            row.push_back(valueOr(bundle["ui_version"], "-"));
             for (const char *unit : { "cmon-proxy", "cmon-ssh", "cmon-events", "cmon-cloud" })
                 row.push_back(valueOr(services[unit].toVariantMap().valueByPath("status"), "unknown"));
-            row.push_back(valueOr(frontEnd["ui_url"], "-"));
+            row.push_back(valueOr(bundle["ui_url"], "-"));
         }
 
         rows.push_back(row);

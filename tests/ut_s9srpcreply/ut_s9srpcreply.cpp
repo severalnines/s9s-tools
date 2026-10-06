@@ -35,7 +35,7 @@ namespace
 {
 
 S9sVariantMap
-frontEnd(int controllerId, const char *hostname, const char *site, const char *status)
+bundle(int controllerId, const char *hostname, const char *site, const char *status)
 {
     S9sVariantMap service;
     service["status"] = "active";
@@ -62,11 +62,11 @@ frontEnd(int controllerId, const char *hostname, const char *site, const char *s
 }
 
 S9sVariantList
-twoFrontEnds()
+twoServicesBundles()
 {
     S9sVariantList list;
-    list << frontEnd(1, "10.0.0.11", "site-a", "online");
-    list << frontEnd(2, "10.0.0.12", "site-b", "degraded");
+    list << bundle(1, "10.0.0.11", "site-a", "online");
+    list << bundle(2, "10.0.0.12", "site-b", "degraded");
     return list;
 }
 
@@ -139,34 +139,34 @@ UtS9sRpcReply::runTest(const char *testName)
 {
     bool retval = true;
 
-    PERFORM_TEST(testCcFrontendsShort,    retval);
-    PERFORM_TEST(testCcFrontendsLong,     retval);
-    PERFORM_TEST(testCcFrontendsStale,    retval);
-    PERFORM_TEST(testCcFrontendsJsonOnly, retval);
-    PERFORM_TEST(testCcFrontendsError,    retval);
-    PERFORM_TEST(testCcFrontendsConnectionError, retval);
+    PERFORM_TEST(testServicesBundlesShort,    retval);
+    PERFORM_TEST(testServicesBundlesLong,     retval);
+    PERFORM_TEST(testServicesBundlesStale,    retval);
+    PERFORM_TEST(testServicesBundlesJsonOnly, retval);
+    PERFORM_TEST(testServicesBundlesError,    retval);
+    PERFORM_TEST(testServicesBundlesConnectionError, retval);
 
     return retval;
 }
 
 /**
- * The default "pool-controllers --list-frontends" table.
+ * The default "pool-controllers --list-services-bundles" table.
  */
 bool
-UtS9sRpcReply::testCcFrontendsShort()
+UtS9sRpcReply::testServicesBundlesShort()
 {
-    const S9sString table = S9sRpcReply::ccFrontendsTable(twoFrontEnds(), false, false);
+    const S9sString table = S9sRpcReply::servicesBundlesTable(twoServicesBundles(), false, false);
 
     S9S_COMPARE(table,
             "HOSTNAME  SITE   STATUS\n"
             "10.0.0.11 site-a online\n"
             "10.0.0.12 site-b degraded\n");
 
-    S9S_COMPARE(S9sRpcReply::ccFrontendsTable(twoFrontEnds(), false, true),
+    S9S_COMPARE(S9sRpcReply::servicesBundlesTable(twoServicesBundles(), false, true),
             "10.0.0.11 site-a online\n"
             "10.0.0.12 site-b degraded\n");
 
-    S9S_COMPARE(S9sRpcReply::ccFrontendsTable(S9sVariantList(), false, false),
+    S9S_COMPARE(S9sRpcReply::servicesBundlesTable(S9sVariantList(), false, false),
             "HOSTNAME SITE STATUS\n");
     return true;
 }
@@ -176,9 +176,9 @@ UtS9sRpcReply::testCcFrontendsShort()
  * the UI URL.
  */
 bool
-UtS9sRpcReply::testCcFrontendsLong()
+UtS9sRpcReply::testServicesBundlesLong()
 {
-    const S9sString table = S9sRpcReply::ccFrontendsTable(twoFrontEnds(), true, false);
+    const S9sString table = S9sRpcReply::servicesBundlesTable(twoServicesBundles(), true, false);
 
     S9S_COMPARE(table,
             "CID HOSTNAME  SITE   STATUS   MODE  VERSION    PROXY  SSH    EVENTS CLOUD  URL\n"
@@ -188,11 +188,11 @@ UtS9sRpcReply::testCcFrontendsLong()
 }
 
 /**
- * A frontend whose report is stale or missing: the controller sends
+ * A services bundle whose report is stale or missing: the controller sends
  * "unknown" states (or nothing), and the table shows "unknown".
  */
 bool
-UtS9sRpcReply::testCcFrontendsStale()
+UtS9sRpcReply::testServicesBundlesStale()
 {
     S9sVariantMap stale;
     stale["controller_id"] = 3;
@@ -202,10 +202,10 @@ UtS9sRpcReply::testCcFrontendsStale()
     S9sVariantList list;
     list << stale;
 
-    S9S_COMPARE(S9sRpcReply::ccFrontendsTable(list, false, true),
+    S9S_COMPARE(S9sRpcReply::servicesBundlesTable(list, false, true),
             "10.0.0.13 site-c unknown\n");
     // Columns keep the width of their headers without --no-header too.
-    S9S_COMPARE(S9sRpcReply::ccFrontendsTable(list, true, true),
+    S9S_COMPARE(S9sRpcReply::servicesBundlesTable(list, true, true),
             "3   10.0.0.13 site-c unknown unknown -       unknown unknown unknown unknown -\n");
     return true;
 }
@@ -214,7 +214,7 @@ UtS9sRpcReply::testCcFrontendsStale()
  * With --print-json only the JSON reply is printed, not the table.
  */
 bool
-UtS9sRpcReply::testCcFrontendsJsonOnly()
+UtS9sRpcReply::testServicesBundlesJsonOnly()
 {
     S9sOptions::uninit();
     S9sOptions *options = S9sOptions::instance();
@@ -222,11 +222,11 @@ UtS9sRpcReply::testCcFrontendsJsonOnly()
 
     S9sRpcReply reply;
     reply["request_status"] = "Ok";
-    reply["cc_frontends"]   = twoFrontEnds();
+    reply["services_bundles"]   = twoServicesBundles();
     reply["total"]          = 2;
 
-    const S9sString output = captureStdout([&reply]() { reply.printCcFrontends(); });
-    S9S_VERIFY(output.contains("\"cc_frontends\""));
+    const S9sString output = captureStdout([&reply]() { reply.printServicesBundles(); });
+    S9S_VERIFY(output.contains("\"services_bundles\""));
     S9S_VERIFY(output.contains("10.0.0.12"));
     S9S_VERIFY(!output.contains("HOSTNAME"));
     S9S_COMPARE(options->exitStatus(), 0);
@@ -239,7 +239,7 @@ UtS9sRpcReply::testCcFrontendsJsonOnly()
  * An error reply makes the command fail.
  */
 bool
-UtS9sRpcReply::testCcFrontendsError()
+UtS9sRpcReply::testServicesBundlesError()
 {
     S9sOptions::uninit();
     S9sOptions *options = S9sOptions::instance();
@@ -248,7 +248,7 @@ UtS9sRpcReply::testCcFrontendsError()
     reply["request_status"] = "InvalidRequest";
     reply["error_string"]   = "Controller not in pool mode. Operation not allowed.";
 
-    const S9sString output = captureStdout([&reply]() { reply.printCcFrontends(); });
+    const S9sString output = captureStdout([&reply]() { reply.printServicesBundles(); });
     S9S_VERIFY(!output.contains("HOSTNAME"));
     S9S_VERIFY(options->exitStatus() != 0);
 
@@ -262,7 +262,7 @@ UtS9sRpcReply::testCcFrontendsError()
  * status the client set is kept.
  */
 bool
-UtS9sRpcReply::testCcFrontendsConnectionError()
+UtS9sRpcReply::testServicesBundlesConnectionError()
 {
     S9sOptions::uninit();
     S9sOptions *options = S9sOptions::instance();
@@ -274,7 +274,7 @@ UtS9sRpcReply::testCcFrontendsConnectionError()
 
     S9sString output;
     const S9sString errors = captureStderr([&reply, &output]() {
-        output = captureStdout([&reply]() { reply.printCcFrontends(); });
+        output = captureStdout([&reply]() { reply.printServicesBundles(); });
     });
 
     S9S_VERIFY(errors.contains("Connection refused"));
