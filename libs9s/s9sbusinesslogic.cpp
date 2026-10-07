@@ -2672,6 +2672,7 @@ S9sBusinessLogic::jobRegistered(
         if (options->isWaitRequested() || options->isLogRequested())
         {
             waitForJob(clusterId, reply.jobId(), client);
+            maybePrintAllocatedClusterId(reply.jobId(), client);
         } else {
             reply.printJobStarted();
         }
@@ -2936,6 +2937,42 @@ S9sBusinessLogic::waitForJobWithLog(
     }
 
     printf("\n");
+}
+
+/**
+ * \param jobId The ID of the job that just ended.
+ * \param client The client for the communication.
+ *
+ * Jobs creating a new cluster (e.g. create_cluster) report the ID of the
+ * cluster they allocated in the "allocated_cluster_id" property of the job.
+ * This method prints it once the job ended, so the user learns the ID of the
+ * new cluster, even when another controller of the pool created it. Nothing
+ * is printed for other jobs or when the job released the ID (failed).
+ */
+void
+S9sBusinessLogic::maybePrintAllocatedClusterId(
+        const int     jobId,
+        S9sRpcClient &client)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    reply;
+    S9sVariantMap  job;
+    int            allocatedClusterId;
+
+    if (options->isJsonRequested() || !client.getJobInstanceForWait(jobId))
+        return;
+
+    reply = client.reply();
+    if (!reply.isOk())
+        return;
+
+    job = reply["job"].toVariantMap();
+    if (!job.contains("allocated_cluster_id"))
+        return;
+
+    allocatedClusterId = job["allocated_cluster_id"].toInt();
+    if (allocatedClusterId > 0)
+        printf("Created cluster with ID %d.\n", allocatedClusterId);
 }
 
 /**
