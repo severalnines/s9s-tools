@@ -11887,28 +11887,10 @@ S9sRpcClient::getPoolModeReadiness(S9sOptions *options)
 }
 
 /**
- * @brief migrates cmon's MariaDB to Oracle MySQL (migrateCmonDb), the
- * prerequisite of the bootstrapCmonDbCluster job on a MariaDB controller.
- *
- * Not a job: the controller starts the migration asynchronously and replies
- * straight away. cmon restarts when the migration completes.
- */
-bool
-S9sRpcClient::migrateCmonDb(S9sOptions *options)
-{
-    const S9sString uri = "/v2/poolcontrollers/";
-    S9sVariantMap   request;
-
-    (void) options;
-    request["operation"] = "migratecmondb";
-
-    return executeRequest(uri, request);
-}
-
-/**
  * @brief turns the main controller's own cmon DB into the seed PRIMARY of the
  * pool's cmon DB HA InnoDB Cluster behind a local MySQL Router
- * (CmdBootstrapCmonDbCluster / the bootstrapCmonDbCluster job).
+ * (CmdBootstrapCmonDbCluster / the bootstrap_cmondb_cluster job; cmon also
+ * accepts the old bootstrapCmonDbCluster name).
  *
  * The job only ever acts on the local host, so it takes no job_data of its
  * own and there is no cluster_id: like addCmonDbInstance it targets the pool.
@@ -11925,7 +11907,7 @@ S9sRpcClient::bootstrapCmonDbCluster(S9sOptions *options)
     (void) options;
 
     // The jobspec describing the command.
-    jobSpec["command"]  = "bootstrapCmonDbCluster";
+    jobSpec["command"]  = "bootstrap_cmondb_cluster";
     jobSpec["job_data"] = S9sVariantMap();
 
     // The job instance describing how the job will be executed.

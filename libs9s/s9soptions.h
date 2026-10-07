@@ -568,7 +568,6 @@ class S9sOptions
         bool isDeleteDb() const;
         bool isListDb() const;
         bool isBootstrapDb() const;
-        bool isMigrateDb() const;
         bool isStartController() const;
         bool isStopController() const;
         bool isRemoveController() const;

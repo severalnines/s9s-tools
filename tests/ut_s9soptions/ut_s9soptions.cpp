@@ -1195,7 +1195,7 @@ UtS9sOptions::testListOpenBaoOperations()
 
 /**
  * Testing the staged pool mode options on the pool-controllers subcommand:
- * --bootstrap-db, --migrate-db and --pool-readiness, plus the
+ * --bootstrap-db and --pool-readiness, plus the
  * --no-require-db-cluster/--no-require-config-storage opt-outs of
  * --set-pool-mode.
  */
@@ -1218,7 +1218,6 @@ UtS9sOptions::testPoolModePrerequisites()
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
     S9S_VERIFY(options->isBootstrapDb());
     S9S_VERIFY(options->isLogRequested());
-    S9S_VERIFY(!options->isMigrateDb());
     S9S_VERIFY(!options->isPoolReadiness());
 
     const char *argv2[] = { "/bin/s9s",
@@ -1227,11 +1226,10 @@ UtS9sOptions::testPoolModePrerequisites()
                             nullptr };
     int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
 
+    // --migrate-db is gone: cmon's DB is migrated to MySQL manually.
     S9sOptions::uninit();
     options = S9sOptions::instance();
-    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
-    S9S_VERIFY(options->isMigrateDb());
-    S9S_VERIFY(!options->isBootstrapDb());
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
 
     const char *argv3[] = { "/bin/s9s",
                             "pool-controllers",
