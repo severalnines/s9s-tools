@@ -572,7 +572,6 @@ class S9sOptions
         bool isListServicesBundles() const;
         S9sString site() const;
         bool isBootstrapDb() const;
-        bool isMigrateDb() const;
         bool isStartController() const;
         bool isStopController() const;
         bool isRemoveController() const;

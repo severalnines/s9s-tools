@@ -2369,9 +2369,12 @@ S9sRpcReply::servicesBundlesTable(
  *   CC configuration storage : missing (openbao)
  *
  * To set up the missing prerequisites, run in this order:
- *   s9s pool-controllers --migrate-db
- *       (cmon is stopped for several minutes; once it is back, check
- *        --pool-readiness again for the next steps)
+ *   migrate cmon's database to MySQL 8.4 manually (see
+ *       https://docs.severalnines.com/...#migrating-the-cmon-database-to-mysql-on-rhel-rocky-linux-and-almalinux
+ *       on RHEL, Rocky Linux and AlmaLinux, or
+ *       https://docs.severalnines.com/...#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu
+ *       on Debian and Ubuntu), then check --pool-readiness again for the
+ *       next steps
  *   s9s pool-controllers --add-openbao --nodes=HOST --log
  * then enable pool mode with 's9s pool-controllers --set-pool-mode'.
  * \endcode
@@ -2421,12 +2424,10 @@ S9sRpcReply::printSetPoolModeError()
  *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
  *   reports missing, in the order they have to be run.
  *
- * --migrate-db is only suggested while cmon's DB still needs migrating, the
- * controller supports migrating it on this host and no migration is running;
- * one that failed may be retried. --bootstrap-db is only suggested once cmon's
- * DB no longer needs migrating and while neither a bootstrap nor a migration
- * is running. A cmon that does not send "migration_supported" (older than the
- * key) is taken to support the migration. Prerequisites opted out
+ * Migrating cmon's DB from MariaDB to MySQL is a manual step (see
+ * printPoolModeReadinessSummary()), so it is never one of these commands.
+ * --bootstrap-db is only suggested once cmon's DB no longer needs migrating
+ * and while neither a bootstrap nor a migration is running. Prerequisites opted out
  * of with --no-require-db-cluster/--no-require-config-storage are skipped, and
  * nothing is suggested when pool mode is on or the readiness is not applicable.
  */
@@ -2459,16 +2460,13 @@ S9sRpcReply::poolModeSetupCommands(
     {
         const bool migrationRequired =
             dbCluster["migration_required"].toBoolean();
-        const bool migrationSupported =
-            !dbCluster.contains("migration_supported") ||
-            dbCluster["migration_supported"].toBoolean();
+        // "unknown" (systemd could not be asked) is taken as running, like
+        // the controller does.
         const bool migrationRunning =
-            dbCluster["migration_state"].toString() == "running";
+            dbCluster["migration_state"].toString() == "running" ||
+            dbCluster["migration_state"].toString() == "unknown";
         const bool bootstrapRunning =
             dbCluster["bootstrap_in_progress"].toBoolean();
-
-        if (migrationRequired && migrationSupported && !migrationRunning)
-            retval << "s9s pool-controllers --migrate-db";
 
         if (!migrationRequired && !migrationRunning && !bootstrapRunning)
             retval << "s9s pool-controllers --bootstrap-db --log";
@@ -2480,10 +2478,119 @@ S9sRpcReply::poolModeSetupCommands(
     return retval;
 }
 
+static const char *const c_manualMigrationDocsEl =
+    "https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
+    "scalable-controllers-pool/"
+    "#migrating-the-cmon-database-to-mysql-on-rhel-rocky-linux-and-almalinux";
+
+static const char *const c_manualMigrationDocsDebian =
+    "https://docs.severalnines.com/clustercontrol/latest/admin-guide/"
+    "scalable-controllers-pool/"
+    "#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu";
+
+/**
+ * \returns The first URL in the given text (a reason the controller sent),
+ *   or an empty string when it carries none.
+ */
+static S9sString
+urlInText(
+        const S9sString &text)
+{
+    size_t start = text.find("https://");
+
+    if (start == std::string::npos)
+        start = text.find("http://");
+
+    if (start == std::string::npos)
+        return S9sString();
+
+    size_t end = text.find_first_of(" \t\n\"'<>", start);
+    S9sString retval = text.substr(start, end == std::string::npos ?
+            std::string::npos : end - start);
+
+    // Sentence punctuation right after the URL is not part of it.
+    while (!retval.empty() && S9sString(".,;:)").contains(retval.back()))
+        retval.erase(retval.size() - 1);
+
+    return retval;
+}
+
+/**
+ * Prints the manual cmon DB migration step: the docs the controller pointed at
+ * in migration_unsupported_reason or bootstrap_unsupported_reason, else the
+ * procedure for both OS families.
+ */
+static void
+printManualMigrationStep(
+        const S9sVariantMap &dbCluster,
+        const char          *indent)
+{
+    S9sString url = urlInText(
+            dbCluster.valueByPath("migration_unsupported_reason").toString());
+
+    if (url.empty())
+    {
+        url = urlInText(
+                dbCluster.valueByPath("bootstrap_unsupported_reason").toString());
+    }
+
+    if (!url.empty())
+    {
+        ::printf("%smigrate cmon's database to MySQL 8.4 manually (see\n"
+                "%s    %s),\n",
+                indent, indent, STR(url));
+    }
+    else
+    {
+        ::printf("%smigrate cmon's database to MySQL 8.4 manually (see\n"
+                "%s    %s\n"
+                "%s    on RHEL, Rocky Linux and AlmaLinux, or\n"
+                "%s    %s\n"
+                "%s    on Debian and Ubuntu),\n",
+                indent, indent, c_manualMigrationDocsEl, indent, indent,
+                c_manualMigrationDocsDebian, indent);
+    }
+}
+
+/**
+ * \returns How the last cmon DB migration ended, from the controller's
+ *   migration_outcome, or an empty string when there is nothing to report.
+ */
+static S9sString
+migrationOutcomeText(
+        const S9sString &outcome)
+{
+    if (outcome == "migrated")
+        return "the last migration completed";
+    else if (outcome == "rolled_back")
+        return "the last migration failed and was rolled back to MariaDB";
+    else if (outcome == "failed_no_change")
+        return "the last migration failed before cmon was stopped, nothing "
+            "changed";
+    else if (outcome == "interrupted")
+        return "the last migration was interrupted; its next run rolls it "
+            "back";
+    else if (outcome == "rollback_incomplete")
+        return "the rollback of the last migration did not verify, cmon "
+            "needs a manual recovery";
+    else if (outcome == "failed_after_cutover")
+        return "the last migration failed after cmon was started on MySQL, "
+            "it was not rolled back";
+    else if (outcome == "unknown")
+        return "the outcome of the last migration is unknown";
+
+    // "none", "in_progress" (reported by migration_state) or no key at all.
+    return S9sString();
+}
+
 /**
  * Prints a getPoolModeReadiness reply (or the "readiness" object of a failed
  * setPoolMode reply) as a human readable summary, with the command that sets
  * up each missing prerequisite.
+ *
+ * cmon's DB is migrated from MariaDB to MySQL manually, following the docs:
+ * while it is still MariaDB that step is printed with a pointer to them, and
+ * the state and outcome of a migration (run by the operator) are reported.
  *
  * A prerequisite the user opted out of with --no-require-db-cluster or
  * --no-require-config-storage is still reported, but no command is suggested
@@ -2529,15 +2636,12 @@ S9sRpcReply::printPoolModeReadinessSummary(
     const bool      ready = readiness.valueByPath("ready").toBoolean();
     const bool      migrationRequired =
         dbCluster["migration_required"].toBoolean();
-    const bool      migrationSupported =
-        !dbCluster.contains("migration_supported") ||
-        dbCluster["migration_supported"].toBoolean();
-    const S9sString unsupportedReason =
-        dbCluster["migration_unsupported_reason"].toString();
     const bool      bootstrapRunning =
         dbCluster["bootstrap_in_progress"].toBoolean();
     const S9sString dbBackend = dbCluster["db_backend"].toString();
     const S9sString migrationState = dbCluster["migration_state"].toString();
+    const S9sString migrationOutcome =
+        migrationOutcomeText(dbCluster["migration_outcome"].toString());
 
     ::printf("Pool mode readiness: %s\n", ready ? "ready" : "not ready");
 
@@ -2564,12 +2668,20 @@ S9sRpcReply::printPoolModeReadinessSummary(
         ::printf("    Migration              : in progress, cmon is stopped "
                 "until it completes\n");
     }
-    else if (migrationRequired && !migrationSupported)
+    else if (migrationState == "unknown")
     {
-        ::printf("    Migration              : not supported on this host\n");
+        ::printf("    Migration              : state unknown\n");
+    }
+    else if (!migrationOutcome.empty())
+    {
+        ::printf("    Migration              : %s\n", STR(migrationOutcome));
 
-        if (!unsupportedReason.empty())
-            ::printf("                             %s\n", STR(unsupportedReason));
+        if (migrationState == "failed")
+        {
+            ::printf("                             check 'journalctl -u "
+                    "cmon-db-migration'%s\n",
+                    dbBackend == "mariadb" ? " before retrying" : "");
+        }
     }
     else if (migrationState == "failed")
     {
@@ -2580,8 +2692,7 @@ S9sRpcReply::printPoolModeReadinessSummary(
                 "restarted on MySQL\n");
         ::printf("                             check 'journalctl -u "
                 "cmon-db-migration'%s\n",
-                migrationSupported && dbBackend == "mariadb" ?
-                    ", then retry with --migrate-db" : "");
+                dbBackend == "mariadb" ? " before retrying" : "");
     }
 
     if (!dbMissing)
@@ -2635,17 +2746,21 @@ S9sRpcReply::printPoolModeReadinessSummary(
     const S9sStringList commands = poolModeSetupCommands(readiness);
 
     // A required CC DB cluster no command can be suggested for yet: a
-    // migration or bootstrap is running, or the migration is not supported.
+    // migration or bootstrap is running, or cmon's DB has to be migrated
+    // manually first.
     S9sString dbBlocker;
+    bool      manualMigration = false;
 
     if (dbMissing && !options->noRequireDbCluster())
     {
         if (migrationState == "running")
             dbBlocker = "wait for the cmon DB migration in progress to finish";
+        else if (migrationState == "unknown")
+            dbBlocker = "wait until the cmon DB migration state is known";
         else if (bootstrapRunning)
             dbBlocker = "wait for the CC DB cluster bootstrap in progress to finish";
-        else if (migrationRequired && !migrationSupported)
-            dbBlocker = "move cmon's DB to Oracle MySQL manually (see the reason above)";
+        else if (migrationRequired)
+            manualMigration = true;
     }
 
     // No s9s command installs clustercontrol-mcc and there is no opt-out for it.
@@ -2653,7 +2768,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
         "install the clustercontrol-mcc package on this host" : "";
 
     ::printf("\n");
-    if (commands.empty() && dbBlocker.empty() && mccBlocker.empty())
+    if (commands.empty() && dbBlocker.empty() && !manualMigration &&
+            mccBlocker.empty())
     {
         ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
                 "pool mode (cmon restarts).\n");
@@ -2664,7 +2780,14 @@ S9sRpcReply::printPoolModeReadinessSummary(
     if (commands.empty())
     {
         if (!dbBlocker.empty())
+        {
             ::printf("To set up the missing CC DB cluster, %s,\n", STR(dbBlocker));
+        }
+        else if (manualMigration)
+        {
+            ::printf("To set up the missing CC DB cluster,\n");
+            printManualMigrationStep(dbCluster, "");
+        }
 
         if (!mccBlocker.empty())
             ::printf("To set up the missing MCC package, %s,\n", STR(mccBlocker));
@@ -2683,18 +2806,15 @@ S9sRpcReply::printPoolModeReadinessSummary(
     if (!dbBlocker.empty())
         ::printf("  (%s)\n", STR(dbBlocker));
 
-    for (const auto &command : commands)
+    // --bootstrap-db can only follow once cmon is back on MySQL.
+    if (manualMigration)
     {
-        ::printf("  %s\n", STR(command));
-
-        // --bootstrap-db can only follow once cmon is back on MySQL.
-        if (command.endsWith("--migrate-db"))
-        {
-            ::printf("      (cmon is stopped for several minutes; once it is "
-                    "back, check\n"
-                    "       --pool-readiness again for the next steps)\n");
-        }
+        printManualMigrationStep(dbCluster, "  ");
+        ::printf("      then check --pool-readiness again for the next steps\n");
     }
+
+    for (const auto &command : commands)
+        ::printf("  %s\n", STR(command));
 
     ::printf("then enable pool mode with 's9s pool-controllers --set-pool-mode'.\n");
 }

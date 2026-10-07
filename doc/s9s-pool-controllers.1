@@ -144,14 +144,24 @@ Pool mode is also not ready while the clustercontrol-mcc package is not installe
 on the controller host; install it, then check again. A services bundle is not a
 prerequisite.
 
-While a \fB--migrate-db\fP migration or a \fB--bootstrap-db\fP job is running it
-is reported as in progress and neither \fB--migrate-db\fP nor \fB--bootstrap-db\fP
-is suggested again; \fB--bootstrap-db\fP is only suggested once cmon's DB is Oracle
-MySQL. When the migration is not supported on the host it is reported with the
-reason, and \fB--migrate-db\fP is not suggested. A failed migration rolls back to
-MariaDB unless it failed after cmon was restarted on MySQL; check the unit with
-journalctl -u cmon-db-migration, then retry with \fB--migrate-db\fP while cmon's
-DB is still MariaDB.
+cmon's DB has to be Oracle MySQL 8.4 for the CC DB cluster. A MariaDB one is
+migrated manually, following the procedure in the documentation:
+.nf
+RHEL, Rocky Linux and AlmaLinux:
+https://docs.severalnines.com/clustercontrol/latest/admin-guide/scalable-controllers-pool/#migrating-the-cmon-database-to-mysql-on-rhel-rocky-linux-and-almalinux
+Debian and Ubuntu:
+https://docs.severalnines.com/clustercontrol/latest/admin-guide/scalable-controllers-pool/#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu
+.fi
+While cmon's DB is MariaDB that step is printed with the link (the one the
+controller points at, when its reply carries one) and \fB--bootstrap-db\fP is not
+suggested yet: check \fB--pool-readiness\fP again once cmon is back on MySQL.
+
+While a migration or a \fB--bootstrap-db\fP job is running it is reported as in
+progress and \fB--bootstrap-db\fP is not suggested; the same holds while the
+migration state is unknown. The outcome of the last
+migration is reported too. A failed migration rolls back to MariaDB unless it
+failed after cmon was restarted on MySQL; check the unit with
+journalctl -u cmon-db-migration before retrying it.
 .nf
 s9s pool-controllers --pool-readiness
 Pool mode readiness: not ready
@@ -161,33 +171,14 @@ Pool mode readiness: not ready
   MCC package              : ready (clustercontrol-mcc)
 
 To set up the missing prerequisites, run in this order:
-  s9s pool-controllers --migrate-db
-      (cmon is stopped for several minutes; once it is back, check
-       --pool-readiness again for the next steps)
+  migrate cmon's database to MySQL 8.4 manually (see
+      https://docs.severalnines.com/...#migrating-the-cmon-database-to-mysql-on-rhel-rocky-linux-and-almalinux
+      on RHEL, Rocky Linux and AlmaLinux, or
+      https://docs.severalnines.com/...#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu
+      on Debian and Ubuntu),
+      then check --pool-readiness again for the next steps
   s9s pool-controllers --add-openbao --nodes=HOST --log
 then enable pool mode with 's9s pool-controllers --set-pool-mode'.
-.fi
-
-.TP
-.B --migrate-db
-Migrates cmon's DB from MariaDB to Oracle MySQL 8.4, which \fB--bootstrap-db\fP
-needs. Only valid on the main controller, with pool mode off, outside k8s mode,
-while cmon's DB is MariaDB and while cmon runs no jobs. Requires super admin
-privileges.
-
-The migration is supported on RHEL-family hosts only (EL8, EL9 and EL10). On other
-hosts it is refused and \fB--pool-readiness\fP reports why; to move cmon's DB to
-Oracle MySQL on Debian and Ubuntu follow the manual procedure at
-https://docs.severalnines.com/clustercontrol/latest/admin-guide/scalable-controllers-pool/#migrating-the-cmon-database-to-mysql-on-debian-and-ubuntu
-
-The migration runs in the background and
-.B cmon is stopped for several minutes,
-restarting when it completes. Until then \fB--pool-readiness\fP fails to connect:
-wait for the controller to come back, then check again. If the migration fails
-before cmon runs on MySQL again it is rolled back to MariaDB and cmon is
-restarted; check 'journalctl -u cmon-db-migration' before retrying.
-.nf
-s9s pool-controllers --migrate-db
 .fi
 
 .TP
@@ -197,7 +188,8 @@ PRIMARY of a MySQL InnoDB Cluster behind a local MySQL Router and points cmon at
 Router. It is a job (\fB--log\fP and \fB--wait\fP apply) that does not restart
 cmon, and it is a no-op when the cluster already exists. It must be run on the main
 controller, while it is the only controller known to the pool, and cmon's DB must be
-Oracle MySQL (see \fB--migrate-db\fP). Requires super admin privileges.
+Oracle MySQL 8.4, migrated manually from MariaDB (see \fB--pool-readiness\fP).
+Requires super admin privileges.
 .nf
 s9s pool-controllers --bootstrap-db --log
 .fi
