@@ -567,6 +567,10 @@ class S9sOptions
         bool isAddDb() const;
         bool isDeleteDb() const;
         bool isListDb() const;
+        bool isAddServicesBundle() const;
+        bool isDeleteServicesBundle() const;
+        bool isListServicesBundles() const;
+        S9sString site() const;
         bool isBootstrapDb() const;
         bool isStartController() const;
         bool isStopController() const;
@@ -1045,4 +1049,5 @@ class S9sOptions
 
     friend class UtS9sOptions;
     friend class UtS9sRpcClient;
+    friend class UtS9sRpcReply;
 };

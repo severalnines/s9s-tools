@@ -548,6 +548,10 @@ enum S9sOptionType
     OptionAddDb,
     OptionDeleteDb,
     OptionListDb,
+    OptionAddServicesBundle,
+    OptionDeleteServicesBundle,
+    OptionListServicesBundles,
+    OptionSite,
     OptionBootstrapDb,
     OptionPoolReadiness,
     OptionNoRequireDbCluster,
@@ -5844,6 +5848,49 @@ S9sOptions::isListDb() const
 }
 
 /**
+ * \returns true if the "add-services-bundle" function is requested by
+ * providing the --add-services-bundle command line option (installs a services
+ * bundle on a pool controller host via the addServicesBundle job).
+ */
+bool
+S9sOptions::isAddServicesBundle() const
+{
+    return getBool("add_services_bundle");
+}
+
+/**
+ * \returns true if the "delete-services-bundle" function is requested by
+ * providing the --delete-services-bundle command line option (removes the
+ * services bundle of a pool controller host via the deleteServicesBundle job).
+ */
+bool
+S9sOptions::isDeleteServicesBundle() const
+{
+    return getBool("delete_services_bundle");
+}
+
+/**
+ * \returns true if the "list-services-bundles" function is requested by
+ * providing the --list-services-bundles command line option (lists the pool's
+ * services bundles via the read-only getServicesBundles RPC call).
+ */
+bool
+S9sOptions::isListServicesBundles() const
+{
+    return getBool("list_services_bundles");
+}
+
+/**
+ * \returns the site given by the --site command line option (for
+ * --add-services-bundle and --add-controller), empty when not given.
+ */
+S9sString
+S9sOptions::site() const
+{
+    return getString("site");
+}
+
+/**
  * \returns true if the "bootstrap-db" function is requested by providing the
  * --bootstrap-db command line option (turns the main controller's own cmon DB
  * into the seed PRIMARY of the pool's cmon DB HA InnoDB Cluster via the
@@ -9395,8 +9442,24 @@ S9sOptions::printHelpControllers()
 "  --list-db                  To retrieve the list of the pool's cmon DB HA InnoDB\n"
 "                             Cluster nodes (read-only, no job is created). Supports\n"
 "                             --print-json like --list.\n"
+"  --list-services-bundles    To retrieve the list of the pool's services bundles and\n"
+"                             their health (read-only). Supports --long and\n"
+"                             --print-json.\n"
 "  --print-deployment-info    Print all controllers, including static deployment info.\n"
 "  --add-controller           To create a new controller instance on specified host.\n"
+"  --add-services-bundle      To install a services bundle (cmon-proxy, UI, cmon-ssh,\n"
+"                             cmon-events, cmon-cloud) on a pool controller host\n"
+"                             (requires --nodes=HOST[:WEB_PORT] with exactly one node).\n"
+"                             Takes the SSH connection settings from the controller's\n"
+"                             stored credentials; sudo/elevation settings are still\n"
+"                             sent. The main controller can't be a target: its\n"
+"                             services bundle is registered by --set-pool-mode or when\n"
+"                             cmon starts in pool mode. Importing existing services\n"
+"                             bundles is not supported.\n"
+"  --delete-services-bundle   To remove the services bundle of a pool controller host\n"
+"                             (requires --nodes with exactly one node). The main\n"
+"                             controller's services bundle can't be deleted. The last\n"
+"                             services bundle of the pool is only deleted with --force.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
@@ -9408,14 +9471,23 @@ S9sOptions::printHelpControllers()
 "                             must be MySQL 8.4: migrate a MariaDB one manually, see\n"
 "                             https://docs.severalnines.com/clustercontrol/latest/admin-guide/scalable-controllers-pool/\n"
 "  --pool-readiness           To check which pool mode prerequisites (CC DB cluster,\n"
-"                             CC configuration storage) are still missing and how to\n"
-"                             set them up. Supports --print-json like --list.\n"
+"                             CC configuration storage, clustercontrol-mcc installed)\n"
+"                             are still missing and how to set them up. Supports\n"
+"                             --print-json like --list.\n"
 "  --set-pool-mode            To enable pool mode on this controller (cmon restarts).\n"
+"                             Needs the clustercontrol-mcc package, not a services\n"
+"                             bundle. This controller's services bundle is registered\n"
+"                             (not on k8s pools) when its cmon-proxy, with\n"
+"                             clustercontrol-mcc, is 2.5.1 or later; this does not\n"
+"                             block pool mode. If none is registered, restarting cmon\n"
+"                             after an upgrade registers it.\n"
 "  --unset-pool-mode          To disable pool mode on this controller (cmon restarts).\n"
 "  --assignment               To retrieve the controller assigned to specific cluster (requires --cluster-id).\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
-"  --remove-controller        To remove a controller (requires --controller-id).\n"
+"  --remove-controller        To remove a controller (requires --controller-id). A\n"
+"                             controller hosting a services bundle is refused unless\n"
+"                             --delete-services-bundle ran first or --force is given.\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
 "  --list-config-storage      List the configuration/secret storage instances the\n"
@@ -9424,6 +9496,11 @@ S9sOptions::printHelpControllers()
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
 "                             only, alternative to --nodes - no port needed).\n"
+"  --site=SITE                The site of the new services bundle\n"
+"                             (--add-services-bundle) or controller\n"
+"                             (--add-controller). With --add-controller it\n"
+"                             needs a controller with CLUS-8519 or newer; an older one\n"
+"                             ignores it.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
 "  --comment                  To specify the command associated to credential to create.\n"
 "  --nodes=NODELIST           The nodes for the controller operation.\n"
@@ -9461,6 +9538,18 @@ S9sOptions::printHelpControllers()
 "                             (its data will be overwritten by the join). With --delete-db:\n"
 "                             remove the instance from the cluster's metadata even if it\n"
 "                             cannot be reached (mirrors mysqlsh's remove_instance(force)).\n"
+"                             With --add-services-bundle: Force: reinstall and\n"
+"                             reconfigure existing services (cmon-proxy, cmon-ssh,\n"
+"                             cmon-events, cmon-cloud). Without it a host that already runs\n"
+"                             cmon-proxy is refused, and an existing cmon-ssh,\n"
+"                             cmon-events or cmon-cloud is skipped but still\n"
+"                             configured. It also accepts a busy or inactive target\n"
+"                             and installs the latest packages when the pool's\n"
+"                             versions are not available.\n"
+"                             With --remove-controller: also unregister the services\n"
+"                             bundle the controller hosts.\n"
+"                             With --delete-services-bundle: delete the last services\n"
+"                             bundle too, or one whose host cannot be reached.\n"
 "\n"
 "Job related options:\n"
 "  --log                      Wait and monitor job messages.\n"
@@ -20449,6 +20538,9 @@ S9sOptions::readOptionsControllers(
                     {"add-db",           no_argument, 0,       OptionAddDb},
                     {"delete-db",        no_argument, 0,       OptionDeleteDb},
                     {"list-db",          no_argument, 0,       OptionListDb},
+                    {"add-services-bundle", no_argument, 0,  OptionAddServicesBundle},
+                    {"delete-services-bundle", no_argument, 0, OptionDeleteServicesBundle},
+                    {"list-services-bundles", no_argument, 0, OptionListServicesBundles},
                     {"bootstrap-db",     no_argument, 0,       OptionBootstrapDb},
                     {"pool-readiness",   no_argument, 0,       OptionPoolReadiness},
                     {"assignment",       no_argument, 0,       OptionAssignedController},
@@ -20466,6 +20558,7 @@ S9sOptions::readOptionsControllers(
                     // Arguments when creating or updating controllers
                     {"controller-id",    required_argument, 0, OptionControllerId},
                     {"node",             required_argument, 0, OptionNode},
+                    {"site",             required_argument, 0, OptionSite},
                     {"cluster-id",       required_argument, 0, OptionDbClusterId},
                     {"provider-version", required_argument, 0, OptionProviderVersion},
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
@@ -20706,6 +20799,26 @@ S9sOptions::readOptionsControllers(
                 m_options["list_db"] = true;
                 break;
 
+            case OptionAddServicesBundle:
+                // --add-services-bundle
+                m_options["add_services_bundle"] = true;
+                break;
+
+            case OptionDeleteServicesBundle:
+                // --delete-services-bundle
+                m_options["delete_services_bundle"] = true;
+                break;
+
+            case OptionListServicesBundles:
+                // --list-services-bundles
+                m_options["list_services_bundles"] = true;
+                break;
+
+            case OptionSite:
+                // --site=SITE
+                m_options["site"] = optarg;
+                break;
+
             case OptionBootstrapDb:
                 // --bootstrap-db
                 m_options["bootstrap_db"] = true;
@@ -20926,6 +21039,15 @@ S9sOptions::checkOptionsControllers()
     if (isListDb())
         countOptions++;
 
+    if (isAddServicesBundle())
+        countOptions++;
+
+    if (isDeleteServicesBundle())
+        countOptions++;
+
+    if (isListServicesBundles())
+        countOptions++;
+
     if (isBootstrapDb())
         countOptions++;
 
@@ -21027,6 +21149,57 @@ S9sOptions::checkOptionsControllers()
         m_errorMessage = "The --nodes option must specify exactly one host for --add-openbao.";
         m_exitStatus = BadOptions;
         return false;
+    }
+
+    if (m_options.contains("site") && !isAddServicesBundle() && !isAddController())
+    {
+        m_errorMessage = "The --site option can only be used with --add-services-bundle or --add-controller.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    // The controller writes the site into shell commands and cmon.cnf.
+    if (m_options.contains("site"))
+    {
+        const S9sString siteName = site();
+        bool valid = !siteName.empty() && siteName.length() <= 64;
+        for (const char c : siteName)
+        {
+            if (!isalnum(static_cast<unsigned char>(c)) && c != '.' && c != '_' && c != '-')
+                valid = false;
+        }
+
+        if (!valid)
+        {
+            m_errorMessage =
+                "The --site value must be 1 to 64 letters, digits, '.', '_' or '-'.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+    }
+
+    if (isAddServicesBundle() || isDeleteServicesBundle())
+    {
+        if (nodes().size() != 1u)
+        {
+            m_errorMessage =
+                "The --nodes option must specify exactly one host for "
+                "--add-services-bundle and --delete-services-bundle.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
+
+        // The jobs use the SSH credentials stored for the target controller.
+        if (m_options.contains("os_user") || m_options.contains("os_key_file") ||
+                m_options.contains("os_password"))
+        {
+            m_errorMessage =
+                "The --os-user, --os-key-file and --os-password options can not be used "
+                "with --add-services-bundle or --delete-services-bundle: the job uses the "
+                "controller's stored credentials.";
+            m_exitStatus = BadOptions;
+            return false;
+        }
     }
 
     return true;

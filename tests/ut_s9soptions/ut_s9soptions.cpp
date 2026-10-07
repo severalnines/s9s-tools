@@ -68,6 +68,11 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testAddServicesBundle, retval);
+    PERFORM_TEST(testDeleteServicesBundle, retval);
+    PERFORM_TEST(testListServicesBundles, retval);
+    PERFORM_TEST(testServicesBundleOptionErrors, retval);
+    PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testAddOpenBao, retval);
     PERFORM_TEST(testListOpenBaoOperations, retval);
     PERFORM_TEST(testPoolModePrerequisites, retval);
@@ -1033,6 +1038,167 @@ UtS9sOptions::testListDb()
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
     S9S_VERIFY(options->isListDb());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "pool-controllers --add-services-bundle" (the addServicesBundle job):
+ * one node with an optional web port, --site, --force, --no-install.
+ */
+bool
+UtS9sOptions::testAddServicesBundle()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-services-bundle",
+                            "--nodes=10.0.0.12:8443",
+                            "--site=site-b",
+                            "--force",
+                            "--no-install",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddServicesBundle());
+    S9S_VERIFY(!options->isDeleteServicesBundle());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 8443);
+    S9S_COMPARE(options->site(), "site-b");
+    S9S_VERIFY(options->getBool("force"));
+    S9S_VERIFY(options->noInstall());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testDeleteServicesBundle()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-services-bundle",
+                            "--nodes=10.0.0.12",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isDeleteServicesBundle());
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
+    S9S_VERIFY(!options->getBool("force"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * --list-services-bundles is read-only: no --nodes, --long and --print-json apply.
+ */
+bool
+UtS9sOptions::testListServicesBundles()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--list-services-bundles",
+                            "--long",
+                            "--print-json",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isListServicesBundles());
+    S9S_VERIFY(options->isLongRequested());
+    S9S_VERIFY(options->isJsonRequested());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * The invalid combinations: --site without an add option, a missing or a
+ * second --nodes host, --os-* with a services bundle job, two main options.
+ */
+bool
+UtS9sOptions::testServicesBundleOptionErrors()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *siteAlone[] = { "/bin/s9s", "pool-controllers", "--list-services-bundles",
+                                "--site=site-b", nullptr };
+    const char *noNodes[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle", nullptr };
+    const char *twoNodes[] = { "/bin/s9s", "pool-controllers", "--delete-services-bundle",
+                               "--nodes=10.0.0.12;10.0.0.13", nullptr };
+    const char *withKey[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
+                              "--nodes=10.0.0.12", "--os-key-file=/root/.ssh/id_rsa", nullptr };
+    const char *withUser[] = { "/bin/s9s", "pool-controllers", "--delete-services-bundle",
+                               "--nodes=10.0.0.12", "--os-user=root", nullptr };
+    const char *twoMains[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
+                               "--list-services-bundles", "--nodes=10.0.0.12", nullptr };
+    const char *badSite[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
+                              "--nodes=10.0.0.12", "--site=b;id", nullptr };
+    const char *spaceSite[] = { "/bin/s9s", "pool-controllers", "--add-controller",
+                                "--nodes=10.0.0.13", "--site=site b", nullptr };
+    const char *emptySite[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
+                                "--nodes=10.0.0.12", "--site=", nullptr };
+
+    for (const char **argv : { siteAlone, noNodes, twoNodes, withKey, withUser, twoMains,
+                               badSite, spaceSite, emptySite })
+    {
+        int argc = 0;
+        while (argv[argc] != nullptr)
+            ++argc;
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+        S9S_VERIFY(!options->readOptions(&argc, (char **)argv));
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    }
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    int argc = 5;
+    S9S_VERIFY(!options->readOptions(&argc, (char **)withKey));
+    S9S_VERIFY(options->errorString().contains("stored credentials"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * --site is accepted with --add-controller too.
+ */
+bool
+UtS9sOptions::testAddControllerSite()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-controller",
+                            "--nodes=10.16.186.1",
+                            "--site=site-b",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isAddController());
+    S9S_COMPARE(options->site(), "site-b");
 
     S9sOptions::uninit();
     return true;

@@ -183,6 +183,10 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testAddDb, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
+    PERFORM_TEST(testAddServicesBundle, retval);
+    PERFORM_TEST(testDeleteServicesBundle, retval);
+    PERFORM_TEST(testGetServicesBundles, retval);
+    PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
     PERFORM_TEST(testListConfigStorage, retval);
     PERFORM_TEST(testListOpenBaoVersions, retval);
@@ -190,6 +194,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetPoolModeReadiness, retval);
     PERFORM_TEST(testSetPoolModePrerequisites, retval);
     PERFORM_TEST(testPoolModeSetupCommands, retval);
+    PERFORM_TEST(testPoolModeReadinessMccPackage, retval);
 
     return retval;
 }
@@ -3261,6 +3266,146 @@ UtS9sRpcClient::testListDb()
 }
 
 /**
+ * Testing addServicesBundle() (the "pool-controllers --add-services-bundle" job):
+ * command, server_address, web_port from HOST:PORT (443 without one), site,
+ * force, install_software / use_internal_repos - and no SSH credentials,
+ * even when an OS user is configured.
+ */
+bool
+UtS9sRpcClient::testAddServicesBundle()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.0.12:8443");
+    options->m_options["site"] = "site-b";
+    options->m_options["force"] = true;
+    options->m_options["no_install"] = true;
+    options->m_options["use_internal_repos"] = true;
+    options->m_options["os_user"] = "configured-user";
+    options->m_options["os_key_file"] = "/home/configured-user/.ssh/id_rsa";
+    options->m_options["os_password"] = "configured-password";
+
+    S9S_VERIFY(client.addServicesBundle(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(),
+            "addServicesBundle");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Add Services Bundle to Pool");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.0.12");
+    S9S_COMPARE(jobData["web_port"], 8443);
+    S9S_COMPARE(jobData["site"], "site-b");
+    S9S_VERIFY(jobData["force"].toBoolean());
+    S9S_VERIFY(!jobData["install_software"].toBoolean());
+    S9S_VERIFY(jobData["use_internal_repos"].toBoolean());
+    for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
+        S9S_VERIFY(!jobData.contains(key));
+
+    // No port, no site, no force.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.0.13");
+
+    S9S_VERIFY(client.addServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.0.13");
+    S9S_COMPARE(jobData["web_port"], 443);
+    S9S_VERIFY(!jobData.contains("site"));
+    S9S_VERIFY(!jobData["force"].toBoolean());
+    S9S_VERIFY(!jobData.contains("install_software"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sRpcClient::testDeleteServicesBundle()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.0.0.12");
+    options->m_options["force"] = true;
+    options->m_options["os_user"] = "configured-user";
+
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    payload = client.lastPayload();
+
+    S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(),
+            "deleteServicesBundle");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Delete Services Bundle from Pool");
+
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["server_address"], "10.0.0.12");
+    S9S_VERIFY(jobData["force"].toBoolean());
+    S9S_VERIFY(!jobData.contains("ssh_user"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetServicesBundles()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+
+    S9S_VERIFY(client.getServicesBundles(options));
+    payload = client.lastPayload();
+
+    S9S_COMPARE(payload["operation"], "getServicesBundles");
+    S9S_COMPARE(client.uri(0u), "/v2/poolcontrollers/");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddControllerSite()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.16.186.1:9500");
+    options->m_options["site"] = "site-b";
+
+    S9S_VERIFY(client.addNewController(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["site"], "site-b");
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setNodes("10.16.186.1:9500");
+    S9S_VERIFY(client.addNewController(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_VERIFY(!jobData.contains("site"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
  * Testing installOpenBao() (the "pool-controllers --add-openbao" job -
  * CmdSetupOpenBao) request shape.
  *
@@ -3804,6 +3949,81 @@ UtS9sRpcClient::testPoolModeSetupCommands()
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
     S9S_VERIFY(commands.empty());
 
+    return true;
+}
+
+/**
+ * The "mcc_package" prerequisite (clustercontrol-mcc installed) of a
+ * getPoolModeReadiness reply: shown in the summary, and while it is missing
+ * pool mode is not suggested. No s9s command sets it up.
+ */
+bool
+UtS9sRpcClient::testPoolModeReadinessMccPackage()
+{
+    S9sVariantMap  readiness;
+    S9sVariantMap  dbCluster;
+    S9sVariantMap  storage;
+    S9sVariantMap  mcc;
+    S9sVariantList missing;
+    S9sString      summary;
+
+    S9sOptions::uninit();
+
+    dbCluster["ready"]      = true;
+    dbCluster["db_backend"] = "mysql";
+    storage["ready"]        = true;
+    storage["type"]         = "openbao";
+    mcc["ready"]            = false;
+    mcc["package"]          = "clustercontrol-mcc";
+    mcc["reason"]           = "clustercontrol-mcc is not installed on this controller";
+    missing << S9sVariant("mcc_package");
+
+    readiness["pool_mode"]       = false;
+    readiness["applicable"]      = true;
+    readiness["ready"]           = false;
+    readiness["missing"]         = missing;
+    readiness["cmon_db_cluster"] = dbCluster;
+    readiness["config_storage"]  = storage;
+    readiness["mcc_package"]     = mcc;
+
+    // Only the package missing: no command, no --set-pool-mode either.
+    S9S_VERIFY(S9sRpcReply::poolModeSetupCommands(readiness).empty());
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("Pool mode readiness: not ready"));
+    S9S_VERIFY(summary.contains("MCC package              : missing (clustercontrol-mcc)"));
+    S9S_VERIFY(summary.contains("clustercontrol-mcc is not installed on this controller"));
+    S9S_VERIFY(summary.contains("To set up the missing MCC package, install the "
+                "clustercontrol-mcc package on this host,"));
+    S9S_VERIFY(summary.contains("re-check with 's9s pool-controllers --pool-readiness'"));
+    S9S_VERIFY(!summary.contains("--set-pool-mode"));
+
+    // Missing together with the storage: the manual step comes with the
+    // command list.
+    missing << S9sVariant("config_storage");
+    storage["ready"]            = false;
+    readiness["missing"]        = missing;
+    readiness["config_storage"] = storage;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("run in this order:\n"
+                "  (install the clustercontrol-mcc package on this host)\n"
+                "  s9s pool-controllers --add-openbao --nodes=HOST --log\n"));
+
+    // Installed: reported ready, pool mode can be enabled.
+    mcc["ready"]             = true;
+    mcc["reason"]            = "";
+    readiness["mcc_package"] = mcc;
+    readiness["missing"]     = S9sVariantList();
+    readiness["ready"]       = true;
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(summary.contains("MCC package              : ready (clustercontrol-mcc)"));
+    S9S_VERIFY(summary.contains("Run 's9s pool-controllers --set-pool-mode'"));
+
+    // A cmon older than the check sends no mcc_package: no line for it.
+    readiness.erase("mcc_package");
+    summary = readinessSummary(readiness);
+    S9S_VERIFY(!summary.contains("MCC package"));
+
+    S9sOptions::uninit();
     return true;
 }
 

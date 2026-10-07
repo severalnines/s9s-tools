@@ -11954,6 +11954,9 @@ S9sRpcClient::addNewController(S9sOptions *options)
     if (!options->providerVersion().empty())
         jobData["version"] = options->providerVersion();
 
+    if (!options->site().empty())
+        jobData["site"] = options->site();
+
     // The jobspec describing the command.
     jobSpec["command"]  = "addController";
     jobSpec["job_data"] = jobData;
@@ -12085,6 +12088,136 @@ S9sRpcClient::deleteCmonDbInstance(S9sOptions *options)
 
     request["operation"] = "createJobInstance";
     request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief install a services bundle on a pool controller host
+ * (CmdAddServicesBundle / the addServicesBundle job).
+ *
+ * The job takes the SSH connection settings from the credentials the
+ * controller stored for the target when it was added to the pool, so no
+ * ssh_* field is sent - not even one composeJobData() took from the
+ * configuration file. The sudo/elevation settings (sudo_user, sudo_password,
+ * elevation_option, access_check_cmd) are still sent and override the stored
+ * ones.
+ */
+bool
+S9sRpcClient::addServicesBundle(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() != 1)
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "addServicesBundle operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
+        jobData.erase(key);
+
+    jobData["server_address"] = hosts[0].toNode().hostName();
+    // S9sNode::port() is 0 when no ':port' was given on --nodes.
+    const int webPort = hosts[0].toNode().port();
+    jobData["web_port"] = webPort > 0 ? webPort : 443;
+
+    if (!options->site().empty())
+        jobData["site"] = options->site();
+
+    jobData["force"] = options->getBool("force");
+
+    if (options->noInstall())
+        jobData["install_software"] = false;
+
+    if (options->useInternalRepos())
+        jobData["use_internal_repos"] = true;
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "addServicesBundle";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Add Services Bundle to Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * @brief remove the services bundle of a pool controller host
+ * (CmdDeleteServicesBundle / the deleteServicesBundle job). Like
+ * the add job it sends no SSH connection settings (sudo/elevation ones are
+ * still sent).
+ */
+bool
+S9sRpcClient::deleteServicesBundle(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList hosts = options->nodes();
+
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    if (hosts.size() != 1)
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "deleteServicesBundle operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
+        jobData.erase(key);
+
+    jobData["server_address"] = hosts[0].toNode().hostName();
+    jobData["force"]          = options->getBool("force");
+
+    // The jobspec describing the command.
+    jobSpec["command"]  = "deleteServicesBundle";
+    jobSpec["job_data"] = jobData;
+
+    // The job instance describing how the job will be executed.
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Delete Services Bundle from Pool";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Lists the pool's services bundles and their health (the read-only
+ * getServicesBundles call, "pool-controllers --list-services-bundles").
+ */
+bool
+S9sRpcClient::getServicesBundles(S9sOptions *options)
+{
+    const S9sString uri = "/v2/poolcontrollers/";
+    S9sVariantMap  request;
+
+    S9S_UNUSED(options);
+    request["operation"] = "getServicesBundles";
 
     return executeRequest(uri, request);
 }

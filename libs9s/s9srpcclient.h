@@ -379,6 +379,9 @@ class S9sRpcClient
         bool addNewController(S9sOptions *options);
         bool addNewCmonDbInstance(S9sOptions *options);
         bool deleteCmonDbInstance(S9sOptions *options);
+        bool addServicesBundle(S9sOptions *options);
+        bool deleteServicesBundle(S9sOptions *options);
+        bool getServicesBundles(S9sOptions *options);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);

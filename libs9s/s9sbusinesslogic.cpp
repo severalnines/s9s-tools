@@ -1514,6 +1514,12 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             reply.printCmonDbClusterNodes();
         }
+        else if (options->isListServicesBundles()) {
+            // A transport error is in the reply too, so it is printed.
+            client.getServicesBundles(options);
+            S9sRpcReply reply = client.reply();
+            reply.printServicesBundles();
+        }
         else if (options->isAssignedController()) {
             client.assignedController(options);
             S9sRpcReply reply = client.reply();
@@ -1574,6 +1580,18 @@ S9sBusinessLogic::execute()
         else if (options->isDeleteDb())
         {
             success = client.deleteCmonDbInstance(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isAddServicesBundle())
+        {
+            success = client.addServicesBundle(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isDeleteServicesBundle())
+        {
+            success = client.deleteServicesBundle(options);
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }

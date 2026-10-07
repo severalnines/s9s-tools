@@ -43,6 +43,28 @@ HOSTNAME  PORT STATUS ROLE
 .fi
 
 .TP
+.B --list-services-bundles
+Gets the pool's services bundles (cmon-proxy with the UI, cmon-ssh, cmon-events
+and cmon-cloud on a pool controller host) and their health. Read-only, no job is
+created. The answer comes from the shared database, so it is the same on every
+controller and still lists a services bundle whose site is down: STATUS is
+\fBonline\fP, \fBdegraded\fP (cmon-proxy is up, another service is not),
+\fBoffline\fP (cmon-proxy is down or the services bundle's controller stopped
+reporting) or
+\fBunknown\fP (no report yet). Supports \fB--long\fP, \fB--no-header\fP and
+\fB--print-json\fP.
+.nf
+s9s pool-controllers --list-services-bundles
+HOSTNAME  SITE   STATUS
+10.0.0.11 site-a online
+10.0.0.12 site-b online
+
+s9s pool-controllers --list-services-bundles --long
+CID HOSTNAME  SITE   STATUS MODE  VERSION    PROXY  SSH    EVENTS CLOUD  URL
+1   10.0.0.11 site-a online fleet 2.5.0-1201 active active active active https://10.0.0.11:443/
+.fi
+
+.TP
 .B --assignment
 Gets existing controller assigned to provided cluster. Providing '--cluster-id' is mandatory.
 Note: this operation is only available under the \fBpool-controllers\fP subcommand, not under \fBcontroller\fP.
@@ -61,7 +83,21 @@ On the first controller of a pool this requires the CC DB cluster
 (\fB--bootstrap-db\fP) and the CC configuration storage (\fB--add-openbao\fP) to be
 set up beforehand; \fB--set-pool-mode\fP does not set them up itself. When one is
 missing the request fails, and the missing prerequisites are printed together with
-the commands that set them up (see \fB--pool-readiness\fP).
+the commands that set them up (see \fB--pool-readiness\fP). The clustercontrol-mcc
+package must also be installed on the controller host for pool mode to be ready;
+pool mode does not need a services bundle to exist or be registered.
+
+Registering the main controller's services bundle, so it is listed by
+\fB--list-services-bundles\fP, does not block pool mode. It is tried when pool mode
+is enabled and, when no services bundle is registered yet, again each time cmon
+starts in
+pool mode (not on a k8s pool, where nothing is registered). It needs a local
+cmon-proxy, with clustercontrol-mcc, at version 2.5.1 or later; otherwise the
+services bundle is not registered and pool mode works the same. So after upgrading
+clustercontrol-proxy or clustercontrol-mcc, restarting cmon is enough: there is no
+need to disable and enable pool mode again. With \fB--print-json\fP the reply is
+printed as is, including any 'warnings' list the controller sends about the
+registration.
 .RS
 .TP
 .B --conf-storage=MODE
@@ -104,6 +140,9 @@ The prerequisites are the \fBCC DB cluster\fP, cmon's own DB made highly availab
 \fB--add-db\fP instances join later), and the \fBCC configuration storage\fP, the
 OpenBao secret store the controllers of the pool share. When the controller runs in
 k8s mode, or other controllers are already in the pool, there is nothing to set up.
+Pool mode is also not ready while the clustercontrol-mcc package is not installed
+on the controller host; install it, then check again. A services bundle is not a
+prerequisite.
 
 cmon's DB has to be Oracle MySQL 8.4 for the CC DB cluster. A MariaDB one is
 migrated manually, following the procedure in the documentation:
@@ -129,6 +168,7 @@ Pool mode readiness: not ready
   CC DB cluster            : missing
     DB backend             : mariadb (migration to Oracle MySQL required)
   CC configuration storage : missing (openbao)
+  MCC package              : ready (clustercontrol-mcc)
 
 To set up the missing prerequisites, run in this order:
   migrate cmon's database to MySQL 8.4 manually (see
@@ -157,9 +197,77 @@ s9s pool-controllers --bootstrap-db --log
 .TP
 .B --add-controller
 Installs and sets up new controller instance running in pool mode.
-Providing node hostname with '--nodes' is mandatory.
+Providing node hostname with '--nodes' is mandatory. '--site' sets the site of the
+new controller; without it the controller gets the site of the one running the job.
+\&'--site' needs a controller with CLUS-8519 or newer: an older one ignores it, and
+the new controller gets the site of the one running the job without a warning.
 .nf
 s9s pool-controllers --add-controller --nodes=10.16.186.189 --provider-version=2.3.4-17176
+s9s pool-controllers --add-controller --nodes=10.16.186.190 --site=site-b --log
+.fi
+
+.TP
+.B --add-services-bundle
+Installs a services bundle (cmon-proxy with the MCC UI in fleet mode, cmon-ssh in
+pool mode, cmon-events and cmon-cloud) on a host that already runs a controller of
+the pool, and registers it. Requires \fB--nodes\fP with exactly one node,
+optionally with the web port (default 443). Requires super admin privileges.
+
+Only the SSH connection settings are taken from the credentials the controller
+stored for that host when it was added to the pool, so '--os-user', '--os-key-file'
+and '--os-password' are refused. Sudo and elevation settings ('--os-sudo-user',
+\&'--os-sudo-password', '--os-elevation', '--access-check-cmd', or their s9s.conf
+equivalents) are still sent with the job and override the stored ones; note that
+an 'os_sudo_password' in s9s.conf is sent in the job data too.
+
+The main controller can't be a target: its services bundle is registered when pool
+mode is enabled or cmon starts in pool mode (see \fB--set-pool-mode\fP). Importing
+a services bundle that already runs on another host is not supported: add the
+controller with \fB--add-controller\fP, then its services bundle with
+\fB--add-services-bundle\fP. A host that already runs cmon-proxy is
+refused unless '--force' is given; an existing cmon-ssh, cmon-events or cmon-cloud
+is not reinstalled (the job log shows it as a failed step) but is still configured,
+and the job goes on. Packages are installed at the versions the other services
+bundles run, and the s9s repository is set up unless '--use-internal-repos' is given.
+.nf
+s9s pool-controllers --add-services-bundle --nodes=10.0.0.12 --log
+s9s pool-controllers --add-services-bundle --nodes=10.0.0.13 --site=site-b --log
+.fi
+
+.RS
+.TP
+.B --site=SITE
+The site of the services bundle. A controller still on the default site adopts it; a
+controller on another site is refused.
+.TP
+.B --no-install
+Do not install packages; they must already be on the host.
+.TP
+.B --use-internal-repos
+Do not set up the s9s repository; install from the configured repositories.
+.TP
+.B --force
+Force: reinstall and reconfigure existing services (cmon-proxy, cmon-ssh,
+cmon-events and cmon-cloud), downgrading a package to the pool's version when
+needed (each downgrade is logged). A services bundle that is already registered on
+the host is refused without '--force' and reinstalled and reconfigured with it. It
+also accepts a target controller that is not
+active or runs jobs, installs the latest packages when the pool's versions are not
+available, and skips the IdP setup when ccmgradm cannot do it. The main controller
+is refused even with '--force'.
+.RE
+
+.TP
+.B --delete-services-bundle
+Stops and disables the services bundle on a pool controller host, points its cmon
+at another services bundle's cmon-events and cmon-cloud, and unregisters the
+services bundle. Packages are kept. Requires \fB--nodes\fP with exactly one node.
+Like \fB--add-services-bundle\fP it takes only the SSH connection settings from the
+stored credentials. The main controller's services bundle can't be deleted.
+Deleting the last services bundle of the pool is refused unless '--force' is given;
+\&'--force' also unregisters a services bundle whose host cannot be reached.
+.nf
+s9s pool-controllers --delete-services-bundle --nodes=10.0.0.12 --log
 .fi
 
 .TP
@@ -181,6 +289,9 @@ Controller stopped successfully.
 .TP
 .B --remove-controller
 Removes a controller instance. The '--controller-id' option is mandatory.
+A controller whose host runs a services bundle is refused: run
+\fB--delete-services-bundle\fP first, or give '--force' to unregister the services
+bundle with the controller.
 .nf
 s9s pool-controllers --remove-controller --controller-id=2
 Controller removed successfully.

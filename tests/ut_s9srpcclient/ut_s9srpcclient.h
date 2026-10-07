@@ -119,6 +119,10 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testAddDb();
         bool testDeleteDb();
         bool testListDb();
+        bool testAddServicesBundle();
+        bool testDeleteServicesBundle();
+        bool testGetServicesBundles();
+        bool testAddControllerSite();
         bool testInstallOpenBao();
         bool testListConfigStorage();
         bool testListOpenBaoVersions();
@@ -126,6 +130,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testGetPoolModeReadiness();
         bool testSetPoolModePrerequisites();
         bool testPoolModeSetupCommands();
+        bool testPoolModeReadinessMccPackage();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

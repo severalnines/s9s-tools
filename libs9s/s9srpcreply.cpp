@@ -2221,6 +2221,143 @@ S9sRpcReply::printCmonDbClusterNodesLong()
 }
 
 /**
+ * Prints the pool's services bundles (read-only getServicesBundles call,
+ * "pool-controllers --list-services-bundles"): only the JSON reply with
+ * --print-json, the table built by servicesBundlesTable() otherwise. An error
+ * reply sets a failing exit status.
+ */
+void
+S9sRpcReply::printServicesBundles()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    printDebugMessages();
+
+    // Keeps the ConnectionError a transport error already set.
+    if (!isOk() && options->exitStatus() == S9sOptions::ExitOk)
+        options->setExitStatus(S9sOptions::Failed);
+
+    if (options->isJsonRequested())
+    {
+        printJsonFormat();
+        return;
+    }
+
+    if (!isOk())
+    {
+        PRINT_ERROR("%s", STR(errorString()));
+        return;
+    }
+
+    ::printf("%s", STR(servicesBundlesTable(
+            operator[]("services_bundles").toVariantList(),
+            options->isLongRequested(),
+            options->isNoHeaderRequested())));
+}
+
+/**
+ * The plain-text table of the "pool-controllers --list-services-bundles" command,
+ * one line per services bundle in the order the controller sent them (sorted by
+ * controller id):
+ *
+ * \code
+ * s9s pool-controllers --list-services-bundles
+ * HOSTNAME  SITE   STATUS
+ * 10.0.0.11 site-a online
+ * 10.0.0.12 site-b offline
+ *
+ * s9s pool-controllers --list-services-bundles --long
+ * CID HOSTNAME  SITE   STATUS MODE  VERSION    PROXY  SSH    EVENTS CLOUD  URL
+ * 1   10.0.0.11 site-a online fleet 2.5.0-1201 active active active active https://10.0.0.11:443/
+ * \endcode
+ *
+ * Missing values show as "unknown" (states) or "-" (others), the way the
+ * controller reports a services bundle whose status report is stale.
+ */
+S9sString
+S9sRpcReply::servicesBundlesTable(
+        const S9sVariantList &bundles,
+        bool                  longFormat,
+        bool                  noHeader)
+{
+    std::vector<S9sString> headers;
+    if (longFormat)
+    {
+        headers = { "CID", "HOSTNAME", "SITE", "STATUS", "MODE", "VERSION",
+                    "PROXY", "SSH", "EVENTS", "CLOUD", "URL" };
+    }
+    else
+    {
+        headers = { "HOSTNAME", "SITE", "STATUS" };
+    }
+
+    auto valueOr = [](const S9sVariant &value, const char *fallback)
+    {
+        const S9sString text = value.toString();
+        return text.empty() ? S9sString(fallback) : text;
+    };
+
+    std::vector<std::vector<S9sString> > rows;
+    for (const auto &item : bundles)
+    {
+        S9sVariantMap bundle = item.toVariantMap();
+        S9sVariantMap services = bundle["services"].toVariantMap();
+        std::vector<S9sString> row;
+
+        if (longFormat)
+            row.push_back(valueOr(bundle["controller_id"], "-"));
+
+        row.push_back(valueOr(bundle["hostname"], "-"));
+        row.push_back(valueOr(bundle["site"], "-"));
+        row.push_back(valueOr(bundle["status"], "unknown"));
+
+        if (longFormat)
+        {
+            row.push_back(valueOr(bundle["proxy_mode"], "unknown"));
+            row.push_back(valueOr(bundle["ui_version"], "-"));
+            for (const char *unit : { "cmon-proxy", "cmon-ssh", "cmon-events", "cmon-cloud" })
+                row.push_back(valueOr(services[unit].toVariantMap().valueByPath("status"), "unknown"));
+            row.push_back(valueOr(bundle["ui_url"], "-"));
+        }
+
+        rows.push_back(row);
+    }
+
+    std::vector<size_t> widths;
+    for (const auto &header : headers)
+        widths.push_back(header.length());
+
+    for (const auto &row : rows)
+    {
+        for (size_t column = 0; column < row.size(); ++column)
+            widths[column] = std::max(widths[column], row[column].length());
+    }
+
+    auto formatLine = [&widths](const std::vector<S9sString> &cells)
+    {
+        S9sString line;
+        for (size_t column = 0; column < cells.size(); ++column)
+        {
+            if (column + 1 == cells.size())
+                line += cells[column];
+            else
+                line.aprintf("%-*s ", (int) widths[column], STR(cells[column]));
+        }
+
+        return line + "\n";
+    };
+
+    S9sString table;
+    if (!noHeader)
+        table += formatLine(headers);
+
+    for (const auto &row : rows)
+        table += formatLine(row);
+
+    return table;
+}
+
+/**
  * Prints which pool mode prerequisites are in place (read-only
  * getPoolModeReadiness call, "pool-controllers --pool-readiness").
  *
@@ -2466,9 +2603,11 @@ S9sRpcReply::printPoolModeReadinessSummary(
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantMap   dbCluster = readiness.valueByPath("cmon_db_cluster").toVariantMap();
     S9sVariantMap   storage   = readiness.valueByPath("config_storage").toVariantMap();
+    S9sVariantMap   mcc       = readiness.valueByPath("mcc_package").toVariantMap();
     S9sVariantList  missing   = readiness.valueByPath("missing").toVariantList();
     bool            dbMissing = false;
     bool            storageMissing = false;
+    bool            mccMissing = false;
 
     if (readiness.valueByPath("pool_mode").toBoolean())
     {
@@ -2490,6 +2629,8 @@ S9sRpcReply::printPoolModeReadinessSummary(
             dbMissing = true;
         else if (item.toString() == "config_storage")
             storageMissing = true;
+        else if (item.toString() == "mcc_package")
+            mccMissing = true;
     }
 
     const bool      ready = readiness.valueByPath("ready").toBoolean();
@@ -2586,6 +2727,22 @@ S9sRpcReply::printPoolModeReadinessSummary(
                 STR(storage["version"].toString()));
     }
 
+    // The clustercontrol-mcc package on this host. A cmon older than the
+    // check does not send it.
+    if (readiness.contains("mcc_package") || mccMissing)
+    {
+        S9sString package = mcc["package"].toString();
+        if (package.empty())
+            package = "clustercontrol-mcc";
+
+        ::printf("  MCC package              : %s (%s)\n",
+                mccMissing ? "missing" : "ready", STR(package));
+
+        if (mccMissing && !mcc["reason"].toString().empty())
+            ::printf("                             %s\n",
+                    STR(mcc["reason"].toString()));
+    }
+
     const S9sStringList commands = poolModeSetupCommands(readiness);
 
     // A required CC DB cluster no command can be suggested for yet: a
@@ -2606,8 +2763,13 @@ S9sRpcReply::printPoolModeReadinessSummary(
             manualMigration = true;
     }
 
+    // No s9s command installs clustercontrol-mcc and there is no opt-out for it.
+    const S9sString mccBlocker = mccMissing ?
+        "install the clustercontrol-mcc package on this host" : "";
+
     ::printf("\n");
-    if (commands.empty() && dbBlocker.empty() && !manualMigration)
+    if (commands.empty() && dbBlocker.empty() && !manualMigration &&
+            mccBlocker.empty())
     {
         ::printf("Run 's9s pool-controllers --set-pool-mode' to enable "
                 "pool mode (cmon restarts).\n");
@@ -2615,26 +2777,32 @@ S9sRpcReply::printPoolModeReadinessSummary(
     }
 
     // Pool mode can not be enabled yet and there is nothing to run for it.
-    if (commands.empty() && manualMigration)
-    {
-        ::printf("To set up the missing CC DB cluster,\n");
-        printManualMigrationStep(dbCluster, "");
-        ::printf("then re-check with 's9s pool-controllers --pool-readiness'.\n");
-        return;
-    }
-
     if (commands.empty())
     {
-        ::printf("To set up the missing CC DB cluster, %s,\n"
-                "then re-check with 's9s pool-controllers --pool-readiness'.\n",
-                STR(dbBlocker));
+        if (!dbBlocker.empty())
+        {
+            ::printf("To set up the missing CC DB cluster, %s,\n", STR(dbBlocker));
+        }
+        else if (manualMigration)
+        {
+            ::printf("To set up the missing CC DB cluster,\n");
+            printManualMigrationStep(dbCluster, "");
+        }
+
+        if (!mccBlocker.empty())
+            ::printf("To set up the missing MCC package, %s,\n", STR(mccBlocker));
+
+        ::printf("then re-check with 's9s pool-controllers --pool-readiness'.\n");
         return;
     }
 
     ::printf("To set up the missing prerequisites, run in this order:\n");
 
     // A running migration or bootstrap is a step of its own, just not one to
-    // start again.
+    // start again; installing clustercontrol-mcc is a manual one.
+    if (!mccBlocker.empty())
+        ::printf("  (%s)\n", STR(mccBlocker));
+
     if (!dbBlocker.empty())
         ::printf("  (%s)\n", STR(dbBlocker));
 
