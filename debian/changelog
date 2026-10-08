@@ -1,4 +1,4 @@
-s9s-tools (1.9.2026093018-testing) UNRELEASED; urgency=medium
+s9s-tools (1.9.2026100806-testing) UNRELEASED; urgency=medium
 
   [ Peter Csaszar ]
   * Added PgBackRest multi-repository options: --add-repo/--drop-repo/--repo-path
@@ -35,8 +35,9 @@ s9s-tools (1.9.2026093018-testing) UNRELEASED; urgency=medium
   * Testing release 1.9.2026092909.
   * Testing release 1.9.2026093007.
   * Testing release 1.9.2026093018.
+  * Testing release 1.9.2026100806.
 
- -- Severalnines <support@severalnines.com>  Wed, 30 Sep 2026 18:49:55 +0200
+ -- Severalnines <support@severalnines.com>  Thu, 08 Oct 2026 06:12:27 +0200
 
 s9s-tools (1.9.2025061016-testingubuntu1) unstable; urgency=medium
 
