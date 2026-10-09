@@ -98,6 +98,7 @@ enum S9sOptionType
     OptionSemiSync,
     OptionToggleSync,
     OptionDelete,
+    OptionUpdateAccount,
     OptionClone,
     OptionEnable,
     OptionDisable,
@@ -6509,6 +6510,16 @@ S9sOptions::isCreateRequested() const
 }
 
 /**
+ * \returns true if the --update command line option was provided when the
+ *   program was started.
+ */
+bool
+S9sOptions::isUpdateRequested() const
+{
+    return getBool("update");
+}
+
+/**
  * \returns true if the --sync command line option was provided when the
  *   program was started.
  */
@@ -8784,6 +8795,7 @@ S9sOptions::printHelpAccount()
 "  --lock                     Lock the account (ACCOUNT LOCK).\n"
 "  --revoke                   Revoke privileges of the account.\n"
 "  --unlock                   Unlock the account (ACCOUNT UNLOCK).\n"
+"  --update                   Change the password of the account.\n"
 "\n"
 "  --account=ACCOUNT          The account itself.\n"
 "  --force                    Force the delete even if the account owns objects.\n"
@@ -13999,6 +14011,9 @@ S9sOptions::checkOptionsAccount()
     if (isRevokeRequested())
         countOptions++;
     
+    if (isUpdateRequested())
+        countOptions++;
+
     if (isDeleteRequested())
         countOptions++;
 
@@ -14037,9 +14052,18 @@ S9sOptions::checkOptionsAccount()
         return false;
     }
 
-    if ((isLockRequested() || isUnlockRequested()) && account().userName().empty())
+    if ((isLockRequested() || isUnlockRequested() || isUpdateRequested()) &&
+            account().userName().empty())
     {
         m_errorMessage = "Account name is not provided.";
+        m_exitStatus = BadOptions;
+
+        return false;
+    }
+
+    if (isUpdateRequested() && account().password().empty())
+    {
+        m_errorMessage = "The new password is not provided (--account=USER:PASSWORD).";
         m_exitStatus = BadOptions;
 
         return false;
@@ -14961,6 +14985,7 @@ S9sOptions::readOptionsAccount(
         { "revoke",           no_argument,       0, OptionRevoke          },
         { "lock",             no_argument,       0, OptionLock            },
         { "unlock",           no_argument,       0, OptionUnlock          },
+        { "update",           no_argument,       0, OptionUpdateAccount   },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -15113,6 +15138,11 @@ S9sOptions::readOptionsAccount(
             case OptionRevoke:
                 // --revoke
                 m_options["revoke"] = true;
+                break;
+
+            case OptionUpdateAccount:
+                // --update
+                m_options["update"] = true;
                 break;
 
             case OptionDelete:

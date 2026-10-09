@@ -64,6 +64,10 @@ class UtS9sOptions : public S9sUnitTest
         bool testUnlockAccount();
         bool testLockUnlockMutualExclusion();
         bool testLockAccountMissingAccount();
+        bool testUpdateAccount();
+        bool testUpdateAccountMissingAccount();
+        bool testUpdateAccountMissingPassword();
+        bool testUpdateCreateMutualExclusion();
         bool testAddShard();
         bool testShardId();
 };
