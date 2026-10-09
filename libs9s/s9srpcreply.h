@@ -383,6 +383,8 @@ class S9sRpcReply : public S9sVariantMap
         void printAlarmHistoryListBrief();
         static S9sString alarmHistoryDuration(S9sVariantMap &entry);
         static S9sString alarmHistoryTitle(S9sVariantMap &entry);
+        static S9sString alarmHistoryId(S9sVariantMap &entry);
+        static S9sString alarmHistoryEscalated(S9sVariantMap &entry);
         
         void printHostTable(S9sCluster &cluster);
         void printClusterStat(S9sCluster &cluster);

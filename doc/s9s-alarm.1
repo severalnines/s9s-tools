@@ -34,7 +34,12 @@ active list the moment it clears, so this is the only way to see what happened
 earlier. Each line reports when the alarm was raised, how it ended and how long
 it lasted; the duration is left blank while an alarm is still open.
 
-Without
+With
+.B --long
+each line also carries the alarm's own id, which is what
+.B --alarm-id
+takes, the number of recorded events, how many times the severity changed and
+whether the alarm ended above the severity it was raised at. Without
 .B --long
 one line is printed per alarm. The retention window can hold a great many
 alarms, so pair this with
@@ -46,13 +51,21 @@ rather than asking for all of it at once.
 .TP
 .B --limit=NUMBER
 The number of history entries to return. Applies to
-.BR --list-history .
+.BR --list-history ,
+and is rejected with the other operations, which always answer in full.
+Without it the controller returns at most 100 entries, so the total printed at
+the end of the listing is the one to read rather than the number of lines
+shown.
 
 .TP
 .B --offset=NUMBER
 The index of the first history entry returned, for paging through the window
 together with
 .BR --limit .
+Like
+.BR --limit ,
+it applies only to
+.BR --list-history .
 
 .TP
 .B --stat

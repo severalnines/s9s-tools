@@ -5758,17 +5758,56 @@ alarmHistoryTime(
     return options->formatDateTime(value);
 }
 
+/**
+ * \returns the alarm's own id, as the correlation key carries it.
+ *
+ * The reply identifies a lifecycle by a correlation key of the form
+ * "alarm:<id>". Printing the bare id is what makes a row actionable: it is
+ * what `s9s alarm --alarm-id=` takes.
+ */
+S9sString
+S9sRpcReply::alarmHistoryId(
+        S9sVariantMap &entry)
+{
+    S9sString key = entry["correlation_key"].toString();
+
+    if (key.startsWith("alarm:"))
+        return key.substr(6);
+
+    return key;
+}
+
+/**
+ * \returns "yes" when the alarm ended above the severity it was raised at.
+ *
+ * Reported by the controller rather than derived here from the change count:
+ * an alarm that went CRITICAL -> WARNING changed severity without escalating.
+ */
+S9sString
+S9sRpcReply::alarmHistoryEscalated(
+        S9sVariantMap &entry)
+{
+    if (!entry.contains("escalated"))
+        return S9sString();
+
+    return entry["escalated"].toBoolean() ? "yes" : "-";
+}
+
 void
 S9sRpcReply::printAlarmHistoryListLong()
 {
     S9sOptions     *options = S9sOptions::instance();
     S9sVariantList  theList = alarmHistory();
+    S9sFormat       idFormat;
     S9sFormat       clusterIdFormat;
     S9sFormat       severityFormat;
     S9sFormat       outcomeFormat;
     S9sFormat       raisedFormat;
     S9sFormat       endedFormat;
     S9sFormat       durationFormat;
+    S9sFormat       eventCountFormat;
+    S9sFormat       changesFormat;
+    S9sFormat       escalatedFormat;
     S9sFormat       hostNameFormat;
     int             nLines = 0;
 
@@ -5776,12 +5815,16 @@ S9sRpcReply::printAlarmHistoryListLong()
     {
         S9sVariantMap entry = theList[idx].toVariantMap();
 
+        idFormat.widen(alarmHistoryId(entry));
         clusterIdFormat.widen(entry["cluster_id"].toInt());
         severityFormat.widen(entry["severity"].toString());
         outcomeFormat.widen(entry["outcome"].toString());
         raisedFormat.widen(alarmHistoryTime(entry, "raised"));
         endedFormat.widen(alarmHistoryTime(entry, "ended"));
         durationFormat.widen(alarmHistoryDuration(entry));
+        eventCountFormat.widen(entry["event_count"].toInt());
+        changesFormat.widen(entry["severity_changes"].toInt());
+        escalatedFormat.widen(alarmHistoryEscalated(entry));
         hostNameFormat.widen(entry["hostname"].toString());
         ++nLines;
     }
@@ -5789,12 +5832,16 @@ S9sRpcReply::printAlarmHistoryListLong()
     if (!options->isNoHeaderRequested() && nLines > 0)
     {
         printf("%s", headerColorBegin());
+        idFormat.printHeader("ID");
         clusterIdFormat.printHeader("CID");
         severityFormat.printHeader("SEVERITY");
         outcomeFormat.printHeader("OUTCOME");
         raisedFormat.printHeader("RAISED");
         endedFormat.printHeader("ENDED");
         durationFormat.printHeader("DURATION");
+        eventCountFormat.printHeader("EVENTS");
+        changesFormat.printHeader("CHANGES");
+        escalatedFormat.printHeader("ESC");
         hostNameFormat.printHeader("HOSTNAME");
         printf("TITLE");
 
@@ -5806,12 +5853,16 @@ S9sRpcReply::printAlarmHistoryListLong()
     {
         S9sVariantMap entry = theList[idx].toVariantMap();
 
+        idFormat.printf(alarmHistoryId(entry));
         clusterIdFormat.printf(entry["cluster_id"].toInt());
         severityFormat.printf(entry["severity"].toString());
         outcomeFormat.printf(entry["outcome"].toString());
         raisedFormat.printf(alarmHistoryTime(entry, "raised"));
         endedFormat.printf(alarmHistoryTime(entry, "ended"));
         durationFormat.printf(alarmHistoryDuration(entry));
+        eventCountFormat.printf(entry["event_count"].toInt());
+        changesFormat.printf(entry["severity_changes"].toInt());
+        escalatedFormat.printf(alarmHistoryEscalated(entry));
         hostNameFormat.printf(entry["hostname"].toString());
 
         ::printf("%s\n", STR(alarmHistoryTitle(entry)));
@@ -5819,10 +5870,21 @@ S9sRpcReply::printAlarmHistoryListLong()
 
     if (!options->isBatchRequested())
     {
-        printf("Total: %s%lu%s alarm(s)\n",
-                numberColorBegin(),
-                (unsigned long int) theList.size(),
-                numberColorEnd());
+        /*
+         * The controller's count, not this page's. Printing theList.size()
+         * reported the page: with no --limit the controller answers with 100
+         * rows, so a busy controller's history always ended "Total: 100
+         * alarm(s)" and gave no hint that there was more.
+         */
+        const int total = operator[]("total").toInt();
+
+        printf("Total: %s%d%s alarm(s)",
+                numberColorBegin(), total, numberColorEnd());
+
+        if ((uint) total > theList.size())
+            printf(" (%lu shown)", (unsigned long int) theList.size());
+
+        printf("\n");
     }
 }
 
@@ -5905,7 +5967,9 @@ singleLine(
         // everything after it out of its column.
         if (ch == '\n' || ch == '\r' || ch == '\t' || ch == 0x1b)
             retval += ' ';
-        else if ((unsigned char) ch >= 0x20 || (unsigned char) ch >= 0x80)
+        // Printable ASCII and anything above it, which is where UTF-8 lives.
+        // DEL is the exception: it is >= 0x20 but still a control character.
+        else if ((unsigned char) ch >= 0x20 && (unsigned char) ch != 0x7f)
             retval += ch;
     }
 

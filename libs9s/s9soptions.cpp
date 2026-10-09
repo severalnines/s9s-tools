@@ -10914,6 +10914,21 @@ S9sOptions::checkOptionsAlarm()
         return false;
     }
 
+    /*
+     * Only the history pages. The other operations answer with everything the
+     * controller has, so accepting --limit there and ignoring it reads as a
+     * page that happens to hold the lot.
+     */
+    if (!isListHistoryRequested() &&
+        (m_options.contains("limit") || m_options.contains("offset")))
+    {
+        m_errorMessage =
+            "The --limit and --offset options are only supported together "
+            "with --list-history.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
     return true;
 }
 
