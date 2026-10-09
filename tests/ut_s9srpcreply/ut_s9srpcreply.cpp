@@ -145,6 +145,8 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testServicesBundlesJsonOnly, retval);
     PERFORM_TEST(testServicesBundlesError,    retval);
     PERFORM_TEST(testServicesBundlesConnectionError, retval);
+    PERFORM_TEST(testConfigStorageMigration,  retval);
+    PERFORM_TEST(testConfigStorageMigrationSkipped, retval);
 
     return retval;
 }
@@ -282,6 +284,79 @@ UtS9sRpcReply::testServicesBundlesConnectionError()
     S9S_COMPARE(options->exitStatus(), S9sOptions::ConnectionError);
 
     S9sOptions::uninit();
+    return true;
+}
+
+namespace
+{
+
+S9sVariantMap
+migratedFile(const char *path, const char *status, const char *message)
+{
+    S9sVariantMap file;
+    file["path"]    = path;
+    file["status"]  = status;
+    file["message"] = message;
+    return file;
+}
+
+} // namespace
+
+/**
+ * A setPoolMode that moved cmon's configuration into OpenBao (or failed to)
+ * prints the engine and one line per file, with the reason when there is one.
+ */
+bool
+UtS9sRpcReply::testConfigStorageMigration()
+{
+    S9sVariantList files;
+    files << migratedFile("/etc/cmon.d/cmon_1.cnf", "migrated", "");
+    files << migratedFile("/etc/cmon.d/cmon_2.cnf", "failed",
+            "the secret store already holds a different severalnines.cmon/etc/cmon.d/cmon_2.cnf");
+
+    S9sVariantMap migration;
+    migration["engine"]      = "file";
+    migration["skipped"]     = false;
+    migration["skip_reason"] = "";
+    migration["files"]       = files;
+
+    S9sRpcReply reply;
+    reply["request_status"]           = "InvalidRequest";
+    reply["config_storage_migration"] = migration;
+
+    const S9sString output = captureStdout([&reply]() { reply.printConfigStorageMigration(); });
+    S9S_COMPARE(output,
+            "Configuration storage: file\n"
+            "  migrated /etc/cmon.d/cmon_1.cnf\n"
+            "  failed   /etc/cmon.d/cmon_2.cnf: the secret store already holds a different "
+            "severalnines.cmon/etc/cmon.d/cmon_2.cnf\n");
+    return true;
+}
+
+/**
+ * Nothing moved: one line saying why. No report at all (pool mode disabled,
+ * or an older controller): nothing printed.
+ */
+bool
+UtS9sRpcReply::testConfigStorageMigrationSkipped()
+{
+    S9sVariantMap migration;
+    migration["engine"]      = "vault";
+    migration["skipped"]     = true;
+    migration["skip_reason"] = "already_on_vault";
+    migration["files"]       = S9sVariantList();
+
+    S9sRpcReply reply;
+    reply["request_status"]           = "Ok";
+    reply["config_storage_migration"] = migration;
+
+    S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageMigration(); }),
+            "Configuration storage: vault (nothing moved: cmon already keeps its "
+            "configuration in OpenBao)\n");
+
+    S9sRpcReply noReport;
+    noReport["request_status"] = "Ok";
+    S9S_COMPARE(captureStdout([&noReport]() { noReport.printConfigStorageMigration(); }), "");
     return true;
 }
 

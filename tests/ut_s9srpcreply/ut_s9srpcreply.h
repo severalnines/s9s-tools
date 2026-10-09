@@ -34,4 +34,6 @@ class UtS9sRpcReply : public S9sUnitTest
         bool testServicesBundlesJsonOnly();
         bool testServicesBundlesError();
         bool testServicesBundlesConnectionError();
+        bool testConfigStorageMigration();
+        bool testConfigStorageMigrationSkipped();
 };

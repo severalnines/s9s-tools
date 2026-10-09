@@ -2420,6 +2420,70 @@ S9sRpcReply::printSetPoolModeError()
 }
 
 /**
+ * \returns Why a setPoolMode reply's "config_storage_migration" moved nothing,
+ *   for its "skip_reason".
+ */
+static S9sString
+configStorageSkipReasonText(
+        const S9sString &reason)
+{
+    if (reason == "already_on_vault")
+        return "cmon already keeps its configuration in OpenBao";
+    else if (reason == "config_storage_not_required")
+        return "--no-require-config-storage";
+    else if (reason == "config_storage_not_ready")
+        return "no ready CC configuration storage";
+    else if (reason == "pool_mode_already_enabled")
+        return "pool mode was already enabled";
+    else if (reason == "k8s")
+        return "k8s mode";
+
+    return reason;
+}
+
+/**
+ * Prints the "config_storage_migration" object of a setPoolMode reply: the
+ * engine cmon runs on after the call and, when its configuration was moved
+ * into the CC configuration storage (or that failed), one line per file with
+ * its status and why. Prints nothing for a reply without that object (pool
+ * mode disabled, or a controller that does not report it).
+ */
+void
+S9sRpcReply::printConfigStorageMigration()
+{
+    if (!contains("config_storage_migration") ||
+            !at("config_storage_migration").isVariantMap())
+    {
+        return;
+    }
+
+    S9sVariantMap   migration = at("config_storage_migration").toVariantMap();
+    S9sVariantList  files     = migration["files"].toVariantList();
+    const S9sString engine    = migration["engine"].toString();
+
+    if (migration["skipped"].toBoolean())
+    {
+        ::printf("Configuration storage: %s (nothing moved: %s)\n",
+                STR(engine),
+                STR(configStorageSkipReasonText(migration["skip_reason"].toString())));
+        return;
+    }
+
+    ::printf("Configuration storage: %s\n", STR(engine));
+    for (const auto &item : files)
+    {
+        S9sVariantMap   file    = item.toVariantMap();
+        const S9sString message = file["message"].toString();
+
+        ::printf("  %-8s %s%s%s\n",
+                STR(file["status"].toString()),
+                STR(file["path"].toString()),
+                message.empty() ? "" : ": ",
+                STR(message));
+    }
+}
+
+/**
  * \returns The s9s commands that set up the pool mode prerequisites a
  *   getPoolModeReadiness reply (or a failed setPoolMode's "readiness" object)
  *   reports missing, in the order they have to be run.
