@@ -5794,8 +5794,9 @@ S9sOptions::noRequireDbCluster() const
 
 /**
  * \returns true if the --no-require-config-storage command line option was
- *   provided: --set-pool-mode then sends require_config_storage=false, for a
- *   caller that manages the CC configuration storage itself.
+ *   provided: --set-pool-mode then sends require_config_storage=false, and
+ *   the pool is enabled on its configuration files shared over NFS (cmon's
+ *   --config-storage=nfs) instead of the CC configuration storage.
  */
 bool
 S9sOptions::noRequireConfigStorage() const
@@ -9510,7 +9511,8 @@ S9sOptions::printHelpControllers()
 "                             (--bootstrap-db), for a DB cluster managed elsewhere.\n"
 "  --no-require-config-storage\n"
 "                             With --set-pool-mode: do not require the CC configuration\n"
-"                             storage (--add-openbao), for a storage managed elsewhere.\n"
+"                             storage (--add-openbao); the pool then shares its\n"
+"                             configuration files over NFS instead.\n"
 "  --openbao-mount=MOUNT      The KV v2 mount to create (default: clustercontrol).\n"
 "  --openbao-namespace=NAME   The OpenBao namespace to create (default: none).\n"
 "  --openbao-package-path=PATH\n"

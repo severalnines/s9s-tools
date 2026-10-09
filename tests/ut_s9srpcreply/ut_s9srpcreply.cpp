@@ -147,6 +147,7 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testServicesBundlesConnectionError, retval);
     PERFORM_TEST(testConfigStorageMigration,  retval);
     PERFORM_TEST(testConfigStorageMigrationSkipped, retval);
+    PERFORM_TEST(testPoolModeReadinessStorage, retval);
 
     return retval;
 }
@@ -364,6 +365,37 @@ UtS9sRpcReply::testConfigStorageMigrationSkipped()
     S9sRpcReply noReport;
     noReport["request_status"] = "Ok";
     S9S_COMPARE(captureStdout([&noReport]() { noReport.printConfigStorageMigration(); }), "");
+    return true;
+}
+
+/**
+ * --pool-readiness names the secret storage engine and, in pool mode, the
+ * configuration storage the pool runs on.
+ */
+bool
+UtS9sRpcReply::testPoolModeReadinessStorage()
+{
+    S9sOptions::uninit();
+
+    S9sRpcReply reply;
+    reply["request_status"]        = "Ok";
+    reply["pool_mode"]             = true;
+    reply["secret_storage_engine"] = "vault";
+    reply["pool_config_storage"]   = "vault";
+
+    S9sString output = captureStdout([&reply]() { reply.printPoolModeReadiness(); });
+    S9S_VERIFY(output.contains("Secret storage engine: vault\n"));
+    S9S_VERIFY(output.contains("Pool configuration storage: vault\n"));
+
+    reply["pool_mode"]             = false;
+    reply["applicable"]            = false;
+    reply["secret_storage_engine"] = "file";
+    reply["pool_config_storage"]   = "";
+    output = captureStdout([&reply]() { reply.printPoolModeReadiness(); });
+    S9S_VERIFY(output.contains("Secret storage engine: file\n"));
+    S9S_VERIFY(!output.contains("Pool configuration storage"));
+
+    S9sOptions::uninit();
     return true;
 }
 

@@ -36,4 +36,5 @@ class UtS9sRpcReply : public S9sUnitTest
         bool testServicesBundlesConnectionError();
         bool testConfigStorageMigration();
         bool testConfigStorageMigrationSkipped();
+        bool testPoolModeReadinessStorage();
 };

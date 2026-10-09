@@ -2404,6 +2404,8 @@ S9sRpcReply::printPoolModeReadiness()
     // Where cmon keeps its configuration now; older controllers do not say.
     if (contains("secret_storage_engine"))
         ::printf("Secret storage engine: %s\n", STR(at("secret_storage_engine").toString()));
+    if (contains("pool_config_storage") && !at("pool_config_storage").toString().empty())
+        ::printf("Pool configuration storage: %s\n", STR(at("pool_config_storage").toString()));
 }
 
 /**
@@ -2435,7 +2437,7 @@ configStorageSkipReasonText(
     if (reason == "already_on_vault")
         return "cmon already keeps its configuration in OpenBao";
     else if (reason == "config_storage_not_required")
-        return "--no-require-config-storage";
+        return "--no-require-config-storage, the pool shares its files over NFS";
     else if (reason == "config_storage_not_ready")
         return "no ready configuration storage";
     else if (reason == "pool_mode_already_enabled")
@@ -2786,7 +2788,7 @@ S9sRpcReply::printPoolModeReadinessSummary(
             storageType.empty() ? "" : ")");
 
     if (storageMissing && options->noRequireConfigStorage())
-        ::printf("    (not required, --no-require-config-storage)\n");
+        ::printf("    (not required, --no-require-config-storage: the pool shares its files over NFS)\n");
 
     if (!storageMissing && !storage["hostname"].toString().empty())
     {
