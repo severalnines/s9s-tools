@@ -579,6 +579,7 @@ enum S9sOptionType
     OptionOpenBaoPackagePath,
     OptionOpenBaoPackage,
     OptionOpenBaoForceReinit,
+    OptionListHistory,
 
     OptionExtensions,
     OptionPgHbaRules,
@@ -6293,6 +6294,19 @@ S9sOptions::isListGroupsRequested() const
 }
 
 /**
+ * \returns true if the --list-history command line option was provided
+ *
+ * Distinct from --list: that shows the alarms standing right now, this one
+ * shows what the controller has recorded of alarms that already ended, which
+ * it keeps for its own retention window.
+ */
+bool
+S9sOptions::isListHistoryRequested() const
+{
+    return getBool("list_history");
+}
+
+/**
  * \returns true if the --stat command line option was provided to get a
  *   detailed list of something
  */
@@ -9308,8 +9322,12 @@ S9sOptions::printHelpAlarm()
 "Options for the \"alarm\" command:\n"
 "  --delete                   Set the alarm to be ignored.\n"
 "  --list                     List the alarms.\n"
+"  --list-history             List alarms that have ended, and those still\n"
+"                             open, within the history retention window.\n"
 "  --stat                     Prints a short list about the number of alarms.\n"
 "  --cluster-id=ID            List alarms related to specified cluster\n"
+"  --limit=NUMBER             The number of history entries to return.\n"
+"  --offset=NUMBER            The index of the first history entry returned.\n"
 "\n"
     );
 }
@@ -10962,7 +10980,10 @@ S9sOptions::checkOptionsAlarm()
      */
     if (isListRequested())
         countOptions++;
-    
+
+    if (isListHistoryRequested())
+        countOptions++;
+
     if (isDeleteRequested())
         countOptions++;
     
@@ -10977,6 +10998,21 @@ S9sOptions::checkOptionsAlarm()
     } else if (countOptions == 0)
     {
         m_errorMessage = "One of the main options is mandatory.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    /*
+     * Only the history pages. The other operations answer with everything the
+     * controller has, so accepting --limit there and ignoring it reads as a
+     * page that happens to hold the lot.
+     */
+    if (!isListHistoryRequested() &&
+        (m_options.contains("limit") || m_options.contains("offset")))
+    {
+        m_errorMessage =
+            "The --limit and --offset options are only supported together "
+            "with --list-history.";
         m_exitStatus = BadOptions;
         return false;
     }
@@ -11729,10 +11765,17 @@ S9sOptions::readOptionsAlarm(
         // Main Option
         { "delete",           no_argument,       0, OptionDelete          },
         { "list",             no_argument,       0, 'L'                   },
+        { "list-history",     no_argument,       0, OptionListHistory     },
         { "stat",             no_argument,       0, OptionStat            },
         
         // Alarm related options.
         { "alarm-id",         required_argument, 0, OptionAlarmId         },
+
+        // Paging, for --list-history: the history covers the controller's
+        // whole retention window, so without these the only way to ask for it
+        // is to ask for all of it.
+        { "limit",            required_argument, 0, OptionLimit           },
+        { "offset",           required_argument, 0, OptionOffset          },
 
         // Cluster information
         { "cluster-id",       required_argument, 0, 'i'                   },
@@ -11868,7 +11911,22 @@ S9sOptions::readOptionsAlarm(
                 // --delete
                 m_options["delete"] = true;
                 break;
-            
+
+            case OptionLimit:
+                // --limit=NUMBER
+                m_options["limit"] = optarg;
+                break;
+
+            case OptionOffset:
+                // --offset=NUMBER
+                m_options["offset"] = optarg;
+                break;
+
+            case OptionListHistory:
+                // --list-history
+                m_options["list_history"] = true;
+                break;
+
             case OptionStat:
                 // --stat
                 m_options["stat"] = true;

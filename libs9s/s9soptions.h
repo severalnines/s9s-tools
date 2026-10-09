@@ -698,6 +698,7 @@ class S9sOptions
         bool isListNicsRequested() const;
         bool isListDisksRequested() const;
         bool isListGroupsRequested() const;
+        bool isListHistoryRequested() const;
         bool isStatRequested() const;
         bool isWatchRequested() const;
         bool isEditRequested() const;

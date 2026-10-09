@@ -2060,6 +2060,37 @@ S9sRpcClient::getAlarms()
     return executeRequest(uri, request);
 }
 
+/**
+ * Reads the recorded history of alarms: one row per alarm, with when it was
+ * raised, when and how it ended, and how long it lasted.
+ *
+ * A different path from getAlarms(): that one reads simple_alarm, which the
+ * controller deletes a row from the moment an alarm clears, so it can only
+ * ever answer about alarms that are standing right now.
+ */
+bool
+S9sRpcClient::getAlarmHistory()
+{
+    S9sString      uri = "/v2/eventhistory/";
+    S9sVariantMap  request   = composeRequest();
+    S9sOptions    *options   = S9sOptions::instance();
+
+    // Building the request.
+    request["operation"]  = "getAlarmHistory";
+    if (options->hasClusterIdOption())
+    {
+        request["cluster_id"] = options->clusterId();
+    }
+
+    if (options->limit() > 0)
+        request["limit"] = options->limit();
+
+    if (options->offset() > 0)
+        request["offset"] = options->offset();
+
+    return executeRequest(uri, request);
+}
+
 bool
 S9sRpcClient::getAlarm()
 {
