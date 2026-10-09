@@ -721,6 +721,7 @@ class S9sOptions
         bool isChangePasswordRequested() const;
 
         bool isCreateRequested() const;
+        bool isUpdateRequested() const;
         bool isCreateWithJobRequested() const;
         bool isStageRequested() const;
         bool isSynchronous() const;

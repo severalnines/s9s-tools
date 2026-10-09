@@ -1260,6 +1260,11 @@ S9sBusinessLogic::execute()
             success = client.updateAccount(account);
             client.printMessages("Unlocked.", success);
             client.setExitStatus();
+        } else if (options->isUpdateRequested())
+        {
+            success = client.updateAccount(options->account());
+            client.printMessages("Updated.", success);
+            client.setExitStatus();
         } else {
             PRINT_ERROR("Operation is not specified.");
             options->setExitStatus(S9sOptions::BadOptions);

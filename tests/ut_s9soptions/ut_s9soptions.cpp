@@ -82,6 +82,10 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testUnlockAccount, retval);
     PERFORM_TEST(testLockUnlockMutualExclusion, retval);
     PERFORM_TEST(testLockAccountMissingAccount, retval);
+    PERFORM_TEST(testUpdateAccount, retval);
+    PERFORM_TEST(testUpdateAccountMissingAccount, retval);
+    PERFORM_TEST(testUpdateAccountMissingPassword, retval);
+    PERFORM_TEST(testUpdateCreateMutualExclusion, retval);
     PERFORM_TEST(testAddShard, retval);
     PERFORM_TEST(testShardId, retval);
 
@@ -1841,6 +1845,114 @@ UtS9sOptions::testLockAccountMissingAccount()
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
     S9S_COMPARE(options->errorString(), "Account name is not provided.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing "s9s account --update --account=USER:PASSWORD" parses correctly and
+ * carries the new password.
+ */
+bool
+UtS9sOptions::testUpdateAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--update",
+                            "--cluster-id=1",
+                            "--account=joe:n3wsecret",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isUpdateRequested());
+    S9S_VERIFY(!options->isCreateRequested());
+    S9S_COMPARE(options->account().userName(), "joe");
+    S9S_COMPARE(options->account().password(), "n3wsecret");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--update" without "--account=" is rejected.
+ */
+bool
+UtS9sOptions::testUpdateAccountMissingAccount()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--update",
+                            "--cluster-id=1",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(), "Account name is not provided.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--update --account=USER" without a password is rejected rather
+ * than sending an updateAccount request with no password in it.
+ */
+bool
+UtS9sOptions::testUpdateAccountMissingPassword()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--update",
+                            "--cluster-id=1",
+                            "--account=joe",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(
+            options->errorString(),
+            "The new password is not provided (--account=USER:PASSWORD).");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing that "--update" is one of the account command's mutually exclusive
+ * main options.
+ */
+bool
+UtS9sOptions::testUpdateCreateMutualExclusion()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "account",
+                            "--update",
+                            "--create",
+                            "--cluster-id=1",
+                            "--account=joe:n3wsecret",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(), "The main options are mutually exclusive.");
 
     S9sOptions::uninit();
     return true;

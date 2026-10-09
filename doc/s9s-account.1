@@ -74,6 +74,20 @@ this operation.
 .fi
 
 .TP
+.B --update
+Change the password of an existing account to the one given in
+\fB--account\fP. On MSSQL clusters the password is changed on every server of
+the cluster.
+
+.B EXAMPLE
+.nf
+# \fBs9s account \\
+    --update \\
+    --cluster-id=1 \\
+    --account="joe:newpassword"\fR
+.fi
+
+.TP
 .B -L, --list
 Lists the accounts on the cluster.
 
