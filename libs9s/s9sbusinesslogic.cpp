@@ -1537,7 +1537,7 @@ S9sBusinessLogic::execute()
                 if (!reply.isOk()) {
                     // Also lists the missing prerequisites, if any.
                     reply.printSetPoolModeError();
-                    reply.printConfigStorageMigration();
+                    reply.printConfigStorageMigration(stderr);
                     options->setExitStatus(S9sOptions::Failed);
                 }
                 else {

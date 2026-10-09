@@ -19,6 +19,8 @@
  */
 #pragma once
 
+#include <cstdio>
+
 #include "s9svariantmap.h"
 #include "s9sformat.h"
 #include "s9sobject.h"
@@ -173,7 +175,7 @@ class S9sRpcReply : public S9sVariantMap
 
         void printPoolModeReadiness();
         void printSetPoolModeError();
-        void printConfigStorageMigration();
+        void printConfigStorageMigration(FILE *stream = stdout);
         static S9sStringList poolModeSetupCommands(
                 const S9sVariantMap &readiness);
 

@@ -324,9 +324,10 @@ UtS9sRpcReply::testConfigStorageMigration()
     reply["request_status"]           = "InvalidRequest";
     reply["config_storage_migration"] = migration;
 
-    const S9sString output = captureStdout([&reply]() { reply.printConfigStorageMigration(); });
+    // With the error of the failed call, on the standard error.
+    const S9sString output = captureStderr([&reply]() { reply.printConfigStorageMigration(stderr); });
     S9S_COMPARE(output,
-            "Configuration storage: file\n"
+            "Secret storage engine: file\n"
             "  migrated /etc/cmon.d/cmon_1.cnf\n"
             "  failed   /etc/cmon.d/cmon_2.cnf: the secret store already holds a different "
             "severalnines.cmon/etc/cmon.d/cmon_2.cnf\n");
@@ -351,8 +352,14 @@ UtS9sRpcReply::testConfigStorageMigrationSkipped()
     reply["config_storage_migration"] = migration;
 
     S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageMigration(); }),
-            "Configuration storage: vault (nothing moved: cmon already keeps its "
+            "Secret storage engine: vault (nothing moved: cmon already keeps its "
             "configuration in OpenBao)\n");
+
+    migration["engine"]      = "file";
+    migration["skip_reason"] = "config_storage_not_ready";
+    reply["config_storage_migration"] = migration;
+    S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageMigration(); }),
+            "Secret storage engine: file (nothing moved: no ready configuration storage)\n");
 
     S9sRpcReply noReport;
     noReport["request_status"] = "Ok";

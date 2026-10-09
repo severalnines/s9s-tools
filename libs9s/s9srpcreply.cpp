@@ -2377,6 +2377,7 @@ S9sRpcReply::servicesBundlesTable(
  *       next steps
  *   s9s pool-controllers --add-openbao --nodes=HOST --log
  * then enable pool mode with 's9s pool-controllers --set-pool-mode'.
+ * Secret storage engine: file
  * \endcode
  */
 void
@@ -2399,6 +2400,10 @@ S9sRpcReply::printPoolModeReadiness()
     }
 
     printPoolModeReadinessSummary(*this);
+
+    // Where cmon keeps its configuration now; older controllers do not say.
+    if (contains("secret_storage_engine"))
+        ::printf("Secret storage engine: %s\n", STR(at("secret_storage_engine").toString()));
 }
 
 /**
@@ -2432,7 +2437,7 @@ configStorageSkipReasonText(
     else if (reason == "config_storage_not_required")
         return "--no-require-config-storage";
     else if (reason == "config_storage_not_ready")
-        return "no ready CC configuration storage";
+        return "no ready configuration storage";
     else if (reason == "pool_mode_already_enabled")
         return "pool mode was already enabled";
     else if (reason == "k8s")
@@ -2442,14 +2447,17 @@ configStorageSkipReasonText(
 }
 
 /**
- * Prints the "config_storage_migration" object of a setPoolMode reply: the
- * engine cmon runs on after the call and, when its configuration was moved
- * into the CC configuration storage (or that failed), one line per file with
- * its status and why. Prints nothing for a reply without that object (pool
- * mode disabled, or a controller that does not report it).
+ * Prints the "config_storage_migration" object of a setPoolMode reply on
+ * \p stream (the standard error with the error of a failed call, so they stay
+ * together): the secret storage engine cmon runs on after the call and, when
+ * its configuration was moved into the CC configuration storage (or that
+ * failed), one line per file with its status and why. Prints nothing for a
+ * reply without that object (pool mode disabled, or a controller that does
+ * not report it).
  */
 void
-S9sRpcReply::printConfigStorageMigration()
+S9sRpcReply::printConfigStorageMigration(
+        FILE *stream)
 {
     if (!contains("config_storage_migration") ||
             !at("config_storage_migration").isVariantMap())
@@ -2463,24 +2471,26 @@ S9sRpcReply::printConfigStorageMigration()
 
     if (migration["skipped"].toBoolean())
     {
-        ::printf("Configuration storage: %s (nothing moved: %s)\n",
+        ::fprintf(stream, "Secret storage engine: %s (nothing moved: %s)\n",
                 STR(engine),
                 STR(configStorageSkipReasonText(migration["skip_reason"].toString())));
+        ::fflush(stream);
         return;
     }
 
-    ::printf("Configuration storage: %s\n", STR(engine));
+    ::fprintf(stream, "Secret storage engine: %s\n", STR(engine));
     for (const auto &item : files)
     {
         S9sVariantMap   file    = item.toVariantMap();
         const S9sString message = file["message"].toString();
 
-        ::printf("  %-8s %s%s%s\n",
+        ::fprintf(stream, "  %-8s %s%s%s\n",
                 STR(file["status"].toString()),
                 STR(file["path"].toString()),
                 message.empty() ? "" : ": ",
                 STR(message));
     }
+    ::fflush(stream);
 }
 
 /**
