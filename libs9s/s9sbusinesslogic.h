@@ -60,6 +60,10 @@ class S9sBusinessLogic
                 const int     jobId, 
                 S9sRpcClient &client);
 
+        void maybePrintAllocatedClusterId(
+                const int     jobId,
+                S9sRpcClient &client);
+
         void executeUserList(S9sRpcClient &client);
         void executeGroupList(S9sRpcClient &client);
         void executeAccountList(S9sRpcClient &client);
