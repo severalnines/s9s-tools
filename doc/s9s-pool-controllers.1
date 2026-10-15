@@ -424,14 +424,20 @@ ROLE is the node's place in the raft cluster: \fBleader\fP, \fBstandby\fP,
 \fBsealed\fP, \fBunreachable\fP or \fBunknown\fP. STORAGE is the OpenBao storage
 backend, \fBraft\fP or \fBfile\fP. Both are '-' when the controller is too old to
 report them. With syntax highlighting on, the leader is printed in green and the
-sealed and unreachable nodes in red. CREDS says whether the controller has ssh
-credentials recorded for the node.
+sealed and unreachable nodes in red.
+
+CREDENTIALS says where the controller keeps the ssh credentials of the node:
+\fBlocal\fP, a file such as '/etc/cmon.d/cmon_openbao_111.cnf', or a path in
+OpenBao such as 'vault:clustercontrol/severalnines.cmon/etc/cmon.d/cmon_openbao_111.cnf'.
+It says \fBkey not found or reachable\fP, in red with syntax highlighting, when
+the controller cannot use them. It is the last column and is printed in full.
+An older controller only reports \fByes\fP or \fBno\fP.
 .nf
 s9s pool-controllers --list-config-storage
-TYPE     HOSTNAME                  PORT ROLE        STORAGE VERSION  MOUNT            NAMESPACE    CREDS
-openbao  10.16.186.189             8200 leader      raft    2.5.4    clustercontrol   -            yes
-openbao  10.16.186.190             8200 standby     raft    2.5.4    clustercontrol   -            yes
-openbao  10.16.186.191             8200 sealed      raft    2.5.4    clustercontrol   -            yes
+TYPE     HOSTNAME                  PORT ROLE        STORAGE VERSION  MOUNT            NAMESPACE    CREDENTIALS
+openbao  10.16.186.189             8200 leader      raft    2.5.4    clustercontrol   -            /etc/cmon.d/cmon_openbao_111.cnf
+openbao  10.16.186.190             8200 standby     raft    2.5.4    clustercontrol   -            /etc/cmon.d/cmon_openbao_112.cnf
+openbao  10.16.186.191             8200 sealed      raft    2.5.4    clustercontrol   -            key not found or reachable
 .fi
 
 .TP

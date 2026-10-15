@@ -1692,9 +1692,9 @@ S9sRpcReply::printOpenBaoVersionList()
  *
  * \code
  * s9s pool-controllers --list-config-storage
- * TYPE    HOSTNAME    PORT ROLE        STORAGE VERSION MOUNT  NAMESPACE CREDS
- * openbao 10.0.3.163  8300 leader      raft    2.6.2   ftbao  -         yes
- * openbao 10.0.3.164  8300 standby     raft    2.6.2   ftbao  -         yes
+ * TYPE    HOSTNAME    PORT ROLE        STORAGE VERSION MOUNT  NAMESPACE CREDENTIALS
+ * openbao 10.0.3.163  8300 leader      raft    2.6.2   ftbao  -         /etc/cmon.d/cmon_openbao_111.cnf
+ * openbao 10.0.3.164  8300 standby     raft    2.6.2   ftbao  -         key not found or reachable
  * \endcode
  *
  * One line is printed per OpenBao node. ROLE is the node's place in the raft
@@ -1703,9 +1703,12 @@ S9sRpcReply::printOpenBaoVersionList()
  * too old to report them. The leader is printed in green and the sealed or
  * unreachable nodes in red when syntax highlighting is enabled.
  *
- * CREDS says whether the controller has ssh credentials recorded for the
- * instance, which is what lets a pool-mode switch read the token by itself.
- * The token is never part of the reply and is never printed.
+ * CREDENTIALS says where the controller keeps the ssh credentials of the
+ * instance ("local", a file or a "vault:" path) or "key not found or
+ * reachable", printed in red with syntax highlighting. Those credentials are
+ * what let a pool-mode switch read the token by itself. An older controller
+ * only sends "credentials_stored", printed as yes or no. The token is never
+ * part of the reply and is never printed.
  */
 void
 S9sRpcReply::printConfigStorageList()
@@ -1743,7 +1746,7 @@ S9sRpcReply::printConfigStorageList()
     {
         printf("%-8s %-24s %5s %-11s %-7s %-8s %-16s %-12s %s\n",
                "TYPE", "HOSTNAME", "PORT", "ROLE", "STORAGE", "VERSION",
-               "MOUNT", "NAMESPACE", "CREDS");
+               "MOUNT", "NAMESPACE", "CREDENTIALS");
     }
 
     for (uint idx = 0; idx < storageList.size(); ++idx)
@@ -1756,6 +1759,20 @@ S9sRpcReply::printConfigStorageList()
         const S9sString storage = entry["storage"].toString();
         const char     *roleColorBegin = "";
         const char     *roleColorEnd   = "";
+        S9sString       credentials;
+        const char     *credsColorBegin = "";
+        const char     *credsColorEnd   = "";
+
+        if (entry.contains("credentials"))
+            credentials = entry["credentials"].toString();
+        else
+            credentials = entry["credentials_stored"].toBoolean() ? "yes" : "no";
+
+        if (syntaxHighlight && credentials == "key not found or reachable")
+        {
+            credsColorBegin = XTERM_COLOR_RED;
+            credsColorEnd   = TERM_NORMAL;
+        }
 
         if (syntaxHighlight && role == "leader")
         {
@@ -1768,7 +1785,7 @@ S9sRpcReply::printConfigStorageList()
             roleColorEnd   = TERM_NORMAL;
         }
 
-        printf("%-8s %-24s %5d %s%-11s%s %-7s %-8s %-16s %-12s %s\n",
+        printf("%-8s %-24s %5d %s%-11s%s %-7s %-8s %-16s %-12s %s%s%s\n",
                STR(entry["type"].toString()),
                STR(entry["hostname"].toString()),
                entry["port"].toInt(),
@@ -1779,7 +1796,9 @@ S9sRpcReply::printConfigStorageList()
                version.empty() ? "-" : STR(version),
                STR(entry["mount"].toString()),
                nameSpace.empty() ? "-" : STR(nameSpace),
-               entry["credentials_stored"].toBoolean() ? "yes" : "no");
+               credsColorBegin,
+               STR(credentials),
+               credsColorEnd);
     }
 }
 
