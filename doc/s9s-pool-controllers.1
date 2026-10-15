@@ -111,8 +111,9 @@ Do not require the CC DB cluster (sends 'require_cmon_db_cluster: false'), for a
 caller that manages cmon's DB high availability itself.
 .TP
 .B --no-require-config-storage
-Do not require the CC configuration storage (sends 'require_config_storage: false'),
-for a caller that manages the configuration/secret storage itself.
+Do not require the CC configuration storage (sends 'require_config_storage: false'):
+the pool is enabled on its configuration files shared over NFS
+(cmon's --config-storage=nfs) instead of the CC configuration storage.
 .RE
 .nf
 s9s pool-controllers --set-pool-mode

@@ -1542,11 +1542,13 @@ S9sBusinessLogic::execute()
                 if (!reply.isOk()) {
                     // Also lists the missing prerequisites, if any.
                     reply.printSetPoolModeError();
+                    reply.printConfigStorageMigration(stderr);
                     options->setExitStatus(S9sOptions::Failed);
                 }
                 else {
                     const S9sString mode = options->isSetPoolModeRequested() ? "set" : "unset";
                     ::printf("Pool mode %s successfully.\n", STR(mode));
+                    reply.printConfigStorageMigration();
                 }
             }
         }

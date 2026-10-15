@@ -145,6 +145,9 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testServicesBundlesJsonOnly, retval);
     PERFORM_TEST(testServicesBundlesError,    retval);
     PERFORM_TEST(testServicesBundlesConnectionError, retval);
+    PERFORM_TEST(testConfigStorageMigration,  retval);
+    PERFORM_TEST(testConfigStorageMigrationSkipped, retval);
+    PERFORM_TEST(testPoolModeReadinessStorage, retval);
 
     return retval;
 }
@@ -280,6 +283,117 @@ UtS9sRpcReply::testServicesBundlesConnectionError()
     S9S_VERIFY(errors.contains("Connection refused"));
     S9S_VERIFY(!output.contains("HOSTNAME"));
     S9S_COMPARE(options->exitStatus(), S9sOptions::ConnectionError);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+namespace
+{
+
+S9sVariantMap
+migratedFile(const char *path, const char *status, const char *message)
+{
+    S9sVariantMap file;
+    file["path"]    = path;
+    file["status"]  = status;
+    file["message"] = message;
+    return file;
+}
+
+} // namespace
+
+/**
+ * A setPoolMode that moved cmon's configuration into OpenBao (or failed to)
+ * prints the engine and one line per file, with the reason when there is one.
+ */
+bool
+UtS9sRpcReply::testConfigStorageMigration()
+{
+    S9sVariantList files;
+    files << migratedFile("/etc/cmon.d/cmon_1.cnf", "migrated", "");
+    files << migratedFile("/etc/cmon.d/cmon_2.cnf", "failed",
+            "the secret store already holds a different severalnines.cmon/etc/cmon.d/cmon_2.cnf");
+
+    S9sVariantMap migration;
+    migration["engine"]      = "file";
+    migration["skipped"]     = false;
+    migration["skip_reason"] = "";
+    migration["files"]       = files;
+
+    S9sRpcReply reply;
+    reply["request_status"]           = "InvalidRequest";
+    reply["config_storage_migration"] = migration;
+
+    // With the error of the failed call, on the standard error.
+    const S9sString output = captureStderr([&reply]() { reply.printConfigStorageMigration(stderr); });
+    S9S_COMPARE(output,
+            "Secret storage engine: file\n"
+            "  migrated /etc/cmon.d/cmon_1.cnf\n"
+            "  failed   /etc/cmon.d/cmon_2.cnf: the secret store already holds a different "
+            "severalnines.cmon/etc/cmon.d/cmon_2.cnf\n");
+    return true;
+}
+
+/**
+ * Nothing moved: one line saying why. No report at all (pool mode disabled,
+ * or an older controller): nothing printed.
+ */
+bool
+UtS9sRpcReply::testConfigStorageMigrationSkipped()
+{
+    S9sVariantMap migration;
+    migration["engine"]      = "vault";
+    migration["skipped"]     = true;
+    migration["skip_reason"] = "already_on_vault";
+    migration["files"]       = S9sVariantList();
+
+    S9sRpcReply reply;
+    reply["request_status"]           = "Ok";
+    reply["config_storage_migration"] = migration;
+
+    S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageMigration(); }),
+            "Secret storage engine: vault (nothing moved: cmon already keeps its "
+            "configuration in OpenBao)\n");
+
+    migration["engine"]      = "file";
+    migration["skip_reason"] = "config_storage_not_ready";
+    reply["config_storage_migration"] = migration;
+    S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageMigration(); }),
+            "Secret storage engine: file (nothing moved: no ready configuration storage)\n");
+
+    S9sRpcReply noReport;
+    noReport["request_status"] = "Ok";
+    S9S_COMPARE(captureStdout([&noReport]() { noReport.printConfigStorageMigration(); }), "");
+    return true;
+}
+
+/**
+ * --pool-readiness names the secret storage engine and, in pool mode, the
+ * configuration storage the pool runs on.
+ */
+bool
+UtS9sRpcReply::testPoolModeReadinessStorage()
+{
+    S9sOptions::uninit();
+
+    S9sRpcReply reply;
+    reply["request_status"]        = "Ok";
+    reply["pool_mode"]             = true;
+    reply["secret_storage_engine"] = "vault";
+    reply["pool_config_storage"]   = "vault";
+
+    S9sString output = captureStdout([&reply]() { reply.printPoolModeReadiness(); });
+    S9S_VERIFY(output.contains("Secret storage engine: vault\n"));
+    S9S_VERIFY(output.contains("Pool configuration storage: vault\n"));
+
+    reply["pool_mode"]             = false;
+    reply["applicable"]            = false;
+    reply["secret_storage_engine"] = "file";
+    reply["pool_config_storage"]   = "";
+    output = captureStdout([&reply]() { reply.printPoolModeReadiness(); });
+    S9S_VERIFY(output.contains("Secret storage engine: file\n"));
+    S9S_VERIFY(!output.contains("Pool configuration storage"));
 
     S9sOptions::uninit();
     return true;
