@@ -81,6 +81,7 @@ class S9sRpcReply : public S9sVariantMap
         S9sVariantList clusters();
         S9sVariantList users();
         S9sVariantList alarms();
+        S9sVariantList alarmHistory();
         S9sVariantList dbVersions();
         S9sVariantList clusterTypes();
         S9sVariantList vendors();
@@ -131,6 +132,7 @@ class S9sRpcReply : public S9sVariantMap
 
         void printClusterList();
         void printAlarmList();
+        void printAlarmHistoryList();
         void printAlarmStatistics();
         void printConfigList();
         void printExtendedConfig();
@@ -385,6 +387,12 @@ class S9sRpcReply : public S9sVariantMap
         void printReportTemplateListBrief();
         
         void printAlarmListLong();
+        void printAlarmHistoryListLong();
+        void printAlarmHistoryListBrief();
+        static S9sString alarmHistoryDuration(S9sVariantMap &entry);
+        static S9sString alarmHistoryTitle(S9sVariantMap &entry);
+        static S9sString alarmHistoryId(S9sVariantMap &entry);
+        static S9sString alarmHistoryEscalated(S9sVariantMap &entry);
         
         void printHostTable(S9sCluster &cluster);
         void printClusterStat(S9sCluster &cluster);

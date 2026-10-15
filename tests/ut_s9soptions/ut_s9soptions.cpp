@@ -50,6 +50,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigFile02,  retval);
     PERFORM_TEST(testController,    retval);
     PERFORM_TEST(testReadOptions01, retval);
+    PERFORM_TEST(testAlarmListHistory, retval);
     PERFORM_TEST(testReadOptions02, retval);
     PERFORM_TEST(testReadOptions03, retval);
     PERFORM_TEST(testReadOptions04, retval);
@@ -248,6 +249,49 @@ UtS9sOptions::testReadOptions01()
     S9S_VERIFY(options->isListRequested());
     S9S_VERIFY(options->isVerbose());
     S9S_VERIFY(options->useSyntaxHighlight());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Checks that "alarm --list-history" is accepted as a main option, and that
+ * --limit and --offset reach the options the request is built from.
+ *
+ * An option like this needs wiring in six places -- the mode enum,
+ * long_options, the parser case, the accessor, the help text, and
+ * checkOptionsAlarm()'s countOptions. The last one was missed once, and it is
+ * silent in the worst way: the flag appears in --help and the parser accepts
+ * it, then the command refuses to run.
+ */
+bool
+UtS9sOptions::testAlarmListHistory()
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        success;
+    const char *argv[] =
+    {
+        "/bin/s9s", "alarm", "--list-history", "--cluster-id=3",
+        "--limit=25", "--offset=50",
+        NULL
+    };
+    int argc = sizeof(argv) / sizeof(char *) - 1;
+
+    // readOptions() runs checkOptionsAlarm() itself, so this single verify is
+    // the guard: without --list-history in that function's countOptions the
+    // parse fails with "One of the main options is mandatory", even though the
+    // flag is in --help and the parser accepts it.
+    success = options->readOptions(&argc, (char**)argv);
+    S9S_VERIFY(success);
+
+    S9S_COMPARE(options->m_operationMode, S9sOptions::Alarm);
+    S9S_VERIFY(options->isListHistoryRequested());
+    S9S_COMPARE(options->clusterId(), 3);
+    S9S_COMPARE(options->limit(),     25);
+    S9S_COMPARE(options->offset(),    50);
+
+    // The main options are mutually exclusive; --list-history is not --list.
+    S9S_VERIFY(!options->isListRequested());
 
     S9sOptions::uninit();
     return true;

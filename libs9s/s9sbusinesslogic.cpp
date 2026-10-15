@@ -1062,6 +1062,14 @@ S9sBusinessLogic::execute()
             client.setExitStatus();
             reply = client.reply();
             reply.printAlarmList();
+        } else if (options->isListHistoryRequested())
+        {
+            S9sRpcReply reply;
+
+            client.getAlarmHistory();
+            client.setExitStatus();
+            reply = client.reply();
+            reply.printAlarmHistoryList();
         } else if (options->isStatRequested())
         {
             S9sRpcReply reply;
