@@ -1692,9 +1692,16 @@ S9sRpcReply::printOpenBaoVersionList()
  *
  * \code
  * s9s pool-controllers --list-config-storage
- * TYPE    HOSTNAME    PORT VERSION MOUNT  NAMESPACE CREDS
- * openbao 10.0.3.163  8300 2.6.2   ftbao  -         yes
+ * TYPE    HOSTNAME    PORT ROLE        STORAGE VERSION MOUNT  NAMESPACE CREDS
+ * openbao 10.0.3.163  8300 leader      raft    2.6.2   ftbao  -         yes
+ * openbao 10.0.3.164  8300 standby     raft    2.6.2   ftbao  -         yes
  * \endcode
+ *
+ * One line is printed per OpenBao node. ROLE is the node's place in the raft
+ * cluster (leader, standby, sealed, unreachable or unknown) and STORAGE is the
+ * OpenBao storage backend (raft or file); both are "-" when the controller is
+ * too old to report them. The leader is printed in green and the sealed or
+ * unreachable nodes in red when syntax highlighting is enabled.
  *
  * CREDS says whether the controller has ssh credentials recorded for the
  * instance, which is what lets a pool-mode switch read the token by itself.
@@ -1730,10 +1737,13 @@ S9sRpcReply::printConfigStorageList()
         return;
     }
 
+    const bool syntaxHighlight = options->useSyntaxHighlight();
+
     if (!options->isBatchRequested())
     {
-        printf("%-8s %-24s %5s %-8s %-16s %-12s %s\n",
-               "TYPE", "HOSTNAME", "PORT", "VERSION", "MOUNT", "NAMESPACE", "CREDS");
+        printf("%-8s %-24s %5s %-11s %-7s %-8s %-16s %-12s %s\n",
+               "TYPE", "HOSTNAME", "PORT", "ROLE", "STORAGE", "VERSION",
+               "MOUNT", "NAMESPACE", "CREDS");
     }
 
     for (uint idx = 0; idx < storageList.size(); ++idx)
@@ -1742,11 +1752,30 @@ S9sRpcReply::printConfigStorageList()
         const S9sString nameSpace = entry["namespace"].toString();
 
         const S9sString version = entry["version"].toString();
+        const S9sString role    = entry["role"].toString();
+        const S9sString storage = entry["storage"].toString();
+        const char     *roleColorBegin = "";
+        const char     *roleColorEnd   = "";
 
-        printf("%-8s %-24s %5d %-8s %-16s %-12s %s\n",
+        if (syntaxHighlight && role == "leader")
+        {
+            roleColorBegin = XTERM_COLOR_GREEN;
+            roleColorEnd   = TERM_NORMAL;
+        }
+        else if (syntaxHighlight && (role == "sealed" || role == "unreachable"))
+        {
+            roleColorBegin = XTERM_COLOR_RED;
+            roleColorEnd   = TERM_NORMAL;
+        }
+
+        printf("%-8s %-24s %5d %s%-11s%s %-7s %-8s %-16s %-12s %s\n",
                STR(entry["type"].toString()),
                STR(entry["hostname"].toString()),
                entry["port"].toInt(),
+               roleColorBegin,
+               role.empty() ? "-" : STR(role),
+               roleColorEnd,
+               storage.empty() ? "-" : STR(storage),
                version.empty() ? "-" : STR(version),
                STR(entry["mount"].toString()),
                nameSpace.empty() ? "-" : STR(nameSpace),

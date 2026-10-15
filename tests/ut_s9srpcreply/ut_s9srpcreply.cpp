@@ -148,6 +148,7 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testConfigStorageMigration,  retval);
     PERFORM_TEST(testConfigStorageMigrationSkipped, retval);
     PERFORM_TEST(testPoolModeReadinessStorage, retval);
+    PERFORM_TEST(testConfigStorageListRaft, retval);
 
     return retval;
 }
@@ -400,3 +401,64 @@ UtS9sRpcReply::testPoolModeReadinessStorage()
 }
 
 S9S_UNIT_TEST_MAIN(UtS9sRpcReply)
+
+namespace
+{
+
+S9sVariantMap
+openBaoNode(const char *hostname, const char *role, const char *storage)
+{
+    S9sVariantMap entry;
+    entry["class_name"]         = "CmonOpenBaoHost";
+    entry["type"]               = "openbao";
+    entry["hostname"]           = hostname;
+    entry["port"]               = 8200;
+    entry["version"]            = "2.5.4";
+    entry["mount"]              = "clustercontrol";
+    entry["namespace"]          = "";
+    entry["credentials_stored"] = true;
+
+    if (role != nullptr)
+    {
+        entry["role"]         = role;
+        entry["raft_node_id"] = hostname;
+    }
+
+    if (storage != nullptr)
+        entry["storage"] = storage;
+
+    return entry;
+}
+
+} // namespace
+
+/**
+ * --list-config-storage prints one line per OpenBao node with its raft role
+ * and storage backend, and "-" for both when an older controller does not
+ * send them.
+ */
+bool
+UtS9sRpcReply::testConfigStorageListRaft()
+{
+    S9sOptions::uninit();
+
+    S9sVariantList nodes;
+    nodes << openBaoNode("10.0.0.21", "leader", "raft");
+    nodes << openBaoNode("10.0.0.22", "standby", "raft");
+    nodes << openBaoNode("10.0.0.23", "sealed", "raft");
+    nodes << openBaoNode("10.0.0.24", nullptr, nullptr);
+
+    S9sRpcReply reply;
+    reply["request_status"] = "Ok";
+    reply["config_storage"] = nodes;
+
+    S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageList(); }),
+            "TYPE     HOSTNAME                  PORT ROLE        STORAGE VERSION  MOUNT            NAMESPACE    CREDS\n"
+            "openbao  10.0.0.21                 8200 leader      raft    2.5.4    clustercontrol   -            yes\n"
+            "openbao  10.0.0.22                 8200 standby     raft    2.5.4    clustercontrol   -            yes\n"
+            "openbao  10.0.0.23                 8200 sealed      raft    2.5.4    clustercontrol   -            yes\n"
+            "openbao  10.0.0.24                 8200 -           -       2.5.4    clustercontrol   -            yes\n");
+
+    S9sOptions::uninit();
+    return true;
+}

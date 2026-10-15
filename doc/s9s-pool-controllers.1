@@ -344,13 +344,21 @@ be reached (mirrors mysqlsh's \fBremove_instance(force)\fP).
 
 .TP
 .B --add-openbao
-Installs and bootstraps an OpenBao instance on the host named by '--nodes' (exactly
-one host is required). Requires super admin privileges.
+Installs an OpenBao node on the host named by '--nodes' (exactly one host is
+required). Requires super admin privileges.
 
-The root token and the unseal keys are written to '/etc/openbao/init.json'
-on the target host.
+The controller decides what the node does. The first node bootstraps a new
+OpenBao raft cluster: the root token and the unseal keys are written to
+\&'/etc/openbao/init.json' on the target host. Adding a second or later node joins
+the existing raft cluster instead of creating a new one: the job first checks that
+the new host can reach the leader's API port and its cluster port, and fails
+when it cannot.
+Run the command once per node, one node at a time; three nodes tolerate the loss
+of one.
 .nf
 s9s pool-controllers --add-openbao --nodes=10.16.186.189 --log
+s9s pool-controllers --add-openbao --nodes=10.16.186.190 --log
+s9s pool-controllers --add-openbao --nodes=10.16.186.191 --log
 .fi
 
 To install a specific version on a non-default port, inside a namespace. The
@@ -374,6 +382,25 @@ beforehand:
 .nf
 s9s pool-controllers --add-openbao --nodes=10.16.186.189 \\
     --openbao-package-path=/var/tmp/openbao_2.5.4_linux_amd64.deb --log
+.fi
+
+.TP
+.B --list-config-storage
+Lists the configuration/secret storage instances the controller knows about, one
+line per OpenBao node. Read-only. Supports \fB--print-json\fP and \fB--batch\fP.
+
+ROLE is the node's place in the raft cluster: \fBleader\fP, \fBstandby\fP,
+\fBsealed\fP, \fBunreachable\fP or \fBunknown\fP. STORAGE is the OpenBao storage
+backend, \fBraft\fP or \fBfile\fP. Both are '-' when the controller is too old to
+report them. With syntax highlighting on, the leader is printed in green and the
+sealed and unreachable nodes in red. CREDS says whether the controller has ssh
+credentials recorded for the node.
+.nf
+s9s pool-controllers --list-config-storage
+TYPE     HOSTNAME                  PORT ROLE        STORAGE VERSION  MOUNT            NAMESPACE    CREDS
+openbao  10.16.186.189             8200 leader      raft    2.5.4    clustercontrol   -            yes
+openbao  10.16.186.190             8200 standby     raft    2.5.4    clustercontrol   -            yes
+openbao  10.16.186.191             8200 sealed      raft    2.5.4    clustercontrol   -            yes
 .fi
 
 .TP
