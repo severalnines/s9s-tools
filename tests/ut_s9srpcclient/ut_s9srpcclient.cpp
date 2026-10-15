@@ -196,6 +196,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testSetPoolModePrerequisites, retval);
     PERFORM_TEST(testPoolModeSetupCommands, retval);
     PERFORM_TEST(testPoolModeReadinessMccPackage, retval);
+    PERFORM_TEST(testRemoveOpenBao, retval);
 
     return retval;
 }
@@ -4067,6 +4068,72 @@ UtS9sRpcClient::testPoolModeReadinessMccPackage()
     readiness.erase("mcc_package");
     summary = readinessSummary(readiness);
     S9S_VERIFY(!summary.contains("MCC package"));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing removeOpenBao() (the "pool-controllers --remove-openbao" job): the
+ * host and the port go under the keys installOpenBao() uses, and "force" and
+ * "purge" are always sent.
+ */
+bool
+UtS9sRpcClient::testRemoveOpenBao()
+{
+    S9sOptions         *options;
+    S9sVariantMap       payload;
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--remove-openbao",
+                            "--nodes=10.16.186.3:8300",
+                            "--purge",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+
+    S9sRpcClientTester  client;
+    S9S_VERIFY(client.removeOpenBao(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "remove_openbao");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "server_address").toString(),
+            "10.16.186.3");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "port").toInt(), 8300);
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "purge").toBoolean(), true);
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "force").toBoolean(), false);
+
+    // Default port: no "port" key, the controller applies its default.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--remove-openbao",
+                            "--nodes=10.16.186.3",
+                            "--force",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+
+    S9sRpcClientTester  client2;
+    S9S_VERIFY(client2.removeOpenBao(options));
+    payload = client2.lastPayload();
+
+    S9S_VERIFY(!payload.valueByPath("/job/job_spec/job_data").toVariantMap().contains("port"));
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "force").toBoolean(), true);
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "purge").toBoolean(), false);
 
     S9sOptions::uninit();
     return true;

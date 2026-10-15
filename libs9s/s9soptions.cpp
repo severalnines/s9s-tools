@@ -572,6 +572,8 @@ enum S9sOptionType
     OptionUpdateCmon,
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
+    OptionRemoveOpenBao,
+    OptionPurge,
     OptionListConfigStorage,
     OptionListOpenBaoVersions,
     OptionOpenBaoMount,
@@ -5966,6 +5968,26 @@ S9sOptions::isAddOpenBao() const
 }
 
 /**
+ * \returns true if the "remove_openbao" job is requested by providing the
+ *   --remove-openbao command line option on the "pool-controllers" subcommand.
+ */
+bool
+S9sOptions::isRemoveOpenBao() const
+{
+    return getBool("remove_openbao");
+}
+
+/**
+ * \returns true if the --purge command line option was provided: the removed
+ *   OpenBao node's configuration and data are deleted from its host.
+ */
+bool
+S9sOptions::purge() const
+{
+    return getBool("purge");
+}
+
+/**
  * \returns true if the --list-config-storage command line option was provided.
  */
 bool
@@ -9524,6 +9546,11 @@ S9sOptions::printHelpControllers()
 "                             The first node bootstraps a raft cluster; a second or\n"
 "                             later node joins it after a connectivity check to the\n"
 "                             leader's API and cluster ports.\n"
+"  --remove-openbao           To remove the OpenBao node given by --nodes from the\n"
+"                             raft cluster. --force skips the cluster health check\n"
+"                             when the node is unreachable, --purge also deletes the\n"
+"                             node's configuration and data. Requires super admin\n"
+"                             privileges.\n"
 "  --list-config-storage      List the configuration/secret storage instances the\n"
 "                             controller knows about, one line per OpenBao node with\n"
 "                             its raft role (leader, standby, ...) and storage.\n"
@@ -20652,6 +20679,7 @@ S9sOptions::readOptionsControllers(
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
+                    {"remove-openbao",   no_argument, 0,       OptionRemoveOpenBao},
                     {"list-config-storage", no_argument, 0,    OptionListConfigStorage},
                     {"list-openbao-versions", no_argument, 0,  OptionListOpenBaoVersions},
                     {"force",                    no_argument,       0, OptionForce},
@@ -20673,6 +20701,8 @@ S9sOptions::readOptionsControllers(
                     {"openbao-package-path", required_argument, 0, OptionOpenBaoPackagePath},
                     {"openbao-package",  required_argument, 0, OptionOpenBaoPackage},
                     {"openbao-force-reinit", no_argument, 0, OptionOpenBaoForceReinit},
+                    // Arguments when removing an OpenBao node
+                    {"purge",            no_argument,       0, OptionPurge},
                     { "no-install",      no_argument,       0, OptionNoInstall },
                     
                     // Job Related Options
@@ -20963,6 +20993,16 @@ S9sOptions::readOptionsControllers(
                 m_options["add_openbao"] = true;
                 break;
 
+            case OptionRemoveOpenBao:
+                // --remove-openbao
+                m_options["remove_openbao"] = true;
+                break;
+
+            case OptionPurge:
+                // --purge
+                m_options["purge"] = true;
+                break;
+
             case OptionListConfigStorage:
                 // --list-config-storage
                 m_options["list_config_storage"] = true;
@@ -21172,6 +21212,9 @@ S9sOptions::checkOptionsControllers()
     if (isAddOpenBao())
         countOptions++;
 
+    if (isRemoveOpenBao())
+        countOptions++;
+
     if (isListConfigStorage())
         countOptions++;
 
@@ -21247,6 +21290,20 @@ S9sOptions::checkOptionsControllers()
     if (isAddOpenBao() && nodes().size() != 1u)
     {
         m_errorMessage = "The --nodes option must specify exactly one host for --add-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isRemoveOpenBao() && nodes().size() != 1u)
+    {
+        m_errorMessage = "The --nodes option must specify exactly one host for --remove-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (purge() && !isRemoveOpenBao())
+    {
+        m_errorMessage = "The --purge option can only be used with --remove-openbao.";
         m_exitStatus = BadOptions;
         return false;
     }

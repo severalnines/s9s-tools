@@ -12460,6 +12460,60 @@ S9sRpcClient::installOpenBao(S9sOptions *options)
 }
 
 /**
+ * \returns true if the request was successfully sent
+ *
+ * Creates the job that removes the OpenBao node given by the --nodes command
+ * line option from the raft cluster. The host and the port are sent under the
+ * same keys installOpenBao() uses, so the controller finds the node the same
+ * way it was added. "force" lets the controller skip the cluster health check
+ * when the node is unreachable, "purge" deletes the node's configuration and
+ * data on its host.
+ */
+bool
+S9sRpcClient::removeOpenBao(S9sOptions *options)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList  hosts = options->nodes();
+
+    S9sVariantMap   job     = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+
+        const int port = hosts[0].toNode().port();
+        if (port > 0)
+            jobData["port"] = port;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must specified for "
+                "removeOpenBao operation.");
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    jobData["force"] = options->force();
+    jobData["purge"] = options->purge();
+
+    jobSpec["command"]  = "remove_openbao";
+    jobSpec["job_data"] = jobData;
+
+    job["job_spec"] = jobSpec;
+    job["title"]    = "Remove OpenBao";
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
  * \returns delete watchlists stored on controller DB
  *
  */

@@ -57,6 +57,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testServicesBundleOptionErrors();
         bool testAddControllerSite();
         bool testAddOpenBao();
+        bool testRemoveOpenBao();
         bool testListOpenBaoOperations();
         bool testPoolModePrerequisites();
         bool testVirtualRouterId();

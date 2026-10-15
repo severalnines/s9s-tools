@@ -350,9 +350,10 @@ required). Requires super admin privileges.
 The controller decides what the node does. The first node bootstraps a new
 OpenBao raft cluster: the root token and the unseal keys are written to
 \&'/etc/openbao/init.json' on the target host. Adding a second or later node joins
-the existing raft cluster instead of creating a new one: the job first checks that
-the new host can reach the leader's API port and its cluster port, and fails
-when it cannot.
+the existing raft cluster instead of creating a new one. Before anything is
+installed on the new host, the job checks that it can reach the leader's API port
+and its raft cluster port (the API port plus one, 8201 by default) and fails when
+it cannot.
 Run the command once per node, one node at a time; three nodes tolerate the loss
 of one.
 .nf
@@ -383,6 +384,36 @@ beforehand:
 s9s pool-controllers --add-openbao --nodes=10.16.186.189 \\
     --openbao-package-path=/var/tmp/openbao_2.5.4_linux_amd64.deb --log
 .fi
+
+.TP
+.B --remove-openbao
+Removes the OpenBao node on the host named by '--nodes' (exactly one host is
+required, with its port when it is not the default) from the raft cluster.
+Requires super admin privileges. It is a job (\fB--log\fP and \fB--wait\fP apply).
+
+When the node is the leader it steps down first. The node then leaves the raft
+cluster and OpenBao is stopped on its host. The remaining nodes get their
+retry_join list rewritten, the node is unregistered from the controller and the
+controllers' OpenBao address list is updated.
+
+The removal is refused when it would leave the raft cluster below quorum, when
+the cluster is not healthy, or when it is the last node and the pool still reads
+its configuration from it; in that case move the configuration back with
+config_storage_revert.sh first.
+
+\fB--force\fP skips the cluster health check, but only when the node being
+removed is unreachable. \fB--purge\fP also deletes '/etc/openbao' and
+\&'/opt/openbao/data' on the removed host; without it they are left in place.
+.nf
+s9s pool-controllers --remove-openbao --nodes=10.16.186.191 --log
+s9s pool-controllers --remove-openbao --nodes=10.16.186.191:8300 --purge --log
+s9s pool-controllers --remove-openbao --nodes=10.16.186.191 --force --log
+.fi
+
+.TP
+.B --purge
+Used with \fB--remove-openbao\fP: deletes the removed node's OpenBao configuration
+and data ('/etc/openbao' and '/opt/openbao/data') on its host.
 
 .TP
 .B --list-config-storage
