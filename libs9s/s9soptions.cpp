@@ -18875,6 +18875,7 @@ S9sOptions::readOptionsController(
         { "password",         required_argument, 0, 'p'                   }, 
         { "private-key-file", required_argument, 0, OptionPrivateKeyFile  }, 
         { "controller",       required_argument, 0, 'c'                   },
+        { "rpc-tls",          no_argument,       0, OptionRpcTls          },
         { "long",             no_argument,       0, 'l'                   },
         { "print-json",       no_argument,       0, OptionPrintJson       },
         { "print-request",    no_argument,       0, OptionPrintRequest    },
@@ -18973,6 +18974,11 @@ S9sOptions::readOptionsController(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
                 break;
 
             case 'l':
