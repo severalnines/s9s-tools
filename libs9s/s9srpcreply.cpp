@@ -1692,13 +1692,23 @@ S9sRpcReply::printOpenBaoVersionList()
  *
  * \code
  * s9s pool-controllers --list-config-storage
- * TYPE    HOSTNAME    PORT VERSION MOUNT  NAMESPACE CREDS
- * openbao 10.0.3.163  8300 2.6.2   ftbao  -         yes
+ * TYPE    HOSTNAME    PORT ROLE        STORAGE VERSION MOUNT  NAMESPACE CREDENTIALS
+ * openbao 10.0.3.163  8300 leader      raft    2.6.2   ftbao  -         /etc/cmon.d/cmon_openbao_111.cnf
+ * openbao 10.0.3.164  8300 standby     raft    2.6.2   ftbao  -         key not found or reachable
  * \endcode
  *
- * CREDS says whether the controller has ssh credentials recorded for the
- * instance, which is what lets a pool-mode switch read the token by itself.
- * The token is never part of the reply and is never printed.
+ * One line is printed per OpenBao node. ROLE is the node's place in the raft
+ * cluster (leader, standby, sealed, unreachable or unknown) and STORAGE is the
+ * OpenBao storage backend (raft or file); both are "-" when the controller is
+ * too old to report them. The leader is printed in green and the sealed or
+ * unreachable nodes in red when syntax highlighting is enabled.
+ *
+ * CREDENTIALS says where the controller keeps the ssh credentials of the
+ * instance ("local", a file or a "vault:" path) or "key not found or
+ * reachable", printed in red with syntax highlighting. Those credentials are
+ * what let a pool-mode switch read the token by itself. An older controller
+ * only sends "credentials_stored", printed as yes or no. The token is never
+ * part of the reply and is never printed.
  */
 void
 S9sRpcReply::printConfigStorageList()
@@ -1730,10 +1740,13 @@ S9sRpcReply::printConfigStorageList()
         return;
     }
 
+    const bool syntaxHighlight = options->useSyntaxHighlight();
+
     if (!options->isBatchRequested())
     {
-        printf("%-8s %-24s %5s %-8s %-16s %-12s %s\n",
-               "TYPE", "HOSTNAME", "PORT", "VERSION", "MOUNT", "NAMESPACE", "CREDS");
+        printf("%-8s %-24s %5s %-11s %-7s %-8s %-16s %-12s %s\n",
+               "TYPE", "HOSTNAME", "PORT", "ROLE", "STORAGE", "VERSION",
+               "MOUNT", "NAMESPACE", "CREDENTIALS");
     }
 
     for (uint idx = 0; idx < storageList.size(); ++idx)
@@ -1742,15 +1755,50 @@ S9sRpcReply::printConfigStorageList()
         const S9sString nameSpace = entry["namespace"].toString();
 
         const S9sString version = entry["version"].toString();
+        const S9sString role    = entry["role"].toString();
+        const S9sString storage = entry["storage"].toString();
+        const char     *roleColorBegin = "";
+        const char     *roleColorEnd   = "";
+        S9sString       credentials;
+        const char     *credsColorBegin = "";
+        const char     *credsColorEnd   = "";
 
-        printf("%-8s %-24s %5d %-8s %-16s %-12s %s\n",
+        if (entry.contains("credentials"))
+            credentials = entry["credentials"].toString();
+        else
+            credentials = entry["credentials_stored"].toBoolean() ? "yes" : "no";
+
+        if (syntaxHighlight && credentials == "key not found or reachable")
+        {
+            credsColorBegin = XTERM_COLOR_RED;
+            credsColorEnd   = TERM_NORMAL;
+        }
+
+        if (syntaxHighlight && role == "leader")
+        {
+            roleColorBegin = XTERM_COLOR_GREEN;
+            roleColorEnd   = TERM_NORMAL;
+        }
+        else if (syntaxHighlight && (role == "sealed" || role == "unreachable"))
+        {
+            roleColorBegin = XTERM_COLOR_RED;
+            roleColorEnd   = TERM_NORMAL;
+        }
+
+        printf("%-8s %-24s %5d %s%-11s%s %-7s %-8s %-16s %-12s %s%s%s\n",
                STR(entry["type"].toString()),
                STR(entry["hostname"].toString()),
                entry["port"].toInt(),
+               roleColorBegin,
+               role.empty() ? "-" : STR(role),
+               roleColorEnd,
+               storage.empty() ? "-" : STR(storage),
                version.empty() ? "-" : STR(version),
                STR(entry["mount"].toString()),
                nameSpace.empty() ? "-" : STR(nameSpace),
-               entry["credentials_stored"].toBoolean() ? "yes" : "no");
+               credsColorBegin,
+               STR(credentials),
+               credsColorEnd);
     }
 }
 

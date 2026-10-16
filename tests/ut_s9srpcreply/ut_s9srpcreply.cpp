@@ -148,6 +148,7 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testConfigStorageMigration,  retval);
     PERFORM_TEST(testConfigStorageMigrationSkipped, retval);
     PERFORM_TEST(testPoolModeReadinessStorage, retval);
+    PERFORM_TEST(testConfigStorageListRaft, retval);
 
     return retval;
 }
@@ -400,3 +401,100 @@ UtS9sRpcReply::testPoolModeReadinessStorage()
 }
 
 S9S_UNIT_TEST_MAIN(UtS9sRpcReply)
+
+namespace
+{
+
+S9sVariantMap
+openBaoNode(
+        const char *hostname,
+        const char *role,
+        const char *storage,
+        const char *credentials,
+        bool        credentialsStored = true)
+{
+    S9sVariantMap entry;
+    entry["class_name"]         = "CmonOpenBaoHost";
+    entry["type"]               = "openbao";
+    entry["hostname"]           = hostname;
+    entry["port"]               = 8200;
+    entry["version"]            = "2.5.4";
+    entry["mount"]              = "clustercontrol";
+    entry["namespace"]          = "";
+    entry["credentials_stored"] = credentialsStored;
+
+    if (role != nullptr)
+    {
+        entry["role"]         = role;
+        entry["raft_node_id"] = hostname;
+    }
+
+    if (storage != nullptr)
+        entry["storage"] = storage;
+
+    if (credentials != nullptr)
+        entry["credentials"] = credentials;
+
+    return entry;
+}
+
+} // namespace
+
+/**
+ * --list-config-storage prints one line per OpenBao node with its raft role
+ * and storage backend, and "-" for both when an older controller does not
+ * send them. CREDENTIALS is printed as sent, unpadded; an older controller
+ * that only sends "credentials_stored" gets yes or no.
+ */
+bool
+UtS9sRpcReply::testConfigStorageListRaft()
+{
+    S9sOptions::uninit();
+
+    S9sVariantList nodes;
+    nodes << openBaoNode("10.0.0.21", "leader", "raft",
+            "/etc/cmon.d/cmon_openbao_111.cnf");
+    nodes << openBaoNode("10.0.0.22", "standby", "raft",
+            "vault:clustercontrol/severalnines.cmon/etc/cmon.d/cmon_openbao_111.cnf");
+    nodes << openBaoNode("10.0.0.23", "sealed", "raft",
+            "key not found or reachable");
+    nodes << openBaoNode("10.0.0.24", "standby", "raft", "local");
+    nodes << openBaoNode("10.0.0.25", nullptr, nullptr, nullptr, true);
+    nodes << openBaoNode("10.0.0.26", nullptr, nullptr, nullptr, false);
+
+    S9sRpcReply reply;
+    reply["request_status"] = "Ok";
+    reply["config_storage"] = nodes;
+
+    S9S_COMPARE(captureStdout([&reply]() { reply.printConfigStorageList(); }),
+            "TYPE     HOSTNAME                  PORT ROLE        STORAGE VERSION  MOUNT            NAMESPACE    CREDENTIALS\n"
+            "openbao  10.0.0.21                 8200 leader      raft    2.5.4    clustercontrol   -            /etc/cmon.d/cmon_openbao_111.cnf\n"
+            "openbao  10.0.0.22                 8200 standby     raft    2.5.4    clustercontrol   -            "
+                "vault:clustercontrol/severalnines.cmon/etc/cmon.d/cmon_openbao_111.cnf\n"
+            "openbao  10.0.0.23                 8200 sealed      raft    2.5.4    clustercontrol   -            key not found or reachable\n"
+            "openbao  10.0.0.24                 8200 standby     raft    2.5.4    clustercontrol   -            local\n"
+            "openbao  10.0.0.25                 8200 -           -       2.5.4    clustercontrol   -            yes\n"
+            "openbao  10.0.0.26                 8200 -           -       2.5.4    clustercontrol   -            no\n");
+
+    // With syntax highlighting the unusable credentials are red, the others
+    // are not.
+    const char *argv[] = { "/bin/s9s",
+                           "pool-controllers",
+                           "--list-config-storage",
+                           "--color=always",
+                           nullptr };
+    int         argc   = sizeof(argv) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    S9S_VERIFY(S9sOptions::instance()->readOptions(&argc, (char **)argv));
+
+    const S9sString colored =
+        captureStdout([&reply]() { reply.printConfigStorageList(); });
+    S9S_VERIFY(colored.contains(
+            XTERM_COLOR_RED "key not found or reachable" TERM_NORMAL "\n"));
+    S9S_VERIFY(!colored.contains(
+            XTERM_COLOR_RED "/etc/cmon.d/cmon_openbao_111.cnf"));
+
+    S9sOptions::uninit();
+    return true;
+}
