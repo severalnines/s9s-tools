@@ -3476,6 +3476,8 @@ UtS9sRpcClient::testInstallOpenBao()
     options->m_options["openbao_namespace"]     = "tenant1";
     options->m_options["openbao_force_reinit"]  = true;
     options->m_options["no_install"]            = true;
+    options->m_options["os_user"]               = "alvaro";
+    options->m_options["os_key_file"]           = "/home/alvaro/.ssh/id_ed25519";
 
     S9S_VERIFY(client.installOpenBao(options));
     payload = client.lastPayload();
@@ -3499,6 +3501,9 @@ UtS9sRpcClient::testInstallOpenBao()
     S9S_COMPARE(jobData["openbao_namespace"], "tenant1");
     S9S_COMPARE(jobData["openbao_force_reinit"], true);
     S9S_COMPARE(jobData["install_software"], false);
+    // The ssh login for the OpenBao host.
+    S9S_COMPARE(jobData["ssh_user"], "alvaro");
+    S9S_COMPARE(jobData["ssh_keyfile"], "/home/alvaro/.ssh/id_ed25519");
 
     /*
      * Without the parameters the job_data must carry no openbao_* key and no
@@ -4089,6 +4094,8 @@ UtS9sRpcClient::testRemoveOpenBao()
                             "--remove-openbao",
                             "--nodes=10.16.186.3:8300",
                             "--purge",
+                            "--os-user=alvaro",
+                            "--os-key-file=/home/alvaro/.ssh/id_ed25519",
                             nullptr };
     int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
 
@@ -4113,6 +4120,10 @@ UtS9sRpcClient::testRemoveOpenBao()
     S9S_COMPARE(payload.valueByPath(JOB_DATA "port").toInt(), 8300);
     S9S_COMPARE(payload.valueByPath(JOB_DATA "purge").toBoolean(), true);
     S9S_COMPARE(payload.valueByPath(JOB_DATA "force").toBoolean(), false);
+    // The ssh login for the OpenBao host.
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "ssh_user").toString(), "alvaro");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "ssh_keyfile").toString(),
+            "/home/alvaro/.ssh/id_ed25519");
 
     // Default port: no "port" key, the controller applies its default.
     const char *argv2[] = { "/bin/s9s",
