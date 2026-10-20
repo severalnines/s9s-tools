@@ -12444,9 +12444,9 @@ S9sRpcClient::installOpenBao(S9sOptions *options)
     if (options->openBaoForceReinit())
         jobData["openbao_force_reinit"] = true;
 
-    // The ssh login for the OpenBao host (--os-user, --os-key-file, ...); the
-    // controller falls back to its own default credentials without them.
-    addCredentialsToJobData(jobData);
+    // The ssh login for the OpenBao host (--os-user, --os-key-file, ...) is
+    // already in jobData: composeJobData() adds it. The controller falls back
+    // to its own default credentials without it.
 
     // The jobspec describing the command. The controller registers this job
     // under the SETUP_OPENBAO action and uppercases what it receives.
@@ -12505,8 +12505,8 @@ S9sRpcClient::removeOpenBao(S9sOptions *options)
     jobData["force"] = options->force();
     jobData["purge"] = options->purge();
 
-    // The ssh login for the OpenBao host, as for --add-openbao.
-    addCredentialsToJobData(jobData);
+    // The ssh login for the OpenBao host comes from composeJobData(), as for
+    // --add-openbao.
 
     jobSpec["command"]  = "remove_openbao";
     jobSpec["job_data"] = jobData;
