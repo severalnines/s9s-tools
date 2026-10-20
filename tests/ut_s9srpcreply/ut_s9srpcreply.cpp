@@ -442,8 +442,8 @@ openBaoNode(
 
 /**
  * --list-config-storage prints one line per OpenBao node with its raft role
- * and storage backend, and "-" for both when an older controller does not
- * send them. CREDENTIALS is printed as sent, unpadded; an older controller
+ * and storage backend, and "-" for both when the controller does not send
+ * them. With syntax highlighting the leader is green and a sealed node red. CREDENTIALS is printed as sent, unpadded; an older controller
  * that only sends "credentials_stored" gets yes or no.
  */
 bool
@@ -494,6 +494,14 @@ UtS9sRpcReply::testConfigStorageListRaft()
             XTERM_COLOR_RED "key not found or reachable" TERM_NORMAL "\n"));
     S9S_VERIFY(!colored.contains(
             XTERM_COLOR_RED "/etc/cmon.d/cmon_openbao_111.cnf"));
+
+    // The leader is green and a sealed node red, both padded inside the
+    // colour so the columns stay aligned; a standby is not coloured.
+    S9S_VERIFY(colored.contains(
+            XTERM_COLOR_GREEN "leader     " TERM_NORMAL " raft"));
+    S9S_VERIFY(colored.contains(
+            XTERM_COLOR_RED "sealed     " TERM_NORMAL " raft"));
+    S9S_VERIFY(colored.contains(" 8200 standby     raft"));
 
     S9sOptions::uninit();
     return true;

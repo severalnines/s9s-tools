@@ -1700,7 +1700,8 @@ S9sRpcReply::printOpenBaoVersionList()
  * One line is printed per OpenBao node. ROLE is the node's place in the raft
  * cluster (leader, standby, sealed, unreachable or unknown) and STORAGE is the
  * OpenBao storage backend (raft or file); both are "-" when the controller is
- * too old to report them. The leader is printed in green and the sealed or
+ * too old to report them, or the node was registered before they were
+ * recorded. The leader is printed in green and the sealed or
  * unreachable nodes in red when syntax highlighting is enabled.
  *
  * CREDENTIALS says where the controller keeps the ssh credentials of the

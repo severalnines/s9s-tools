@@ -396,13 +396,24 @@ cluster and OpenBao is stopped on its host. The remaining nodes get their
 retry_join list rewritten, the node is unregistered from the controller and the
 controllers' OpenBao address list is updated.
 
-The removal is refused when it would leave the raft cluster below quorum, when
-the cluster is not healthy, or when it is the last node and the pool still reads
-its configuration from it; in that case move the configuration back with
-config_storage_revert.sh first.
+The removal is refused when it would leave the raft cluster below quorum, or
+when the cluster is not healthy now (no leader, or another node sealed or
+unreachable).
+
+The node the raft cluster was bootstrapped on is refused while other nodes
+remain: its '/etc/openbao/init.json' holds the root token every join and removal
+uses, so remove the other nodes first and that one last.
+
+The node the controller's legacy credential store (vault_addr) reads from is
+refused, since that client follows no raft leader; point vault_addr at another
+node first. The last node is refused while the pool still reads its
+configuration from it; move the configuration back with config_storage_revert.sh
+first.
 
 \fB--force\fP skips the cluster health check, but only when the node being
-removed is unreachable. \fB--purge\fP also deletes '/etc/openbao' and
+removed does not answer; it does nothing for a node that answers. Even with
+\fB--force\fP, when the controllers read their configuration from this raft
+cluster, the other nodes still need a leader and a quorum. \fB--purge\fP also deletes '/etc/openbao' and
 \&'/opt/openbao/data' on the removed host; without it they are left in place.
 .nf
 s9s pool-controllers --remove-openbao --nodes=10.16.186.191 --log
@@ -423,7 +434,7 @@ line per OpenBao node. Read-only. Supports \fB--print-json\fP and \fB--batch\fP.
 ROLE is the node's place in the raft cluster: \fBleader\fP, \fBstandby\fP,
 \fBsealed\fP, \fBunreachable\fP or \fBunknown\fP. STORAGE is the OpenBao storage
 backend, \fBraft\fP or \fBfile\fP. Both are '-' when the controller is too old to
-report them. With syntax highlighting on, the leader is printed in green and the
+report them, or the node was registered before they were recorded. With syntax highlighting on, the leader is printed in green and the
 sealed and unreachable nodes in red.
 
 CREDENTIALS says where the controller keeps the ssh credentials of the node:
