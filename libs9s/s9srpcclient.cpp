@@ -12415,7 +12415,7 @@ S9sRpcClient::installOpenBao(S9sOptions *options)
     else
     {
         PRINT_ERROR(
-                "Exactly one node must specified for "
+                "Exactly one node must be specified for "
                 "installOpenBao operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
@@ -12443,6 +12443,11 @@ S9sRpcClient::installOpenBao(S9sOptions *options)
 
     if (options->openBaoForceReinit())
         jobData["openbao_force_reinit"] = true;
+
+    // As every other job that installs software on a host: the controller
+    // disables the host's firewall unless --keep-firewall (or keep_firewall in
+    // s9s.conf); with it, the controller opens the OpenBao ports instead.
+    jobData["disable_firewall"] = !options->keepFirewall();
 
     // The ssh login for the OpenBao host (--os-user, --os-key-file, ...) is
     // already in jobData: composeJobData() adds it. The controller falls back
@@ -12496,7 +12501,7 @@ S9sRpcClient::removeOpenBao(S9sOptions *options)
     else
     {
         PRINT_ERROR(
-                "Exactly one node must specified for "
+                "Exactly one node must be specified for "
                 "removeOpenBao operation.");
         options->setExitStatus(S9sOptions::BadOptions);
         return false;

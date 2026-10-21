@@ -443,7 +443,8 @@ openBaoNode(
 /**
  * --list-config-storage prints one line per OpenBao node with its raft role
  * and storage backend, and "-" for both when the controller does not send
- * them. With syntax highlighting the leader is green and a sealed node red. CREDENTIALS is printed as sent, unpadded; an older controller
+ * them. With syntax highlighting the leader is green and a sealed or unknown
+ * node red; a joining node is not coloured. CREDENTIALS is printed as sent, unpadded; an older controller
  * that only sends "credentials_stored" gets yes or no.
  */
 bool
@@ -461,6 +462,8 @@ UtS9sRpcReply::testConfigStorageListRaft()
     nodes << openBaoNode("10.0.0.24", "standby", "raft", "local");
     nodes << openBaoNode("10.0.0.25", nullptr, nullptr, nullptr, true);
     nodes << openBaoNode("10.0.0.26", nullptr, nullptr, nullptr, false);
+    nodes << openBaoNode("10.0.0.27", "joining", "raft", "local");
+    nodes << openBaoNode("10.0.0.28", "unknown", "raft", "local");
 
     S9sRpcReply reply;
     reply["request_status"] = "Ok";
@@ -474,7 +477,9 @@ UtS9sRpcReply::testConfigStorageListRaft()
             "openbao  10.0.0.23                 8200 sealed      raft    2.5.4    clustercontrol   -            key not found or reachable\n"
             "openbao  10.0.0.24                 8200 standby     raft    2.5.4    clustercontrol   -            local\n"
             "openbao  10.0.0.25                 8200 -           -       2.5.4    clustercontrol   -            yes\n"
-            "openbao  10.0.0.26                 8200 -           -       2.5.4    clustercontrol   -            no\n");
+            "openbao  10.0.0.26                 8200 -           -       2.5.4    clustercontrol   -            no\n"
+            "openbao  10.0.0.27                 8200 joining     raft    2.5.4    clustercontrol   -            local\n"
+            "openbao  10.0.0.28                 8200 unknown     raft    2.5.4    clustercontrol   -            local\n");
 
     // With syntax highlighting the unusable credentials are red, the others
     // are not.
@@ -501,7 +506,10 @@ UtS9sRpcReply::testConfigStorageListRaft()
             XTERM_COLOR_GREEN "leader     " TERM_NORMAL " raft"));
     S9S_VERIFY(colored.contains(
             XTERM_COLOR_RED "sealed     " TERM_NORMAL " raft"));
+    S9S_VERIFY(colored.contains(
+            XTERM_COLOR_RED "unknown    " TERM_NORMAL " raft"));
     S9S_VERIFY(colored.contains(" 8200 standby     raft"));
+    S9S_VERIFY(colored.contains(" 8200 joining     raft"));
 
     S9sOptions::uninit();
     return true;

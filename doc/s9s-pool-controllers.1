@@ -354,8 +354,19 @@ the existing raft cluster instead of creating a new one. Before anything is
 installed on the new host, the job checks that it can reach the leader's API port
 and its raft cluster port (the API port plus one, 8201 by default) and fails when
 it cannot.
-Run the command once per node, one node at a time; three nodes tolerate the loss
-of one.
+Run the command once per OpenBao node, one at a time; three OpenBao nodes
+tolerate the loss of one.
+
+The firewall of the target host is disabled, as for every other job that
+installs software on a host, unless \fB--keep-firewall\fP is given (or
+\fBkeep_firewall\fP is set in s9s.conf); with it the firewall is kept and
+ClusterControl opens the OpenBao ports in it instead (the API port and the
+raft cluster port, 8200 and 8201 by default). Opening them needs a controller
+recent enough to do so.
+
+The ssh login of the target host comes from '--os-user', '--os-key-file' and
+\&'--os-password' when given. In a pool the '--os-key-file' path must exist on the
+controller that runs the job, which is not necessarily the one s9s talks to.
 .nf
 s9s pool-controllers --add-openbao --nodes=10.16.186.189 --log
 s9s pool-controllers --add-openbao --nodes=10.16.186.190 --log
@@ -391,8 +402,8 @@ Removes the OpenBao node on the host named by '--nodes' (exactly one host is
 required, with its port when it is not the default) from the raft cluster.
 Requires super admin privileges. It is a job (\fB--log\fP and \fB--wait\fP apply).
 
-When the node is the leader it steps down first. The node then leaves the raft
-cluster and OpenBao is stopped on its host. The remaining nodes get their
+When the OpenBao node is the leader it steps down first. It then leaves the raft
+cluster and OpenBao is stopped and disabled on its host. The remaining OpenBao nodes get their
 retry_join list rewritten, the node is unregistered from the controller and the
 controllers' OpenBao address list is updated.
 
@@ -410,11 +421,19 @@ node first. The last node is refused while the pool still reads its
 configuration from it; move the configuration back with config_storage_revert.sh
 first.
 
-\fB--force\fP skips the cluster health check, but only when the node being
-removed does not answer; it does nothing for a node that answers. Even with
+\fB--force\fP skips the cluster health check, but only when the OpenBao node being
+removed does not answer; it does nothing for one that answers. Even with
 \fB--force\fP, when the controllers read their configuration from this raft
-cluster, the other nodes still need a leader and a quorum. \fB--purge\fP also deletes '/etc/openbao' and
-\&'/opt/openbao/data' on the removed host; without it they are left in place.
+cluster, the other OpenBao nodes still need a leader and a quorum.
+
+Without \fB--purge\fP the data directory '/opt/openbao/data' and
+\&'/etc/openbao/init.json' on the removed host are renamed with a
+\&'.discarded.<timestamp>' suffix, so that the host can be added again; they can
+be deleted later. With \fB--purge\fP they are deleted instead, together with
+what ClusterControl wrote under '/etc/openbao' (openbao.hcl, the TLS files and
+init.json); the files of the openbao package itself stay. If OpenBao could not be
+stopped on the host nothing is renamed or deleted: move '/opt/openbao/data' and
+\&'/etc/openbao/init.json' away by hand before adding the host again.
 .nf
 s9s pool-controllers --remove-openbao --nodes=10.16.186.191 --log
 s9s pool-controllers --remove-openbao --nodes=10.16.186.191:8300 --purge --log
@@ -423,19 +442,29 @@ s9s pool-controllers --remove-openbao --nodes=10.16.186.191 --force --log
 
 .TP
 .B --purge
-Used with \fB--remove-openbao\fP: deletes the removed node's OpenBao configuration
-and data ('/etc/openbao' and '/opt/openbao/data') on its host.
+Used with \fB--remove-openbao\fP: deletes the removed OpenBao node's data
+('/opt/openbao/data') and what ClusterControl wrote under '/etc/openbao'
+(openbao.hcl, the TLS files and init.json) on its host, instead of renaming the
+data directory and init.json '*.discarded.<timestamp>'. Nothing is deleted when
+OpenBao could not be stopped there.
+
+.TP
+.B --keep-firewall
+Used with \fB--add-openbao\fP: keeps the firewall of the target host and opens the
+OpenBao ports in it instead of disabling it. See \fB--add-openbao\fP.
 
 .TP
 .B --list-config-storage
 Lists the configuration/secret storage instances the controller knows about, one
 line per OpenBao node. Read-only. Supports \fB--print-json\fP and \fB--batch\fP.
 
-ROLE is the node's place in the raft cluster: \fBleader\fP, \fBstandby\fP,
-\fBsealed\fP, \fBunreachable\fP or \fBunknown\fP. STORAGE is the OpenBao storage
+ROLE is the OpenBao node's place in the raft cluster: \fBleader\fP, \fBstandby\fP,
+\fBjoining\fP, \fBsealed\fP, \fBunreachable\fP or \fBunknown\fP. \fBjoining\fP is
+an OpenBao node a setup job (\fB--add-openbao\fP) is still adding; it is left to
+that job for about 15 minutes at most. STORAGE is the OpenBao storage
 backend, \fBraft\fP or \fBfile\fP. Both are '-' when the controller is too old to
 report them, or the node was registered before they were recorded. With syntax highlighting on, the leader is printed in green and the
-sealed and unreachable nodes in red.
+sealed, unreachable and unknown OpenBao nodes in red.
 
 CREDENTIALS says where the controller keeps the ssh credentials of the node:
 \fBlocal\fP, a file such as '/etc/cmon.d/cmon_openbao_111.cnf', or a path in

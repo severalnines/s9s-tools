@@ -3476,6 +3476,7 @@ UtS9sRpcClient::testInstallOpenBao()
     options->m_options["openbao_namespace"]     = "tenant1";
     options->m_options["openbao_force_reinit"]  = true;
     options->m_options["no_install"]            = true;
+    options->m_options["keep_firewall"]         = true;
     options->m_options["os_user"]               = "alvaro";
     options->m_options["os_key_file"]           = "/home/alvaro/.ssh/id_ed25519";
 
@@ -3501,6 +3502,9 @@ UtS9sRpcClient::testInstallOpenBao()
     S9S_COMPARE(jobData["openbao_namespace"], "tenant1");
     S9S_COMPARE(jobData["openbao_force_reinit"], true);
     S9S_COMPARE(jobData["install_software"], false);
+    // --keep-firewall: the controller keeps the firewall and opens the OpenBao
+    // ports in it.
+    S9S_COMPARE(jobData["disable_firewall"], false);
     // The ssh login for the OpenBao host.
     S9S_COMPARE(jobData["ssh_user"], "alvaro");
     S9S_COMPARE(jobData["ssh_keyfile"], "/home/alvaro/.ssh/id_ed25519");
@@ -3526,6 +3530,9 @@ UtS9sRpcClient::testInstallOpenBao()
     S9S_VERIFY(!jobData.contains("openbao_namespace"));
     S9S_VERIFY(!jobData.contains("openbao_force_reinit"));
     S9S_VERIFY(!jobData.contains("install_software"));
+    // Like every other job that installs software on a host, the firewall is
+    // disabled unless --keep-firewall was given.
+    S9S_COMPARE(jobData["disable_firewall"], true);
 
     return true;
 }

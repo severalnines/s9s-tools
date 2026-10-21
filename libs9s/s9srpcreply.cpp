@@ -1698,11 +1698,12 @@ S9sRpcReply::printOpenBaoVersionList()
  * \endcode
  *
  * One line is printed per OpenBao node. ROLE is the node's place in the raft
- * cluster (leader, standby, sealed, unreachable or unknown) and STORAGE is the
- * OpenBao storage backend (raft or file); both are "-" when the controller is
- * too old to report them, or the node was registered before they were
- * recorded. The leader is printed in green and the sealed or
- * unreachable nodes in red when syntax highlighting is enabled.
+ * cluster (leader, standby, joining, sealed, unreachable or unknown) and
+ * STORAGE is the OpenBao storage backend (raft or file); both are "-" when the
+ * controller is too old to report them, or the node was registered before they
+ * were recorded. "joining" is a node a setup job is still adding (bounded at
+ * about 15 minutes). The leader is printed in green and the sealed,
+ * unreachable or unknown nodes in red when syntax highlighting is enabled.
  *
  * CREDENTIALS says where the controller keeps the ssh credentials of the
  * instance ("local", a file or a "vault:" path) or "key not found or
@@ -1780,7 +1781,8 @@ S9sRpcReply::printConfigStorageList()
             roleColorBegin = XTERM_COLOR_GREEN;
             roleColorEnd   = TERM_NORMAL;
         }
-        else if (syntaxHighlight && (role == "sealed" || role == "unreachable"))
+        else if (syntaxHighlight &&
+                (role == "sealed" || role == "unreachable" || role == "unknown"))
         {
             roleColorBegin = XTERM_COLOR_RED;
             roleColorEnd   = TERM_NORMAL;

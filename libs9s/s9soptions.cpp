@@ -9543,15 +9543,23 @@ S9sOptions::printHelpControllers()
 "                             --delete-services-bundle ran first or --force is given.\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
-"                             The first node bootstraps a raft cluster; a second or\n"
-"                             later node joins it after a connectivity check to the\n"
-"                             leader's API and cluster ports.\n"
+"                             The first OpenBao node bootstraps a raft cluster; a\n"
+"                             second or later one joins it after a connectivity\n"
+"                             check to the leader's API and cluster ports. The\n"
+"                             host's firewall is disabled unless --keep-firewall\n"
+"                             is given; with it the OpenBao ports (8200/8201) are\n"
+"                             opened instead.\n"
 "  --remove-openbao           To remove the OpenBao node given by --nodes from the\n"
-"                             raft cluster. --force skips the cluster health check\n"
-"                             when the node is unreachable, --purge also deletes the\n"
-"                             node's configuration and data. The node the cluster\n"
-"                             was bootstrapped on can only go last. Requires super\n"
-"                             admin privileges.\n"
+"                             raft cluster; OpenBao is stopped and disabled on its\n"
+"                             host. --force skips the cluster health check when the\n"
+"                             OpenBao node is unreachable. Without --purge its\n"
+"                             /opt/openbao/data and /etc/openbao/init.json are\n"
+"                             renamed *.discarded.<timestamp> (they can be deleted\n"
+"                             later); --purge deletes them together with what\n"
+"                             ClusterControl wrote under /etc/openbao. If OpenBao\n"
+"                             could not be stopped nothing is moved or deleted. The\n"
+"                             OpenBao node the cluster was bootstrapped on can only\n"
+"                             go last. Requires super admin privileges.\n"
 "  --list-config-storage      List the configuration/secret storage instances the\n"
 "                             controller knows about, one line per OpenBao node with\n"
 "                             its raft role (leader, standby, ...) and storage.\n"
@@ -9580,6 +9588,11 @@ S9sOptions::printHelpControllers()
 "  --openbao-package-path=PATH\n"
 "                             Install a package already staged on the target host\n"
 "                             instead of downloading one.\n"
+"  --keep-firewall            With --add-openbao: keep the host's firewall and open\n"
+"                             the OpenBao ports in it (default: keep_firewall in\n"
+"                             s9s.conf, else disable the firewall).\n"
+"  --purge                    With --remove-openbao: delete the OpenBao data and\n"
+"                             configuration instead of renaming them.\n"
 "  --openbao-force-reinit     Discard any existing OpenBao storage on the host and\n"
 "                             initialise a fresh instance. The previous data\n"
 "                             directory is renamed, not deleted, but its secrets\n"
@@ -20702,6 +20715,7 @@ S9sOptions::readOptionsControllers(
                     {"openbao-package-path", required_argument, 0, OptionOpenBaoPackagePath},
                     {"openbao-package",  required_argument, 0, OptionOpenBaoPackage},
                     {"openbao-force-reinit", no_argument, 0, OptionOpenBaoForceReinit},
+                    {"keep-firewall",    no_argument,       0, OptionKeepFirewall},
                     // Arguments when removing an OpenBao node
                     {"purge",            no_argument,       0, OptionPurge},
                     { "no-install",      no_argument,       0, OptionNoInstall },
@@ -21002,6 +21016,11 @@ S9sOptions::readOptionsControllers(
             case OptionPurge:
                 // --purge
                 m_options["purge"] = true;
+                break;
+
+            case OptionKeepFirewall:
+                // --keep-firewall
+                m_options["keep_firewall"] = true;
                 break;
 
             case OptionListConfigStorage:
