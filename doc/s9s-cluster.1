@@ -27,6 +27,8 @@ address) of the node should be specified using the \fB\-\-nodes\fR command
 line option.
 On a sharded ClickHouse cluster the \fB\-\-shard\-id\fR command line option
 selects the shard the new node becomes a replica of (shard 1 when omitted).
+The \fBshard_id\fR node property, as in \fBclickhouse://192.168.0.213?shard_id=2\fR,
+does the same; it must be the same for all nodes and agree with the option.
 
 .B EXAMPLE
 .nf

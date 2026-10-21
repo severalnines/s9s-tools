@@ -5988,6 +5988,55 @@ S9sRpcClient::reconfigureNode()
 
 
 
+// Zero when no ClickHouse node gives shard_id; the nodes must agree on it.
+static bool
+clickHouseShardOfNodes(
+        const S9sVariantList &hosts,
+        int                  &shardId)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    shardId = 0;
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode       node       = hosts[idx].toNode();
+        S9sVariantMap properties = node.toVariantMap();
+        S9sVariant    value;
+
+        if (node.protocol().toLower() != "clickhouse" ||
+                !properties.contains("shard_id"))
+            continue;
+
+        value = properties.at("shard_id");
+        if (!value.isInt() || value.toInt() < 1 ||
+                (shardId != 0 && shardId != value.toInt()))
+        {
+            PRINT_ERROR(
+                    "The shard_id of the node '%s' is not valid, it must be "
+                    "an integer from 1 and the same for all nodes.",
+                    STR(properties["hostname"].toString()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+
+        shardId = value.toInt();
+    }
+
+    if (shardId > 0 && options->shardId() > 0 && options->shardId() != shardId)
+    {
+        PRINT_ERROR(
+                "The --shard-id option and the shard_id node property name "
+                "different shards.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return true;
+}
+
 /**
  * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be the member of the cluster (variant list
@@ -6007,18 +6056,28 @@ S9sRpcClient::addNode(
     S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
+    S9sVariantList members;
+    int            nodeShardId;
     bool           retval;
-    
-    // The job_data describing the cluster.
-    if(hosts.size() == 1)
-        jobData["node"] = hosts[0].toVariantMap();
-    else
+
+    if (!clickHouseShardOfNodes(hosts, nodeShardId))
+        return false;
+
+    for (const auto & host : hosts)
     {
-        S9sVariantList nodes;
-        for(const auto & host : hosts)
-            nodes << host.toVariantMap();
-        jobData["nodes"] = nodes;
+        S9sVariantMap properties = host.toVariantMap();
+
+        if (nodeShardId > 0)
+            properties.erase("shard_id");
+
+        members << properties;
     }
+
+    // The job_data describing the cluster.
+    if(members.size() == 1)
+        jobData["node"] = members[0];
+    else
+        jobData["nodes"] = members;
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -6034,7 +6093,9 @@ S9sRpcClient::addNode(
     if(!options->masterDelay().empty())
         jobData["master_delay"] = options->masterDelay();
 
-    if (options->shardId() > 0)
+    if (nodeShardId > 0)
+        jobData["shard_id"] = nodeShardId;
+    else if (options->shardId() > 0)
         jobData["shard_id"] = options->shardId();
    
     // The jobspec describing the command.

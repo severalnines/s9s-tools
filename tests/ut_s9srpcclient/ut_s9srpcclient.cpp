@@ -133,6 +133,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetAlarmHistory,     retval);
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
+    PERFORM_TEST(testAddNodeClickHouseShardIdProperty, retval);
     PERFORM_TEST(testCreateClickHouseFlatUnchanged, retval);
     PERFORM_TEST(testCreateClickHouseShards, retval);
     PERFORM_TEST(testCreateClickHouseShardsRefused, retval);
@@ -1485,6 +1486,71 @@ UtS9sRpcClient::testAddNodeClickHouseShardId()
     }
 
     options->setExitStatus(S9sOptions::ExitOk);
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddNodeClickHouseShardIdProperty()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       jobData;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.13?shard_id=2");
+
+    S9S_VERIFY(client.createNode());
+
+    jobData = client.lastPayload()
+        .valueByPath("/job/job_spec/job_data").toVariantMap();
+    S9S_VERIFY(jobData["shard_id"].isInt());
+    S9S_COMPARE(jobData["shard_id"], 2);
+    S9S_COMPARE(jobData["node"]["hostname"].toString(), "10.0.2.13");
+    S9S_VERIFY(!jobData["node"].toVariantMap().contains("shard_id"));
+
+    // The same shard from the option and the property is accepted.
+    {
+        S9sRpcClientTester same;
+
+        options->m_options["shard_id"] = 2;
+        S9S_VERIFY(same.createNode());
+    }
+
+    const char *refused[] = {
+        "clickhouse://10.0.2.13?shard_id=0",
+        "clickhouse://10.0.2.13?shard_id=-1",
+        "clickhouse://10.0.2.13?shard_id=two",
+        "clickhouse://10.0.2.13?shard_id=1;clickhouse://10.0.2.14?shard_id=2" };
+
+    for (const char *nodes : refused)
+    {
+        S9sRpcClientTester rejected;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->setNodes(nodes);
+
+        S9S_VERIFY(!rejected.createNode());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(rejected.uri(0), "");
+        options->setExitStatus(S9sOptions::ExitOk);
+    }
+
+    {
+        S9sRpcClientTester conflict;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 3;
+        options->setNodes("clickhouse://10.0.2.13?shard_id=2");
+
+        S9S_VERIFY(!conflict.createNode());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(conflict.uri(0), "");
+        options->setExitStatus(S9sOptions::ExitOk);
+    }
+
     return true;
 }
 
