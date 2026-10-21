@@ -70,6 +70,13 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testGetAlarmHistory();
         bool testAddShardRejectsNonClickHouseNodes();
         bool testAddNodeClickHouseShardId();
+        void setClickHouseCreateOptions(const char *nodes);
+        bool createRefused(const char *nodes);
+        bool testCreateClickHouseFlatUnchanged();
+        bool testCreateClickHouseShards();
+        bool testCreateClickHouseShardsRefused();
+        bool testAddShardClickHouseWeight();
+        bool testAddShardClickHouseWeightRefused();
 
         bool testGetAllClusterInfo();
         bool testGetCluster();

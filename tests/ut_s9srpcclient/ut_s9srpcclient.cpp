@@ -133,6 +133,11 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetAlarmHistory,     retval);
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
+    PERFORM_TEST(testCreateClickHouseFlatUnchanged, retval);
+    PERFORM_TEST(testCreateClickHouseShards, retval);
+    PERFORM_TEST(testCreateClickHouseShardsRefused, retval);
+    PERFORM_TEST(testAddShardClickHouseWeight, retval);
+    PERFORM_TEST(testAddShardClickHouseWeightRefused, retval);
 
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
@@ -1480,6 +1485,332 @@ UtS9sRpcClient::testAddNodeClickHouseShardId()
     }
 
     options->setExitStatus(S9sOptions::ExitOk);
+    return true;
+}
+
+void
+UtS9sRpcClient::setClickHouseCreateOptions(
+        const char *nodes)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    options->m_options.clear();
+    options->m_options["cluster_type"]     = "clickhouse";
+    options->m_options["cluster_name"]     = "ch_001";
+    options->m_options["provider_version"] = "25.3";
+    options->setNodes(nodes);
+}
+
+bool
+UtS9sRpcClient::createRefused(
+        const char *nodes)
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    bool                refused;
+
+    setClickHouseCreateOptions(nodes);
+
+    refused = !client.createCluster()
+        && options->exitStatus() == S9sOptions::BadOptions
+        && client.uri(0) == "";
+
+    options->setExitStatus(S9sOptions::ExitOk);
+    return refused;
+}
+
+bool
+UtS9sRpcClient::testCreateClickHouseFlatUnchanged()
+{
+    S9sRpcClientTester  flat;
+    S9sRpcClientTester  withKeeper;
+    S9sVariantMap       spec;
+    S9sVariantMap       jobData;
+
+    setClickHouseCreateOptions(
+            "clickhouse://10.0.2.11;clickhouse://10.0.2.12");
+    S9S_VERIFY(flat.createCluster());
+    spec    = flat.lastPayload().valueByPath("/job/job_spec").toVariantMap();
+    jobData = spec["job_data"].toVariantMap();
+    jobData.erase("ssh_keyfile");
+    jobData.erase("ssh_user");
+    spec["job_data"] = jobData;
+    S9S_COMPARE(spec.toString(), "{\n"
+            "    \"command\": \"create_cluster\",\n"
+            "    \"job_data\": \n"
+            "    {\n"
+            "        \"cluster_name\": \"ch_001\",\n"
+            "        \"cluster_type\": \"clickhouse\",\n"
+            "        \"db_password\": \"\",\n"
+            "        \"db_user\": \"\",\n"
+            "        \"deploy_agents\": true,\n"
+            "        \"disable_firewall\": true,\n"
+            "        \"install_software\": true,\n"
+            "        \"nodes\": [ \n"
+            "        {\n"
+            "            \"class_name\": \"CmonClickHouseHost\",\n"
+            "            \"hostname\": \"10.0.2.11\"\n"
+            "        }, \n"
+            "        {\n"
+            "            \"class_name\": \"CmonClickHouseHost\",\n"
+            "            \"hostname\": \"10.0.2.12\"\n"
+            "        } ],\n"
+            "        \"type\": \"clickhouse\",\n"
+            "        \"version\": \"25.3\"\n"
+            "    }\n"
+            "}");
+
+    setClickHouseCreateOptions(
+            "clickhouse://10.0.2.11;clickhouse-keeper://10.0.9.14");
+    S9S_VERIFY(withKeeper.createCluster());
+    spec    = withKeeper.lastPayload()
+        .valueByPath("/job/job_spec").toVariantMap();
+    jobData = spec["job_data"].toVariantMap();
+    jobData.erase("ssh_keyfile");
+    jobData.erase("ssh_user");
+    spec["job_data"] = jobData;
+    S9S_COMPARE(spec.toString(), "{\n"
+            "    \"command\": \"create_cluster\",\n"
+            "    \"job_data\": \n"
+            "    {\n"
+            "        \"cluster_name\": \"ch_001\",\n"
+            "        \"cluster_type\": \"clickhouse\",\n"
+            "        \"db_password\": \"\",\n"
+            "        \"db_user\": \"\",\n"
+            "        \"deploy_agents\": true,\n"
+            "        \"disable_firewall\": true,\n"
+            "        \"install_software\": true,\n"
+            "        \"nodes\": [ \n"
+            "        {\n"
+            "            \"class_name\": \"CmonClickHouseHost\",\n"
+            "            \"hostname\": \"10.0.2.11\"\n"
+            "        }, \n"
+            "        {\n"
+            "            \"class_name\": \"CmonClickHouseHost\",\n"
+            "            \"hostname\": \"10.0.9.14\",\n"
+            "            \"nodetype\": \"clickhouse_keeper\"\n"
+            "        } ],\n"
+            "        \"type\": \"clickhouse\",\n"
+            "        \"version\": \"25.3\"\n"
+            "    }\n"
+            "}");
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateClickHouseShards()
+{
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+    S9sVariantList      shards;
+    S9sVariantList      keepers;
+    S9sVariantList      nodes;
+
+    setClickHouseCreateOptions(
+            "clickhouse://10.0.2.21?shard_id=2&weight=5;"
+            "clickhouse://10.0.2.11?shard_id=1&weight=2;"
+            "clickhouse://10.0.2.22?shard_id=2&weight=5;"
+            "clickhouse://10.0.2.12?shard_id=1&weight=2;"
+            "clickhouse-keeper://10.0.9.1;"
+            "clickhouse-keeper://10.0.9.2;"
+            "clickhouse-keeper://10.0.9.3");
+
+    S9S_VERIFY(client.createCluster());
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "create_cluster");
+
+    jobData = payload.valueByPath("/job/job_spec/job_data").toVariantMap();
+    S9S_VERIFY(!jobData.contains("nodes"));
+    S9S_COMPARE(jobData["cluster_type"].toString(), "clickhouse");
+
+    shards = jobData["shards"].toVariantList();
+    S9S_COMPARE(shards.size(), 2);
+
+    S9S_VERIFY(shards[0]["weight"].isInt());
+    S9S_COMPARE(shards[0]["weight"], 2);
+    nodes = shards[0]["nodes"].toVariantList();
+    S9S_COMPARE(nodes.size(), 2);
+    S9S_COMPARE(nodes[0]["hostname"].toString(), "10.0.2.11");
+    S9S_COMPARE(nodes[1]["hostname"].toString(), "10.0.2.12");
+    S9S_COMPARE(nodes[0]["class_name"].toString(), "CmonClickHouseHost");
+    S9S_VERIFY(!nodes[0].toVariantMap().contains("shard_id"));
+    S9S_VERIFY(!nodes[0].toVariantMap().contains("weight"));
+
+    S9S_VERIFY(shards[1]["weight"].isInt());
+    S9S_COMPARE(shards[1]["weight"], 5);
+    nodes = shards[1]["nodes"].toVariantList();
+    S9S_COMPARE(nodes.size(), 2);
+    S9S_COMPARE(nodes[0]["hostname"].toString(), "10.0.2.21");
+    S9S_COMPARE(nodes[1]["hostname"].toString(), "10.0.2.22");
+
+    keepers = jobData["keepers"].toVariantList();
+    S9S_COMPARE(keepers.size(), 3);
+    S9S_COMPARE(keepers[0]["hostname"].toString(), "10.0.9.1");
+    S9S_COMPARE(keepers[2]["hostname"].toString(), "10.0.9.3");
+    S9S_COMPARE(keepers[0]["nodetype"].toString(), "clickhouse_keeper");
+
+    // Shards that give no weight stay without one, cmon defaults it to 1.
+    {
+        S9sRpcClientTester noWeight;
+
+        setClickHouseCreateOptions(
+                "clickhouse://10.0.2.11?shard_id=1;"
+                "clickhouse://10.0.2.21?shard_id=2");
+        S9S_VERIFY(noWeight.createCluster());
+
+        jobData = noWeight.lastPayload()
+            .valueByPath("/job/job_spec/job_data").toVariantMap();
+        shards = jobData["shards"].toVariantList();
+        S9S_COMPARE(shards.size(), 2);
+        S9S_VERIFY(!shards[0].toVariantMap().contains("weight"));
+        S9S_VERIFY(!jobData.contains("keepers"));
+    }
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateClickHouseShardsRefused()
+{
+    // A gap in the shard numbers.
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1;"
+            "clickhouse://10.0.2.13?shard_id=3"));
+
+    // Shard numbers start at 1.
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=0;"
+            "clickhouse://10.0.2.12?shard_id=1"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=-1"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=one"));
+
+    // A data node without shard_id once any node gives shard_id or weight.
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1;clickhouse://10.0.2.12"));
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?weight=2;clickhouse://10.0.2.12"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?weight=2"));
+
+    // Nodes of one Shard disagree on the weight.
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1&weight=2;"
+            "clickhouse://10.0.2.12?shard_id=1&weight=3"));
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1&weight=2;"
+            "clickhouse://10.0.2.12?shard_id=1"));
+
+    // The weight is an integer from 1 to 2147483647.
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=0"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=-2"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=1.5"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=2.0"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=heavy"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=true"));
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1&weight=2147483648"));
+
+    // Keepers belong to no Shard.
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1;"
+            "clickhouse-keeper://10.0.9.1?shard_id=1"));
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1;"
+            "clickhouse-keeper://10.0.9.1?weight=2"));
+
+    // Sharding properties apply to ClickHouse nodes only.
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1;mysql://10.0.3.1"));
+
+    // The accepted maximum.
+    {
+        S9sRpcClientTester client;
+        S9sVariantList     shards;
+
+        setClickHouseCreateOptions(
+                "clickhouse://10.0.2.11?shard_id=1&weight=2147483647");
+        S9S_VERIFY(client.createCluster());
+        shards = client.lastPayload().valueByPath(
+                "/job/job_spec/job_data/shards").toVariantList();
+        S9S_COMPARE(shards[0]["weight"], 2147483647);
+    }
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddShardClickHouseWeight()
+{
+    S9sOptions         *options = S9sOptions::instance();
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantList      nodes;
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes(
+            "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12?weight=3");
+
+    S9S_VERIFY(client.addShard());
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_VERIFY(payload.valueByPath(JOB_DATA "weight").isInt());
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "weight"), 3);
+
+    nodes = payload.valueByPath(JOB_DATA "nodes").toVariantList();
+    S9S_COMPARE(nodes.size(), 2);
+    S9S_COMPARE(nodes[0]["hostname"].toString(), "10.0.2.11");
+    S9S_VERIFY(!nodes[0].toVariantMap().contains("weight"));
+
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11;clickhouse://10.0.2.12");
+
+    S9sRpcClientTester withoutWeight;
+    S9S_VERIFY(withoutWeight.addShard());
+    S9S_VERIFY(!withoutWeight.lastPayload()
+            .valueByPath("/job/job_spec/job_data").toVariantMap()
+            .contains("weight"));
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testAddShardClickHouseWeightRefused()
+{
+    S9sOptions *options = S9sOptions::instance();
+    const char *refused[] = {
+        "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12?weight=4",
+        "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12",
+        "clickhouse://10.0.2.11?weight=0",
+        "clickhouse://10.0.2.11?weight=-1",
+        "clickhouse://10.0.2.11?weight=1.5",
+        "clickhouse://10.0.2.11?weight=two",
+        "clickhouse://10.0.2.11?weight=true",
+        "clickhouse://10.0.2.11?weight=2147483648" };
+
+    for (const char *nodes : refused)
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->setNodes(nodes);
+
+        S9S_VERIFY(!client.addShard());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(client.uri(0), "");
+        options->setExitStatus(S9sOptions::ExitOk);
+    }
+
     return true;
 }
 
