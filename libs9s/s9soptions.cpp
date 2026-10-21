@@ -572,6 +572,8 @@ enum S9sOptionType
     OptionUpdateCmon,
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
+    OptionRemoveOpenBao,
+    OptionPurge,
     OptionListConfigStorage,
     OptionListOpenBaoVersions,
     OptionOpenBaoMount,
@@ -5966,6 +5968,26 @@ S9sOptions::isAddOpenBao() const
 }
 
 /**
+ * \returns true if the "remove_openbao" job is requested by providing the
+ *   --remove-openbao command line option on the "pool-controllers" subcommand.
+ */
+bool
+S9sOptions::isRemoveOpenBao() const
+{
+    return getBool("remove_openbao");
+}
+
+/**
+ * \returns true if the --purge command line option was provided: the removed
+ *   OpenBao node's configuration and data are deleted from its host.
+ */
+bool
+S9sOptions::purge() const
+{
+    return getBool("purge");
+}
+
+/**
  * \returns true if the --list-config-storage command line option was provided.
  */
 bool
@@ -9521,8 +9543,26 @@ S9sOptions::printHelpControllers()
 "                             --delete-services-bundle ran first or --force is given.\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
 "  --add-openbao              To install an OpenBao instance on the host given by --nodes.\n"
+"                             The first OpenBao node bootstraps a raft cluster; a\n"
+"                             second or later one joins it after a connectivity\n"
+"                             check to the leader's API and cluster ports. The\n"
+"                             host's firewall is disabled unless --keep-firewall\n"
+"                             is given; with it the OpenBao ports (8200/8201) are\n"
+"                             opened instead.\n"
+"  --remove-openbao           To remove the OpenBao node given by --nodes from the\n"
+"                             raft cluster; OpenBao is stopped and disabled on its\n"
+"                             host. --force skips the cluster health check when the\n"
+"                             OpenBao node is unreachable. Without --purge its\n"
+"                             /opt/openbao/data and /etc/openbao/init.json are\n"
+"                             renamed *.discarded.<timestamp> (they can be deleted\n"
+"                             later); --purge deletes them together with what\n"
+"                             ClusterControl wrote under /etc/openbao. If OpenBao\n"
+"                             could not be stopped nothing is moved or deleted. The\n"
+"                             OpenBao node the cluster was bootstrapped on can only\n"
+"                             go last. Requires super admin privileges.\n"
 "  --list-config-storage      List the configuration/secret storage instances the\n"
-"                             controller knows about.\n"
+"                             controller knows about, one line per OpenBao node with\n"
+"                             its raft role (leader, standby, ...) and storage.\n"
 "  --list-openbao-versions    List the available OpenBao versions.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --node=HOSTNAME             To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
@@ -9548,6 +9588,11 @@ S9sOptions::printHelpControllers()
 "  --openbao-package-path=PATH\n"
 "                             Install a package already staged on the target host\n"
 "                             instead of downloading one.\n"
+"  --keep-firewall            With --add-openbao: keep the host's firewall and open\n"
+"                             the OpenBao ports in it (default: keep_firewall in\n"
+"                             s9s.conf, else disable the firewall).\n"
+"  --purge                    With --remove-openbao: delete the OpenBao data and\n"
+"                             configuration instead of renaming them.\n"
 "  --openbao-force-reinit     Discard any existing OpenBao storage on the host and\n"
 "                             initialise a fresh instance. The previous data\n"
 "                             directory is renamed, not deleted, but its secrets\n"
@@ -20687,6 +20732,7 @@ S9sOptions::readOptionsControllers(
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
+                    {"remove-openbao",   no_argument, 0,       OptionRemoveOpenBao},
                     {"list-config-storage", no_argument, 0,    OptionListConfigStorage},
                     {"list-openbao-versions", no_argument, 0,  OptionListOpenBaoVersions},
                     {"force",                    no_argument,       0, OptionForce},
@@ -20708,6 +20754,9 @@ S9sOptions::readOptionsControllers(
                     {"openbao-package-path", required_argument, 0, OptionOpenBaoPackagePath},
                     {"openbao-package",  required_argument, 0, OptionOpenBaoPackage},
                     {"openbao-force-reinit", no_argument, 0, OptionOpenBaoForceReinit},
+                    {"keep-firewall",    no_argument,       0, OptionKeepFirewall},
+                    // Arguments when removing an OpenBao node
+                    {"purge",            no_argument,       0, OptionPurge},
                     { "no-install",      no_argument,       0, OptionNoInstall },
                     
                     // Job Related Options
@@ -20998,6 +21047,21 @@ S9sOptions::readOptionsControllers(
                 m_options["add_openbao"] = true;
                 break;
 
+            case OptionRemoveOpenBao:
+                // --remove-openbao
+                m_options["remove_openbao"] = true;
+                break;
+
+            case OptionPurge:
+                // --purge
+                m_options["purge"] = true;
+                break;
+
+            case OptionKeepFirewall:
+                // --keep-firewall
+                m_options["keep_firewall"] = true;
+                break;
+
             case OptionListConfigStorage:
                 // --list-config-storage
                 m_options["list_config_storage"] = true;
@@ -21207,6 +21271,9 @@ S9sOptions::checkOptionsControllers()
     if (isAddOpenBao())
         countOptions++;
 
+    if (isRemoveOpenBao())
+        countOptions++;
+
     if (isListConfigStorage())
         countOptions++;
 
@@ -21282,6 +21349,20 @@ S9sOptions::checkOptionsControllers()
     if (isAddOpenBao() && nodes().size() != 1u)
     {
         m_errorMessage = "The --nodes option must specify exactly one host for --add-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isRemoveOpenBao() && nodes().size() != 1u)
+    {
+        m_errorMessage = "The --nodes option must specify exactly one host for --remove-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (purge() && !isRemoveOpenBao())
+    {
+        m_errorMessage = "The --purge option can only be used with --remove-openbao.";
         m_exitStatus = BadOptions;
         return false;
     }

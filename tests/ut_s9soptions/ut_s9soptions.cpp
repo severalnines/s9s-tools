@@ -76,6 +76,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testServicesBundleOptionErrors, retval);
     PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testAddOpenBao, retval);
+    PERFORM_TEST(testRemoveOpenBao, retval);
     PERFORM_TEST(testListOpenBaoOperations, retval);
     PERFORM_TEST(testPoolModePrerequisites, retval);
     PERFORM_TEST(testVirtualRouterId, retval);
@@ -1415,6 +1416,103 @@ UtS9sOptions::testAddOpenBao()
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing the --remove-openbao option and its --force and --purge flags on the
+ * pool-controllers subcommand.
+ */
+bool
+UtS9sOptions::testRemoveOpenBao()
+{
+    S9sOptions *options;
+
+    // Every flag given.
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--remove-openbao",
+                            "--nodes=10.16.186.3:8300",
+                            "--force",
+                            "--purge",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isRemoveOpenBao());
+    S9S_VERIFY(!options->isAddOpenBao());
+    S9S_COMPARE(options->nodes().size(), 1);
+    S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.16.186.3");
+    S9S_COMPARE(options->nodes()[0].toNode().port(), 8300);
+    S9S_VERIFY(options->force());
+    S9S_VERIFY(options->purge());
+
+    // No flag given.
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--remove-openbao",
+                            "--nodes=10.16.186.3",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isRemoveOpenBao());
+    S9S_VERIFY(!options->force());
+    S9S_VERIFY(!options->purge());
+
+    // The host is mandatory, and only one.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--remove-openbao",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--remove-openbao",
+                            "--nodes=10.16.186.3;10.16.186.4",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+
+    // --purge is meaningless without --remove-openbao.
+    const char *argv5[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--nodes=10.16.186.3",
+                            "--purge",
+                            nullptr };
+    int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc5, (char **)argv5));
+
+    // Only one main option at a time.
+    const char *argv6[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-openbao",
+                            "--remove-openbao",
+                            "--nodes=10.16.186.3",
+                            nullptr };
+    int         argc6   = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc6, (char **)argv6));
 
     S9sOptions::uninit();
     return true;

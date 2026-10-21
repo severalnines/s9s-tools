@@ -390,6 +390,7 @@ class S9sRpcClient
         bool listOpenBaoVersions(S9sOptions *options);
         bool setMaxClustersCapacity(S9sOptions *options);
         bool installOpenBao(S9sOptions *options);
+        bool removeOpenBao(S9sOptions *options);
 
         /*
          * Requests related to logical replication
