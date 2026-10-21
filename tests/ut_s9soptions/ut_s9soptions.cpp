@@ -49,6 +49,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigFile01,  retval);
     PERFORM_TEST(testConfigFile02,  retval);
     PERFORM_TEST(testController,    retval);
+    PERFORM_TEST(testRpcTlsAllModes, retval);
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testAlarmListHistory, retval);
     PERFORM_TEST(testReadOptions02, retval);
@@ -221,6 +222,88 @@ UtS9sOptions::testController()
     return true;
 }
 
+
+/**
+ * Checks that every mode whose option table declares --controller also
+ * accepts --rpc-tls and turns it into useTls().
+ *
+ * A mode needs the option in two places -- the long_options table and a
+ * "case OptionRpcTls:" in its switch. With only the first one getopt returns
+ * the option and the switch falls into default:, so the command line fails
+ * with "Unkown option 1000." This loop caught maintenance, metatype and
+ * container missing the case.
+ *
+ * The URL is https, the way the pool controller tests pass it. useTls() is
+ * true for an https URL on its own, so the "rpc_tls" option is checked too.
+ */
+bool
+UtS9sOptions::testRpcTlsAllModes()
+{
+    // One mode per reader declaring --controller, with a main option (and
+    // the one extra option some need) that passes that mode's
+    // checkOptions*().
+    const char *modes[][3] =
+    {
+        { "account",           "--list",          nullptr          },
+        { "alarm",             "--list",          nullptr          },
+        { "backup",            "--list",          nullptr          },
+        { "cloud-credentials", "--list",          nullptr          },
+        { "cluster",           "--list",          nullptr          },
+        { "container",         "--list",          nullptr          },
+        { "controller",        "--list",          nullptr          },
+        { "dbschema",          "--dbgrowth",      "--cluster-id=1" },
+        { "dbversions",        "--cluster-types", nullptr          },
+        { "event",             "--list",          nullptr          },
+        { "group",             "--list",          nullptr          },
+        { "job",               "--list",          nullptr          },
+        { "log",               "--list",          nullptr          },
+        { "maintenance",       "--list",          nullptr          },
+        { "metatype",          "--list",          nullptr          },
+        { "node",              "--list",          nullptr          },
+        { "pool-controllers",  "--list",          nullptr          },
+        { "process",           "--list",          nullptr          },
+        { "replication",       "--list",          nullptr          },
+        { "report",            "--list",          nullptr          },
+        { "script",            "--tree",          nullptr          },
+        { "server",            "--list",          nullptr          },
+        { "sheet",             "--list",          nullptr          },
+        { "tree",              "--list",          nullptr          },
+        { "user",              "--list",          nullptr          },
+        { "watchlists",        "--list",          nullptr          },
+    };
+    S9sString   failed;
+
+    for (const auto &mode : modes)
+    {
+        S9sOptions *options;
+        const char *argv[] =
+        {
+            "/bin/s9s", mode[0], mode[1],
+            "--controller=https://127.0.0.1:9501", "--rpc-tls",
+            mode[2], nullptr
+        };
+        int         argc = mode[2] == nullptr ? 5 : 6;
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+
+        if (!options->readOptions(&argc, (char **)argv))
+        {
+            failed += S9sString(mode[0]) + " " + mode[1] + ": " +
+                options->errorString() + "\n";
+        } else if (!options->useTls() ||
+                !options->m_options["rpc_tls"].toBoolean())
+        {
+            failed += S9sString(mode[0]) + " " + mode[1] +
+                ": --rpc-tls was not stored\n";
+        }
+    }
+
+    S9S_COMPARE(failed, "");
+
+    S9sOptions::uninit();
+    return true;
+}
 
 /**
  * Checking the readOptions() method with some command line options.

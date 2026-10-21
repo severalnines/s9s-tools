@@ -15435,6 +15435,11 @@ S9sOptions::readOptionsMaintenance(
                 setController(optarg);
                 break;
 
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
+                break;
+
             case 'l':
                 // -l, --long
                 m_options["long"] = true;
@@ -15695,6 +15700,11 @@ S9sOptions::readOptionsMetaType(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
                 break;
 
             case 'p':
@@ -17453,6 +17463,11 @@ S9sOptions::readOptionsContainer(
             case 'c':
                 // -c, --controller=URL
                 setController(optarg);
+                break;
+
+            case OptionRpcTls:
+                // --rpc-tls
+                m_options["rpc_tls"] = true;
                 break;
 
             case 'l':
