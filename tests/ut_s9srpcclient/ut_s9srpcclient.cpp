@@ -138,6 +138,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateClickHouseFlatUnchanged, retval);
     PERFORM_TEST(testCreateClickHouseShards, retval);
     PERFORM_TEST(testCreateClickHouseShardsRefused, retval);
+    PERFORM_TEST(testCreateClickHouseKeeperShardProperties, retval);
     PERFORM_TEST(testAddShardClickHouseWeight, retval);
     PERFORM_TEST(testAddShardClickHouseWeightRefused, retval);
 
@@ -1876,6 +1877,18 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
                 "/job/job_spec/job_data/shards").toVariantList();
         S9S_COMPARE(shards[0]["weight"], 2147483647);
     }
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testCreateClickHouseKeeperShardProperties()
+{
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11;clickhouse-keeper://10.0.9.1?shard_id=1"));
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11;clickhouse-keeper://10.0.9.1?weight=2"));
+    S9S_VERIFY(createRefused("clickhouse-keeper://10.0.9.1?shard_id=1"));
 
     return true;
 }

@@ -5230,6 +5230,35 @@ sharedClickHouseWeight(
 }
 
 static bool
+checkClickHouseKeepers(
+        const S9sVariantList &hosts)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode       node       = hosts[idx].toNode();
+        S9sVariantMap properties = node.toVariantMap();
+
+        if (node.protocol().toLower() != "clickhouse-keeper")
+            continue;
+
+        if (properties.contains("shard_id") || properties.contains("weight"))
+        {
+            PRINT_ERROR(
+                    "The keeper node '%s' belongs to no shard, it can not "
+                    "have shard_id or weight.",
+                    STR(properties["hostname"].toString()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool
 hasClickHouseShardProperties(
         const S9sVariantList &hosts)
 {
@@ -5266,17 +5295,6 @@ composeClickHouseShards(
 
         if (protocol == "clickhouse-keeper")
         {
-            if (properties.contains("shard_id") ||
-                    properties.contains("weight"))
-            {
-                PRINT_ERROR(
-                        "The keeper node '%s' belongs to no shard, it can not "
-                        "have shard_id or weight.", STR(hostName));
-
-                options->setExitStatus(S9sOptions::BadOptions);
-                return false;
-            }
-
             keepers << properties;
         } else if (protocol == "clickhouse")
         {
@@ -5373,6 +5391,9 @@ S9sRpcClient::createClickHouseCluster(
         PRINT_ERROR("Missing node list while creating ClickHouse cluster.");
         return false;
     }
+
+    if (!checkClickHouseKeepers(hosts))
+        return false;
 
     if (hasClickHouseShardProperties(hosts))
     {

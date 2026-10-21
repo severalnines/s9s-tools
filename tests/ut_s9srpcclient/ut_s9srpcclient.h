@@ -77,6 +77,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateClickHouseFlatUnchanged();
         bool testCreateClickHouseShards();
         bool testCreateClickHouseShardsRefused();
+        bool testCreateClickHouseKeeperShardProperties();
         bool testAddShardClickHouseWeight();
         bool testAddShardClickHouseWeightRefused();
 
