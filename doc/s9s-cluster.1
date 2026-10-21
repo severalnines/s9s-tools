@@ -48,7 +48,9 @@ The new shard uses the Keeper ensemble the cluster already has; Keeper
 nodes cannot be part of the list. ClickHouse does not rebalance existing data,
 rows written before the shard was added stay on the shards that hold them.
 The nodes can give the \fBweight\fR property, the same for all of them, to set
-the weight of the new shard; it is 1 when omitted. The schema is copied to the
+the weight of the new shard, an integer from 1 to 1000; it is 1 when omitted.
+The controller refuses a weight that makes the weights of all shards of the
+cluster add up to more than 10000. The schema is copied to the
 new shard but the users are not, so users that query Distributed tables have
 to be created on it.
 
@@ -155,8 +157,9 @@ A ClickHouse cluster with several shards is created in one job by giving every
 the numbers from 1 to N without gaps, and every shard needs at least one node;
 the nodes of one shard are its replicas. The optional \fBweight\fR property
 sets the shard's weight, the share of the rows written through a Distributed
-table that the shard receives. It is an integer from 1 to 2147483647, the same
-for all nodes of a shard, and 1 when omitted. When any \fBclickhouse://\fR
+table that the shard receives. It is an integer from 1 to 1000, the same
+for all nodes of a shard, and 1 when omitted; the weights of all shards of a
+cluster add up to at most 10000. When any \fBclickhouse://\fR
 node has \fBshard_id\fR or \fBweight\fR, every one of them needs
 \fBshard_id\fR. Dedicated Keeper servers are given as
 \fBclickhouse-keeper://\fR nodes, which belong to no shard and take neither

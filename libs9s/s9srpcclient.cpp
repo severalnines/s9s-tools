@@ -48,6 +48,8 @@ namespace
 {
     const S9sString AWS_CLOUD_PROVIDER = "aws";
     const S9sString S3_CLOUD_SERVICE_PROVIDER  = "s3";
+    const int       MAX_CLICKHOUSE_SHARD_WEIGHT = 1000;
+    const int       MAX_CLICKHOUSE_WEIGHT_TOTAL = 10000;
 }
 
 /**
@@ -5175,7 +5177,6 @@ decimalNodeProperty(
     return true;
 }
 
-// All nodes give the same weight or none gives one; an unset weight is left invalid.
 static bool
 sharedClickHouseWeight(
         const S9sVariantList &nodes,
@@ -5196,12 +5197,14 @@ sharedClickHouseWeight(
 
         if (properties.contains("weight"))
         {
-            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 1)
+            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 1 ||
+                    parsed > MAX_CLICKHOUSE_SHARD_WEIGHT)
             {
                 PRINT_ERROR(
                         "The weight of the node '%s' is not valid, it must be "
-                        "an integer from 1 to 2147483647.",
-                        STR(properties["hostname"].toString()));
+                        "an integer from 1 to %d.",
+                        STR(properties["hostname"].toString()),
+                        MAX_CLICKHOUSE_SHARD_WEIGHT);
 
                 options->setExitStatus(S9sOptions::BadOptions);
                 return false;
@@ -5285,6 +5288,7 @@ composeClickHouseShards(
 {
     S9sOptions                  *options = S9sOptions::instance();
     std::map<int, S9sVariantList> groups;
+    int                          weightTotal = 0;
 
     for (uint idx = 0u; idx < hosts.size(); ++idx)
     {
@@ -5366,8 +5370,19 @@ composeClickHouseShards(
         if (weight.isInt())
             shard["weight"] = weight;
 
+        weightTotal += weight.isInt() ? weight.toInt() : 1;
         shard["nodes"] = nodes;
         shards << shard;
+    }
+
+    if (weightTotal > MAX_CLICKHOUSE_WEIGHT_TOTAL)
+    {
+        PRINT_ERROR(
+                "The shard weights add up to %d, at most %d are allowed.",
+                weightTotal, MAX_CLICKHOUSE_WEIGHT_TOTAL);
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
     }
 
     return true;
@@ -6042,7 +6057,6 @@ S9sRpcClient::reconfigureNode()
 
 
 
-// Zero when no ClickHouse node gives shard_id; the nodes must agree on it.
 static bool
 clickHouseShardOfNodes(
         const S9sVariantList &hosts,

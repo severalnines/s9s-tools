@@ -1511,7 +1511,6 @@ UtS9sRpcClient::testAddNodeClickHouseShardIdProperty()
     S9S_COMPARE(jobData["node"]["hostname"].toString(), "10.0.2.13");
     S9S_VERIFY(!jobData["node"].toVariantMap().contains("shard_id"));
 
-    // The same shard from the option and the property is accepted.
     {
         S9sRpcClientTester same;
 
@@ -1816,26 +1815,22 @@ UtS9sRpcClient::testCreateClickHouseShards()
 bool
 UtS9sRpcClient::testCreateClickHouseShardsRefused()
 {
-    // A gap in the shard numbers.
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=1;"
             "clickhouse://10.0.2.13?shard_id=3"));
 
-    // Shard numbers start at 1.
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=0;"
             "clickhouse://10.0.2.12?shard_id=1"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=-1"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=one"));
 
-    // A data node without shard_id once any node gives shard_id or weight.
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=1;clickhouse://10.0.2.12"));
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?weight=2;clickhouse://10.0.2.12"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?weight=2"));
 
-    // Nodes of one Shard disagree on the weight.
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=1&weight=2;"
             "clickhouse://10.0.2.12?shard_id=1&weight=3"));
@@ -1843,7 +1838,6 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
             "clickhouse://10.0.2.11?shard_id=1&weight=2;"
             "clickhouse://10.0.2.12?shard_id=1"));
 
-    // The weight is an integer from 1 to 2147483647.
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=0"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=-2"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=1.5"));
@@ -1852,8 +1846,10 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=true"));
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=1&weight=2147483648"));
+    S9S_VERIFY(createRefused(
+            "clickhouse://10.0.2.11?shard_id=1&weight=2147483647"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=1001"));
 
-    // Keepers belong to no Shard.
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=1;"
             "clickhouse-keeper://10.0.9.1?shard_id=1"));
@@ -1861,21 +1857,40 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
             "clickhouse://10.0.2.11?shard_id=1;"
             "clickhouse-keeper://10.0.9.1?weight=2"));
 
-    // Sharding properties apply to ClickHouse nodes only.
     S9S_VERIFY(createRefused(
             "clickhouse://10.0.2.11?shard_id=1;mysql://10.0.3.1"));
 
-    // The accepted maximum.
     {
         S9sRpcClientTester client;
         S9sVariantList     shards;
 
         setClickHouseCreateOptions(
-                "clickhouse://10.0.2.11?shard_id=1&weight=2147483647");
+                "clickhouse://10.0.2.11?shard_id=1&weight=1000");
         S9S_VERIFY(client.createCluster());
         shards = client.lastPayload().valueByPath(
                 "/job/job_spec/job_data/shards").toVariantList();
-        S9S_COMPARE(shards[0]["weight"], 2147483647);
+        S9S_COMPARE(shards[0]["weight"], 1000);
+    }
+
+    {
+        S9sString nodes;
+
+        for (int shardId = 1; shardId <= 10; ++shardId)
+        {
+            nodes += S9sString("clickhouse://10.0.2.") +
+                std::to_string(shardId) + "?shard_id=" +
+                std::to_string(shardId) + "&weight=1000;";
+        }
+
+        {
+            S9sRpcClientTester client;
+
+            setClickHouseCreateOptions(STR(nodes));
+            S9S_VERIFY(client.createCluster());
+        }
+
+        nodes += "clickhouse://10.0.2.11?shard_id=11";
+        S9S_VERIFY(createRefused(STR(nodes)));
     }
 
     return true;
@@ -1929,6 +1944,14 @@ UtS9sRpcClient::testAddShardClickHouseWeight()
             .valueByPath("/job/job_spec/job_data").toVariantMap()
             .contains("weight"));
 
+    S9sRpcClientTester maxWeight;
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11?weight=1000");
+    S9S_VERIFY(maxWeight.addShard());
+    S9S_COMPARE(
+            maxWeight.lastPayload().valueByPath(JOB_DATA "weight"), 1000);
+
     return true;
 }
 
@@ -1944,7 +1967,9 @@ UtS9sRpcClient::testAddShardClickHouseWeightRefused()
         "clickhouse://10.0.2.11?weight=1.5",
         "clickhouse://10.0.2.11?weight=two",
         "clickhouse://10.0.2.11?weight=true",
-        "clickhouse://10.0.2.11?weight=2147483648" };
+        "clickhouse://10.0.2.11?weight=2147483648",
+        "clickhouse://10.0.2.11?weight=2147483647",
+        "clickhouse://10.0.2.11?weight=1001" };
 
     for (const char *nodes : refused)
     {
