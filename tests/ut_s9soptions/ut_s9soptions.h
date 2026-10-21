@@ -31,6 +31,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testConfigFile01();
         bool testConfigFile02();
         bool testController();
+        bool testRpcTlsAllModes();
         bool testReadOptions01();
         bool testAlarmListHistory();
         bool testReadOptions02();
