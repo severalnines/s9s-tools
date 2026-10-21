@@ -71,6 +71,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testAddShardRejectsNonClickHouseNodes();
         bool testAddNodeClickHouseShardId();
         bool testAddNodeClickHouseShardIdProperty();
+        bool testClickHouseLeadingZeroProperties();
         void setClickHouseCreateOptions(const char *nodes);
         bool createRefused(const char *nodes);
         bool testCreateClickHouseFlatUnchanged();

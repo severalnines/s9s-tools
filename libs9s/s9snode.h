@@ -48,6 +48,8 @@ class S9sNode : public S9sObject
         const S9sCluster &cluster() const;
 
         S9sString protocol() const { return m_url.protocol(); };
+        S9sString rawUrlProperty(const S9sString &key) const
+            { return m_url.rawProperty(key); };
         S9sString className() const;
 
         S9sString 

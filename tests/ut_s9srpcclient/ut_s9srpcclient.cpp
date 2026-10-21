@@ -134,6 +134,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
     PERFORM_TEST(testAddNodeClickHouseShardIdProperty, retval);
+    PERFORM_TEST(testClickHouseLeadingZeroProperties, retval);
     PERFORM_TEST(testCreateClickHouseFlatUnchanged, retval);
     PERFORM_TEST(testCreateClickHouseShards, retval);
     PERFORM_TEST(testCreateClickHouseShardsRefused, retval);
@@ -1549,6 +1550,75 @@ UtS9sRpcClient::testAddNodeClickHouseShardIdProperty()
         S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
         S9S_COMPARE(conflict.uri(0), "");
         options->setExitStatus(S9sOptions::ExitOk);
+    }
+
+    return true;
+}
+
+bool
+UtS9sRpcClient::testClickHouseLeadingZeroProperties()
+{
+    S9sOptions     *options = S9sOptions::instance();
+    S9sVariantList  shards;
+    S9sVariantMap   jobData;
+
+    {
+        S9sRpcClientTester client;
+
+        setClickHouseCreateOptions(
+                "clickhouse://10.0.2.11?shard_id=01&weight=010;"
+                "clickhouse://10.0.2.12?shard_id=2&weight=09;"
+                "clickhouse://10.0.2.13?shard_id=3&weight=0100");
+        S9S_VERIFY(client.createCluster());
+
+        shards = client.lastPayload().valueByPath(
+                "/job/job_spec/job_data/shards").toVariantList();
+        S9S_COMPARE(shards.size(), 3);
+        S9S_COMPARE(shards[0]["weight"], 10);
+        S9S_COMPARE(shards[1]["weight"], 9);
+        S9S_COMPARE(shards[2]["weight"], 100);
+        S9S_COMPARE(shards[0]["nodes"][0]["hostname"].toString(), "10.0.2.11");
+    }
+
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=02"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=00"));
+
+    const struct { const char *nodes; int weight; } addShard[] = {
+        { "clickhouse://10.0.2.11?weight=010", 10 },
+        { "clickhouse://10.0.2.11?weight=09",  9 },
+        { "clickhouse://10.0.2.11?weight=0100", 100 } };
+
+    for (const auto &entry : addShard)
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->setNodes(entry.nodes);
+
+        S9S_VERIFY(client.addShard());
+        S9S_COMPARE(
+                client.lastPayload().valueByPath(JOB_DATA "weight"),
+                entry.weight);
+    }
+
+    const struct { const char *nodes; int shardId; } addNode[] = {
+        { "clickhouse://10.0.2.13?shard_id=01", 1 },
+        { "clickhouse://10.0.2.13?shard_id=09", 9 },
+        { "clickhouse://10.0.2.13?shard_id=010", 10 } };
+
+    for (const auto &entry : addNode)
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->setNodes(entry.nodes);
+
+        S9S_VERIFY(client.createNode());
+        jobData = client.lastPayload()
+            .valueByPath("/job/job_spec/job_data").toVariantMap();
+        S9S_COMPARE(jobData["shard_id"], entry.shardId);
     }
 
     return true;

@@ -5143,6 +5143,38 @@ S9sRpcClient::createElasticsearch(
     return executeRequest(uri, request);
 }
 
+// Digits only, read as decimal so that a leading zero does not make it octal.
+static bool
+decimalNodeProperty(
+        const S9sNode   &node,
+        const S9sString &name,
+        int             &value)
+{
+    S9sString text = node.rawUrlProperty(name);
+
+    if (text.empty())
+    {
+        S9sVariant property = node.toVariantMap().at(name);
+
+        if (!property.isInt())
+            return false;
+
+        value = property.toInt();
+        return true;
+    }
+
+    if (text.size() > 18 ||
+            text.find_first_not_of("0123456789") != std::string::npos)
+        return false;
+
+    long long parsed = strtoll(text.c_str(), NULL, 10);
+    if (parsed > INT_MAX)
+        return false;
+
+    value = (int) parsed;
+    return true;
+}
+
 // All nodes give the same weight or none gives one; an unset weight is left invalid.
 static bool
 sharedClickHouseWeight(
@@ -5157,14 +5189,14 @@ sharedClickHouseWeight(
 
     for (uint idx = 0u; idx < nodes.size(); ++idx)
     {
-        S9sVariantMap properties = nodes[idx].toVariantMap();
+        S9sNode       node       = nodes[idx].toNode();
+        S9sVariantMap properties = node.toVariantMap();
         S9sVariant    value;
+        int           parsed;
 
         if (properties.contains("weight"))
         {
-            value = properties.at("weight");
-
-            if (!value.isInt() || value.toInt() < 1)
+            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 1)
             {
                 PRINT_ERROR(
                         "The weight of the node '%s' is not valid, it must be "
@@ -5174,6 +5206,8 @@ sharedClickHouseWeight(
                 options->setExitStatus(S9sOptions::BadOptions);
                 return false;
             }
+
+            value = parsed;
         }
 
         if (first)
@@ -5246,8 +5280,7 @@ composeClickHouseShards(
             keepers << properties;
         } else if (protocol == "clickhouse")
         {
-            S9sVariant shardId = properties.contains("shard_id") ?
-                properties.at("shard_id") : S9sVariant();
+            int shardId = 0;
 
             if (!properties.contains("shard_id"))
             {
@@ -5260,7 +5293,7 @@ composeClickHouseShards(
                 return false;
             }
 
-            if (!shardId.isInt() || shardId.toInt() < 1)
+            if (!decimalNodeProperty(node, "shard_id", shardId) || shardId < 1)
             {
                 PRINT_ERROR(
                         "The shard_id of the node '%s' is not valid, it must "
@@ -5270,7 +5303,7 @@ composeClickHouseShards(
                 return false;
             }
 
-            groups[shardId.toInt()] << properties;
+            groups[shardId] << hosts[idx];
         } else {
             PRINT_ERROR(
                     "The node '%s' can not be used when shards are given, "
@@ -5822,7 +5855,7 @@ S9sRpcClient::addShard()
         nodes << hosts[idx].toVariantMap();
     }
 
-    if (!sharedClickHouseWeight(nodes, "the new shard", weight))
+    if (!sharedClickHouseWeight(hosts, "the new shard", weight))
         return false;
 
     for (uint idx = 0u; idx < nodes.size(); ++idx)
@@ -6002,15 +6035,14 @@ clickHouseShardOfNodes(
     {
         S9sNode       node       = hosts[idx].toNode();
         S9sVariantMap properties = node.toVariantMap();
-        S9sVariant    value;
+        int           value      = 0;
 
         if (node.protocol().toLower() != "clickhouse" ||
                 !properties.contains("shard_id"))
             continue;
 
-        value = properties.at("shard_id");
-        if (!value.isInt() || value.toInt() < 1 ||
-                (shardId != 0 && shardId != value.toInt()))
+        if (!decimalNodeProperty(node, "shard_id", value) || value < 1 ||
+                (shardId != 0 && shardId != value))
         {
             PRINT_ERROR(
                     "The shard_id of the node '%s' is not valid, it must be "
@@ -6021,7 +6053,7 @@ clickHouseShardOfNodes(
             return false;
         }
 
-        shardId = value.toInt();
+        shardId = value;
     }
 
     if (shardId > 0 && options->shardId() > 0 && options->shardId() != shardId)
