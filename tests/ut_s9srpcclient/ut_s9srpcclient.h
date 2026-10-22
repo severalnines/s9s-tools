@@ -143,6 +143,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testPoolModeSetupCommands();
         bool testPoolModeReadinessMccPackage();
         bool testRemoveOpenBao();
+        bool testStopStartOpenBao();
 };
 
 class S9sRpcClientTester : public S9sRpcClient

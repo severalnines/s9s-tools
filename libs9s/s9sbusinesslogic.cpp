@@ -1684,6 +1684,18 @@ S9sBusinessLogic::execute()
             S9sRpcReply reply = client.reply();
             maybeJobRegistered(client, clusterId, success);
         }
+        else if (options->isStopOpenBao())
+        {
+            success = client.stopOpenBao(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
+        else if (options->isStartOpenBao())
+        {
+            success = client.startOpenBao(options);
+            S9sRpcReply reply = client.reply();
+            maybeJobRegistered(client, clusterId, success);
+        }
         else if (options->isSetMaxClustersCapacityRequested())
         {
             client.setMaxClustersCapacity(options);

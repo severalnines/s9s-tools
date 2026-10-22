@@ -12891,6 +12891,83 @@ S9sRpcClient::removeOpenBao(S9sOptions *options)
 }
 
 /**
+ * \returns true if the request was successfully sent
+ *
+ * Creates the job that stops ("stop_openbao") or starts ("start_openbao") the
+ * OpenBao service of the registered OpenBao node given by the --nodes command
+ * line option. The host and the port go under the keys removeOpenBao() uses;
+ * without a port the controller applies its default (8200).
+ */
+bool
+S9sRpcClient::openBaoServiceJob(
+        S9sOptions      *options,
+        const S9sString &command,
+        const S9sString &title)
+{
+    const S9sString uri = "/v2/jobs/";
+    S9sVariantMap   request;
+
+    S9sVariantList  hosts = options->nodes();
+
+    S9sVariantMap   job     = composeJob();
+    S9sVariantMap   jobData = composeJobData();
+    S9sVariantMap   jobSpec;
+
+    if (hosts.size() == 1)
+    {
+        jobData["server_address"] = hosts[0].toNode().hostName();
+
+        const int port = hosts[0].toNode().port();
+        if (port > 0)
+            jobData["port"] = port;
+    }
+    else
+    {
+        PRINT_ERROR(
+                "Exactly one node must be specified for "
+                "%s operation.", STR(command));
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    // The ssh login for the OpenBao host comes from composeJobData(), as for
+    // --remove-openbao.
+
+    jobSpec["command"]  = command;
+    jobSpec["job_data"] = jobData;
+
+    job["job_spec"] = jobSpec;
+    job["title"]    = title;
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest(uri, request);
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Creates the "stop_openbao" job (pool-controllers --stop-openbao).
+ */
+bool
+S9sRpcClient::stopOpenBao(S9sOptions *options)
+{
+    return openBaoServiceJob(options, "stop_openbao", "Stop OpenBao");
+}
+
+/**
+ * \returns true if the request was successfully sent
+ *
+ * Creates the "start_openbao" job (pool-controllers --start-openbao).
+ */
+bool
+S9sRpcClient::startOpenBao(S9sOptions *options)
+{
+    return openBaoServiceJob(options, "start_openbao", "Start OpenBao");
+}
+
+/**
  * \returns delete watchlists stored on controller DB
  *
  */
