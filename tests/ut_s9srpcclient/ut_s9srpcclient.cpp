@@ -1522,7 +1522,8 @@ UtS9sRpcClient::testAddNodeClickHouseShardIdProperty()
         "clickhouse://10.0.2.13?shard_id=0",
         "clickhouse://10.0.2.13?shard_id=-1",
         "clickhouse://10.0.2.13?shard_id=two",
-        "clickhouse://10.0.2.13?shard_id=1;clickhouse://10.0.2.14?shard_id=2" };
+        "clickhouse://10.0.2.13?shard_id=1;clickhouse://10.0.2.14?shard_id=2",
+        "clickhouse://10.0.2.13?shard_id=2;clickhouse-keeper://10.0.9.14" };
 
     for (const char *nodes : refused)
     {

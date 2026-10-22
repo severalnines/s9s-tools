@@ -6091,6 +6091,25 @@ clickHouseShardOfNodes(
         shardId = value;
     }
 
+    if (shardId > 0)
+    {
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
+        {
+            S9sNode node = hosts[idx].toNode();
+
+            if (node.protocol().toLower() == "clickhouse")
+                continue;
+
+            PRINT_ERROR(
+                    "The shard_id node property can not be used with the "
+                    "node '%s', a shard takes clickhouse:// data nodes only.",
+                    STR(node.hostName()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
     if (shardId > 0 && options->shardId() > 0 && options->shardId() != shardId)
     {
         PRINT_ERROR(
