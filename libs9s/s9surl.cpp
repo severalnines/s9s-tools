@@ -153,6 +153,7 @@ S9sUrl::setProperties(
         const S9sVariantMap &values)
 {
     m_properties = values;
+    m_rawProperties.clear();
 }
 
 /**
@@ -204,6 +205,8 @@ S9sUrl::setProperty(
         const S9sString &name,
         const S9sString &value)
 {
+    m_rawProperties[name] = value;
+
     if (value.looksBoolean())
     {
         m_properties[name] = value.toBoolean();
@@ -213,6 +216,20 @@ S9sUrl::setProperty(
     } else {
         m_properties[name] = value;
     }
+}
+
+/**
+ * \returns The property as it was written in the URL, empty when it was not
+ *   given as text.
+ */
+S9sString
+S9sUrl::rawProperty(
+        const S9sString &key) const
+{
+    if (m_rawProperties.contains(key))
+        return m_rawProperties.at(key).toString();
+
+    return S9sString();
 }
 
 /**
@@ -227,6 +244,7 @@ S9sUrl::setProperty(
         const S9sString  &name,
         const S9sVariant &value)
 {
+    m_rawProperties.erase(name);
     m_properties[name] = value;
 }
 

@@ -27,6 +27,8 @@ address) of the node should be specified using the \fB\-\-nodes\fR command
 line option.
 On a sharded ClickHouse cluster the \fB\-\-shard\-id\fR command line option
 selects the shard the new node becomes a replica of (shard 1 when omitted).
+The \fBshard_id\fR node property, as in \fBclickhouse://192.168.0.213?shard_id=2\fR,
+does the same; it must be the same for all nodes and agree with the option.
 
 .B EXAMPLE
 .nf
@@ -45,13 +47,19 @@ in the \fB\-\-nodes\fR command line option becomes a replica of the new shard.
 The new shard uses the Keeper ensemble the cluster already has; Keeper
 nodes cannot be part of the list. ClickHouse does not rebalance existing data,
 rows written before the shard was added stay on the shards that hold them.
+The nodes can give the \fBweight\fR property, the same for all of them, to set
+the weight of the new shard, an integer from 1 to 1000; it is 1 when omitted.
+The controller refuses a weight that makes the weights of all shards of the
+cluster add up to more than 10000. The schema is copied to the
+new shard but the users are not, so users that query Distributed tables have
+to be created on it.
 
 .B EXAMPLE
 .nf
 s9s cluster \\
     --add-shard \\
     --cluster-id=1 \\
-    --nodes="clickhouse://192.168.0.211;clickhouse://192.168.0.212" \\
+    --nodes="clickhouse://192.168.0.211?weight=3;clickhouse://192.168.0.212?weight=3" \\
     --wait
 .fi
 
@@ -141,6 +149,35 @@ s9s cluster \\
     --vendor=percona \\
     --cluster-name=ft_replication_11130 \\
     --provider-version=5.6 \\
+    --wait
+.fi
+
+A ClickHouse cluster with several shards is created in one job by giving every
+\fBclickhouse://\fR node the \fBshard_id\fR property. The shard ids must be
+the numbers from 1 to N without gaps, and every shard needs at least one node;
+the nodes of one shard are its replicas. The optional \fBweight\fR property
+sets the shard's weight, the share of the rows written through a Distributed
+table that the shard receives. It is an integer from 1 to 1000, the same
+for all nodes of a shard, and 1 when omitted; the weights of all shards of a
+cluster add up to at most 10000. When any \fBclickhouse://\fR
+node has \fBshard_id\fR or \fBweight\fR, every one of them needs
+\fBshard_id\fR. Dedicated Keeper servers are given as
+\fBclickhouse-keeper://\fR nodes, which belong to no shard and take neither
+property. Without them, the controller chooses the Keeper voters among the data
+nodes. Without \fBshard_id\fR and \fBweight\fR the nodes form a single shard.
+
+Users that query Distributed tables have to exist on every shard. A user that
+is created on one shard is not created on the others, and \fB\-\-add\-shard\fR
+copies the schema to the new shard but no users.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --create \\
+    --cluster-type=clickhouse \\
+    --nodes="clickhouse://192.168.0.211?shard_id=1&weight=2;clickhouse://192.168.0.212?shard_id=1&weight=2;clickhouse://192.168.0.213?shard_id=2;clickhouse://192.168.0.214?shard_id=2" \\
+    --provider-version=25.3 \\
+    --cluster-name=clickhouse_001 \\
     --wait
 .fi
 

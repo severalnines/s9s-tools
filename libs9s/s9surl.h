@@ -49,6 +49,7 @@ class S9sUrl
 
         bool hasProperty(const S9sString &key) const;
         S9sVariant property(const S9sString &key) const;
+        S9sString rawProperty(const S9sString &key) const;
         void setProperty(const S9sString &name, const S9sString &value);
         void setProperty(const S9sString &name, const S9sVariant &value);
 
@@ -75,6 +76,7 @@ class S9sUrl
         int           m_port;
         bool          m_hasPort;
         S9sVariantMap m_properties;
+        S9sVariantMap m_rawProperties;
         S9sString     m_errorString;
         int           m_parseCursor;
 

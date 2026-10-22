@@ -48,6 +48,8 @@ namespace
 {
     const S9sString AWS_CLOUD_PROVIDER = "aws";
     const S9sString S3_CLOUD_SERVICE_PROVIDER  = "s3";
+    const int       MAX_CLICKHOUSE_SHARD_WEIGHT = 1000;
+    const int       MAX_CLICKHOUSE_WEIGHT_TOTAL = 10000;
 }
 
 /**
@@ -5143,6 +5145,249 @@ S9sRpcClient::createElasticsearch(
     return executeRequest(uri, request);
 }
 
+// Digits only, read as decimal so that a leading zero does not make it octal.
+static bool
+decimalNodeProperty(
+        const S9sNode   &node,
+        const S9sString &name,
+        int             &value)
+{
+    S9sString text = node.rawUrlProperty(name);
+
+    if (text.empty())
+    {
+        S9sVariant property = node.toVariantMap().at(name);
+
+        if (!property.isInt())
+            return false;
+
+        value = property.toInt();
+        return true;
+    }
+
+    if (text.size() > 18 ||
+            text.find_first_not_of("0123456789") != std::string::npos)
+        return false;
+
+    long long parsed = strtoll(text.c_str(), NULL, 10);
+    if (parsed > INT_MAX)
+        return false;
+
+    value = (int) parsed;
+    return true;
+}
+
+static bool
+sharedClickHouseWeight(
+        const S9sVariantList &nodes,
+        const S9sString      &group,
+        S9sVariant           &weight)
+{
+    S9sOptions *options = S9sOptions::instance();
+    bool        first   = true;
+
+    weight = S9sVariant();
+
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        S9sNode       node       = nodes[idx].toNode();
+        S9sVariantMap properties = node.toVariantMap();
+        S9sVariant    value;
+        int           parsed;
+
+        if (properties.contains("weight"))
+        {
+            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 1 ||
+                    parsed > MAX_CLICKHOUSE_SHARD_WEIGHT)
+            {
+                PRINT_ERROR(
+                        "The weight of the node '%s' is not valid, it must be "
+                        "an integer from 1 to %d.",
+                        STR(properties["hostname"].toString()),
+                        MAX_CLICKHOUSE_SHARD_WEIGHT);
+
+                options->setExitStatus(S9sOptions::BadOptions);
+                return false;
+            }
+
+            value = parsed;
+        }
+
+        if (first)
+        {
+            weight = value;
+            first  = false;
+        } else if (weight.isInt() != value.isInt() ||
+                (value.isInt() && weight.toInt() != value.toInt()))
+        {
+            PRINT_ERROR(
+                    "The nodes of %s do not agree on the weight, give the "
+                    "same weight to every node of it.", STR(group));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool
+checkClickHouseKeepers(
+        const S9sVariantList &hosts)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode       node       = hosts[idx].toNode();
+        S9sVariantMap properties = node.toVariantMap();
+
+        if (node.protocol().toLower() != "clickhouse-keeper")
+            continue;
+
+        if (properties.contains("shard_id") || properties.contains("weight"))
+        {
+            PRINT_ERROR(
+                    "The keeper node '%s' belongs to no shard, it can not "
+                    "have shard_id or weight.",
+                    STR(properties["hostname"].toString()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool
+hasClickHouseShardProperties(
+        const S9sVariantList &hosts)
+{
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode node = hosts[idx].toNode();
+
+        if (node.protocol().toLower() != "clickhouse")
+            continue;
+
+        if (node.toVariantMap().contains("shard_id") ||
+                node.toVariantMap().contains("weight"))
+            return true;
+    }
+
+    return false;
+}
+
+static bool
+composeClickHouseShards(
+        const S9sVariantList &hosts,
+        S9sVariantList       &shards,
+        S9sVariantList       &keepers)
+{
+    S9sOptions                  *options = S9sOptions::instance();
+    std::map<int, S9sVariantList> groups;
+    int                          weightTotal = 0;
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode       node       = hosts[idx].toNode();
+        S9sString     protocol   = node.protocol().toLower();
+        S9sVariantMap properties = node.toVariantMap();
+        S9sString     hostName   = properties["hostname"].toString();
+
+        if (protocol == "clickhouse-keeper")
+        {
+            keepers << properties;
+        } else if (protocol == "clickhouse")
+        {
+            int shardId = 0;
+
+            if (!properties.contains("shard_id"))
+            {
+                PRINT_ERROR(
+                        "The node '%s' has no shard_id, every clickhouse:// "
+                        "node needs one when shards are given.",
+                        STR(hostName));
+
+                options->setExitStatus(S9sOptions::BadOptions);
+                return false;
+            }
+
+            if (!decimalNodeProperty(node, "shard_id", shardId) || shardId < 1)
+            {
+                PRINT_ERROR(
+                        "The shard_id of the node '%s' is not valid, it must "
+                        "be an integer from 1.", STR(hostName));
+
+                options->setExitStatus(S9sOptions::BadOptions);
+                return false;
+            }
+
+            groups[shardId] << hosts[idx];
+        } else {
+            PRINT_ERROR(
+                    "The node '%s' can not be used when shards are given, "
+                    "use clickhouse:// and clickhouse-keeper:// nodes only.",
+                    STR(hostName));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    if (groups.empty() || groups.rbegin()->first != (int) groups.size())
+    {
+        PRINT_ERROR(
+                "The shard_id values must be 1 to N without gaps, with at "
+                "least one node in every shard.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    for (const auto &group : groups)
+    {
+        S9sVariantMap  shard;
+        S9sVariantList nodes;
+        S9sVariant     weight;
+
+        if (!sharedClickHouseWeight(
+                    group.second, S9sString("shard " + std::to_string(group.first)),
+                    weight))
+            return false;
+
+        for (uint idx = 0u; idx < group.second.size(); ++idx)
+        {
+            S9sVariantMap properties = group.second[idx].toVariantMap();
+
+            properties.erase("shard_id");
+            properties.erase("weight");
+            nodes << properties;
+        }
+
+        if (weight.isInt())
+            shard["weight"] = weight;
+
+        weightTotal += weight.isInt() ? weight.toInt() : 1;
+        shard["nodes"] = nodes;
+        shards << shard;
+    }
+
+    if (weightTotal > MAX_CLICKHOUSE_WEIGHT_TOTAL)
+    {
+        PRINT_ERROR(
+                "The shard weights add up to %d, at most %d are allowed.",
+                weightTotal, MAX_CLICKHOUSE_WEIGHT_TOTAL);
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return true;
+}
+
 bool
 S9sRpcClient::createClickHouseCluster(
         const S9sVariantList &hosts,
@@ -5162,11 +5407,28 @@ S9sRpcClient::createClickHouseCluster(
         return false;
     }
 
+    if (!checkClickHouseKeepers(hosts))
+        return false;
+
+    if (hasClickHouseShardProperties(hosts))
+    {
+        S9sVariantList shards;
+        S9sVariantList keepers;
+
+        if (!composeClickHouseShards(hosts, shards, keepers))
+            return false;
+
+        jobData["shards"] = shards;
+        if (!keepers.empty())
+            jobData["keepers"] = keepers;
+    } else {
+        jobData["nodes"]        = nodesField(hosts);
+    }
+
     addCredentialsToJobData(jobData);
 
     jobData["cluster_type"]     = "clickhouse";
     jobData["type"]             = "clickhouse";
-    jobData["nodes"]            = nodesField(hosts);
     jobData["db_user"]          = options->dbAdminUserName();
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
@@ -5352,6 +5614,11 @@ S9sRpcClient::createMongoCluster(
     return retval;
 }
 
+static bool
+clickHouseShardOfNodes(
+        const S9sVariantList &hosts,
+        int                  &shardId);
+
 /**
  * This method is executed when the --add-node option is used like in 
  * s9s cluster --add-node --cluster-id=X --nodes=
@@ -5387,6 +5654,11 @@ S9sRpcClient::createNode()
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+
+    int propertyShardId;
+
+    if (!clickHouseShardOfNodes(hosts, propertyShardId))
+        return false;
 
     if (options->shardId() > 0)
     {
@@ -5596,6 +5868,7 @@ S9sRpcClient::addShard()
     S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sVariantList nodes;
+    S9sVariant     weight;
     S9sString      uri = "/v2/jobs/";
 
     if (hosts.empty())
@@ -5627,6 +5900,20 @@ S9sRpcClient::addShard()
 
         nodes << hosts[idx].toVariantMap();
     }
+
+    if (!sharedClickHouseWeight(hosts, "the new shard", weight))
+        return false;
+
+    for (uint idx = 0u; idx < nodes.size(); ++idx)
+    {
+        S9sVariantMap properties = nodes[idx].toVariantMap();
+
+        properties.erase("weight");
+        nodes[idx] = properties;
+    }
+
+    if (weight.isInt())
+        jobData["weight"]       = weight;
 
     jobData["nodes"]            = nodes;
     jobData["install_software"] = !options->noInstall();
@@ -5780,6 +6067,72 @@ S9sRpcClient::reconfigureNode()
 
 
 
+static bool
+clickHouseShardOfNodes(
+        const S9sVariantList &hosts,
+        int                  &shardId)
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    shardId = 0;
+
+    for (uint idx = 0u; idx < hosts.size(); ++idx)
+    {
+        S9sNode       node       = hosts[idx].toNode();
+        S9sVariantMap properties = node.toVariantMap();
+        int           value      = 0;
+
+        if (node.protocol().toLower() != "clickhouse" ||
+                !properties.contains("shard_id"))
+            continue;
+
+        if (!decimalNodeProperty(node, "shard_id", value) || value < 1 ||
+                (shardId != 0 && shardId != value))
+        {
+            PRINT_ERROR(
+                    "The shard_id of the node '%s' is not valid, it must be "
+                    "an integer from 1 and the same for all nodes.",
+                    STR(properties["hostname"].toString()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+
+        shardId = value;
+    }
+
+    if (shardId > 0)
+    {
+        for (uint idx = 0u; idx < hosts.size(); ++idx)
+        {
+            S9sNode node = hosts[idx].toNode();
+
+            if (node.protocol().toLower() == "clickhouse")
+                continue;
+
+            PRINT_ERROR(
+                    "The shard_id node property can not be used with the "
+                    "node '%s', a shard takes clickhouse:// data nodes only.",
+                    STR(node.hostName()));
+
+            options->setExitStatus(S9sOptions::BadOptions);
+            return false;
+        }
+    }
+
+    if (shardId > 0 && options->shardId() > 0 && options->shardId() != shardId)
+    {
+        PRINT_ERROR(
+                "The --shard-id option and the shard_id node property name "
+                "different shards.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    return true;
+}
+
 /**
  * \param clusterId The ID of the cluster.
  * \param hosts the hosts that will be the member of the cluster (variant list
@@ -5799,18 +6152,28 @@ S9sRpcClient::addNode(
     S9sVariantMap  jobData   = composeJobData();
     S9sVariantMap  jobSpec;
     S9sString      uri = "/v2/jobs/";
+    S9sVariantList members;
+    int            nodeShardId;
     bool           retval;
-    
-    // The job_data describing the cluster.
-    if(hosts.size() == 1)
-        jobData["node"] = hosts[0].toVariantMap();
-    else
+
+    if (!clickHouseShardOfNodes(hosts, nodeShardId))
+        return false;
+
+    for (const auto & host : hosts)
     {
-        S9sVariantList nodes;
-        for(const auto & host : hosts)
-            nodes << host.toVariantMap();
-        jobData["nodes"] = nodes;
+        S9sVariantMap properties = host.toVariantMap();
+
+        if (nodeShardId > 0)
+            properties.erase("shard_id");
+
+        members << properties;
     }
+
+    // The job_data describing the cluster.
+    if(members.size() == 1)
+        jobData["node"] = members[0];
+    else
+        jobData["nodes"] = members;
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -5826,7 +6189,9 @@ S9sRpcClient::addNode(
     if(!options->masterDelay().empty())
         jobData["master_delay"] = options->masterDelay();
 
-    if (options->shardId() > 0)
+    if (nodeShardId > 0)
+        jobData["shard_id"] = nodeShardId;
+    else if (options->shardId() > 0)
         jobData["shard_id"] = options->shardId();
    
     // The jobspec describing the command.
