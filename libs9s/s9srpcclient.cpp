@@ -5614,6 +5614,11 @@ S9sRpcClient::createMongoCluster(
     return retval;
 }
 
+static bool
+clickHouseShardOfNodes(
+        const S9sVariantList &hosts,
+        int                  &shardId);
+
 /**
  * This method is executed when the --add-node option is used like in 
  * s9s cluster --add-node --cluster-id=X --nodes=
@@ -5649,6 +5654,11 @@ S9sRpcClient::createNode()
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
     }
+
+    int propertyShardId;
+
+    if (!clickHouseShardOfNodes(hosts, propertyShardId))
+        return false;
 
     if (options->shardId() > 0)
     {
