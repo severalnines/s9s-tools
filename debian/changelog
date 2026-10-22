@@ -40,8 +40,9 @@ s9s-tools (1.9.2026102211-testing) UNRELEASED; urgency=medium
   * Testing release 1.9.2026101921.
   * Testing release 1.9.2026102209.
   * Testing release 1.9.2026102211.
+  * Testing release 1.9.2026102211.
 
- -- Severalnines <support@severalnines.com>  Thu, 22 Oct 2026 11:27:22 +0200
+ -- Severalnines <support@severalnines.com>  Thu, 22 Oct 2026 11:33:39 +0200
 
 s9s-tools (1.9.2025061016-testingubuntu1) unstable; urgency=medium
 
