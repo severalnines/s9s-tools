@@ -205,6 +205,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testPoolModeSetupCommands, retval);
     PERFORM_TEST(testPoolModeReadinessMccPackage, retval);
     PERFORM_TEST(testRemoveOpenBao, retval);
+    PERFORM_TEST(testStopStartOpenBao, retval);
 
     return retval;
 }
@@ -4659,6 +4660,78 @@ UtS9sRpcClient::testRemoveOpenBao()
     S9S_VERIFY(!payload.valueByPath("/job/job_spec/job_data").toVariantMap().contains("port"));
     S9S_COMPARE(payload.valueByPath(JOB_DATA "force").toBoolean(), true);
     S9S_COMPARE(payload.valueByPath(JOB_DATA "purge").toBoolean(), false);
+
+    S9sOptions::uninit();
+    return true;
+}
+
+/**
+ * Testing stopOpenBao() and startOpenBao() (the "pool-controllers
+ * --stop-openbao/--start-openbao" jobs): the host and the port go under the
+ * keys removeOpenBao() uses, no "port" without one, the ssh login is forwarded.
+ */
+bool
+UtS9sRpcClient::testStopStartOpenBao()
+{
+    S9sOptions         *options;
+    S9sVariantMap       payload;
+
+    const char *argv1[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--stop-openbao",
+                            "--nodes=10.16.186.3:8300",
+                            "--os-user=alvaro",
+                            "--os-key-file=/home/alvaro/.ssh/id_ed25519",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+
+    S9sRpcClientTester  client;
+    S9S_VERIFY(client.stopOpenBao(options));
+    payload = client.lastPayload();
+
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(client.uri(0), "/v2/jobs/");
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "stop_openbao");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Stop OpenBao");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "server_address").toString(),
+            "10.16.186.3");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "port").toInt(), 8300);
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "ssh_user").toString(), "alvaro");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "ssh_keyfile").toString(),
+            "/home/alvaro/.ssh/id_ed25519");
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--start-openbao",
+                            "--nodes=10.16.186.3",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+
+    S9sRpcClientTester  client2;
+    S9S_VERIFY(client2.startOpenBao(options));
+    payload = client2.lastPayload();
+
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "start_openbao");
+    S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Start OpenBao");
+    S9S_COMPARE(payload.valueByPath(JOB_DATA "server_address").toString(),
+            "10.16.186.3");
+    // Default port: no "port" key, the controller applies its default.
+    S9S_VERIFY(!payload.valueByPath("/job/job_spec/job_data").toVariantMap().contains("port"));
 
     S9sOptions::uninit();
     return true;

@@ -573,6 +573,8 @@ enum S9sOptionType
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
     OptionRemoveOpenBao,
+    OptionStopOpenBao,
+    OptionStartOpenBao,
     OptionPurge,
     OptionListConfigStorage,
     OptionListOpenBaoVersions,
@@ -5978,6 +5980,26 @@ S9sOptions::isRemoveOpenBao() const
 }
 
 /**
+ * \returns true if the "stop_openbao" job is requested by providing the
+ *   --stop-openbao command line option on the "pool-controllers" subcommand.
+ */
+bool
+S9sOptions::isStopOpenBao() const
+{
+    return getBool("stop_openbao");
+}
+
+/**
+ * \returns true if the "start_openbao" job is requested by providing the
+ *   --start-openbao command line option on the "pool-controllers" subcommand.
+ */
+bool
+S9sOptions::isStartOpenBao() const
+{
+    return getBool("start_openbao");
+}
+
+/**
  * \returns true if the --purge command line option was provided: the removed
  *   OpenBao node's configuration and data are deleted from its host.
  */
@@ -9560,6 +9582,15 @@ S9sOptions::printHelpControllers()
 "                             could not be stopped nothing is moved or deleted. The\n"
 "                             OpenBao node the cluster was bootstrapped on can only\n"
 "                             go last. Requires super admin privileges.\n"
+"  --stop-openbao             To stop the OpenBao service of the registered OpenBao\n"
+"                             node given by --nodes (HOST[:PORT]). Refused for the\n"
+"                             only OpenBao node or when it would lose the raft\n"
+"                             quorum. Requires super admin privileges.\n"
+"  --start-openbao            To start the OpenBao service of the registered OpenBao\n"
+"                             node given by --nodes (HOST[:PORT]) if stopped, unseal\n"
+"                             it and wait until it is a raft standby again. Nothing\n"
+"                             to do for a running, unsealed node. Requires super\n"
+"                             admin privileges.\n"
 "  --list-config-storage      List the configuration/secret storage instances the\n"
 "                             controller knows about, one line per OpenBao node with\n"
 "                             its raft role (leader, standby, ...) and storage.\n"
@@ -20733,6 +20764,8 @@ S9sOptions::readOptionsControllers(
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
                     {"remove-openbao",   no_argument, 0,       OptionRemoveOpenBao},
+                    {"stop-openbao",     no_argument, 0,       OptionStopOpenBao},
+                    {"start-openbao",    no_argument, 0,       OptionStartOpenBao},
                     {"list-config-storage", no_argument, 0,    OptionListConfigStorage},
                     {"list-openbao-versions", no_argument, 0,  OptionListOpenBaoVersions},
                     {"force",                    no_argument,       0, OptionForce},
@@ -21052,6 +21085,16 @@ S9sOptions::readOptionsControllers(
                 m_options["remove_openbao"] = true;
                 break;
 
+            case OptionStopOpenBao:
+                // --stop-openbao
+                m_options["stop_openbao"] = true;
+                break;
+
+            case OptionStartOpenBao:
+                // --start-openbao
+                m_options["start_openbao"] = true;
+                break;
+
             case OptionPurge:
                 // --purge
                 m_options["purge"] = true;
@@ -21274,6 +21317,12 @@ S9sOptions::checkOptionsControllers()
     if (isRemoveOpenBao())
         countOptions++;
 
+    if (isStopOpenBao())
+        countOptions++;
+
+    if (isStartOpenBao())
+        countOptions++;
+
     if (isListConfigStorage())
         countOptions++;
 
@@ -21356,6 +21405,20 @@ S9sOptions::checkOptionsControllers()
     if (isRemoveOpenBao() && nodes().size() != 1u)
     {
         m_errorMessage = "The --nodes option must specify exactly one host for --remove-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isStopOpenBao() && nodes().size() != 1u)
+    {
+        m_errorMessage = "The --nodes option must specify exactly one host for --stop-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isStartOpenBao() && nodes().size() != 1u)
+    {
+        m_errorMessage = "The --nodes option must specify exactly one host for --start-openbao.";
         m_exitStatus = BadOptions;
         return false;
     }

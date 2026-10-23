@@ -391,6 +391,8 @@ class S9sRpcClient
         bool setMaxClustersCapacity(S9sOptions *options);
         bool installOpenBao(S9sOptions *options);
         bool removeOpenBao(S9sOptions *options);
+        bool stopOpenBao(S9sOptions *options);
+        bool startOpenBao(S9sOptions *options);
 
         /*
          * Requests related to logical replication
@@ -563,6 +565,11 @@ class S9sRpcClient
                     const S9sVariantMap &reply) const;
 
     private:
+        bool openBaoServiceJob(
+                S9sOptions      *options,
+                const S9sString &command,
+                const S9sString &title);
+
         bool startNodeJob(
                 const S9sString &command,
                 const S9sString &title);

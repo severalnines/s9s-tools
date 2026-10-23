@@ -441,6 +441,32 @@ s9s pool-controllers --remove-openbao --nodes=10.16.186.191 --force --log
 .fi
 
 .TP
+.B --stop-openbao
+Stops the OpenBao service of the registered OpenBao node (configuration
+instance) on the host named by '--nodes' (exactly one host is required, with its
+port when it is not the default 8200). The node stays registered and stays a
+member of the raft cluster; \fB--start-openbao\fP brings it back. Requires super
+admin privileges. It is a job (\fB--log\fP and \fB--wait\fP apply).
+
+Stopping is refused for the only OpenBao node, and when stopping it would leave
+the raft cluster without a quorum.
+.nf
+s9s pool-controllers --stop-openbao --nodes=10.16.186.191 --log
+.fi
+
+.TP
+.B --start-openbao
+Starts the OpenBao service of the registered OpenBao node (configuration
+instance) on the host named by '--nodes' (exactly one host is required, with its
+port when it is not the default 8200) if it is stopped, unseals it and waits
+until it is a raft standby again. A node that is already running and unsealed
+succeeds with nothing to do. Requires super admin privileges. It is a job
+(\fB--log\fP and \fB--wait\fP apply).
+.nf
+s9s pool-controllers --start-openbao --nodes=10.16.186.191:8300 --log
+.fi
+
+.TP
 .B --purge
 Used with \fB--remove-openbao\fP: deletes the removed OpenBao node's data
 ('/opt/openbao/data') and what ClusterControl wrote under '/etc/openbao'
