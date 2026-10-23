@@ -423,9 +423,12 @@ The removal is refused when it would leave the raft cluster below quorum, or
 when the cluster is not healthy now (no leader, or another node sealed or
 unreachable).
 
-The node the raft cluster was bootstrapped on is refused while other nodes
-remain: its '/etc/openbao/init.json' holds the root token every join and removal
-uses, so remove the other nodes first and that one last.
+Any OpenBao node can be removed, including the one the raft cluster was
+bootstrapped on: ClusterControl does not use the root token in its
+\&'/etc/openbao/init.json'. For each join, removal and step-down, the controller
+generates a short-lived root token on the raft leader with the unseal key, and
+revokes it right after. (Controllers older than 2.5.1 refuse the bootstrap node
+while other nodes remain.)
 
 The node the controller's legacy credential store (vault_addr) reads from is
 refused, since that client follows no raft leader; point vault_addr at another
