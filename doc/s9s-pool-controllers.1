@@ -76,7 +76,19 @@ SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS
 
 .TP
 .B --set-pool-mode
-Sets existing controller on pool mode (EXTRA_OPTS=--pool on /etc/default/cmon) and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
+Sets existing controller on pool mode and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
+.br
+The controller's '/etc/default/cmon' ('/etc/sysconfig/cmon' on RPM systems) gets
+EXTRA_OPTS="--pool --config-storage=STORAGE", where STORAGE names where the pool keeps
+its configuration: 'vault' for the CC configuration storage (OpenBao; also sets
+--secret-storage-engine=vault, and cmon moves its configuration files into OpenBao
+when it restarts), 'k8s' for Kubernetes secrets, or 'nfs' (deprecated, existing
+pools only) for an '/etc/cmon.d' shared over NFS. With the CC configuration storage
+ready the storage is 'vault'; otherwise (e.g. with \fB--no-require-config-storage\fP) it is 'nfs'
+(or 'k8s' on Kubernetes). cmon refuses a bare --pool on the file secret storage
+engine, and cmon versions that predate --config-storage do not start with it: see
+cmon-pool(5) and config_storage_revert.sh before downgrading.
+.br
 No controller_id is required as affected controller is the one receiving the rpc request
 
 On the first controller of a pool this requires the CC DB cluster
