@@ -22,7 +22,14 @@ should be performed. This "main option" should be one of the following:
 .B --list
 Gets existing controllers on pool. When providing '--controller-id' specific controller is returned.
 Use 0 or ommit options to get all existing whatchlist.
-Role 'member' is a controller in pool while 'main' means that it also stores configuration and cmon db.
+Role 'main' is the pool's main controller: in a pool keeping its configuration in
+OpenBao (vault) the active controller with the smallest SID, decided again on every
+pool refresh, so it moves to another controller when it stops and comes back once it
+is active again; in an NFS pool the controller that enabled pool mode. Role 'member'
+is a controller whose host also has a cmon DB instance, an OpenBao node and a
+services bundle, 'controller' any other one (see cmon-pool(5)). With
+\fB--print-json\fP a static pool-member row also says whether SSH credentials are
+stored for it in the pool (ssh_credentials_stored, see \fB--remove-controller\fP).
 .nf
 s9s pool-controllers --list --controller-id="3" 
 SID ID  HOSTNAME    PORT STATUS ROLE CLUSTERS                    
@@ -123,7 +130,9 @@ Pool mode set successfully.
 .TP
 .B --unset-pool-mode
 Removes existing controller on pool mode and restarts service if needed. Controller status will be 'restarting' or 'active' if no changes were needed.
-No controller_id is required as affected controller is the one receiving the rpc request
+No controller_id is required as affected controller is the one receiving the rpc request.
+It is only allowed on the main controller, and only while it is the last controller of
+the pool: remove the other controllers first (not on k8s).
 .nf
 s9s pool-controllers --unset-pool-mode
 Pool mode unset successfully.
@@ -221,8 +230,13 @@ and '--os-password' are refused. Sudo and elevation settings ('--os-sudo-user',
 equivalents) are still sent with the job and override the stored ones; note that
 an 'os_sudo_password' in s9s.conf is sent in the job data too.
 
-The main controller can't be a target: its services bundle is registered when pool
-mode is enabled or cmon starts in pool mode (see \fB--set-pool-mode\fP). Importing
+In an NFS pool the main controller can't be a target: its services bundle is
+registered when pool mode is enabled or cmon starts in pool mode (see
+\fB--set-pool-mode\fP). In an OpenBao (vault) pool the main controller is a target
+like any other. The job runs on another controller with a services bundle; for a
+controller without SSH credentials stored in the pool (the one that founded it, see
+\fB--remove-controller\fP) it only runs on that controller itself and is refused
+when it can't. Importing
 a services bundle that already runs on another host is not supported: add the
 controller with \fB--add-controller\fP, then its services bundle with
 \fB--add-services-bundle\fP. A host that already runs cmon-proxy is
@@ -254,7 +268,7 @@ needed (each downgrade is logged). A services bundle that is already registered 
 the host is refused without '--force' and reinstalled and reconfigured with it. It
 also accepts a target controller that is not
 active or runs jobs, installs the latest packages when the pool's versions are not
-available, and skips the IdP setup when ccmgradm cannot do it. The main controller
+available, and skips the IdP setup when ccmgradm cannot do it. In an NFS pool the main controller
 is refused even with '--force'.
 .RE
 
@@ -264,9 +278,12 @@ Stops and disables the services bundle on a pool controller host, points its cmo
 at another services bundle's cmon-events and cmon-cloud, and unregisters the
 services bundle. Packages are kept. Requires \fB--nodes\fP with exactly one node.
 Like \fB--add-services-bundle\fP it takes only the SSH connection settings from the
-stored credentials. The main controller's services bundle can't be deleted.
-Deleting the last services bundle of the pool is refused unless '--force' is given;
-\&'--force' also unregisters a services bundle whose host cannot be reached.
+stored credentials, and for a target controller without SSH credentials stored in the
+pool it only runs on that controller itself, and is refused when it can't.
+In an NFS pool the main controller's services bundle can't be deleted; in an OpenBao
+(vault) pool it is deleted like any other one. Deleting the last services bundle of
+the pool is refused, even with '--force': add another one first. '--force'
+unregisters a services bundle whose host cannot be reached, when it is not the last.
 .nf
 s9s pool-controllers --delete-services-bundle --nodes=10.0.0.12 --log
 .fi
@@ -282,6 +299,8 @@ Controller started successfully.
 .TP
 .B --stop
 Stops a controller instance. The '--controller-id' option is mandatory.
+When the main controller of an OpenBao (vault) pool stops, it hands the role over to
+the next controller before it stops (see \fB--list\fP).
 .nf
 s9s pool-controllers --stop --controller-id=2
 Controller stopped successfully.
@@ -290,9 +309,20 @@ Controller stopped successfully.
 .TP
 .B --remove-controller
 Removes a controller instance. The '--controller-id' option is mandatory.
-A controller whose host runs a services bundle is refused: run
-\fB--delete-services-bundle\fP first, or give '--force' to unregister the services
-bundle with the controller.
+The controller must be stopped first. In an OpenBao (vault) pool any controller runs
+the job and any stopped controller can be removed, the main controller included; a
+controller whose host was powered off is removed once it has not reported for about
+twice the pool's staleness threshold (about 36 seconds with the default 10-second
+refresh period). In an NFS pool the
+main controller runs the job and can't be removed.
+The last controller of the pool is refused. A controller whose host runs a services
+bundle is refused: run \fB--delete-services-bundle\fP first, or give '--force' to
+unregister the services bundle with the controller; the controller hosting the last
+services bundle of the pool is refused even with '--force'.
+A controller without SSH credentials stored in the pool (the one that founded the
+pool: only \fB--add-controller\fP stores them) is removed without cleaning up its
+host, with a warning. Every controller of a pool is assumed to use the same SSH user
+and key file path, with SSH access to the cluster nodes.
 .nf
 s9s pool-controllers --remove-controller --controller-id=2
 Controller removed successfully.
@@ -307,6 +337,12 @@ s9s pool-controllers --remove-controller --controller-id=2 --uninstall --log
 .TP
 .B --update-cmon
 Updates the cmon package on a controller instance. The '--controller-id' option is mandatory.
+The controller is updated to the version of the controller that runs the job: in an
+OpenBao (vault) pool an active controller running the newest cmon version of the
+pool, in an NFS pool the main controller. It is refused when the target already runs
+that version or a newer one (no downgrade), and for a controller without SSH
+credentials stored in the pool (see \fB--remove-controller\fP): update that one
+by hand.
 .nf
 s9s pool-controllers --update-cmon --controller-id=2
 .fi
@@ -328,7 +364,8 @@ detected on the target host; its data will be overwritten by the join.
 Removes a cmon DB instance from the pool's cmon DB HA InnoDB Cluster (cluster/Group
 Replication membership only - the target's own mysqld is left running). Requires
 \fB--nodes\fP with exactly one node, or \fB--node\fP instead. Requires super admin
-privileges.
+privileges. It is refused unless another instance of the cluster is ONLINE, and when
+that can't be told: the last ONLINE instance is never removed.
 .nf
 s9s pool-controllers --delete-db --nodes=10.0.1.87:3306 --log
 .fi
