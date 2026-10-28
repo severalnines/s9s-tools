@@ -1222,6 +1222,13 @@ issue the \fBs9s server \-\^\-list\-subnets --long\fP command.
 .BI \-\^\-vendor= VENDOR
 The name of the DB vendor to be installed.
 
+For Elasticsearch clusters (\fB\-\^\-cluster\-type=elastic\fP) the vendor
+selects the distribution: \fB\-\^\-vendor=elasticsearch\fP or
+\fB\-\^\-vendor=opensearch\fP. When registering an existing cluster the
+vendor is optional and advisory: it is taken only from this option, never from
+the configuration file, and the controller decides the distribution from the
+node.
+
 .TP
 .BI \-\^\-enterprise-token= TOKEN
 The customer's Repo/Download Token for an Enterprise Database.
