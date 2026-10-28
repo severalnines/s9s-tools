@@ -5079,6 +5079,28 @@ S9sRpcClient::createRedisOrValkeySentinel(
     return executeRequest(uri, request);
 }
 
+/*
+ * The "elastic" cluster type covers both Elasticsearch and OpenSearch; the
+ * vendor decides which one the user sees named in job titles and messages.
+ * Anything but OpenSearch keeps the historical Elasticsearch wording.
+ */
+static bool
+isOpenSearchVendor(
+        const S9sString &vendor)
+{
+    return vendor == "opensearch";
+}
+
+static S9sString
+elasticDistributionName(
+        const S9sString &vendor)
+{
+    if (isOpenSearchVendor(vendor))
+        return "OpenSearch";
+
+    return "Elasticsearch";
+}
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -5122,6 +5144,9 @@ S9sRpcClient::createElasticsearch(
     jobData["disable_firewall"] = !options->keepFirewall();
     setDeployAgentsIfRequested(jobData);
 
+    if (!options->vendor().empty())
+        jobData["vendor"]       = options->vendor();
+
     if (options->noInstall())
     {
         jobData["install_software"] = false;
@@ -5143,7 +5168,8 @@ S9sRpcClient::createElasticsearch(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Creating Elasticsearch Cluster";
+    job["title"]                = "Creating " +
+        elasticDistributionName(options->vendor()) + " Cluster";
     job["job_spec"]             = jobSpec;
 
     // 
@@ -14862,6 +14888,11 @@ S9sRpcClient::registerElasticsearchCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    // Only --vendor counts: a vendor in s9s.conf is meant for installing new
+    // clusters and would otherwise be forced onto every registration.
+    S9sString       vendor = options->hasVendorOption() ?
+            options->vendor() : S9sString();
+    S9sString       distribution = elasticDistributionName(vendor);
 
     if (hosts.size() < 1u)
     {
@@ -14872,16 +14903,18 @@ S9sRpcClient::registerElasticsearchCluster(
     else if (hosts.size() > 1u)
     {
 
-        PRINT_ERROR("Elasticsearch clusters requires only one cluster's node to discover topology");
+        PRINT_ERROR("%s clusters requires only one cluster's node to discover topology", STR(distribution));
         return false;
     }
 
     addCredentialsToJobData(jobData);
 
-    if(!jobData.contains("certificates_password"))
-        PRINT_ERROR("Certificated password (--ssl-pass) is recommended for Elasticsearch cluster import. Add node operation may fail without it.");
+    // OpenSearch has no keystore password, so --ssl-pass would be ignored.
+    if(!jobData.contains("certificates_password") &&
+            !isOpenSearchVendor(vendor))
+        PRINT_ERROR("Certificated password (--ssl-pass) is recommended for %s cluster import. Add node operation may fail without it.", STR(distribution));
     if(!jobData.contains("move_certs_dir"))
-        PRINT_ERROR("It has not been specified the certificates folder to use for Elasticsearch imported cluster (--move-certs-dir). Add node operation may fail without it.");
+        PRINT_ERROR("It has not been specified the certificates folder to use for %s imported cluster (--move-certs-dir). Add node operation may fail without it.", STR(distribution));
 
     //
     // The job_data describing the cluster.
@@ -14891,16 +14924,21 @@ S9sRpcClient::registerElasticsearchCluster(
     jobData["nodes"]            = nodesField(hosts);
     if(options->dbAdminUserName().empty())
     {
-        PRINT_ERROR("Database user is required for Elasticsearch cluster");
+        PRINT_ERROR("Database user is required for %s cluster", STR(distribution));
         return false;
     }
     jobData["db_user"]          = options->dbAdminUserName();
     if(options->dbAdminPassword().empty())
     {
-        PRINT_ERROR("Database password is required for Elasticsearch cluster");
+        PRINT_ERROR("Database password is required for %s cluster", STR(distribution));
         return false;
     }
     jobData["db_password"]      = options->dbAdminPassword();
+
+    // Advisory: the controller decides the distribution from the node; the
+    // vendor given here is forwarded for it to consider.
+    if (!vendor.empty())
+        jobData["vendor"]       = vendor;
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -14913,7 +14951,7 @@ S9sRpcClient::registerElasticsearchCluster(
     //
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register Elasticsearch Cluster";
+    job["title"]                = "Register " + distribution + " Cluster";
     job["job_spec"]             = jobSpec;
 
     //
