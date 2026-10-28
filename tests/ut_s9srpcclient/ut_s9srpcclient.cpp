@@ -129,6 +129,9 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster05,     retval);
     PERFORM_TEST(testCreateCluster06,     retval);
     PERFORM_TEST(testRegisterClickHouse,  retval);
+    PERFORM_TEST(testCreateElasticsearchVendor, retval);
+    PERFORM_TEST(testRegisterElasticsearchVendor, retval);
+    PERFORM_TEST(testRegisterElasticsearchMessages, retval);
     PERFORM_TEST(testAddShardClickHouse,  retval);
     PERFORM_TEST(testGetAlarmHistory,     retval);
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
@@ -1319,6 +1322,311 @@ UtS9sRpcClient::testRegisterClickHouse()
     S9S_COMPARE(
             payload.valueByPath(JOB_DATA "nodes").toVariantList().size(),
             1);
+
+    return true;
+}
+
+/**
+ * Both Elastic distributions share the "elastic" cluster type, so the vendor
+ * in the job data is what tells the controller which one to deploy; the job
+ * title names the distribution the user asked for.
+ */
+bool
+UtS9sRpcClient::testCreateElasticsearchVendor()
+{
+    const char *cases[][2] =
+    {
+        { "elasticsearch", "Creating Elasticsearch Cluster" },
+        { "opensearch",    "Creating OpenSearch Cluster"    },
+    };
+
+    for (const auto &testCase : cases)
+    {
+        S9sOptions         *options = S9sOptions::instance();
+        S9sRpcClientTester  client;
+        S9sVariantMap       payload;
+
+        options->m_options.clear();
+        options->m_options["cluster_type"]     = "elastic";
+        options->m_options["vendor"]           = testCase[0];
+        options->m_options["provider_version"] = "2.19";
+        options->setNodes("elastic://NODE1:9200;elastic://NODE2:9200");
+
+        S9S_VERIFY(client.createCluster());
+
+        payload = client.lastPayload();
+        if (isVerbose())
+            printDebug(payload);
+
+        S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+        S9S_COMPARE(
+                payload.valueByPath("/job/title").toString(),
+                testCase[1]);
+
+        S9S_COMPARE(
+                payload.valueByPath("/job/job_spec/command").toString(),
+                "create_cluster");
+
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "cluster_type").toString(),
+                "elastic");
+
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "type").toString(),
+                "elastic");
+
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "vendor").toString(),
+                testCase[0]);
+    }
+
+    return true;
+}
+
+/**
+ * Puts \a vendor into the user's configuration as if s9s.conf set it; an
+ * empty string leaves both configuration files empty.
+ */
+static void
+setConfigVendor(
+        S9sConfigFile   &userConfig,
+        S9sConfigFile   &systemConfig,
+        const S9sString &vendor)
+{
+    S9sString content;
+
+    userConfig   = S9sConfigFile();
+    systemConfig = S9sConfigFile();
+    if (vendor.empty())
+        return;
+
+    content.sprintf("vendor = %s\n", STR(vendor));
+    userConfig.parse(STR(content));
+}
+
+/**
+ * On registration the vendor is optional: when given with --vendor it is
+ * forwarded verbatim so the controller can check it against the distribution
+ * it detects, when omitted the job carries no vendor at all and the controller
+ * relies on detection. A vendor set only in s9s.conf is meant for installing
+ * new clusters, so registration ignores it. A vendor the CLI does not know
+ * keeps the Elasticsearch wording; refusing it is the controller's call.
+ */
+bool
+UtS9sRpcClient::testRegisterElasticsearchVendor()
+{
+    // --vendor, s9s.conf vendor, title, vendor sent (empty: no key).
+    const char *cases[][4] =
+    {
+        { "elasticsearch", "", "Register Elasticsearch Cluster", "elasticsearch" },
+        { "opensearch",    "", "Register OpenSearch Cluster",    "opensearch"    },
+        { "",              "", "Register Elasticsearch Cluster", ""              },
+        { "foo",           "", "Register Elasticsearch Cluster", "foo"           },
+        { "", "opensearch",    "Register Elasticsearch Cluster", ""              },
+        { "", "percona",       "Register Elasticsearch Cluster", ""              },
+    };
+
+    for (const auto &testCase : cases)
+    {
+        S9sOptions         *options = S9sOptions::instance();
+        S9sRpcClientTester  client;
+        S9sVariantMap       payload;
+        S9sVariantMap       jobData;
+        S9sString           vendor       = testCase[0];
+        S9sString           configVendor = testCase[1];
+        S9sString           sentVendor   = testCase[3];
+
+        options->m_options.clear();
+        setConfigVendor(
+                options->m_userConfig, options->m_systemConfig, configVendor);
+        options->m_options["cluster_type"]       = "elastic";
+        options->m_options["db_admin_user_name"] = "admin";
+        options->m_options["db_admin_password"]  = "secret";
+        if (!vendor.empty())
+            options->m_options["vendor"] = vendor;
+
+        options->setNodes("elastic://NODE1:9200");
+
+        // The configured vendor must be visible, or the row proves nothing.
+        if (!configVendor.empty())
+        {
+            S9S_VERIFY(!options->hasVendorOption());
+            S9S_COMPARE(options->vendor(), configVendor);
+        }
+
+        S9S_VERIFY(client.registerCluster());
+
+        payload = client.lastPayload();
+        if (isVerbose())
+            printDebug(payload);
+
+        S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+
+        S9S_COMPARE(
+                payload.valueByPath("/job/title").toString(),
+                testCase[2]);
+
+        S9S_COMPARE(
+                payload.valueByPath("/job/job_spec/command").toString(),
+                "add_cluster");
+
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "cluster_type").toString(),
+                "elastic");
+
+        S9S_COMPARE(
+                payload.valueByPath(JOB_DATA "type").toString(),
+                "elastic");
+
+        jobData = payload.valueByPath("/job/job_spec/job_data").toVariantMap();
+        if (sentVendor.empty())
+        {
+            S9S_VERIFY(!jobData.contains("vendor"));
+        } else {
+            S9S_COMPARE(
+                    payload.valueByPath(JOB_DATA "vendor").toString(),
+                    sentVendor);
+        }
+    }
+
+    setConfigVendor(
+            S9sOptions::instance()->m_userConfig,
+            S9sOptions::instance()->m_systemConfig, "");
+
+    return true;
+}
+
+/**
+ * \returns What S9sRpcClient::registerCluster() prints on the standard error
+ *   for the current options; \a success receives its return value.
+ */
+static S9sString
+registerClusterErrors(
+        S9sRpcClientTester &client,
+        bool               &success)
+{
+    S9sString    retval;
+    FILE        *output = ::tmpfile();
+    int          savedStderr;
+    char         buffer[1024];
+
+    ::fflush(stderr);
+    savedStderr = ::dup(STDERR_FILENO);
+    ::dup2(::fileno(output), STDERR_FILENO);
+
+    success = client.registerCluster();
+
+    ::fflush(stderr);
+    ::dup2(savedStderr, STDERR_FILENO);
+    ::close(savedStderr);
+
+    ::rewind(output);
+    while (::fgets(buffer, sizeof(buffer), output) != NULL)
+        retval += buffer;
+
+    ::fclose(output);
+    return retval;
+}
+
+/**
+ * The messages printed while registering an elastic cluster name the
+ * distribution the vendor selects, and the certificate password hint is only
+ * given for Elasticsearch: OpenSearch has no keystore password to supply.
+ */
+bool
+UtS9sRpcClient::testRegisterElasticsearchMessages()
+{
+    // --vendor, s9s.conf vendor, the distribution the messages name.
+    const char *cases[][3] =
+    {
+        { "elasticsearch", "",           "Elasticsearch" },
+        { "",              "",           "Elasticsearch" },
+        { "opensearch",    "",           "OpenSearch"    },
+        { "foo",           "",           "Elasticsearch" },
+        { "",              "opensearch", "Elasticsearch" },
+    };
+
+    for (const auto &testCase : cases)
+    {
+        S9sOptions         *options = S9sOptions::instance();
+        S9sRpcClientTester  client;
+        S9sString           vendor       = testCase[0];
+        S9sString           configVendor = testCase[1];
+        S9sString           name         = testCase[2];
+        S9sString           errors;
+        S9sString           expected;
+        bool                success;
+
+        // A valid registration: only the certificate hints are printed.
+        options->m_options.clear();
+        setConfigVendor(
+                options->m_userConfig, options->m_systemConfig, configVendor);
+        options->m_options["cluster_type"]       = "elastic";
+        options->m_options["db_admin_user_name"] = "admin";
+        options->m_options["db_admin_password"]  = "secret";
+        if (!vendor.empty())
+            options->m_options["vendor"] = vendor;
+
+        options->setNodes("elastic://NODE1:9200");
+        errors = registerClusterErrors(client, success);
+        if (isVerbose())
+            printf("%s", STR(errors));
+
+        S9S_VERIFY(success);
+
+        expected.sprintf(
+                "Certificated password (--ssl-pass) is recommended for %s "
+                "cluster import. Add node operation may fail without it.",
+                STR(name));
+
+        if (vendor == "opensearch")
+        {
+            S9S_VERIFY(!errors.contains("--ssl-pass"));
+        } else {
+            S9S_VERIFY(errors.contains(STR(expected)));
+        }
+
+        expected.sprintf(
+                "It has not been specified the certificates folder to use "
+                "for %s imported cluster (--move-certs-dir). Add node "
+                "operation may fail without it.",
+                STR(name));
+        S9S_VERIFY(errors.contains(STR(expected)));
+
+        // More than one node.
+        options->setNodes("elastic://NODE1:9200;elastic://NODE2:9200");
+        errors = registerClusterErrors(client, success);
+        S9S_VERIFY(!success);
+
+        expected.sprintf(
+                "%s clusters requires only one cluster's node to discover "
+                "topology", STR(name));
+        S9S_VERIFY(errors.contains(STR(expected)));
+
+        // No database user.
+        options->setNodes("elastic://NODE1:9200");
+        options->m_options.erase("db_admin_user_name");
+        errors = registerClusterErrors(client, success);
+        S9S_VERIFY(!success);
+
+        expected.sprintf("Database user is required for %s cluster", STR(name));
+        S9S_VERIFY(errors.contains(STR(expected)));
+
+        // No database password.
+        options->m_options["db_admin_user_name"] = "admin";
+        options->m_options.erase("db_admin_password");
+        errors = registerClusterErrors(client, success);
+        S9S_VERIFY(!success);
+
+        expected.sprintf(
+                "Database password is required for %s cluster", STR(name));
+        S9S_VERIFY(errors.contains(STR(expected)));
+    }
+
+    setConfigVendor(
+            S9sOptions::instance()->m_userConfig,
+            S9sOptions::instance()->m_systemConfig, "");
 
     return true;
 }
