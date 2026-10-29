@@ -22,10 +22,9 @@ should be performed. This "main option" should be one of the following:
 .B --list
 Gets existing controllers on pool. When providing '--controller-id' specific controller is returned.
 Use 0 or ommit options to get all existing whatchlist.
-Role 'main' is the pool's main controller: in a pool keeping its configuration in
-OpenBao (vault) the active controller with the smallest SID, decided again on every
-pool refresh, so it moves to another controller when it stops and comes back once it
-is active again; in an NFS pool the controller that enabled pool mode. Role 'member'
+Role 'main' is the pool's main controller: the active controller with the smallest
+SID, decided again on every pool refresh, so it moves to another controller when it
+stops and comes back once it is active again. Role 'member'
 is a controller whose host also has a cmon DB instance, an OpenBao node and a
 services bundle, 'controller' any other one (see cmon-pool(5)). With
 \fB--print-json\fP a static pool-member row also says whether SSH credentials are
@@ -108,7 +107,7 @@ registration.
 .RS
 .TP
 .B --conf-storage=MODE
-Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'nfs' or 'k8s'. If omitted, no 'conf_storage' is set on the operation.
+Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'vault' (the CC configuration storage, the default) or 'k8s'. If omitted, no 'conf_storage' is set on the operation. A pool sharing its configuration files over NFS is no longer supported: the controller refuses 'nfs'.
 .TP
 .B --granted-network-mask=MASK
 Optional network mask to grant access to controllers in the pool. This value is passed as 'controllers_network_mask' in the job data when enabling pool mode. If omitted, main controllers local network mask will be used
@@ -116,11 +115,6 @@ Optional network mask to grant access to controllers in the pool. This value is 
 .B --no-require-db-cluster
 Do not require the CC DB cluster (sends 'require_cmon_db_cluster: false'), for a
 caller that manages cmon's DB high availability itself.
-.TP
-.B --no-require-config-storage
-Do not require the CC configuration storage (sends 'require_config_storage: false'):
-the pool is enabled on its configuration files shared over NFS
-(cmon's --config-storage=nfs) instead of the CC configuration storage.
 .RE
 .nf
 s9s pool-controllers --set-pool-mode
@@ -230,10 +224,7 @@ and '--os-password' are refused. Sudo and elevation settings ('--os-sudo-user',
 equivalents) are still sent with the job and override the stored ones; note that
 an 'os_sudo_password' in s9s.conf is sent in the job data too.
 
-In an NFS pool the main controller can't be a target: its services bundle is
-registered when pool mode is enabled or cmon starts in pool mode (see
-\fB--set-pool-mode\fP). In an OpenBao (vault) pool the main controller is a target
-like any other. The job runs on another controller with a services bundle; for a
+The main controller is a target like any other. The job runs on another controller with a services bundle; for a
 controller without SSH credentials stored in the pool (the one that founded it, see
 \fB--remove-controller\fP) it only runs on that controller itself and is refused
 when it can't. Importing
@@ -268,8 +259,7 @@ needed (each downgrade is logged). A services bundle that is already registered 
 the host is refused without '--force' and reinstalled and reconfigured with it. It
 also accepts a target controller that is not
 active or runs jobs, installs the latest packages when the pool's versions are not
-available, and skips the IdP setup when ccmgradm cannot do it. In an NFS pool the main controller
-is refused even with '--force'.
+available, and skips the IdP setup when ccmgradm cannot do it.
 .RE
 
 .TP
@@ -280,8 +270,7 @@ services bundle. Packages are kept. Requires \fB--nodes\fP with exactly one node
 Like \fB--add-services-bundle\fP it takes only the SSH connection settings from the
 stored credentials, and for a target controller without SSH credentials stored in the
 pool it only runs on that controller itself, and is refused when it can't.
-In an NFS pool the main controller's services bundle can't be deleted; in an OpenBao
-(vault) pool it is deleted like any other one. Deleting the last services bundle of
+The main controller's services bundle is deleted like any other one. Deleting the last services bundle of
 the pool is refused, even with '--force': add another one first. '--force'
 unregisters a services bundle whose host cannot be reached, when it is not the last.
 .nf
@@ -309,12 +298,10 @@ Controller stopped successfully.
 .TP
 .B --remove-controller
 Removes a controller instance. The '--controller-id' option is mandatory.
-The controller must be stopped first. In an OpenBao (vault) pool any controller runs
-the job and any stopped controller can be removed, the main controller included; a
-controller whose host was powered off is removed once it has not reported for about
-twice the pool's staleness threshold (about 36 seconds with the default 10-second
-refresh period). In an NFS pool the
-main controller runs the job and can't be removed.
+The controller must be stopped first. Any controller runs the job and any stopped
+controller can be removed, the main controller included; a controller whose host was
+powered off is removed once it has not reported for about twice the pool's staleness
+threshold (about 36 seconds with the default 10-second refresh period).
 The last controller of the pool is refused. A controller whose host runs a services
 bundle is refused: run \fB--delete-services-bundle\fP first, or give '--force' to
 unregister the services bundle with the controller; the controller hosting the last
@@ -337,9 +324,8 @@ s9s pool-controllers --remove-controller --controller-id=2 --uninstall --log
 .TP
 .B --update-cmon
 Updates the cmon package on a controller instance. The '--controller-id' option is mandatory.
-The controller is updated to the version of the controller that runs the job: in an
-OpenBao (vault) pool an active controller running the newest cmon version of the
-pool, in an NFS pool the main controller. It is refused when the target already runs
+The controller is updated to the version of the controller that runs the job: an
+active controller running the newest cmon version of the pool. It is refused when the target already runs
 that version or a newer one (no downgrade), and for a controller without SSH
 credentials stored in the pool (see \fB--remove-controller\fP): update that one
 by hand.

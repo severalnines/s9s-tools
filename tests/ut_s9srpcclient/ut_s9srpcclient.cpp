@@ -4168,9 +4168,10 @@ UtS9sRpcClient::testGetPoolModeReadiness()
 }
 
 /**
- * Testing setPoolMode() with the --no-require-db-cluster and
- * --no-require-config-storage opt-outs: the require_* fields are only sent,
- * as false, when opted out - the controller defaults both to true.
+ * Testing setPoolMode() with the --no-require-db-cluster opt-out:
+ * require_cmon_db_cluster is only sent, as false, when opted out - the
+ * controller defaults it to true. require_config_storage is never sent: the
+ * CC configuration storage has no opt-out (CLUS-9117).
  */
 bool
 UtS9sRpcClient::testSetPoolModePrerequisites()
@@ -4197,22 +4198,7 @@ UtS9sRpcClient::testSetPoolModePrerequisites()
     // The old setPoolMode-side bootstrap is gone.
     S9S_VERIFY(!payload.contains("bootstrap_db_ha"));
 
-    // Both opted out.
-    S9sOptions::uninit();
-    options = S9sOptions::instance();
-    options->m_options["set_pool_mode"]             = true;
-    options->m_options["no_require_db_cluster"]     = true;
-    options->m_options["no_require_config_storage"] = true;
-
-    S9S_VERIFY(client.setPoolMode(options));
-    payload = client.lastPayload();
-
-    S9S_VERIFY(payload.contains("require_cmon_db_cluster"));
-    S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
-    S9S_VERIFY(payload.contains("require_config_storage"));
-    S9S_VERIFY(!payload["require_config_storage"].toBoolean());
-
-    // Only one opted out.
+    // Opted out.
     S9sOptions::uninit();
     options = S9sOptions::instance();
     options->m_options["set_pool_mode"]         = true;
@@ -4221,6 +4207,7 @@ UtS9sRpcClient::testSetPoolModePrerequisites()
     S9S_VERIFY(client.setPoolMode(options));
     payload = client.lastPayload();
 
+    S9S_VERIFY(payload.contains("require_cmon_db_cluster"));
     S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
     S9S_VERIFY(!payload.contains("require_config_storage"));
 
@@ -4499,15 +4486,16 @@ UtS9sRpcClient::testPoolModeSetupCommands()
 
     readiness["missing"] = missing;
 
-    // An opted-out prerequisite gets no command.
+    // An opted-out prerequisite gets no command; the CC configuration
+    // storage has no opt-out.
     dbCluster["db_backend"]            = "mysql";
     dbCluster["migration_required"]    = false;
     dbCluster["migration_supported"]   = true;
     readiness["cmon_db_cluster"] = dbCluster;
-    S9sOptions::instance()->m_options["no_require_config_storage"] = true;
+    S9sOptions::instance()->m_options["no_require_db_cluster"] = true;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
     S9S_COMPARE(commands.size(), 1);
-    S9S_COMPARE(commands[0], "s9s pool-controllers --bootstrap-db --log");
+    S9S_COMPARE(commands[0], "s9s pool-controllers --add-openbao --nodes=HOST --log");
     S9sOptions::uninit();
 
     // Nothing to do when not applicable.
