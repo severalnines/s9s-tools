@@ -302,7 +302,7 @@ The controller must be stopped first. Any controller runs the job and any stoppe
 controller can be removed, the main controller included; a controller whose host was
 powered off is removed once it has not reported for about twice the pool's staleness
 threshold (about 36 seconds with the default 10-second refresh period).
-The last controller of the pool is refused. A controller whose host runs a services
+The last controller of the pool is refused, even with '--force'. A controller whose host runs a services
 bundle is refused: run \fB--delete-services-bundle\fP first, or give '--force' to
 unregister the services bundle with the controller; the controller hosting the last
 services bundle of the pool is refused even with '--force'.
@@ -351,7 +351,7 @@ Removes a cmon DB instance from the pool's cmon DB HA InnoDB Cluster (cluster/Gr
 Replication membership only - the target's own mysqld is left running). Requires
 \fB--nodes\fP with exactly one node, or \fB--node\fP instead. Requires super admin
 privileges. It is refused unless another instance of the cluster is ONLINE, and when
-that can't be told: the last ONLINE instance is never removed.
+that can't be told: the last ONLINE instance is never removed, even with '--force'.
 .nf
 s9s pool-controllers --delete-db --nodes=10.0.1.87:3306 --log
 .fi
@@ -440,9 +440,9 @@ uses, so remove the other nodes first and that one last.
 
 The node the controller's legacy credential store (vault_addr) reads from is
 refused, since that client follows no raft leader; point vault_addr at another
-node first. The last node is refused while the pool still reads its
-configuration from it; move the configuration back with config_storage_revert.sh
-first.
+node first. The last node is refused, even with \fB--force\fP, while the pool
+still reads its configuration from it; move the configuration back with
+config_storage_revert.sh first.
 
 \fB--force\fP skips the cluster health check, but only when the OpenBao node being
 removed does not answer; it does nothing for one that answers. Even with
