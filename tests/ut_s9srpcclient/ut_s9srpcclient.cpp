@@ -86,8 +86,7 @@ S9sRpcClientTester::setReplyFor(
  */
 void
 S9sRpcClientTester::setCannedReply(
-        const S9sString     &operation,
-        const S9sVariantMap &reply)
+        const S9sString &operation, const S9sVariantMap &reply)
 {
     m_replies[operation] = reply;
 }
@@ -98,15 +97,13 @@ S9sRpcClientTester::setCannedReply(
  */
 void
 S9sRpcClientTester::setCannedFailure(
-        const S9sString     &operation,
-        const S9sString     &errorString)
+        const S9sString &operation, const S9sString &errorString)
 {
     m_failures[operation] = errorString;
 }
 
 int
-S9sRpcClientTester::nRequests(
-        const S9sString &operation) const
+S9sRpcClientTester::nRequests(const S9sString &operation) const
 {
     int retval = 0;
 
@@ -125,8 +122,7 @@ S9sRpcClientTester::nRequests(
  * \returns The first request sent with \a operation, empty if none was.
  */
 S9sVariantMap
-S9sRpcClientTester::request(
-        const S9sString &operation) const
+S9sRpcClientTester::request(const S9sString &operation) const
 {
     for (uint idx = 0u; idx < m_requests.size(); ++idx)
     {
@@ -1420,11 +1416,10 @@ UtS9sRpcClient::testRegisterClickHouse()
  *   semicolons), the way the controller answers it.
  */
 static S9sVariantMap
-vendorsReply(
-        const char *vendors)
+vendorsReply(const char *vendors)
 {
-    S9sVariantMap   reply;
-    S9sVariantList  list = S9sString(vendors).split(";");
+    S9sVariantMap  reply;
+    S9sVariantList list = S9sString(vendors).split(";");
 
     reply["request_status"] = "Ok";
     reply["vendors"]        = list;
@@ -1458,7 +1453,8 @@ UtS9sRpcClient::testCreateElasticsearchVendor()
         options->m_options["provider_version"] = "2.19";
         options->setNodes("elastic://NODE1:9200;elastic://NODE2:9200");
         client.setCannedReply(
-                "getVendors", vendorsReply("elasticsearch;opensearch"));
+                "getVendors",
+                vendorsReply("elasticsearch;opensearch"));
 
         S9S_VERIFY(client.createCluster());
 
@@ -1556,7 +1552,8 @@ UtS9sRpcClient::testRegisterElasticsearchVendor()
 
         options->setNodes("elastic://NODE1:9200");
         client.setCannedReply(
-                "getVendors", vendorsReply("elasticsearch;opensearch;foo"));
+                "getVendors",
+                vendorsReply("elasticsearch;opensearch;foo"));
 
         // The configured vendor must be visible, or the row proves nothing.
         if (!configVendor.empty())
@@ -1680,7 +1677,8 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
 
         options->setNodes("elastic://NODE1:9200");
         client.setCannedReply(
-                "getVendors", vendorsReply("elasticsearch;opensearch;foo"));
+                "getVendors",
+                vendorsReply("elasticsearch;opensearch;foo"));
 
         errors = registerClusterErrors(client, success);
         if (isVerbose())
@@ -1756,19 +1754,31 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
 bool
 UtS9sRpcClient::testElasticVendorPrecheck()
 {
-    enum Probe { NoProbe, Lists, Refuses, Fails, NotOk };
-    enum Command { Create, Register };
+    enum Probe
+    {
+        NoProbe,
+        Lists,
+        Refuses,
+        Fails,
+        NotOk
+    };
+    enum Command
+    {
+        Create,
+        Register
+    };
 
     struct Case
     {
-        Command      command;
-        const char  *clusterType;
-        const char  *vendor;
-        const char  *configVendor;
-        Probe        probe;
-        const char  *listed;
+            Command     command;
+            const char *clusterType;
+            const char *vendor;
+            const char *configVendor;
+            Probe       probe;
+            const char *listed;
     };
 
+    // clang-format off
     const Case cases[] =
     {
         { Create,   "elastic", "opensearch",    "",           Lists,
@@ -1791,26 +1801,28 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         { Register, "elastic", "elasticsearch", "",           NoProbe,  "" },
         { Register, "elastic", "",              "opensearch", NoProbe,  "" },
     };
+    // clang-format on
 
     for (const auto &testCase : cases)
     {
-        S9sOptions         *options = S9sOptions::instance();
-        S9sRpcClientTester  client;
-        S9sString           clusterType  = testCase.clusterType;
-        S9sString           vendor       = testCase.vendor;
-        S9sString           configVendor = testCase.configVendor;
-        S9sString           checked      = vendor.empty() ?
-                configVendor : vendor;
-        S9sString           error;
-        S9sString           quoted;
-        S9sVariantMap       probe;
-        S9sVariantMap       notOk;
-        bool                success;
+        S9sOptions        *options = S9sOptions::instance();
+        S9sRpcClientTester client;
+        S9sString          clusterType  = testCase.clusterType;
+        S9sString          vendor       = testCase.vendor;
+        S9sString          configVendor = testCase.configVendor;
+        S9sString          checked = vendor.empty() ? configVendor : vendor;
+        S9sString          error;
+        S9sString          quoted;
+        S9sVariantMap      probe;
+        S9sVariantMap      notOk;
+        bool               success;
 
         options->m_options.clear();
         options->setExitStatus(S9sOptions::ExitOk);
         setConfigVendor(
-                options->m_userConfig, options->m_systemConfig, configVendor);
+                options->m_userConfig,
+                options->m_systemConfig,
+                configVendor);
         options->m_options["cluster_type"]       = clusterType;
         options->m_options["provider_version"]   = "2.19";
         options->m_options["db_admin_user_name"] = "admin";
@@ -1820,30 +1832,33 @@ UtS9sRpcClient::testElasticVendorPrecheck()
 
         if (clusterType == "elastic")
         {
-            options->setNodes(testCase.command == Create ?
-                    "elastic://NODE1:9200;elastic://NODE2:9200" :
-                    "elastic://NODE1:9200");
-        } else {
+            options->setNodes(
+                    testCase.command == Create
+                            ? "elastic://NODE1:9200;elastic://NODE2:9200"
+                            : "elastic://NODE1:9200");
+        }
+        else
+        {
             options->setNodes("NODE1:3306;NODE2:3306;NODE3:3306");
         }
 
         switch (testCase.probe)
         {
-            case NoProbe:
-            case Lists:
-            case Refuses:
-                client.setCannedReply("getVendors", vendorsReply(testCase.listed));
-                break;
+        case NoProbe:
+        case Lists:
+        case Refuses:
+            client.setCannedReply("getVendors", vendorsReply(testCase.listed));
+            break;
 
-            case Fails:
-                client.setCannedFailure("getVendors", "Connection refused.");
-                break;
+        case Fails:
+            client.setCannedFailure("getVendors", "Connection refused.");
+            break;
 
-            case NotOk:
-                notOk["request_status"] = "AccessDenied";
-                notOk["error_string"]   = "Access denied.";
-                client.setCannedReply("getVendors", notOk);
-                break;
+        case NotOk:
+            notOk["request_status"] = "AccessDenied";
+            notOk["error_string"]   = "Access denied.";
+            client.setCannedReply("getVendors", notOk);
+            break;
         }
 
         if (testCase.command == Create)
@@ -1855,8 +1870,11 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         if (isVerbose())
         {
             printf("%s/%s/%s: %s, '%s'\n",
-                    STR(clusterType), STR(vendor), STR(configVendor),
-                    success ? "sent" : "refused", STR(error));
+                   STR(clusterType),
+                   STR(vendor),
+                   STR(configVendor),
+                   success ? "sent" : "refused",
+                   STR(error));
         }
 
         if (testCase.probe == NoProbe)
@@ -1878,8 +1896,9 @@ UtS9sRpcClient::testElasticVendorPrecheck()
             S9S_VERIFY(success);
             S9S_COMPARE(client.nRequests("createJobInstance"), 1);
             S9S_COMPARE(
-                    client.lastPayload().valueByPath(
-                        JOB_DATA "vendor").toString(),
+                    client.lastPayload()
+                            .valueByPath(JOB_DATA "vendor")
+                            .toString(),
                     checked);
             continue;
         }
@@ -1897,10 +1916,13 @@ UtS9sRpcClient::testElasticVendorPrecheck()
             S9S_VERIFY(error.contains("does not list vendor"));
             if (checked == "opensearch")
                 S9S_VERIFY(error.contains("ClusterControl 2.5.1 or later"));
-        } else if (testCase.probe == Fails)
+        }
+        else if (testCase.probe == Fails)
         {
             S9S_VERIFY(error.contains("Connection refused."));
-        } else {
+        }
+        else
+        {
             S9S_VERIFY(error.contains("Access denied."));
         }
 
