@@ -349,7 +349,7 @@ class S9sRpcClient
                            const bool      patchNumber,
                            const bool      useVendorApi);
         bool getClusterTypes();
-        bool getVendors();
+        bool getVendors(const S9sString &clusterType = S9sString());
 
         /*
          * Requests related to cloud credentials operations
@@ -667,6 +667,9 @@ class S9sRpcClient
                 const S9sString      &osUserName,
                 const S9sString      &providerVersion,
                 const S9sString      &clusterType);
+
+        bool checkElasticVendorListed(
+                const S9sString      &vendor);
 
         bool createElasticsearch(
                 const S9sVariantList &hosts,
