@@ -9064,6 +9064,7 @@ S9sOptions::printHelpCluster()
 "  --license=STRING           The license (Evaluation, Developer, etc).\n"
 "  --renew-cert               Renew cluster certificate.\n"
 "Elasticsearch related options\n"
+"  --vendor=VENDOR            The distribution, elasticsearch or opensearch.\n"
 "  --snapshot-repository=NAME The name of the default snapshot repository to create.\n"
 "  --snapshot-repo-type=TYPE  The type of the snapshot repository to create (fs or fs-nfs).\n"
 "  --snapshot-location=PATH   The path of the default snapshot repository to create.\n"
