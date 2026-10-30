@@ -5104,22 +5104,22 @@ elasticDistributionName(
  * Elasticsearch and no vendor need no check, every controller handles them.
  */
 bool
-S9sRpcClient::checkElasticVendorListed(
-        const S9sString &vendor)
+S9sRpcClient::checkElasticVendorListed(const S9sString &vendor)
 {
-    S9sOptions     *options = S9sOptions::instance();
-    S9sRpcReply     vendorsReply;
-    S9sVariantList  vendors;
-    S9sString       controller;
-    S9sString       errorCode;
-    S9sString       message;
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    vendorsReply;
+    S9sVariantList vendors;
+    S9sString      controller;
+    S9sString      errorCode;
+    S9sString      message;
 
     if (vendor.empty() || vendor == "elasticsearch")
         return true;
 
     controller.sprintf(
             "%s:%d",
-            STR(options->controllerHostName()), options->controllerPort());
+            STR(options->controllerHostName()),
+            options->controllerPort());
 
     if (!getVendors("elastic") || !reply().isOk())
     {
@@ -5131,7 +5131,9 @@ S9sRpcClient::checkElasticVendorListed(
         message.sprintf(
                 "Could not check whether the controller at %s lists vendor "
                 "'%s' for elastic clusters: %s",
-                STR(controller), STR(vendor), STR(errorString()));
+                STR(controller),
+                STR(vendor),
+                STR(errorString()));
 
         setError(message, errorCode);
         return false;
@@ -5148,7 +5150,8 @@ S9sRpcClient::checkElasticVendorListed(
     message.sprintf(
             "The controller at %s does not list vendor '%s' for elastic "
             "clusters",
-            STR(controller), STR(vendor));
+            STR(controller),
+            STR(vendor));
 
     if (isOpenSearchVendor(vendor))
         message += "; OpenSearch needs ClusterControl 2.5.1 or later";
@@ -12116,8 +12119,7 @@ S9sRpcClient::getClusterTypes()
  * The method that gets the list of available vendors
  */
 bool
-S9sRpcClient::getVendors(
-        const S9sString &clusterType)
+S9sRpcClient::getVendors(const S9sString &clusterType)
 {
     S9sString      uri = "/v2/dbversions/";
     S9sVariantMap  request;
@@ -14598,8 +14600,7 @@ S9sRpcClient::setError(
  * Replaces the reply as if \a reply had been received from the controller.
  */
 void
-S9sRpcClient::setReply(
-        const S9sVariantMap &reply)
+S9sRpcClient::setReply(const S9sVariantMap &reply)
 {
     m_priv->m_reply = reply;
 }

@@ -157,15 +157,13 @@ class S9sRpcClientTester : public S9sRpcClient
         S9sString payload(const uint index) const;
         S9sVariantMap &lastPayload();
 
-        void setCannedReply(
-                const S9sString     &operation,
-                const S9sVariantMap &reply);
+        void
+        setCannedReply(const S9sString &operation, const S9sVariantMap &reply);
 
         void setCannedFailure(
-                const S9sString     &operation,
-                const S9sString     &errorString);
+                const S9sString &operation, const S9sString &errorString);
 
-        int nRequests(const S9sString &operation) const;
+        int           nRequests(const S9sString &operation) const;
         S9sVariantMap request(const S9sString &operation) const;
 
     protected:

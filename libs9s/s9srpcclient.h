@@ -668,8 +668,7 @@ class S9sRpcClient
                 const S9sString      &providerVersion,
                 const S9sString      &clusterType);
 
-        bool checkElasticVendorListed(
-                const S9sString      &vendor);
+        bool checkElasticVendorListed(const S9sString &vendor);
 
         bool createElasticsearch(
                 const S9sVariantList &hosts,
