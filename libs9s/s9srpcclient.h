@@ -558,6 +558,8 @@ class S9sRpcClient
                 const S9sString &errorString,
                 const S9sString &errorCode = "ConnectError");
 
+        void setReply(const S9sVariantMap &reply);
+
         void printRequestJson(S9sVariantMap &request);
 
         void saveRequestAndReply(

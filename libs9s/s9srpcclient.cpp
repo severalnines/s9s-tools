@@ -14518,6 +14518,16 @@ S9sRpcClient::setError(
     m_priv->m_reply["request_status"] = errorCode;
 }
 
+/**
+ * Replaces the reply as if \a reply had been received from the controller.
+ */
+void
+S9sRpcClient::setReply(
+        const S9sVariantMap &reply)
+{
+    m_priv->m_reply = reply;
+}
+
 S9sVariant
 S9sRpcClient::topologyField(
         const S9sVariantList &nodes)
