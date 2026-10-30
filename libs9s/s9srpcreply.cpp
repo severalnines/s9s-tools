@@ -1984,7 +1984,7 @@ S9sRpcReply::printPoolControllersLong()
     countFormat.setRightJustify();
 
     // A controller participates in the dynamic cluster pool only in these
-    // states. Static controllers (e.g. 'nfs_member') do not own pool clusters,
+    // states. Static controllers (e.g. 'vault_member') do not own pool clusters,
     // so their COUNT/MAX and CLUSTERS columns are rendered as '-'.
     auto isDynamicStatus = [](const S9sString &status) -> bool
     {
@@ -2499,7 +2499,7 @@ configStorageSkipReasonText(
     if (reason == "already_on_vault")
         return "cmon already keeps its configuration in OpenBao";
     else if (reason == "config_storage_not_required")
-        return "--no-require-config-storage, the pool shares its files over NFS";
+        return "the configuration storage was not required, the pool shares its files over NFS";
     else if (reason == "config_storage_not_ready")
         return "no ready configuration storage";
     else if (reason == "pool_mode_already_enabled")
@@ -2565,8 +2565,8 @@ S9sRpcReply::printConfigStorageMigration(
  * Migrating cmon's DB from MariaDB to MySQL is a manual step (see
  * printPoolModeReadinessSummary()), so it is never one of these commands.
  * --bootstrap-db is only suggested once cmon's DB no longer needs migrating
- * and while neither a bootstrap nor a migration is running. Prerequisites opted out
- * of with --no-require-db-cluster/--no-require-config-storage are skipped, and
+ * and while neither a bootstrap nor a migration is running. A CC DB cluster opted
+ * out of with --no-require-db-cluster is skipped, and
  * nothing is suggested when pool mode is on or the readiness is not applicable.
  */
 S9sStringList
@@ -2610,7 +2610,7 @@ S9sRpcReply::poolModeSetupCommands(
             retval << "s9s pool-controllers --bootstrap-db --log";
     }
 
-    if (storageMissing && !options->noRequireConfigStorage())
+    if (storageMissing)
         retval << "s9s pool-controllers --add-openbao --nodes=HOST --log";
 
     return retval;
@@ -2730,9 +2730,8 @@ migrationOutcomeText(
  * while it is still MariaDB that step is printed with a pointer to them, and
  * the state and outcome of a migration (run by the operator) are reported.
  *
- * A prerequisite the user opted out of with --no-require-db-cluster or
- * --no-require-config-storage is still reported, but no command is suggested
- * for it.
+ * A CC DB cluster the user opted out of with --no-require-db-cluster is still
+ * reported, but no command is suggested for it.
  */
 void
 S9sRpcReply::printPoolModeReadinessSummary(
@@ -2848,9 +2847,6 @@ S9sRpcReply::printPoolModeReadinessSummary(
             storageType.empty() ? "" : " (",
             STR(storageType),
             storageType.empty() ? "" : ")");
-
-    if (storageMissing && options->noRequireConfigStorage())
-        ::printf("    (not required, --no-require-config-storage: the pool shares its files over NFS)\n");
 
     if (!storageMissing && !storage["hostname"].toString().empty())
     {

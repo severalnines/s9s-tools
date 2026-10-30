@@ -12254,13 +12254,11 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
         if (!grantedNetworkMask.empty())
             request["controllers_network_mask"] = grantedNetworkMask;
 
-        // Both prerequisites are required by default controller-side; only
-        // an opt-out needs to be transmitted.
+        // The prerequisites are required by default controller-side; only
+        // the CC DB cluster's opt-out needs to be transmitted. The CC
+        // configuration storage has none.
         if (options->noRequireDbCluster())
             request["require_cmon_db_cluster"] = false;
-
-        if (options->noRequireConfigStorage())
-            request["require_config_storage"] = false;
     }
 
     return executeRequest(uri, request);

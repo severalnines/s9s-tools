@@ -1694,9 +1694,9 @@ UtS9sOptions::testListOpenBaoOperations()
 
 /**
  * Testing the staged pool mode options on the pool-controllers subcommand:
- * --bootstrap-db and --pool-readiness, plus the
- * --no-require-db-cluster/--no-require-config-storage opt-outs of
- * --set-pool-mode.
+ * --bootstrap-db and --pool-readiness, plus the --no-require-db-cluster
+ * opt-out of --set-pool-mode. --no-require-config-storage is gone: the CC
+ * configuration storage has no opt-out (CLUS-9117).
  */
 bool
 UtS9sOptions::testPoolModePrerequisites()
@@ -1756,12 +1756,11 @@ UtS9sOptions::testPoolModePrerequisites()
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
 
-    // The opt-outs belong to --set-pool-mode.
+    // The opt-out belongs to --set-pool-mode.
     const char *argv5[] = { "/bin/s9s",
                             "pool-controllers",
                             "--set-pool-mode",
                             "--no-require-db-cluster",
-                            "--no-require-config-storage",
                             nullptr };
     int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
 
@@ -1770,7 +1769,6 @@ UtS9sOptions::testPoolModePrerequisites()
     S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
     S9S_VERIFY(options->isSetPoolModeRequested());
     S9S_VERIFY(options->noRequireDbCluster());
-    S9S_VERIFY(options->noRequireConfigStorage());
 
     const char *argv6[] = { "/bin/s9s",
                             "pool-controllers",
@@ -1782,7 +1780,6 @@ UtS9sOptions::testPoolModePrerequisites()
     options = S9sOptions::instance();
     S9S_VERIFY(options->readOptions(&argc6, (char **)argv6));
     S9S_VERIFY(!options->noRequireDbCluster());
-    S9S_VERIFY(!options->noRequireConfigStorage());
 
     // ... and are rejected with anything else, even the readiness check.
     const char *argv7[] = { "/bin/s9s",
@@ -1799,13 +1796,49 @@ UtS9sOptions::testPoolModePrerequisites()
     const char *argv8[] = { "/bin/s9s",
                             "pool-controllers",
                             "--unset-pool-mode",
-                            "--no-require-config-storage",
+                            "--no-require-db-cluster",
                             nullptr };
     int         argc8   = sizeof(argv8) / sizeof(char *) - 1;
 
     S9sOptions::uninit();
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc8, (char **)argv8));
+
+    // --no-require-config-storage is no option any more, nor is
+    // --conf-storage=nfs.
+    const char *argv9[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--set-pool-mode",
+                            "--no-require-config-storage",
+                            nullptr };
+    int         argc9   = sizeof(argv9) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc9, (char **)argv9));
+
+    const char *argv10[] = { "/bin/s9s",
+                             "pool-controllers",
+                             "--set-pool-mode",
+                             "--conf-storage=nfs",
+                             nullptr };
+    int         argc10   = sizeof(argv10) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc10, (char **)argv10));
+
+    const char *argv11[] = { "/bin/s9s",
+                             "pool-controllers",
+                             "--set-pool-mode",
+                             "--conf-storage=vault",
+                             nullptr };
+    int         argc11   = sizeof(argv11) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc11, (char **)argv11));
+    S9S_COMPARE(options->confStorage(), "vault");
 
     S9sOptions::uninit();
     return true;
