@@ -23,8 +23,9 @@ should be performed. This "main option" should be one of the following:
 Gets existing controllers on pool. When providing '--controller-id' specific controller is returned.
 Use 0 or ommit options to get all existing whatchlist.
 Role 'main' is the pool's main controller: the active controller with the smallest
-SID, decided again on every pool refresh, so it moves to another controller when it
-stops and comes back once it is active again. Role 'member'
+SID (else a starting, then an inactive one), decided again on every pool refresh, so
+it moves to another controller when it stops and comes back once it is active again.
+On k8s every controller is 'main'. Role 'member'
 is a controller whose host also has a cmon DB instance, an OpenBao node and a
 services bundle, 'controller' any other one (see cmon-pool(5)). With
 \fB--print-json\fP a static pool-member row also says whether SSH credentials are
@@ -107,7 +108,7 @@ registration.
 .RS
 .TP
 .B --conf-storage=MODE
-Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'vault' (the CC configuration storage, the default) or 'k8s'. If omitted, no 'conf_storage' is set on the operation. A pool sharing its configuration files over NFS is no longer supported: the controller refuses 'nfs'.
+Optional storage backend for controller configuration when enabling pool mode. Allowed values: 'vault' (the CC configuration storage, the default) or 'k8s'. If omitted, no 'conf_storage' is set on the operation. A pool sharing its configuration files over NFS is no longer supported: the controller refuses 'nfs'. 'vault' needs a controller with CLUS-9117 (2.5.1 or later): an older controller treats any value other than 'k8s' as NFS.
 .TP
 .B --granted-network-mask=MASK
 Optional network mask to grant access to controllers in the pool. This value is passed as 'controllers_network_mask' in the job data when enabling pool mode. If omitted, main controllers local network mask will be used
