@@ -91,6 +91,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testUpdateAccountMissingPassword, retval);
     PERFORM_TEST(testUpdateCreateMutualExclusion, retval);
     PERFORM_TEST(testAddShard, retval);
+    PERFORM_TEST(testRemoveShard, retval);
     PERFORM_TEST(testShardId, retval);
 
     return retval;
@@ -2384,7 +2385,45 @@ UtS9sOptions::testAddShard()
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
     S9S_COMPARE(options->errorString(),
-            "The --shard-id option can only be used with --add-node.");
+            "The --shard-id option can only be used with --add-node or "
+            "--remove-shard.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testRemoveShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isRemoveShardRequested());
+    S9S_COMPARE(options->shardId(), 3);
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
+    S9S_COMPARE(options->errorString(),
+            "The --remove-shard option needs --shard-id to name the shard "
+            "to remove.");
 
     S9sOptions::uninit();
     return true;
