@@ -212,7 +212,12 @@ S9sBusinessLogic::execute()
         } else if (options->isRemoveShardRequested())
         {
             success = client.removeShard();
+            // Reporting maps the refusal's error reply to Failed; a request s9s refused itself stays BadOptions.
+            const bool refused =
+                !success && options->exitStatus() == S9sOptions::BadOptions;
             maybeJobRegistered(client, clusterId, success);
+            if (refused)
+                options->setExitStatus(S9sOptions::BadOptions);
         } else if (options->isReinstallNodeRequested())
         {
             success = client.reinstallNode();
