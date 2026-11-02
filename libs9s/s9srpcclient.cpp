@@ -5091,6 +5091,30 @@ isOpenSearchVendor(
     return vendor == "opensearch";
 }
 
+/**
+ * \returns An error naming \a vendor when it is neither elasticsearch nor
+ *   opensearch, otherwise an empty string.
+ *
+ * The controller lists the vendors of all cluster types together, so it
+ * cannot be relied on to refuse a vendor that is not an elastic one.
+ */
+static S9sString
+nonElasticVendorError(const S9sString &vendor)
+{
+    S9sString message;
+
+    if (!vendor.empty() && vendor != "elasticsearch"
+        && !isOpenSearchVendor(vendor))
+    {
+        message.sprintf(
+                "Vendor '%s' is not an elastic vendor; use "
+                "--vendor=elasticsearch or --vendor=opensearch.",
+                STR(vendor));
+    }
+
+    return message;
+}
+
 static S9sString
 elasticDistributionName(
         const S9sString &vendor)
@@ -5205,16 +5229,9 @@ S9sRpcClient::createElasticsearch(
         return false;
     }
 
-    // The controller lists the vendors of all cluster types together, so it
-    // cannot be relied on to refuse a vendor that is not an elastic one.
-    if (!vendor.empty() && vendor != "elasticsearch"
-        && !isOpenSearchVendor(vendor))
+    message = nonElasticVendorError(vendor);
+    if (!message.empty())
     {
-        message.sprintf(
-                "Vendor '%s' is not an elastic vendor; use "
-                "--vendor=elasticsearch or --vendor=opensearch.",
-                STR(vendor));
-
         setError(message, "InvalidRequest");
         return false;
     }
@@ -14989,6 +15006,7 @@ S9sRpcClient::registerElasticsearchCluster(
     S9sString       vendor = options->hasVendorOption() ?
             options->vendor() : S9sString();
     S9sString       distribution = elasticDistributionName(vendor);
+    S9sString       message      = nonElasticVendorError(vendor);
 
     if (hosts.size() < 1u)
     {
@@ -15000,6 +15018,12 @@ S9sRpcClient::registerElasticsearchCluster(
     {
 
         PRINT_ERROR("%s clusters requires only one cluster's node to discover topology", STR(distribution));
+        return false;
+    }
+
+    if (!message.empty())
+    {
+        setError(message, "InvalidRequest");
         return false;
     }
 
