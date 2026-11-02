@@ -209,6 +209,10 @@ S9sBusinessLogic::execute()
         {
             success = client.addShard();
             maybeJobRegistered(client, clusterId, success);
+        } else if (options->isRemoveShardRequested())
+        {
+            success = client.removeShard();
+            maybeJobRegistered(client, clusterId, success);
         } else if (options->isReinstallNodeRequested())
         {
             success = client.reinstallNode();

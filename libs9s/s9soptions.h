@@ -799,6 +799,7 @@ class S9sOptions
         bool isUninstallCmonAgentsRequested() const;
         bool isAddNodeRequested() const;
         bool isAddShardRequested() const;
+        bool isRemoveShardRequested() const;
         bool isReinstallNodeRequested() const;
         bool isReconfigureNodeRequested() const;
         bool isRemoveNodeRequested() const;

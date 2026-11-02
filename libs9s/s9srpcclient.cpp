@@ -5941,6 +5941,61 @@ S9sRpcClient::addShard()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::removeShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (options->shardId() <= 0)
+    {
+        PRINT_ERROR(
+                "The --remove-shard option needs --shard-id to name the "
+                "shard to remove.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (!getCluster(options->clusterName(), options->clusterId()))
+        return false;
+
+    S9sRpcReply clusterReply = reply();
+    if (!clusterReply.isOk())
+        return true;
+
+    S9sVariantList clusters = clusterReply.clusters();
+    S9sString clusterType = clusters.empty()
+            ? S9sString()
+            : S9sCluster(clusters[0].toVariantMap()).clusterType().toLower();
+    if (clusterType != "clickhouse")
+    {
+        PRINT_ERROR(
+                "The --remove-shard option is only supported for ClickHouse "
+                "clusters.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    S9sVariantMap request = composeRequest();
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    jobData["shard_id"]  = options->shardId();
+
+    jobSpec["command"]   = "remove_shard";
+    jobSpec["job_data"]  = jobData;
+
+    job["title"]         = "Remove Shard from Cluster";
+    job["job_spec"]      = jobSpec;
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest("/v2/jobs/", request);
+}
+
 /**
  * This method is executed when the --reconfigure option is used like in 
  * s9s cluster --reinstall-node --cluster-id=X --nodes=
