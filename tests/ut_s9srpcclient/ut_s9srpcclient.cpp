@@ -22,6 +22,7 @@
 #include "s9snode.h"
 #include "s9soptions.h"
 #include "s9srpcreply.h"
+#include "s9srpcclient_p.h"
 
 #include <cstdio>
 #include <unistd.h>
@@ -149,6 +150,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testCreateCluster06,     retval);
     PERFORM_TEST(testRegisterClickHouse,  retval);
     PERFORM_TEST(testAddShardClickHouse,  retval);
+    PERFORM_TEST(testRemoveShard,         retval);
     PERFORM_TEST(testGetAlarmHistory,     retval);
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
@@ -1380,6 +1382,85 @@ UtS9sRpcClient::testAddShardClickHouse()
     S9S_VERIFY(payload.valueByPath(JOB_DATA "install_software").toBoolean());
     S9S_VERIFY(payload.valueByPath(JOB_DATA "disable_firewall").toBoolean());
 
+    return true;
+}
+
+bool
+UtS9sRpcClient::testRemoveShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    // The tester never contacts a controller, so the cluster lookup answers with this reply.
+    const auto setClusterReply = [](S9sRpcClient &client, int clusterId,
+            const char *clusterName, const char *clusterType)
+    {
+        S9sVariantMap cluster;
+        cluster["cluster_id"]   = clusterId;
+        cluster["cluster_name"] = clusterName;
+        cluster["cluster_type"] = clusterType;
+
+        S9sVariantMap reply;
+        reply["request_status"] = "Ok";
+        reply["cluster"]        = cluster;
+        client.m_priv->m_reply  = reply;
+    };
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        setClusterReply(client, 5, "ch", "CLICKHOUSE");
+
+        S9S_VERIFY(client.removeShard());
+        S9S_COMPARE(client.uri(0), "/v2/clusters/");
+        S9S_COMPARE(client.uri(1), "/v2/jobs/");
+
+        S9sVariantMap payload = client.lastPayload();
+        S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+        S9S_COMPARE(payload["cluster_id"], 5);
+        S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Remove Shard from Cluster");
+        S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(), "remove_shard");
+        S9S_COMPARE(payload.valueByPath(JOB_DATA "shard_id"), 2);
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        setClusterReply(client, 5, "galera", "GALERA");
+
+        S9S_VERIFY(!client.removeShard());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(client.uri(1), "");
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        setClusterReply(client, 7, "other", "CLICKHOUSE");
+
+        S9S_VERIFY(!client.removeShard());
+        S9S_COMPARE(client.uri(1), "");
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["shard_id"] = 2;
+        options->m_userConfig.parse("[global]\ndefault_cluster_id = 5\n");
+        setClusterReply(client, 5, "ch", "CLICKHOUSE");
+
+        S9S_VERIFY(client.removeShard());
+        S9S_COMPARE(client.uri(1), "/v2/jobs/");
+        S9S_COMPARE(client.lastPayload().valueByPath(JOB_DATA "shard_id"), 2);
+        options->m_userConfig.parse("");
+    }
+
+    options->setExitStatus(S9sOptions::ExitOk);
     return true;
 }
 

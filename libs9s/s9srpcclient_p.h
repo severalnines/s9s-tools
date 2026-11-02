@@ -77,5 +77,6 @@ class S9sRpcClientPrivate
         S9sVariantList  m_controllers;
         S9sVector<S9sController> m_servers;
         friend class S9sRpcClient;
+        friend class UtS9sRpcClient;
 };
 

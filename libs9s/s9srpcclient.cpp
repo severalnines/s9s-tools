@@ -5966,9 +5966,16 @@ S9sRpcClient::removeShard()
               cluster.clusterId() == options->clusterId();
     if (clusters.empty() || !requested)
     {
-        PRINT_ERROR(
-                "The --remove-shard option needs the --cluster-id or "
-                "--cluster-name of an existing cluster.");
+        if (byName)
+            PRINT_ERROR(
+                    "The cluster '%s' given by --cluster-name was not found, "
+                    "or default_cluster_id in s9s.conf selects another "
+                    "cluster; use --cluster-id.",
+                    STR(options->clusterName()));
+        else
+            PRINT_ERROR(
+                    "The --remove-shard option needs the --cluster-id or "
+                    "--cluster-name of an existing cluster.");
 
         options->setExitStatus(S9sOptions::BadOptions);
         return false;
