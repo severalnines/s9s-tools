@@ -5193,6 +5193,11 @@ S9sRpcClient::createElasticsearch(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    // Only --vendor counts: a vendor in s9s.conf is usually set for another
+    // cluster type, percona for MySQL say, and must not pick the distribution.
+    S9sString vendor
+            = options->hasVendorOption() ? options->vendor() : S9sString();
+    S9sString message;
 
     if (hosts.size() < 1u)
     {
@@ -5200,7 +5205,21 @@ S9sRpcClient::createElasticsearch(
         return false;
     }
 
-    if (!checkElasticVendorListed(options->vendor()))
+    // The controller lists the vendors of all cluster types together, so it
+    // cannot be relied on to refuse a vendor that is not an elastic one.
+    if (!vendor.empty() && vendor != "elasticsearch"
+        && !isOpenSearchVendor(vendor))
+    {
+        message.sprintf(
+                "Vendor '%s' is not an elastic vendor; use "
+                "--vendor=elasticsearch or --vendor=opensearch.",
+                STR(vendor));
+
+        setError(message, "InvalidRequest");
+        return false;
+    }
+
+    if (!checkElasticVendorListed(vendor))
         return false;
 
     addCredentialsToJobData(jobData);
@@ -5217,8 +5236,8 @@ S9sRpcClient::createElasticsearch(
     jobData["disable_firewall"] = !options->keepFirewall();
     setDeployAgentsIfRequested(jobData);
 
-    if (!options->vendor().empty())
-        jobData["vendor"]       = options->vendor();
+    if (!vendor.empty())
+        jobData["vendor"] = vendor;
 
     if (options->noInstall())
     {
@@ -5241,8 +5260,7 @@ S9sRpcClient::createElasticsearch(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Creating " +
-        elasticDistributionName(options->vendor()) + " Cluster";
+    job["title"] = "Creating " + elasticDistributionName(vendor) + " Cluster";
     job["job_spec"]             = jobSpec;
 
     // 
