@@ -1747,9 +1747,16 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
  * deploys Elasticsearch whatever was asked for. Before sending a create or
  * register job for any other elastic vendor the client asks the controller
  * for the vendors it lists, and refuses, without sending the job, when the
- * vendor is missing or the question cannot be answered. Elasticsearch, a
- * register without --vendor and other cluster types never ask; a create
- * without any vendor is refused earlier, before the builder runs.
+ * vendor is missing or the question cannot be answered. Elasticsearch, no
+ * --vendor and other cluster types never ask.
+ *
+ * Only --vendor counts for an elastic create, as for a register: a vendor set
+ * in s9s.conf, such as percona for MySQL clusters, is neither checked nor
+ * sent, so the controller deploys Elasticsearch. A create with an explicit
+ * vendor other than elasticsearch or opensearch is refused by s9s without
+ * asking, because the controller lists the vendors of all cluster types
+ * together and would list percona. A create without any vendor, on the
+ * command line or in s9s.conf, is refused earlier, before the builder runs.
  */
 bool
 UtS9sRpcClient::testElasticVendorPrecheck()
@@ -1760,7 +1767,8 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         Lists,
         Refuses,
         Fails,
-        NotOk
+        NotOk,
+        Local
     };
     enum Command
     {
@@ -1787,8 +1795,12 @@ UtS9sRpcClient::testElasticVendorPrecheck()
             "percona;elasticsearch" },
         { Create,   "elastic", "opensearch",    "",           Fails,    "" },
         { Create,   "elastic", "opensearch",    "",           NotOk,    "" },
-        { Create,   "elastic", "",              "opensearch", Refuses,
-            "elasticsearch" },
+        { Create,   "elastic", "",              "percona",    NoProbe,
+            "percona;elasticsearch;opensearch" },
+        { Create,   "elastic", "",              "opensearch", NoProbe,
+            "elasticsearch;opensearch" },
+        { Create,   "elastic", "percona",       "",           Local,
+            "percona;elasticsearch;opensearch" },
         { Create,   "elastic", "elasticsearch", "",           NoProbe,  "" },
         { Create,   "galera",  "percona",       "",           NoProbe,  "" },
         { Register, "elastic", "opensearch",    "",           Lists,
@@ -1810,7 +1822,6 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         S9sString          clusterType  = testCase.clusterType;
         S9sString          vendor       = testCase.vendor;
         S9sString          configVendor = testCase.configVendor;
-        S9sString          checked = vendor.empty() ? configVendor : vendor;
         S9sString          error;
         S9sString          quoted;
         S9sVariantMap      probe;
@@ -1847,6 +1858,7 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         case NoProbe:
         case Lists:
         case Refuses:
+        case Local:
             client.setCannedReply("getVendors", vendorsReply(testCase.listed));
             break;
 
@@ -1882,6 +1894,27 @@ UtS9sRpcClient::testElasticVendorPrecheck()
             S9S_COMPARE(client.nRequests("getVendors"), 0);
             S9S_VERIFY(success);
             S9S_COMPARE(client.nRequests("createJobInstance"), 1);
+            S9S_COMPARE(
+                    client.lastPayload()
+                            .valueByPath(JOB_DATA "vendor")
+                            .toString(),
+                    vendor);
+            continue;
+        }
+
+        // Refused by s9s itself: the controller is never asked, no job is
+        // sent, the error names the vendor and the two elastic vendors.
+        if (testCase.probe == Local)
+        {
+            S9S_VERIFY(!success);
+            S9S_COMPARE(client.nRequests("getVendors"), 0);
+            S9S_COMPARE(client.nRequests("createJobInstance"), 0);
+            quoted = "'" + vendor + "'";
+            S9S_VERIFY(error.contains(STR(quoted)));
+            S9S_VERIFY(error.contains("elasticsearch"));
+            S9S_VERIFY(error.contains("opensearch"));
+            client.setExitStatus();
+            S9S_VERIFY(options->exitStatus() != S9sOptions::ExitOk);
             continue;
         }
 
@@ -1899,7 +1932,7 @@ UtS9sRpcClient::testElasticVendorPrecheck()
                     client.lastPayload()
                             .valueByPath(JOB_DATA "vendor")
                             .toString(),
-                    checked);
+                    vendor);
             continue;
         }
 
@@ -1907,14 +1940,14 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         // controller, and the exit status is a failure.
         S9S_VERIFY(!success);
         S9S_COMPARE(client.nRequests("createJobInstance"), 0);
-        quoted = "'" + checked + "'";
+        quoted = "'" + vendor + "'";
         S9S_VERIFY(error.contains(STR(quoted)));
         S9S_VERIFY(error.contains("controller"));
 
         if (testCase.probe == Refuses)
         {
             S9S_VERIFY(error.contains("does not list vendor"));
-            if (checked == "opensearch")
+            if (vendor == "opensearch")
                 S9S_VERIFY(error.contains("ClusterControl 2.5.1 or later"));
         }
         else if (testCase.probe == Fails)
