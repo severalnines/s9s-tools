@@ -1514,8 +1514,8 @@ setConfigVendor(
  * forwarded verbatim so the controller can check it against the distribution
  * it detects, when omitted the job carries no vendor at all and the controller
  * relies on detection. A vendor set only in s9s.conf is meant for installing
- * new clusters, so registration ignores it. A vendor the CLI does not know
- * but the controller lists keeps the Elasticsearch wording.
+ * new clusters, so registration ignores it. A vendor other than elasticsearch
+ * or opensearch is refused, see testElasticVendorPrecheck.
  */
 bool
 UtS9sRpcClient::testRegisterElasticsearchVendor()
@@ -1526,7 +1526,6 @@ UtS9sRpcClient::testRegisterElasticsearchVendor()
         { "elasticsearch", "", "Register Elasticsearch Cluster", "elasticsearch" },
         { "opensearch",    "", "Register OpenSearch Cluster",    "opensearch"    },
         { "",              "", "Register Elasticsearch Cluster", ""              },
-        { "foo",           "", "Register Elasticsearch Cluster", "foo"           },
         { "", "opensearch",    "Register Elasticsearch Cluster", ""              },
         { "", "percona",       "Register Elasticsearch Cluster", ""              },
     };
@@ -1553,7 +1552,7 @@ UtS9sRpcClient::testRegisterElasticsearchVendor()
         options->setNodes("elastic://NODE1:9200");
         client.setCannedReply(
                 "getVendors",
-                vendorsReply("elasticsearch;opensearch;foo"));
+                vendorsReply("elasticsearch;opensearch"));
 
         // The configured vendor must be visible, or the row proves nothing.
         if (!configVendor.empty())
@@ -1650,7 +1649,6 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
         { "elasticsearch", "",           "Elasticsearch" },
         { "",              "",           "Elasticsearch" },
         { "opensearch",    "",           "OpenSearch"    },
-        { "foo",           "",           "Elasticsearch" },
         { "",              "opensearch", "Elasticsearch" },
     };
 
@@ -1678,7 +1676,7 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
         options->setNodes("elastic://NODE1:9200");
         client.setCannedReply(
                 "getVendors",
-                vendorsReply("elasticsearch;opensearch;foo"));
+                vendorsReply("elasticsearch;opensearch"));
 
         errors = registerClusterErrors(client, success);
         if (isVerbose())
@@ -1752,10 +1750,10 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
  *
  * Only --vendor counts for an elastic create, as for a register: a vendor set
  * in s9s.conf, such as percona for MySQL clusters, is neither checked nor
- * sent, so the controller deploys Elasticsearch. A create with an explicit
- * vendor other than elasticsearch or opensearch is refused by s9s without
- * asking, because the controller lists the vendors of all cluster types
- * together and would list percona. A create without any vendor, on the
+ * sent, so the controller deploys Elasticsearch. A create or register with an
+ * explicit vendor other than elasticsearch or opensearch is refused by s9s
+ * without asking, because the controller lists the vendors of all cluster
+ * types together and would list percona. A create without any vendor, on the
  * command line or in s9s.conf, is refused earlier, before the builder runs.
  */
 bool
@@ -1808,8 +1806,10 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         { Register, "elastic", "opensearch",    "",           Refuses,
             "elasticsearch" },
         { Register, "elastic", "opensearch",    "",           Fails,    "" },
-        { Register, "elastic", "foo",           "",           Refuses,
-            "elasticsearch;opensearch" },
+        { Register, "elastic", "foo",           "",           Local,
+            "elasticsearch;opensearch;foo" },
+        { Register, "elastic", "percona",       "",           Local,
+            "percona;elasticsearch;opensearch" },
         { Register, "elastic", "elasticsearch", "",           NoProbe,  "" },
         { Register, "elastic", "",              "opensearch", NoProbe,  "" },
     };
