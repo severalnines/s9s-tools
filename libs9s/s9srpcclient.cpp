@@ -14948,8 +14948,8 @@ S9sRpcClient::registerElasticsearchCluster(
     if (!checkElasticVendorListed(vendor))
         return false;
 
-    // Advisory: the controller decides the distribution from the node; the
-    // vendor given here is forwarded for it to consider.
+    // The controller reads the distribution from the node and fails the import
+    // when a vendor sent here differs from the one the node reports.
     if (!vendor.empty())
         jobData["vendor"]       = vendor;
 
