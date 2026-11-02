@@ -1434,6 +1434,9 @@ UtS9sRpcClient::testRemoveShard()
         S9S_VERIFY(!client.removeShard());
         S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
         S9S_COMPARE(client.uri(1), "");
+        S9S_VERIFY(!client.reply().isOk());
+        S9S_COMPARE(client.errorString(),
+                "The --remove-shard option is only supported for ClickHouse clusters.");
     }
 
     {

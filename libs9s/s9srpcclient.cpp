@@ -5964,31 +5964,39 @@ S9sRpcClient::removeShard()
             ? cluster.name() == options->clusterName()
             : S9S_CLUSTER_ID_IS_VALID(options->clusterId()) &&
               cluster.clusterId() == options->clusterId();
+    // The cluster lookup's reply would otherwise be reported as the result of the refused request.
+    const auto refuse = [&](const S9sString &message)
+    {
+        m_priv->m_reply.clear();
+        m_priv->m_reply["request_status"] = "InvalidRequest";
+        m_priv->m_reply["error_string"]   = message;
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    };
+
     if (clusters.empty() || !requested)
     {
         if (byName)
-            PRINT_ERROR(
+        {
+            S9sString message;
+            message.sprintf(
                     "The cluster '%s' given by --cluster-name was not found, "
                     "or default_cluster_id in s9s.conf selects another "
                     "cluster; use --cluster-id.",
                     STR(options->clusterName()));
-        else
-            PRINT_ERROR(
-                    "The --remove-shard option needs the --cluster-id or "
-                    "--cluster-name of an existing cluster.");
+            return refuse(message);
+        }
 
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
+        return refuse(
+                "The --remove-shard option needs the --cluster-id or "
+                "--cluster-name of an existing cluster.");
     }
 
     if (cluster.clusterType().toLower() != "clickhouse")
     {
-        PRINT_ERROR(
+        return refuse(
                 "The --remove-shard option is only supported for ClickHouse "
                 "clusters.");
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
     }
 
     S9sVariantMap request = composeRequest();
