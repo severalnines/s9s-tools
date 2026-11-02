@@ -13788,6 +13788,16 @@ S9sOptions::checkOptionsCluster()
         return false;
     }
 
+    if (isRemoveShardRequested() && shardId() <= 0)
+    {
+        m_errorMessage =
+            "The --remove-shard option needs --shard-id to name the shard "
+            "to remove.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
     return true;
 }
 

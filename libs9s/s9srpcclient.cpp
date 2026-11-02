@@ -5946,16 +5946,6 @@ S9sRpcClient::removeShard()
 {
     S9sOptions *options = S9sOptions::instance();
 
-    if (options->shardId() <= 0)
-    {
-        PRINT_ERROR(
-                "The --remove-shard option needs --shard-id to name the "
-                "shard to remove.");
-
-        options->setExitStatus(S9sOptions::BadOptions);
-        return false;
-    }
-
     if (!getCluster(options->clusterName(), options->clusterId()))
         return false;
 
