@@ -279,6 +279,16 @@ S9sRpcClient::maybeAuthenticate()
 
 
 /**
+ * Replaces the last reply, as if \p reply came from the controller.
+ */
+void
+S9sRpcClient::setReply(
+        const S9sVariantMap &reply)
+{
+    m_priv->m_reply = reply;
+}
+
+/**
  * \returns the reply that received from the controller.
  *
  * The reply the controller sends is a JSON string which is parsed by the
@@ -12554,14 +12564,13 @@ S9sRpcClient::addServicesBundle(S9sOptions *options)
 /**
  * \returns the controller_id of the one services bundle that
  *   \p servicesBundles (the getServicesBundles list) has on \p hostName, or
- *   0 when there is none or more than one. With \p orphanOnly only the
- *   orphaned ones (status "orphaned") count.
+ *   0 when there is none or more than one. The status is not checked: an
+ *   orphan is listed with a normal status too, and cmon decides if it is one.
  */
 int
 S9sRpcClient::servicesBundleControllerId(
         const S9sVariantList &servicesBundles,
-        const S9sString      &hostName,
-        bool                  orphanOnly)
+        const S9sString      &hostName)
 {
     int controllerId = 0;
     int found        = 0;
@@ -12571,9 +12580,6 @@ S9sRpcClient::servicesBundleControllerId(
         S9sVariantMap servicesBundle = servicesBundles[idx].toVariantMap();
 
         if (servicesBundle["hostname"].toString() != hostName)
-            continue;
-
-        if (orphanOnly && servicesBundle["status"].toString() != "orphaned")
             continue;
 
         controllerId = servicesBundle["controller_id"].toInt();
@@ -12593,8 +12599,8 @@ S9sRpcClient::servicesBundleControllerId(
  * the host now, so cmon deletes nothing if another one replaced it before
  * the job runs. When the list cannot be read, or does not show exactly one
  * services bundle there, no controller_id is sent and cmon works as before.
- * With --orphan-only the job carries orphan_only: cmon then deletes an
- * orphaned services bundle only.
+ * With --orphan-only the job also carries orphan_only: cmon then deletes the
+ * services bundle only if it is an orphan (its controller left the pool).
  */
 bool
 S9sRpcClient::deleteServicesBundle(S9sOptions *options)
@@ -12629,11 +12635,16 @@ S9sRpcClient::deleteServicesBundle(S9sOptions *options)
     if (orphanOnly)
         jobData["orphan_only"] = true;
 
-    if (getServicesBundles(options) && reply().isOk())
+    // Read the list quietly: --print-request shows only the job request.
+    S9sVariantMap listRequest;
+    listRequest["operation"] = "getServicesBundles";
+
+    if (executeRequest("/v2/poolcontrollers/", listRequest, false) &&
+            reply().isOk())
     {
         S9sRpcReply listReply = reply();
         const int controllerId = servicesBundleControllerId(
-                listReply["services_bundles"].toVariantList(), hostName, orphanOnly);
+                listReply["services_bundles"].toVariantList(), hostName);
 
         if (controllerId > 0)
             jobData["controller_id"] = controllerId;

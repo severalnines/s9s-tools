@@ -153,6 +153,9 @@ class S9sRpcClientTester : public S9sRpcClient
         S9sString uri(const uint index) const;
         S9sString payload(const uint index) const;
         S9sVariantMap &lastPayload();
+        void setReplyFor(
+                const S9sString     &operation,
+                const S9sVariantMap &reply);
 
     protected:
        virtual bool 
@@ -165,5 +168,6 @@ class S9sRpcClientTester : public S9sRpcClient
         S9sVariantList    m_urls;
         S9sVariantList    m_payloads;
         S9sVariantMap     m_lastPayload;
+        S9sVariantMap     m_repliesByOperation;
 };
 

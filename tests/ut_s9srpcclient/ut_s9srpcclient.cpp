@@ -49,7 +49,26 @@ S9sRpcClientTester::doExecuteRequest(
     m_payloads << payload.toString();
     m_lastPayload = payload;
 
+    // Give the canned reply for this operation, or an empty one.
+    const S9sString operation = payload["operation"].toString();
+
+    if (m_repliesByOperation.contains(operation))
+        setReply(m_repliesByOperation.at(operation).toVariantMap());
+    else
+        setReply(S9sVariantMap());
+
     return true;
+}
+
+/**
+ * Sets the reply the tester gives to every request of \p operation.
+ */
+void
+S9sRpcClientTester::setReplyFor(
+        const S9sString     &operation,
+        const S9sVariantMap &reply)
+{
+    m_repliesByOperation[operation] = reply;
 }
 
 S9sString 
@@ -3922,6 +3941,52 @@ UtS9sRpcClient::testDeleteServicesBundle()
     S9S_VERIFY(jobData["orphan_only"].toBoolean());
     S9S_VERIFY(!jobData.contains("controller_id"));
 
+    // The list shows one services bundle on the host: its controller_id is
+    // sent, whatever its status, with and without --orphan-only.
+    S9sVariantMap  listReply;
+    S9sVariantList servicesBundles;
+    S9sVariantMap  onHost;
+    S9sVariantMap  otherHost;
+
+    onHost["hostname"]       = "10.0.0.12";
+    onHost["controller_id"]  = 5;
+    onHost["status"]         = "offline";
+    onHost["controller_status"] = "stopped";
+    otherHost["hostname"]      = "10.0.0.13";
+    otherHost["controller_id"] = 3;
+    otherHost["status"]        = "online";
+
+    servicesBundles << onHost << otherHost;
+    listReply["request_status"]   = "Ok";
+    listReply["services_bundles"] = servicesBundles;
+    client.setReplyFor("getServicesBundles", listReply);
+
+    options->m_options["orphan_only"] = false;
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["controller_id"].toInt(), 5);
+    S9S_VERIFY(!jobData.contains("orphan_only"));
+
+    options->m_options["orphan_only"] = true;
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["controller_id"].toInt(), 5);
+    S9S_VERIFY(jobData["orphan_only"].toBoolean());
+
+    // Two services bundles on the host: no controller_id is sent.
+    S9sVariantMap secondOnHost = onHost;
+    secondOnHost["controller_id"] = 2;
+    secondOnHost["status"]        = "online";
+    secondOnHost["controller_status"] = "running";
+    servicesBundles << secondOnHost;
+    listReply["services_bundles"] = servicesBundles;
+    client.setReplyFor("getServicesBundles", listReply);
+
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_VERIFY(!jobData.contains("controller_id"));
+    S9S_VERIFY(jobData["orphan_only"].toBoolean());
+
     S9sOptions::uninit();
     return true;
 }
@@ -3938,26 +4003,31 @@ UtS9sRpcClient::testServicesBundleControllerId()
     S9sVariantMap  orphan;
     S9sVariantMap  other;
 
+    // An orphan is listed with a normal status, so the status is not checked.
     live["hostname"]       = "10.0.0.12";
     live["controller_id"]  = 2;
     live["status"]         = "online";
     orphan["hostname"]     = "10.0.0.12";
     orphan["controller_id"] = 5;
-    orphan["status"]       = "orphaned";
+    orphan["status"]       = "degraded";
+    orphan["controller_status"] = "stopped";
     other["hostname"]      = "10.0.0.13";
     other["controller_id"] = 3;
-    other["status"]        = "online";
+    other["status"]        = "unknown";
 
     servicesBundles << live << other;
-    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", false), 2);
-    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", true), 0);
-    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.14", false), 0);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12"), 2);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.13"), 3);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.14"), 0);
 
-    servicesBundles << orphan;
-    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", false), 0);
-    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", true), 5);
+    servicesBundles.clear();
+    servicesBundles << orphan << other;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12"), 5);
 
-    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(S9sVariantList(), "10.0.0.12", false), 0);
+    servicesBundles << live;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12"), 0);
+
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(S9sVariantList(), "10.0.0.12"), 0);
     return true;
 }
 
