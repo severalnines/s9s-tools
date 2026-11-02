@@ -5954,10 +5954,25 @@ S9sRpcClient::removeShard()
         return true;
 
     S9sVariantList clusters = clusterReply.clusters();
-    S9sString clusterType = clusters.empty()
-            ? S9sString()
-            : S9sCluster(clusters[0].toVariantMap()).clusterType().toLower();
-    if (clusterType != "clickhouse")
+    S9sCluster cluster = clusters.empty()
+            ? S9sCluster()
+            : S9sCluster(clusters[0].toVariantMap());
+    // The controller answers with some other cluster when the request names none it can use.
+    const bool requested = options->hasClusterIdOption()
+            ? cluster.clusterId() == options->clusterId()
+            : !options->clusterName().empty() &&
+              cluster.name() == options->clusterName();
+    if (clusters.empty() || !requested)
+    {
+        PRINT_ERROR(
+                "The --remove-shard option needs the --cluster-id or "
+                "--cluster-name of an existing cluster.");
+
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    }
+
+    if (cluster.clusterType().toLower() != "clickhouse")
     {
         PRINT_ERROR(
                 "The --remove-shard option is only supported for ClickHouse "
