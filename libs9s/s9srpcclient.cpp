@@ -5958,10 +5958,12 @@ S9sRpcClient::removeShard()
             ? S9sCluster()
             : S9sCluster(clusters[0].toVariantMap());
     // The controller answers with some other cluster when the request names none it can use.
-    const bool requested = options->hasClusterIdOption()
-            ? cluster.clusterId() == options->clusterId()
-            : !options->clusterName().empty() &&
-              cluster.name() == options->clusterName();
+    const bool byName =
+            !options->hasClusterIdOption() && !options->clusterName().empty();
+    const bool requested = byName
+            ? cluster.name() == options->clusterName()
+            : S9S_CLUSTER_ID_IS_VALID(options->clusterId()) &&
+              cluster.clusterId() == options->clusterId();
     if (clusters.empty() || !requested)
     {
         PRINT_ERROR(
