@@ -582,6 +582,7 @@ class S9sOptions
         bool isStopOpenBao() const;
         bool isStartOpenBao() const;
         bool purge() const;
+        bool orphanOnly() const;
         bool isListConfigStorage() const;
         bool isListOpenBaoVersions() const;
         bool hasOpenBaoOption() const;

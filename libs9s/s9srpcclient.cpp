@@ -12552,10 +12552,49 @@ S9sRpcClient::addServicesBundle(S9sOptions *options)
 }
 
 /**
+ * \returns the controller_id of the one services bundle that
+ *   \p servicesBundles (the getServicesBundles list) has on \p hostName, or
+ *   0 when there is none or more than one. With \p orphanOnly only the
+ *   orphaned ones (status "orphaned") count.
+ */
+int
+S9sRpcClient::servicesBundleControllerId(
+        const S9sVariantList &servicesBundles,
+        const S9sString      &hostName,
+        bool                  orphanOnly)
+{
+    int controllerId = 0;
+    int found        = 0;
+
+    for (uint idx = 0u; idx < servicesBundles.size(); ++idx)
+    {
+        S9sVariantMap servicesBundle = servicesBundles[idx].toVariantMap();
+
+        if (servicesBundle["hostname"].toString() != hostName)
+            continue;
+
+        if (orphanOnly && servicesBundle["status"].toString() != "orphaned")
+            continue;
+
+        controllerId = servicesBundle["controller_id"].toInt();
+        ++found;
+    }
+
+    return found == 1 ? controllerId : 0;
+}
+
+/**
  * @brief remove the services bundle of a pool controller host
  * (CmdDeleteServicesBundle / the deleteServicesBundle job). Like
  * the add job it sends no SSH connection settings (sudo/elevation ones are
  * still sent).
+ *
+ * The job also carries the controller_id of the services bundle listed on
+ * the host now, so cmon deletes nothing if another one replaced it before
+ * the job runs. When the list cannot be read, or does not show exactly one
+ * services bundle there, no controller_id is sent and cmon works as before.
+ * With --orphan-only the job carries orphan_only: cmon then deletes an
+ * orphaned services bundle only.
  */
 bool
 S9sRpcClient::deleteServicesBundle(S9sOptions *options)
@@ -12581,8 +12620,24 @@ S9sRpcClient::deleteServicesBundle(S9sOptions *options)
     for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
         jobData.erase(key);
 
-    jobData["server_address"] = hosts[0].toNode().hostName();
+    const S9sString hostName   = hosts[0].toNode().hostName();
+    const bool      orphanOnly = options->orphanOnly();
+
+    jobData["server_address"] = hostName;
     jobData["force"]          = options->getBool("force");
+
+    if (orphanOnly)
+        jobData["orphan_only"] = true;
+
+    if (getServicesBundles(options) && reply().isOk())
+    {
+        S9sRpcReply listReply = reply();
+        const int controllerId = servicesBundleControllerId(
+                listReply["services_bundles"].toVariantList(), hostName, orphanOnly);
+
+        if (controllerId > 0)
+            jobData["controller_id"] = controllerId;
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]  = "deleteServicesBundle";

@@ -194,6 +194,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddServicesBundle, retval);
     PERFORM_TEST(testDeleteServicesBundle, retval);
+    PERFORM_TEST(testServicesBundleControllerId, retval);
     PERFORM_TEST(testGetServicesBundles, retval);
     PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
@@ -3908,7 +3909,55 @@ UtS9sRpcClient::testDeleteServicesBundle()
     S9S_VERIFY(jobData["force"].toBoolean());
     S9S_VERIFY(!jobData.contains("ssh_user"));
 
+    // The services bundle list is read first. Here it gives no reply, so the
+    // job has no controller_id, as from an older client.
+    S9S_COMPARE(client.uri(0u), "/v2/poolcontrollers/");
+    S9S_COMPARE(client.uri(1u), "/v2/jobs/");
+    S9S_VERIFY(!jobData.contains("controller_id"));
+    S9S_VERIFY(!jobData.contains("orphan_only"));
+
+    options->m_options["orphan_only"] = true;
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_VERIFY(jobData["orphan_only"].toBoolean());
+    S9S_VERIFY(!jobData.contains("controller_id"));
+
     S9sOptions::uninit();
+    return true;
+}
+
+/*
+ * The controller id the delete job sends: the one services bundle listed on
+ * the host, or 0 (none sent) when there is none or more than one.
+ */
+bool
+UtS9sRpcClient::testServicesBundleControllerId()
+{
+    S9sVariantList servicesBundles;
+    S9sVariantMap  live;
+    S9sVariantMap  orphan;
+    S9sVariantMap  other;
+
+    live["hostname"]       = "10.0.0.12";
+    live["controller_id"]  = 2;
+    live["status"]         = "online";
+    orphan["hostname"]     = "10.0.0.12";
+    orphan["controller_id"] = 5;
+    orphan["status"]       = "orphaned";
+    other["hostname"]      = "10.0.0.13";
+    other["controller_id"] = 3;
+    other["status"]        = "online";
+
+    servicesBundles << live << other;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", false), 2);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", true), 0);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.14", false), 0);
+
+    servicesBundles << orphan;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", false), 0);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12", true), 5);
+
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(S9sVariantList(), "10.0.0.12", false), 0);
     return true;
 }
 

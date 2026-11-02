@@ -575,6 +575,7 @@ enum S9sOptionType
     OptionStopOpenBao,
     OptionStartOpenBao,
     OptionPurge,
+    OptionOrphanOnly,
     OptionListConfigStorage,
     OptionListOpenBaoVersions,
     OptionOpenBaoMount,
@@ -5997,6 +5998,16 @@ S9sOptions::purge() const
 }
 
 /**
+ * \returns true if the --orphan-only command line option was provided: the
+ *   deleteServicesBundle job deletes an orphaned services bundle only.
+ */
+bool
+S9sOptions::orphanOnly() const
+{
+    return getBool("orphan_only");
+}
+
+/**
  * \returns true if the --list-config-storage command line option was provided.
  */
 bool
@@ -9520,7 +9531,9 @@ S9sOptions::printHelpControllers()
 "                             (requires --nodes with exactly one node). The main\n"
 "                             controller's services bundle is deleted like any other\n"
 "                             one. The last services bundle of the pool is refused,\n"
-"                             even with --force.\n"
+"                             even with --force. The job deletes nothing if another\n"
+"                             services bundle replaced the one listed on the host\n"
+"                             when it was sent.\n"
 "  --add-db                   To join a host into the pool's cmon DB HA InnoDB Cluster\n"
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
@@ -9611,6 +9624,9 @@ S9sOptions::printHelpControllers()
 "                             s9s.conf, else disable the firewall).\n"
 "  --purge                    With --remove-openbao: delete the OpenBao data and\n"
 "                             configuration instead of renaming them.\n"
+"  --orphan-only              With --delete-services-bundle: delete the host's\n"
+"                             services bundle only if it is orphaned (its controller\n"
+"                             was removed from the pool).\n"
 "  --openbao-force-reinit     Discard any existing OpenBao storage on the host and\n"
 "                             initialise a fresh instance. The previous data\n"
 "                             directory is renamed, not deleted, but its secrets\n"
@@ -20776,6 +20792,8 @@ S9sOptions::readOptionsControllers(
                     {"keep-firewall",    no_argument,       0, OptionKeepFirewall},
                     // Arguments when removing an OpenBao node
                     {"purge",            no_argument,       0, OptionPurge},
+                    // Arguments when deleting a services bundle
+                    {"orphan-only",      no_argument,       0, OptionOrphanOnly},
                     { "no-install",      no_argument,       0, OptionNoInstall },
                     
                     // Job Related Options
@@ -21079,6 +21097,11 @@ S9sOptions::readOptionsControllers(
             case OptionPurge:
                 // --purge
                 m_options["purge"] = true;
+                break;
+
+            case OptionOrphanOnly:
+                // --orphan-only
+                m_options["orphan_only"] = true;
                 break;
 
             case OptionKeepFirewall:
@@ -21406,6 +21429,13 @@ S9sOptions::checkOptionsControllers()
     if (purge() && !isRemoveOpenBao())
     {
         m_errorMessage = "The --purge option can only be used with --remove-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (orphanOnly() && !isDeleteServicesBundle())
+    {
+        m_errorMessage = "The --orphan-only option can only be used with --delete-services-bundle.";
         m_exitStatus = BadOptions;
         return false;
     }

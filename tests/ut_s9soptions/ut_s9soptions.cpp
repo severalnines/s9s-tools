@@ -1229,6 +1229,21 @@ UtS9sOptions::testDeleteServicesBundle()
     S9S_VERIFY(options->isDeleteServicesBundle());
     S9S_COMPARE(options->nodes()[0].toNode().hostName(), "10.0.0.12");
     S9S_VERIFY(!options->getBool("force"));
+    S9S_VERIFY(!options->orphanOnly());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-services-bundle",
+                            "--nodes=10.0.0.12",
+                            "--orphan-only",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isDeleteServicesBundle());
+    S9S_VERIFY(options->orphanOnly());
 
     S9sOptions::uninit();
     return true;
@@ -1287,9 +1302,11 @@ UtS9sOptions::testServicesBundleOptionErrors()
                                 "--nodes=10.0.0.13", "--site=site b", nullptr };
     const char *emptySite[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
                                 "--nodes=10.0.0.12", "--site=", nullptr };
+    const char *orphanOnlyOnAdd[] = { "/bin/s9s", "pool-controllers", "--add-services-bundle",
+                                      "--nodes=10.0.0.12", "--orphan-only", nullptr };
 
     for (const char **argv : { siteAlone, noNodes, twoNodes, withKey, withUser, twoMains,
-                               badSite, spaceSite, emptySite })
+                               badSite, spaceSite, emptySite, orphanOnlyOnAdd })
     {
         int argc = 0;
         while (argv[argc] != nullptr)

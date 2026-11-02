@@ -274,9 +274,23 @@ pool it only runs on that controller itself, and is refused when it can't.
 The main controller's services bundle is deleted like any other one. Deleting the last services bundle of
 the pool is refused, even with '--force': add another one first. '--force'
 unregisters a services bundle whose host cannot be reached, when it is not the last.
+The job carries the controller id of the services bundle that
+\fB--list-services-bundles\fP shows on the host when the job is created; if another
+services bundle replaced it before the job runs, the job fails and deletes nothing.
+When the list cannot be read, or shows no single services bundle on the host, the
+job is sent without it, as before.
 .nf
 s9s pool-controllers --delete-services-bundle --nodes=10.0.0.12 --log
+s9s pool-controllers --delete-services-bundle --nodes=10.0.0.12 --orphan-only --log
 .fi
+
+.RS
+.TP
+.B --orphan-only
+Delete the services bundle only if it is orphaned (its controller was removed from
+the pool). The job fails, deleting nothing, when the host has no orphaned services
+bundle any more.
+.RE
 
 .TP
 .B --start
