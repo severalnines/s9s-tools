@@ -71,6 +71,7 @@ enum S9sOptionType
     OptionAddNode,
     OptionAddShard,
     OptionRemoveShard,
+    OptionDropRows,
     OptionReinstallNode,
     OptionReconfigureNode,
     OptionRemoveNode,
@@ -7332,6 +7333,12 @@ S9sOptions::isRemoveShardRequested() const
     return getBool("remove_shard");
 }
 
+bool
+S9sOptions::isDropRowsRequested() const
+{
+    return getBool("drop_rows");
+}
+
 /**
  * \returns true if the reinstall operation was requested using the "--reinstall-node"
  *   command line option.
@@ -9022,6 +9029,8 @@ S9sOptions::printHelpCluster()
 "ClickHouse shard related options\n"
 "  --shard-id=ID              The shard the node added by --add-node becomes a\n"
 "                             replica of, or the shard --remove-shard removes.\n"
+"  --drop-rows                Confirm that --remove-shard drops the rows the\n"
+"                             shard holds.\n"
 "\n"
 "Major upgrade related options\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
@@ -13798,6 +13807,15 @@ S9sOptions::checkOptionsCluster()
         return false;
     }
 
+    if (isDropRowsRequested() && !isRemoveShardRequested())
+    {
+        m_errorMessage =
+            "The --drop-rows option can only be used with --remove-shard.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
     return true;
 }
 
@@ -16025,6 +16043,7 @@ S9sOptions::readOptionsCluster(
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "add-shard",        no_argument,       0, OptionAddShard        },
         { "remove-shard",     no_argument,       0, OptionRemoveShard     },
+        { "drop-rows",        no_argument,       0, OptionDropRows        },
         { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
@@ -16436,6 +16455,10 @@ S9sOptions::readOptionsCluster(
 
             case OptionRemoveShard:
                 m_options["remove_shard"] = true;
+                break;
+
+            case OptionDropRows:
+                m_options["drop_rows"] = true;
                 break;
 
             case OptionReinstallNode:

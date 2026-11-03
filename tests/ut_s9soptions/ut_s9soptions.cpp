@@ -2410,6 +2410,7 @@ UtS9sOptions::testRemoveShard()
     S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
     S9S_VERIFY(options->isRemoveShardRequested());
     S9S_COMPARE(options->shardId(), 3);
+    S9S_VERIFY(!options->isDropRowsRequested());
 
     const char *argv2[] = { "/bin/s9s",
                             "cluster",
@@ -2424,6 +2425,35 @@ UtS9sOptions::testRemoveShard()
     S9S_COMPARE(options->errorString(),
             "The --remove-shard option needs --shard-id to name the shard "
             "to remove.");
+
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--drop-rows",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isDropRowsRequested());
+
+    const char *argv4[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.0.1",
+                            "--drop-rows",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+    S9S_COMPARE(options->errorString(),
+            "The --drop-rows option can only be used with --remove-shard.");
 
     S9sOptions::uninit();
     return true;
