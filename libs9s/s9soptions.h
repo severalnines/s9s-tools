@@ -95,6 +95,14 @@ class S9sOptions
             BadOptions      = 6,
         };
 
+        /**
+         * The controller port used when none is configured, and the port
+         * older (pre 2.5.1) controllers serve the TLS RPC on, which the client
+         * falls back to when the default port does not answer.
+         */
+        static const int DefaultControllerPort    = 9500;
+        static const int DeprecatedControllerPort = 9501;
+
         bool readOptions(int *argc, char *argv[]);
         const S9sString &commandLine() const;
 
@@ -105,10 +113,11 @@ class S9sOptions
         void setController(const S9sString &url);
         S9sString controllerHostName();
         int controllerPort();
+        bool isControllerPortDefault();
         S9sString controllerProtocol();
         S9sString controllerPath();
 
-        S9sString controllerUrl();
+        S9sString controllerUrl(bool withDefaultPort = true);
 
 
         S9sString configFile() const;
@@ -922,6 +931,7 @@ class S9sOptions
      
     private:
         void checkController();
+        int configuredControllerPort();
         void printHelpGeneric();
         void printHelpCluster();
         void printHelpContainer();
