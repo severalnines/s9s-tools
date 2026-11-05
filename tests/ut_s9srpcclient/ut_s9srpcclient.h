@@ -66,6 +66,10 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testCreateCluster05();
         bool testCreateCluster06();
         bool testRegisterClickHouse();
+        bool testCreateElasticsearchVendor();
+        bool testRegisterElasticsearchVendor();
+        bool testRegisterElasticsearchMessages();
+        bool testElasticVendorPrecheck();
         bool testAddShardClickHouse();
         bool testGetAlarmHistory();
         bool testAddShardRejectsNonClickHouseNodes();
@@ -157,6 +161,15 @@ class S9sRpcClientTester : public S9sRpcClient
                 const S9sString     &operation,
                 const S9sVariantMap &reply);
 
+        void
+        setCannedReply(const S9sString &operation, const S9sVariantMap &reply);
+
+        void setCannedFailure(
+                const S9sString &operation, const S9sString &errorString);
+
+        int           nRequests(const S9sString &operation) const;
+        S9sVariantMap request(const S9sString &operation) const;
+
     protected:
        virtual bool 
             doExecuteRequest(
@@ -169,5 +182,8 @@ class S9sRpcClientTester : public S9sRpcClient
         S9sVariantList    m_payloads;
         S9sVariantMap     m_lastPayload;
         S9sVariantMap     m_repliesByOperation;
+        S9sVariantList    m_requests;
+        S9sVariantMap     m_replies;
+        S9sVariantMap     m_failures;
 };
 
