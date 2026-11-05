@@ -142,6 +142,18 @@ S9sRpcClient::useTls() const
     return m_priv->m_useTls;
 }
 
+/**
+ * \param port the port to try once if the first connect to the controller
+ *   fails, 0 to disable. Set only when the port is the built-in default, so
+ *   older controllers serving the TLS RPC on the deprecated port keep working.
+ */
+void
+S9sRpcClient::setFallbackPort(
+        const int port)
+{
+    m_priv->m_fallbackPort = port;
+}
+
 int
 S9sRpcClient::port() const
 {
