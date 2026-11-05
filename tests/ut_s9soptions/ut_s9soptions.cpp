@@ -337,7 +337,7 @@ UtS9sOptions::testRpcTlsAllModes()
         const char *argv[] =
         {
             "/bin/s9s", mode[0], mode[1],
-            "--controller=https://127.0.0.1:9501", "--rpc-tls",
+            "--controller=https://127.0.0.1:9500", "--rpc-tls",
             mode[2], nullptr
         };
         int         argc = mode[2] == nullptr ? 5 : 6;
