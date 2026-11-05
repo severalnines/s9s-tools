@@ -382,6 +382,9 @@ class S9sRpcClient
         bool addServicesBundle(S9sOptions *options);
         bool deleteServicesBundle(S9sOptions *options);
         bool getServicesBundles(S9sOptions *options);
+        static int servicesBundleControllerId(
+                const S9sVariantList &servicesBundles,
+                const S9sString      &hostName);
         bool startController(S9sOptions *options);
         bool stopController(S9sOptions *options);
         bool removeController(S9sOptions *options);
@@ -559,6 +562,7 @@ class S9sRpcClient
                 const S9sString &errorCode = "ConnectError");
 
         void printRequestJson(S9sVariantMap &request);
+        void setReply(const S9sVariantMap &reply);
 
         void saveRequestAndReply(
                     const S9sVariantMap &request,

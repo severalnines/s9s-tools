@@ -562,7 +562,6 @@ class S9sOptions
         bool isUnsetPoolModeRequested() const;
         bool isPoolReadiness() const;
         bool noRequireDbCluster() const;
-        bool noRequireConfigStorage() const;
         bool isAddController() const;
         bool isAddDb() const;
         bool isDeleteDb() const;
@@ -583,6 +582,7 @@ class S9sOptions
         bool isStopOpenBao() const;
         bool isStartOpenBao() const;
         bool purge() const;
+        bool orphanOnly() const;
         bool isListConfigStorage() const;
         bool isListOpenBaoVersions() const;
         bool hasOpenBaoOption() const;

@@ -49,7 +49,26 @@ S9sRpcClientTester::doExecuteRequest(
     m_payloads << payload.toString();
     m_lastPayload = payload;
 
+    // Give the canned reply for this operation, or an empty one.
+    const S9sString operation = payload["operation"].toString();
+
+    if (m_repliesByOperation.contains(operation))
+        setReply(m_repliesByOperation.at(operation).toVariantMap());
+    else
+        setReply(S9sVariantMap());
+
     return true;
+}
+
+/**
+ * Sets the reply the tester gives to every request of \p operation.
+ */
+void
+S9sRpcClientTester::setReplyFor(
+        const S9sString     &operation,
+        const S9sVariantMap &reply)
+{
+    m_repliesByOperation[operation] = reply;
 }
 
 S9sString 
@@ -194,6 +213,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddServicesBundle, retval);
     PERFORM_TEST(testDeleteServicesBundle, retval);
+    PERFORM_TEST(testServicesBundleControllerId, retval);
     PERFORM_TEST(testGetServicesBundles, retval);
     PERFORM_TEST(testAddControllerSite, retval);
     PERFORM_TEST(testInstallOpenBao, retval);
@@ -3908,7 +3928,106 @@ UtS9sRpcClient::testDeleteServicesBundle()
     S9S_VERIFY(jobData["force"].toBoolean());
     S9S_VERIFY(!jobData.contains("ssh_user"));
 
+    // The services bundle list is read first. Here it gives no reply, so the
+    // job has no controller_id, as from an older client.
+    S9S_COMPARE(client.uri(0u), "/v2/poolcontrollers/");
+    S9S_COMPARE(client.uri(1u), "/v2/jobs/");
+    S9S_VERIFY(!jobData.contains("controller_id"));
+    S9S_VERIFY(!jobData.contains("orphan_only"));
+
+    options->m_options["orphan_only"] = true;
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_VERIFY(jobData["orphan_only"].toBoolean());
+    S9S_VERIFY(!jobData.contains("controller_id"));
+
+    // The list shows one services bundle on the host: its controller_id is
+    // sent, whatever its status, with and without --orphan-only.
+    S9sVariantMap  listReply;
+    S9sVariantList servicesBundles;
+    S9sVariantMap  onHost;
+    S9sVariantMap  otherHost;
+
+    onHost["hostname"]       = "10.0.0.12";
+    onHost["controller_id"]  = 5;
+    onHost["status"]         = "offline";
+    onHost["controller_status"] = "stopped";
+    otherHost["hostname"]      = "10.0.0.13";
+    otherHost["controller_id"] = 3;
+    otherHost["status"]        = "online";
+
+    servicesBundles << onHost << otherHost;
+    listReply["request_status"]   = "Ok";
+    listReply["services_bundles"] = servicesBundles;
+    client.setReplyFor("getServicesBundles", listReply);
+
+    options->m_options["orphan_only"] = false;
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["controller_id"].toInt(), 5);
+    S9S_VERIFY(!jobData.contains("orphan_only"));
+
+    options->m_options["orphan_only"] = true;
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["controller_id"].toInt(), 5);
+    S9S_VERIFY(jobData["orphan_only"].toBoolean());
+
+    // Two services bundles on the host: no controller_id is sent.
+    S9sVariantMap secondOnHost = onHost;
+    secondOnHost["controller_id"] = 2;
+    secondOnHost["status"]        = "online";
+    secondOnHost["controller_status"] = "running";
+    servicesBundles << secondOnHost;
+    listReply["services_bundles"] = servicesBundles;
+    client.setReplyFor("getServicesBundles", listReply);
+
+    S9S_VERIFY(client.deleteServicesBundle(options));
+    jobData = client.lastPayload()["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_VERIFY(!jobData.contains("controller_id"));
+    S9S_VERIFY(jobData["orphan_only"].toBoolean());
+
     S9sOptions::uninit();
+    return true;
+}
+
+/*
+ * The controller id the delete job sends: the one services bundle listed on
+ * the host, or 0 (none sent) when there is none or more than one.
+ */
+bool
+UtS9sRpcClient::testServicesBundleControllerId()
+{
+    S9sVariantList servicesBundles;
+    S9sVariantMap  live;
+    S9sVariantMap  orphan;
+    S9sVariantMap  other;
+
+    // An orphan is listed with a normal status, so the status is not checked.
+    live["hostname"]       = "10.0.0.12";
+    live["controller_id"]  = 2;
+    live["status"]         = "online";
+    orphan["hostname"]     = "10.0.0.12";
+    orphan["controller_id"] = 5;
+    orphan["status"]       = "degraded";
+    orphan["controller_status"] = "stopped";
+    other["hostname"]      = "10.0.0.13";
+    other["controller_id"] = 3;
+    other["status"]        = "unknown";
+
+    servicesBundles << live << other;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12"), 2);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.13"), 3);
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.14"), 0);
+
+    servicesBundles.clear();
+    servicesBundles << orphan << other;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12"), 5);
+
+    servicesBundles << live;
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(servicesBundles, "10.0.0.12"), 0);
+
+    S9S_COMPARE(S9sRpcClient::servicesBundleControllerId(S9sVariantList(), "10.0.0.12"), 0);
     return true;
 }
 
@@ -4168,9 +4287,10 @@ UtS9sRpcClient::testGetPoolModeReadiness()
 }
 
 /**
- * Testing setPoolMode() with the --no-require-db-cluster and
- * --no-require-config-storage opt-outs: the require_* fields are only sent,
- * as false, when opted out - the controller defaults both to true.
+ * Testing setPoolMode() with the --no-require-db-cluster opt-out:
+ * require_cmon_db_cluster is only sent, as false, when opted out - the
+ * controller defaults it to true. require_config_storage is never sent: the
+ * CC configuration storage has no opt-out (CLUS-9117).
  */
 bool
 UtS9sRpcClient::testSetPoolModePrerequisites()
@@ -4197,22 +4317,7 @@ UtS9sRpcClient::testSetPoolModePrerequisites()
     // The old setPoolMode-side bootstrap is gone.
     S9S_VERIFY(!payload.contains("bootstrap_db_ha"));
 
-    // Both opted out.
-    S9sOptions::uninit();
-    options = S9sOptions::instance();
-    options->m_options["set_pool_mode"]             = true;
-    options->m_options["no_require_db_cluster"]     = true;
-    options->m_options["no_require_config_storage"] = true;
-
-    S9S_VERIFY(client.setPoolMode(options));
-    payload = client.lastPayload();
-
-    S9S_VERIFY(payload.contains("require_cmon_db_cluster"));
-    S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
-    S9S_VERIFY(payload.contains("require_config_storage"));
-    S9S_VERIFY(!payload["require_config_storage"].toBoolean());
-
-    // Only one opted out.
+    // Opted out.
     S9sOptions::uninit();
     options = S9sOptions::instance();
     options->m_options["set_pool_mode"]         = true;
@@ -4221,6 +4326,7 @@ UtS9sRpcClient::testSetPoolModePrerequisites()
     S9S_VERIFY(client.setPoolMode(options));
     payload = client.lastPayload();
 
+    S9S_VERIFY(payload.contains("require_cmon_db_cluster"));
     S9S_VERIFY(!payload["require_cmon_db_cluster"].toBoolean());
     S9S_VERIFY(!payload.contains("require_config_storage"));
 
@@ -4499,15 +4605,16 @@ UtS9sRpcClient::testPoolModeSetupCommands()
 
     readiness["missing"] = missing;
 
-    // An opted-out prerequisite gets no command.
+    // An opted-out prerequisite gets no command; the CC configuration
+    // storage has no opt-out.
     dbCluster["db_backend"]            = "mysql";
     dbCluster["migration_required"]    = false;
     dbCluster["migration_supported"]   = true;
     readiness["cmon_db_cluster"] = dbCluster;
-    S9sOptions::instance()->m_options["no_require_config_storage"] = true;
+    S9sOptions::instance()->m_options["no_require_db_cluster"] = true;
     commands = S9sRpcReply::poolModeSetupCommands(readiness);
     S9S_COMPARE(commands.size(), 1);
-    S9S_COMPARE(commands[0], "s9s pool-controllers --bootstrap-db --log");
+    S9S_COMPARE(commands[0], "s9s pool-controllers --add-openbao --nodes=HOST --log");
     S9sOptions::uninit();
 
     // Nothing to do when not applicable.

@@ -556,7 +556,6 @@ enum S9sOptionType
     OptionBootstrapDb,
     OptionPoolReadiness,
     OptionNoRequireDbCluster,
-    OptionNoRequireConfigStorage,
     OptionNode,
     OptionControllersList,
     OptionPrintDeploymentInfo,
@@ -576,6 +575,7 @@ enum S9sOptionType
     OptionStopOpenBao,
     OptionStartOpenBao,
     OptionPurge,
+    OptionOrphanOnly,
     OptionListConfigStorage,
     OptionListOpenBaoVersions,
     OptionOpenBaoMount,
@@ -5799,18 +5799,6 @@ S9sOptions::noRequireDbCluster() const
 }
 
 /**
- * \returns true if the --no-require-config-storage command line option was
- *   provided: --set-pool-mode then sends require_config_storage=false, and
- *   the pool is enabled on its configuration files shared over NFS (cmon's
- *   --config-storage=nfs) instead of the CC configuration storage.
- */
-bool
-S9sOptions::noRequireConfigStorage() const
-{
-    return getBool("no_require_config_storage");
-}
-
-/**
  * \returns true if the "add-controller" function is requested by providing
  * the --add-controller command line option.
  */
@@ -6007,6 +5995,16 @@ bool
 S9sOptions::purge() const
 {
     return getBool("purge");
+}
+
+/**
+ * \returns true if the --orphan-only command line option was provided: the
+ *   deleteServicesBundle job deletes an orphaned services bundle only.
+ */
+bool
+S9sOptions::orphanOnly() const
+{
+    return getBool("orphan_only");
 }
 
 /**
@@ -9529,10 +9527,6 @@ S9sOptions::printHelpControllers()
 "  --unset-pool-mode          To disable pool mode on this controller (cmon restarts).\n"
 "  --no-require-db-cluster    With --set-pool-mode: do not require the CC DB cluster\n"
 "                             (--bootstrap-db), for a DB cluster managed elsewhere.\n"
-"  --no-require-config-storage\n"
-"                             With --set-pool-mode: do not require the CC configuration\n"
-"                             storage (--add-openbao); the pool then shares its\n"
-"                             configuration files over NFS instead.\n"
 "\n"
 "Controllers:\n"
 "  --list                     To retrieve the list of stored controllers.\n"
@@ -9542,6 +9536,8 @@ S9sOptions::printHelpControllers()
 "  --remove-controller        To remove a controller (requires --controller-id). A\n"
 "                             controller hosting a services bundle is refused unless\n"
 "                             --delete-services-bundle ran first or --force is given.\n"
+"                             The last controller of the pool, and the one hosting\n"
+"                             the last services bundle, are refused even with --force.\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
@@ -9572,7 +9568,8 @@ S9sOptions::printHelpControllers()
 "                             as a SECONDARY (requires --nodes with exactly one node).\n"
 "  --delete-db                To remove a cmon DB instance from the pool's cmon DB HA\n"
 "                             InnoDB Cluster (requires --nodes with exactly one node, or\n"
-"                             --node instead).\n"
+"                             --node instead). The last ONLINE cmon DB instance is\n"
+"                             refused, even with --force.\n"
 "  --node=HOSTNAME            To specify a pool cmon DB HA node by hostname/IP (--delete-db\n"
 "                             only, alternative to --nodes - no port needed).\n"
 "\n"
@@ -9585,18 +9582,23 @@ S9sOptions::printHelpControllers()
 "                             (requires --nodes=HOST[:WEB_PORT] with exactly one node).\n"
 "                             Takes the SSH connection settings from the controller's\n"
 "                             stored credentials; sudo/elevation settings are still\n"
-"                             sent. The main controller can't be a target: its\n"
-"                             services bundle is registered by --set-pool-mode or when\n"
-"                             cmon starts in pool mode. Importing existing services\n"
-"                             bundles is not supported. --site sets its site.\n"
+"                             sent. The main controller is a target like any other.\n"
+"                             Importing existing services bundles is not supported.\n"
+"                             --site sets its site.\n"
 "  --delete-services-bundle   To remove the services bundle of a pool controller host\n"
 "                             (requires --nodes with exactly one node). The main\n"
-"                             controller's services bundle can't be deleted. The last\n"
-"                             services bundle of the pool is only deleted with --force.\n"
+"                             controller's services bundle is deleted like any other\n"
+"                             one. The last services bundle of the pool is refused,\n"
+"                             even with --force. The job deletes nothing if another\n"
+"                             services bundle replaced the one listed on the host\n"
+"                             when it was sent.\n"
 "                             An orphaned services bundle (registered for a controller\n"
 "                             that is no longer in the pool; the main controller\n"
 "                             raises an alarm for it) is deleted without --force and\n"
 "                             only unregistered: nothing is changed on its host.\n"
+"  --orphan-only              With --delete-services-bundle: delete the host's\n"
+"                             services bundle only if it is orphaned (its controller\n"
+"                             was removed from the pool).\n"
 "\n"
 "Configuration instances (OpenBao):\n"
 "  --list-config-storage      List the configuration/secret storage instances the\n"
@@ -9622,10 +9624,10 @@ S9sOptions::printHelpControllers()
 "                             ClusterControl wrote under /etc/openbao. If OpenBao\n"
 "                             could not be stopped nothing is moved or deleted. Any\n"
 "                             OpenBao node can go, the one the cluster was\n"
-"                             bootstrapped on too; the last one is refused while the\n"
-"                             controllers read their configuration from it (revert\n"
-"                             them with config_storage_revert.sh first). Requires\n"
-"                             super admin privileges.\n"
+"                             bootstrapped on too. The last one is refused, even with\n"
+"                             --force, while the controllers read their configuration\n"
+"                             from it (revert them with config_storage_revert.sh\n"
+"                             first). Requires super admin privileges.\n"
 "  --start-openbao            To start the OpenBao service of the registered OpenBao\n"
 "                             node given by --nodes (HOST[:PORT]) if stopped, unseal\n"
 "                             it and wait until it is a raft standby again. Nothing\n"
@@ -9680,8 +9682,8 @@ S9sOptions::printHelpControllers()
 "                             configured. It also accepts a busy or inactive target\n"
 "                             and installs the latest packages when the pool's\n"
 "                             versions are not available.\n"
-"                             With --delete-services-bundle: delete the last services\n"
-"                             bundle too, or one whose host cannot be reached.\n"
+"                             With --delete-services-bundle: delete one whose host\n"
+"                             cannot be reached (never the last one).\n"
 "                             With --remove-openbao: skip the cluster health check\n"
 "                             when the OpenBao node is unreachable.\n"
 "\n"
@@ -20804,7 +20806,6 @@ S9sOptions::readOptionsControllers(
                     {"conf-storage",     required_argument, 0, OptionConfStorage},
                     {"granted-network-mask", required_argument, 0, OptionGrantedNetworkMask},
                     {"no-require-db-cluster", no_argument, 0,  OptionNoRequireDbCluster},
-                    {"no-require-config-storage", no_argument, 0, OptionNoRequireConfigStorage},
                     {"use-internal-repos", no_argument,     0, OptionUseInternalRepos },
                     {"uninstall",        no_argument,       0, OptionUninstall},
                     // Arguments when installing an OpenBao instance
@@ -20816,6 +20817,8 @@ S9sOptions::readOptionsControllers(
                     {"keep-firewall",    no_argument,       0, OptionKeepFirewall},
                     // Arguments when removing an OpenBao node
                     {"purge",            no_argument,       0, OptionPurge},
+                    // Arguments when deleting a services bundle
+                    {"orphan-only",      no_argument,       0, OptionOrphanOnly},
                     { "no-install",      no_argument,       0, OptionNoInstall },
                     
                     // Job Related Options
@@ -20984,18 +20987,18 @@ S9sOptions::readOptionsControllers(
                 break;
 
             case OptionConfStorage:
-                // --conf-storage=<nfs|k8s>
+                // --conf-storage=<vault|k8s>
                 if (optarg)
                 {
                     S9sString val = optarg;
                     val = val.toLower();
-                    if (val == "nfs" || val == "k8s")
+                    if (val == "vault" || val == "k8s")
                     {
                         m_options["conf_storage"] = val;
                     }
                     else
                     {
-                        m_errorMessage = "Invalid value for --conf-storage. Allowed: 'nfs' or 'k8s'.";
+                        m_errorMessage = "Invalid value for --conf-storage. Allowed: 'vault' or 'k8s'.";
                         m_exitStatus = BadOptions;
                         return false;
                     }
@@ -21077,11 +21080,6 @@ S9sOptions::readOptionsControllers(
                 m_options["no_require_db_cluster"] = true;
                 break;
 
-            case OptionNoRequireConfigStorage:
-                // --no-require-config-storage
-                m_options["no_require_config_storage"] = true;
-                break;
-
             case OptionStartController:
                 // --start
                 m_options["start_controller"] = true;
@@ -21124,6 +21122,11 @@ S9sOptions::readOptionsControllers(
             case OptionPurge:
                 // --purge
                 m_options["purge"] = true;
+                break;
+
+            case OptionOrphanOnly:
+                // --orphan-only
+                m_options["orphan_only"] = true;
                 break;
 
             case OptionKeepFirewall:
@@ -21378,21 +21381,20 @@ S9sOptions::checkOptionsControllers()
             return false;
         }
         S9sString val = getString("conf_storage").toLower();
-        if (!(val == "nfs" || val == "k8s"))
+        if (!(val == "vault" || val == "k8s"))
         {
-            m_errorMessage = "Invalid value for --conf-storage. Allowed: 'nfs' or 'k8s'.";
+            m_errorMessage = "Invalid value for --conf-storage. Allowed: 'vault' or 'k8s'.";
             m_exitStatus = BadOptions;
             return false;
         }
     }
 
-    // The prerequisite opt-outs only mean something to the pool mode switch.
-    if ((noRequireDbCluster() || noRequireConfigStorage()) &&
-            !isSetPoolModeRequested())
+    // The prerequisite opt-out only means something to the pool mode switch.
+    if (noRequireDbCluster() && !isSetPoolModeRequested())
     {
         m_errorMessage =
-            "The --no-require-db-cluster and --no-require-config-storage "
-            "options can only be used with --set-pool-mode.";
+            "The --no-require-db-cluster option can only be used with "
+            "--set-pool-mode.";
         m_exitStatus = BadOptions;
         return false;
     }
@@ -21452,6 +21454,13 @@ S9sOptions::checkOptionsControllers()
     if (purge() && !isRemoveOpenBao())
     {
         m_errorMessage = "The --purge option can only be used with --remove-openbao.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (orphanOnly() && !isDeleteServicesBundle())
+    {
+        m_errorMessage = "The --orphan-only option can only be used with --delete-services-bundle.";
         m_exitStatus = BadOptions;
         return false;
     }

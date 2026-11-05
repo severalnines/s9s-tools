@@ -279,6 +279,16 @@ S9sRpcClient::maybeAuthenticate()
 
 
 /**
+ * Replaces the last reply, as if \p reply came from the controller.
+ */
+void
+S9sRpcClient::setReply(
+        const S9sVariantMap &reply)
+{
+    m_priv->m_reply = reply;
+}
+
+/**
  * \returns the reply that received from the controller.
  *
  * The reply the controller sends is a JSON string which is parsed by the
@@ -12254,13 +12264,11 @@ S9sRpcClient::setPoolMode(S9sOptions *options)
         if (!grantedNetworkMask.empty())
             request["controllers_network_mask"] = grantedNetworkMask;
 
-        // Both prerequisites are required by default controller-side; only
-        // an opt-out needs to be transmitted.
+        // The prerequisites are required by default controller-side; only
+        // the CC DB cluster's opt-out needs to be transmitted. The CC
+        // configuration storage has none.
         if (options->noRequireDbCluster())
             request["require_cmon_db_cluster"] = false;
-
-        if (options->noRequireConfigStorage())
-            request["require_config_storage"] = false;
     }
 
     return executeRequest(uri, request);
@@ -12554,10 +12562,45 @@ S9sRpcClient::addServicesBundle(S9sOptions *options)
 }
 
 /**
+ * \returns the controller_id of the one services bundle that
+ *   \p servicesBundles (the getServicesBundles list) has on \p hostName, or
+ *   0 when there is none or more than one. The status is not checked: an
+ *   orphan is listed with a normal status too, and cmon decides if it is one.
+ */
+int
+S9sRpcClient::servicesBundleControllerId(
+        const S9sVariantList &servicesBundles,
+        const S9sString      &hostName)
+{
+    int controllerId = 0;
+    int found        = 0;
+
+    for (uint idx = 0u; idx < servicesBundles.size(); ++idx)
+    {
+        S9sVariantMap servicesBundle = servicesBundles[idx].toVariantMap();
+
+        if (servicesBundle["hostname"].toString() != hostName)
+            continue;
+
+        controllerId = servicesBundle["controller_id"].toInt();
+        ++found;
+    }
+
+    return found == 1 ? controllerId : 0;
+}
+
+/**
  * @brief remove the services bundle of a pool controller host
  * (CmdDeleteServicesBundle / the deleteServicesBundle job). Like
  * the add job it sends no SSH connection settings (sudo/elevation ones are
  * still sent).
+ *
+ * The job also carries the controller_id of the services bundle listed on
+ * the host now, so cmon deletes nothing if another one replaced it before
+ * the job runs. When the list cannot be read, or does not show exactly one
+ * services bundle there, no controller_id is sent and cmon works as before.
+ * With --orphan-only the job also carries orphan_only: cmon then deletes the
+ * services bundle only if it is an orphan (its controller left the pool).
  */
 bool
 S9sRpcClient::deleteServicesBundle(S9sOptions *options)
@@ -12583,8 +12626,29 @@ S9sRpcClient::deleteServicesBundle(S9sOptions *options)
     for (const char *key : { "ssh_user", "ssh_keydata", "ssh_password", "ssh_keyfile", "ssh_port" })
         jobData.erase(key);
 
-    jobData["server_address"] = hosts[0].toNode().hostName();
+    const S9sString hostName   = hosts[0].toNode().hostName();
+    const bool      orphanOnly = options->orphanOnly();
+
+    jobData["server_address"] = hostName;
     jobData["force"]          = options->getBool("force");
+
+    if (orphanOnly)
+        jobData["orphan_only"] = true;
+
+    // Read the list quietly: --print-request shows only the job request.
+    S9sVariantMap listRequest;
+    listRequest["operation"] = "getServicesBundles";
+
+    if (executeRequest("/v2/poolcontrollers/", listRequest, false) &&
+            reply().isOk())
+    {
+        S9sRpcReply listReply = reply();
+        const int controllerId = servicesBundleControllerId(
+                listReply["services_bundles"].toVariantList(), hostName);
+
+        if (controllerId > 0)
+            jobData["controller_id"] = controllerId;
+    }
 
     // The jobspec describing the command.
     jobSpec["command"]  = "deleteServicesBundle";
