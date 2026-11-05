@@ -99,11 +99,21 @@ Controls if the syntax highlight will be used on the output, Same as the
 .TP
 \fBcontroller\fP 
 An URL that is defining the controller, the protocol, the host name, and the
-port (e.g. "https://127.0.0.1:9556").
+port (e.g. "https://127.0.0.1:9556"). When neither this URL nor the
+\fBcontroller_port\fP setting nor the command line gives a port, the default
+port 9500 is used. If the controller can not be reached on the default port
+(connection refused or no TLS on the port), s9s retries once on port 9501, the
+port older controllers serve the TLS RPC on. An explicitly configured port is
+always used as given.
 
 .TP
 \fBcontroller_host_name\fP 
 The host name of the Cmon controller.
+
+.TP
+\fBcontroller_port\fP 
+The port of the Cmon controller, used when the \fBcontroller\fP URL has no
+port. The default is 9500 (see \fBcontroller\fP above).
 
 .TP
 \fBcontroller_protocol\fP 
