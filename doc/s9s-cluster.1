@@ -636,6 +636,28 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-remove\-shard
+Creates a job that removes a whole shard from a ClickHouse cluster. The shard
+is named by its number with the \fB\-\-shard\-id\fR command line option. The
+controller refuses the removal before changing anything when the shard does
+not exist, is the only shard of the cluster, holds rows, has no reachable
+replica, or when a remaining node is unreachable or Keeper has no quorum.
+With Keeper embedded in the data nodes, data nodes of the remaining shards
+take over the Keeper votes of the removed shard. The remaining shards keep
+their numbers, and a shard added later never reuses a removed number. Every
+replica of the shard is stopped, its replica metadata is removed from Keeper
+and the node is removed from the cluster.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --remove-shard \\
+    --cluster-id=1 \\
+    --shard-id=2 \\
+    --wait
+.fi
+
+.TP
 .B --rolling-restart
 Restart all nodes of the cluster by keeping the cluster alive. This command 
 line option will create a job that will restart all the nodes.
@@ -1081,8 +1103,10 @@ The protocol to install and handle dedicated ClickHouse Keeper servers.
 .TP
 .BI \-\^\-shard\-id= ID
 The shard of a ClickHouse cluster the node added by \fB\-\-add\-node\fR
-becomes a replica of. Shards are numbered from 1 in the order they were
-created; shard 1 is used when the option is omitted. Every node in the
+becomes a replica of, or the shard \fB\-\-remove\-shard\fR removes. Shards
+are numbered from 1 in the order they were created, and a removed shard leaves
+its number unused; with \fB\-\-add\-node\fR shard 1 is used when the option
+is omitted. Every node in the
 \fB\-\-nodes\fR list has to use the \fBclickhouse://\fR protocol.
 
 .B EXAMPLE
