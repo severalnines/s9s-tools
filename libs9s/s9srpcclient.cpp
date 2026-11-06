@@ -6005,6 +6005,7 @@ S9sRpcClient::removeShard()
     S9sVariantMap jobSpec;
 
     jobData["shard_id"]  = options->shardId();
+    jobData["drop_rows"] = options->isDropRowsRequested();
 
     jobSpec["command"]   = "remove_shard";
     jobSpec["job_data"]  = jobData;

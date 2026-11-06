@@ -1422,6 +1422,19 @@ UtS9sRpcClient::testRemoveShard()
         S9S_COMPARE(payload.valueByPath("/job/title").toString(), "Remove Shard from Cluster");
         S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(), "remove_shard");
         S9S_COMPARE(payload.valueByPath(JOB_DATA "shard_id"), 2);
+        S9S_COMPARE(payload.valueByPath(JOB_DATA "drop_rows").toBoolean(), false);
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        options->m_options["drop_rows"]  = true;
+        setClusterReply(client, 5, "ch", "CLICKHOUSE");
+
+        S9S_VERIFY(client.removeShard());
+        S9S_COMPARE(client.lastPayload().valueByPath(JOB_DATA "drop_rows").toBoolean(), true);
     }
 
     {

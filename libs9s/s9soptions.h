@@ -800,6 +800,7 @@ class S9sOptions
         bool isAddNodeRequested() const;
         bool isAddShardRequested() const;
         bool isRemoveShardRequested() const;
+        bool isDropRowsRequested() const;
         bool isReinstallNodeRequested() const;
         bool isReconfigureNodeRequested() const;
         bool isRemoveNodeRequested() const;
