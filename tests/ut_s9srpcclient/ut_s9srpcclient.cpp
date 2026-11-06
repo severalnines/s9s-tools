@@ -1391,7 +1391,7 @@ UtS9sRpcClient::testRemoveShard()
     S9sOptions *options = S9sOptions::instance();
 
     // The tester never contacts a controller, so the cluster lookup answers with this reply.
-    const auto setClusterReply = [](S9sRpcClient &client, int clusterId,
+    const auto setClusterReply = [](S9sRpcClientTester &client, int clusterId,
             const char *clusterName, const char *clusterType)
     {
         S9sVariantMap cluster;
@@ -1402,7 +1402,7 @@ UtS9sRpcClient::testRemoveShard()
         S9sVariantMap reply;
         reply["request_status"] = "Ok";
         reply["cluster"]        = cluster;
-        client.m_priv->m_reply  = reply;
+        client.setReplyFor("getClusterInfo", reply);
     };
 
     {
@@ -1445,9 +1445,34 @@ UtS9sRpcClient::testRemoveShard()
         options->m_options["cluster_id"] = 5;
         options->m_options["shard_id"]   = 2;
         setClusterReply(client, 7, "other", "CLICKHOUSE");
+        options->setExitStatus(S9sOptions::ExitOk);
 
         S9S_VERIFY(!client.removeShard());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
         S9S_COMPARE(client.uri(1), "");
+        S9S_VERIFY(!client.reply().isOk());
+        S9S_COMPARE(client.errorString(),
+                "The --remove-shard option needs the --cluster-id or "
+                "--cluster-name of an existing cluster.");
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_name"] = "ch";
+        options->m_options["shard_id"]     = 2;
+        options->m_userConfig.parse("[global]\ndefault_cluster_id = 5\n");
+        setClusterReply(client, 5, "other", "CLICKHOUSE");
+        options->setExitStatus(S9sOptions::ExitOk);
+
+        S9S_VERIFY(!client.removeShard());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(client.uri(1), "");
+        S9S_COMPARE(client.errorString(),
+                "The cluster 'ch' given by --cluster-name was not found, "
+                "or default_cluster_id in s9s.conf selects another "
+                "cluster; use --cluster-id.");
+        options->m_userConfig.parse("");
     }
 
     {
