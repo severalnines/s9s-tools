@@ -70,6 +70,8 @@ enum S9sOptionType
     OptionContainers,
     OptionAddNode,
     OptionAddShard,
+    OptionRemoveShard,
+    OptionDropRows,
     OptionReinstallNode,
     OptionReconfigureNode,
     OptionRemoveNode,
@@ -7325,6 +7327,18 @@ S9sOptions::isAddShardRequested() const
     return getBool("add_shard");
 }
 
+bool
+S9sOptions::isRemoveShardRequested() const
+{
+    return getBool("remove_shard");
+}
+
+bool
+S9sOptions::isDropRowsRequested() const
+{
+    return getBool("drop_rows");
+}
+
 /**
  * \returns true if the reinstall operation was requested using the "--reinstall-node"
  *   command line option.
@@ -8899,6 +8913,8 @@ S9sOptions::printHelpCluster()
 "  --register                 Register a pre-existing cluster.\n"
 "  --reinstall-node           Reinstalls software and also reconfigures it on nodes.\n"
 "  --remove-node              Remove a node from the cluster.\n"
+"  --remove-shard             Remove the shard given by --shard-id from a\n"
+"                             ClickHouse cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --set-read-only            Set the entire cluster into read-only mode.\n"
 "  --set-read-write           Set the entire cluster into read-write mode.\n"
@@ -9012,7 +9028,9 @@ S9sOptions::printHelpCluster()
 "\n"
 "ClickHouse shard related options\n"
 "  --shard-id=ID              The shard the node added by --add-node becomes a\n"
-"                             replica of.\n"
+"                             replica of, or the shard --remove-shard removes.\n"
+"  --drop-rows                Confirm that --remove-shard drops the rows the\n"
+"                             shard holds.\n"
 "\n"
 "Major upgrade related options\n"
 "  --upgrade-to-version       Trigger major upgrade against minor to the\n"
@@ -13629,6 +13647,9 @@ S9sOptions::checkOptionsCluster()
     if (isRemoveNodeRequested())
         countOptions++;
 
+    if (isRemoveShardRequested())
+        countOptions++;
+
     if (isDropRequested())
         countOptions++;
 
@@ -13766,10 +13787,30 @@ S9sOptions::checkOptionsCluster()
         }
     }
 
-    if (shardId() > 0 && !isAddNodeRequested())
+    if (shardId() > 0 && !isAddNodeRequested() && !isRemoveShardRequested())
     {
         m_errorMessage =
-            "The --shard-id option can only be used with --add-node.";
+            "The --shard-id option can only be used with --add-node or "
+            "--remove-shard.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isRemoveShardRequested() && shardId() <= 0)
+    {
+        m_errorMessage =
+            "The --remove-shard option needs --shard-id to name the shard "
+            "to remove.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isDropRowsRequested() && !isRemoveShardRequested())
+    {
+        m_errorMessage =
+            "The --drop-rows option can only be used with --remove-shard.";
 
         m_exitStatus = BadOptions;
         return false;
@@ -16001,6 +16042,8 @@ S9sOptions::readOptionsCluster(
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "add-shard",        no_argument,       0, OptionAddShard        },
+        { "remove-shard",     no_argument,       0, OptionRemoveShard     },
+        { "drop-rows",        no_argument,       0, OptionDropRows        },
         { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
         { "change-config",    no_argument,       0, OptionChangeConfig    },
@@ -16408,6 +16451,14 @@ S9sOptions::readOptionsCluster(
 
             case OptionAddShard:
                 m_options["add_shard"] = true;
+                break;
+
+            case OptionRemoveShard:
+                m_options["remove_shard"] = true;
+                break;
+
+            case OptionDropRows:
+                m_options["drop_rows"] = true;
                 break;
 
             case OptionReinstallNode:

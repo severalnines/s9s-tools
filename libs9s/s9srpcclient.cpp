@@ -5941,6 +5941,84 @@ S9sRpcClient::addShard()
     return executeRequest(uri, request);
 }
 
+bool
+S9sRpcClient::removeShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    if (!getCluster(options->clusterName(), options->clusterId()))
+        return false;
+
+    S9sRpcReply clusterReply = reply();
+    if (!clusterReply.isOk())
+        return true;
+
+    S9sVariantList clusters = clusterReply.clusters();
+    S9sCluster cluster = clusters.empty()
+            ? S9sCluster()
+            : S9sCluster(clusters[0].toVariantMap());
+    // The controller answers with some other cluster when the request names none it can use.
+    const bool byName =
+            !options->hasClusterIdOption() && !options->clusterName().empty();
+    const bool requested = byName
+            ? cluster.name() == options->clusterName()
+            : S9S_CLUSTER_ID_IS_VALID(options->clusterId()) &&
+              cluster.clusterId() == options->clusterId();
+    // The cluster lookup's reply would otherwise be reported as the result of the refused request.
+    const auto refuse = [&](const S9sString &message)
+    {
+        m_priv->m_reply.clear();
+        m_priv->m_reply["request_status"] = "InvalidRequest";
+        m_priv->m_reply["error_string"]   = message;
+        options->setExitStatus(S9sOptions::BadOptions);
+        return false;
+    };
+
+    if (clusters.empty() || !requested)
+    {
+        if (byName)
+        {
+            S9sString message;
+            message.sprintf(
+                    "The cluster '%s' given by --cluster-name was not found, "
+                    "or default_cluster_id in s9s.conf selects another "
+                    "cluster; use --cluster-id.",
+                    STR(options->clusterName()));
+            return refuse(message);
+        }
+
+        return refuse(
+                "The --remove-shard option needs the --cluster-id or "
+                "--cluster-name of an existing cluster.");
+    }
+
+    if (cluster.clusterType().toLower() != "clickhouse")
+    {
+        return refuse(
+                "The --remove-shard option is only supported for ClickHouse "
+                "clusters.");
+    }
+
+    S9sVariantMap request = composeRequest();
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+
+    jobData["shard_id"]  = options->shardId();
+    jobData["drop_rows"] = options->isDropRowsRequested();
+
+    jobSpec["command"]   = "remove_shard";
+    jobSpec["job_data"]  = jobData;
+
+    job["title"]         = "Remove Shard from Cluster";
+    job["job_spec"]      = jobSpec;
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest("/v2/jobs/", request);
+}
+
 /**
  * This method is executed when the --reconfigure option is used like in 
  * s9s cluster --reinstall-node --cluster-id=X --nodes=
