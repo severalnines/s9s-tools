@@ -315,9 +315,10 @@ s9s pool-controllers --add-db --nodes=10.0.1.87 --log
 Add '--force' to proceed even when an existing, unrelated MySQL installation is
 detected on the target host; its data will be overwritten by the join.
 
-\&'--site' sets the site the instance is recorded with. Without it the instance
-gets the site of the pool controller on the same host, or 'cc-default-site' when
-none runs there. A controller without CLUS-9352 ignores it.
+\&'--site' sets the site the instance is recorded with. Without it an instance
+added again keeps the site it has, and a new one gets the site of the pool
+controller on the same host, or 'cc-default-site' when none runs there. A
+controller without CLUS-9352 ignores it.
 .nf
 s9s pool-controllers --add-db --nodes=10.0.1.87 --site=site-b --log
 .fi

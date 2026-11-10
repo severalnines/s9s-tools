@@ -12494,7 +12494,7 @@ S9sRpcClient::addNewCmonDbInstance(S9sOptions *options)
 
     jobData["force"] = options->getBool("force");
 
-    // Without it the controller records the colocated controller's site.
+    // Without it the controller keeps the recorded site, else uses the colocated controller's.
     if (!options->site().empty())
         jobData["site"] = options->site();
 
@@ -12955,7 +12955,7 @@ S9sRpcClient::installOpenBao(S9sOptions *options)
     if (options->openBaoForceReinit())
         jobData["openbao_force_reinit"] = true;
 
-    // Without it the controller records the colocated controller's site.
+    // Without it the controller keeps the recorded site, else uses the colocated controller's.
     if (!options->site().empty())
         jobData["site"] = options->site();
 
