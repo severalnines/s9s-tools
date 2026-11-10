@@ -315,6 +315,13 @@ s9s pool-controllers --add-db --nodes=10.0.1.87 --log
 Add '--force' to proceed even when an existing, unrelated MySQL installation is
 detected on the target host; its data will be overwritten by the join.
 
+\&'--site' sets the site the instance is recorded with. Without it the instance
+gets the site of the pool controller on the same host, or 'cc-default-site' when
+none runs there. A controller without CLUS-9352 ignores it.
+.nf
+s9s pool-controllers --add-db --nodes=10.0.1.87 --site=site-b --log
+.fi
+
 .TP
 .B --delete-db
 Removes a cmon DB instance from the pool's cmon DB HA InnoDB Cluster (cluster/Group
@@ -512,6 +519,11 @@ recent enough to do so.
 The ssh login of the target host comes from '--os-user', '--os-key-file' and
 \&'--os-password' when given. In a pool the '--os-key-file' path must exist on the
 controller that runs the job, which is not necessarily the one s9s talks to.
+
+\&'--site' sets the site the node is recorded with. Without it a node set up again
+keeps the site it has, and a new node gets the site of the pool controller on the
+same host, or 'cc-default-site' when none runs there. A controller without
+CLUS-9352 ignores it.
 .nf
 s9s pool-controllers --add-openbao --nodes=10.16.186.189 --log
 s9s pool-controllers --add-openbao --nodes=10.16.186.190 --log
