@@ -5879,7 +5879,8 @@ S9sOptions::isListServicesBundles() const
 
 /**
  * \returns the site given by the --site command line option (for
- * --add-services-bundle and --add-controller), empty when not given.
+ * --add-services-bundle, --add-controller, --add-db and --add-openbao),
+ * empty when not given.
  */
 S9sString
 S9sOptions::site() const
@@ -9567,10 +9568,15 @@ S9sOptions::printHelpControllers()
 "                             value set that key in cmon.cnf. Requires admin privileges.\n"
 "  --controller-id            To specify the controller ID to retrieve info from.\n"
 "  --cluster-id               To specify the cluster ID to retrieve info from.\n"
-"  --site=SITE                The site of the new controller (--add-controller) or\n"
-"                             services bundle (--add-services-bundle). With\n"
-"                             --add-controller it needs a controller with CLUS-8519\n"
-"                             or newer; an older one ignores it.\n"
+"  --site=SITE                The site of the new controller (--add-controller),\n"
+"                             services bundle (--add-services-bundle), cmon DB\n"
+"                             instance (--add-db) or OpenBao node (--add-openbao).\n"
+"                             Without it --add-db and --add-openbao keep the site an\n"
+"                             instance already has, else record the site of the\n"
+"                             controller on the same host, else cc-default-site.\n"
+"                             With --add-controller it needs a\n"
+"                             controller with CLUS-8519 or newer, with --add-db and\n"
+"                             --add-openbao one with CLUS-9352; an older one ignores it.\n"
 "  --uninstall                Uninstall software when removing controller.\n"
 "\n"
 "CC DB instances:\n"
@@ -21516,9 +21522,11 @@ S9sOptions::checkOptionsControllers()
         return false;
     }
 
-    if (m_options.contains("site") && !isAddServicesBundle() && !isAddController())
+    if (m_options.contains("site") && !isAddServicesBundle() && !isAddController() &&
+            !isAddDb() && !isAddOpenBao())
     {
-        m_errorMessage = "The --site option can only be used with --add-services-bundle or --add-controller.";
+        m_errorMessage = "The --site option can only be used with --add-services-bundle, --add-controller, "
+                         "--add-db or --add-openbao.";
         m_exitStatus = BadOptions;
         return false;
     }

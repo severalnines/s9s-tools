@@ -3846,6 +3846,8 @@ UtS9sRpcClient::testAddDb()
     S9S_COMPARE(jobData["server_address"], "10.0.1.87");
     S9S_COMPARE(jobData["port"], 3307);
     S9S_VERIFY(!jobData["force"].toBoolean());
+    // No --site: no key, the controller picks the site.
+    S9S_VERIFY(!jobData.contains("site"));
 
     // No port on --nodes -> must default to 3306 (S9sNode::port() itself
     // defaults to 0, not 3306, so addNewCmonDbInstance() must apply the
@@ -3854,6 +3856,7 @@ UtS9sRpcClient::testAddDb()
     options = S9sOptions::instance();
     options->setNodes("10.0.1.87");
     options->m_options["force"] = true;
+    options->m_options["site"]  = "site-b";
 
     S9S_VERIFY(client.addNewCmonDbInstance(options));
     payload = client.lastPayload();
@@ -3862,6 +3865,7 @@ UtS9sRpcClient::testAddDb()
     S9S_COMPARE(jobData["server_address"], "10.0.1.87");
     S9S_COMPARE(jobData["port"], 3306);
     S9S_VERIFY(jobData["force"].toBoolean());
+    S9S_COMPARE(jobData["site"], "site-b");
 
     return true;
 }
@@ -4228,6 +4232,7 @@ UtS9sRpcClient::testInstallOpenBao()
     options->m_options["keep_firewall"]         = true;
     options->m_options["os_user"]               = "alvaro";
     options->m_options["os_key_file"]           = "/home/alvaro/.ssh/id_ed25519";
+    options->m_options["site"]                  = "site-b";
 
     S9S_VERIFY(client.installOpenBao(options));
     payload = client.lastPayload();
@@ -4257,6 +4262,7 @@ UtS9sRpcClient::testInstallOpenBao()
     // The ssh login for the OpenBao host.
     S9S_COMPARE(jobData["ssh_user"], "alvaro");
     S9S_COMPARE(jobData["ssh_keyfile"], "/home/alvaro/.ssh/id_ed25519");
+    S9S_COMPARE(jobData["site"], "site-b");
 
     /*
      * Without the parameters the job_data must carry no openbao_* key and no
@@ -4279,6 +4285,7 @@ UtS9sRpcClient::testInstallOpenBao()
     S9S_VERIFY(!jobData.contains("openbao_namespace"));
     S9S_VERIFY(!jobData.contains("openbao_force_reinit"));
     S9S_VERIFY(!jobData.contains("install_software"));
+    S9S_VERIFY(!jobData.contains("site"));
     // Like every other job that installs software on a host, the firewall is
     // disabled unless --keep-firewall was given.
     S9S_COMPARE(jobData["disable_firewall"], true);

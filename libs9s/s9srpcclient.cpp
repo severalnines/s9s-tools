@@ -12494,6 +12494,10 @@ S9sRpcClient::addNewCmonDbInstance(S9sOptions *options)
 
     jobData["force"] = options->getBool("force");
 
+    // Without it the controller keeps the recorded site, else uses the colocated controller's.
+    if (!options->site().empty())
+        jobData["site"] = options->site();
+
     // The jobspec describing the command.
     jobSpec["command"]  = "addCmonDbInstance";
     jobSpec["job_data"] = jobData;
@@ -12950,6 +12954,10 @@ S9sRpcClient::installOpenBao(S9sOptions *options)
 
     if (options->openBaoForceReinit())
         jobData["openbao_force_reinit"] = true;
+
+    // Without it the controller keeps the recorded site, else uses the colocated controller's.
+    if (!options->site().empty())
+        jobData["site"] = options->site();
 
     // As every other job that installs software on a host: the controller
     // disables the host's firewall unless --keep-firewall (or keep_firewall in

@@ -1071,6 +1071,8 @@ UtS9sOptions::testAddDb()
     S9S_COMPARE(options->nodes()[0].toNode().hostName(), ("10.16.186.1"));
     S9S_COMPARE(options->nodes()[0].toNode().port(), 3306);
     S9S_VERIFY(!options->getBool("force"));
+    // No --site: the controller picks the site.
+    S9S_COMPARE(options->site(), "");
 
     S9sOptions::uninit();
 
@@ -1089,6 +1091,38 @@ UtS9sOptions::testAddDb()
     S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
     S9S_VERIFY(options->isAddDb());
     S9S_VERIFY(options->getBool("force"));
+
+    S9sOptions::uninit();
+
+    // --site is accepted with --add-db and kept for the job's job_data.site.
+    const char *argv3[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--add-db",
+                            "--nodes=10.16.186.1:3306",
+                            "--site=site-b",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(options->isAddDb());
+    S9S_COMPARE(options->site(), "site-b");
+
+    S9sOptions::uninit();
+
+    // --delete-db still refuses --site.
+    const char *argv4[] = { "/bin/s9s",
+                            "pool-controllers",
+                            "--delete-db",
+                            "--nodes=10.16.186.1:3306",
+                            "--site=site-b",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+    S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    S9S_VERIFY(options->errorString().contains("--site"));
 
     S9sOptions::uninit();
     return true;
@@ -1378,6 +1412,7 @@ UtS9sOptions::testAddOpenBao()
                             "--openbao-namespace=tenant1",
                             "--openbao-force-reinit",
                             "--no-install",
+                            "--site=site-b",
                             nullptr };
     int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
 
@@ -1393,6 +1428,7 @@ UtS9sOptions::testAddOpenBao()
     S9S_COMPARE(options->openBaoNamespace(), "tenant1");
     S9S_VERIFY(options->openBaoForceReinit());
     S9S_VERIFY(options->noInstall());
+    S9S_COMPARE(options->site(), "site-b");
 
     // No parameter given: the controller's own defaults must be used, so
     // nothing is set here.
@@ -1412,6 +1448,7 @@ UtS9sOptions::testAddOpenBao()
     S9S_COMPARE(options->openBaoMount(), "");
     S9S_VERIFY(!options->openBaoForceReinit());
     S9S_VERIFY(!options->noInstall());
+    S9S_COMPARE(options->site(), "");
 
     // The host is mandatory.
     const char *argv3[] = { "/bin/s9s",
