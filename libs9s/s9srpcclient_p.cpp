@@ -96,7 +96,9 @@ S9sRpcClientPrivate::clearBuffer()
  * If the connect fails (refused, timeout, TLS handshake failure, e.g. a plain
  * HTTP service on the port) and a fallback port is set, the same host is tried
  * once more on the fallback port. The fallback is used only once per client,
- * the first successful connect disables it.
+ * the first successful connect disables it. With a fallback port the other
+ * controllers known from the redirects are tried only after both ports of the
+ * original host failed.
  */
 bool
 S9sRpcClientPrivate::connect(
@@ -107,14 +109,20 @@ S9sRpcClientPrivate::connect(
     S9sString firstError;
     bool      success;
 
-    success = connectOnce(redirect);
-    if (success || m_fallbackPort <= 0 || m_fallbackPort == port ||
-            m_hostName != hostName || m_port != port)
+    if (m_fallbackPort <= 0 || m_fallbackPort == port)
     {
+        success = connectOnce(redirect);
         if (success)
             m_fallbackPort = 0;
 
         return success;
+    }
+
+    success = connectOnce(S9s::DenyRedirect);
+    if (success)
+    {
+        m_fallbackPort = 0;
+        return true;
     }
 
     firstError = m_errorString;
@@ -126,17 +134,23 @@ S9sRpcClientPrivate::connect(
     m_port         = m_fallbackPort;
     m_fallbackPort = 0;
 
-    success = connectOnce(redirect);
-    if (!success)
-    {
-        S9sString fallbackError = m_errorString;
+    success = connectOnce(S9s::DenyRedirect);
+    if (success)
+        return true;
 
-        m_errorString.sprintf("%s Port %d: %s",
-                STR(firstError), m_port, STR(fallbackError));
-        m_port = port;
+    S9sString fallbackError = m_errorString;
+
+    m_errorString.sprintf("%s Port %d: %s",
+            STR(firstError), m_port, STR(fallbackError));
+    m_port = port;
+
+    if (tryNextHost(redirect))
+    {
+        PRINT_VERBOSE("Failed, trying next host.");
+        return connectOnce(redirect);
     }
 
-    return success;
+    return false;
 }
 
 /**
