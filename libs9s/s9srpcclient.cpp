@@ -5130,7 +5130,7 @@ elasticDistributionName(
  * \returns true if the job may be sent; otherwise the reply holds an error
  *   naming the vendor and the controller.
  *
- * Controllers before 2.5.1 ignore the vendor of an elastic cluster and deploy
+ * Controllers before 2.5.2 ignore the vendor of an elastic cluster and deploy
  * Elasticsearch whatever was asked for, so a job for another distribution
  * would silently get the wrong one. The vendors the controller lists tell the
  * two apart: a vendor it does not list is refused, and so is a request that
@@ -5188,7 +5188,7 @@ S9sRpcClient::checkElasticVendorListed(const S9sString &vendor)
             STR(vendor));
 
     if (isOpenSearchVendor(vendor))
-        message += "; OpenSearch needs ClusterControl 2.5.1 or later";
+        message += "; OpenSearch needs ClusterControl 2.5.2 or later";
 
     message += ".";
     setError(message, "InvalidRequest");
