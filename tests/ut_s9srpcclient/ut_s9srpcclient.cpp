@@ -1743,7 +1743,7 @@ UtS9sRpcClient::testRegisterElasticsearchMessages()
 }
 
 /**
- * A controller older than 2.5.1 ignores the vendor of an elastic cluster and
+ * A controller older than 2.5.2 ignores the vendor of an elastic cluster and
  * deploys Elasticsearch whatever was asked for. Before sending a create or
  * register job for any other elastic vendor the client asks the controller
  * for the vendors it lists, and refuses, without sending the job, when the
@@ -1950,7 +1950,7 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         {
             S9S_VERIFY(error.contains("does not list vendor"));
             if (vendor == "opensearch")
-                S9S_VERIFY(error.contains("ClusterControl 2.5.1 or later"));
+                S9S_VERIFY(error.contains("ClusterControl 2.5.2 or later"));
         }
         else if (testCase.probe == Fails)
         {
