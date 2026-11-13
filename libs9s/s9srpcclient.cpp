@@ -5079,6 +5079,122 @@ S9sRpcClient::createRedisOrValkeySentinel(
     return executeRequest(uri, request);
 }
 
+/*
+ * The "elastic" cluster type covers both Elasticsearch and OpenSearch; the
+ * vendor decides which one the user sees named in job titles and messages.
+ * Anything but OpenSearch keeps the historical Elasticsearch wording.
+ */
+static bool
+isOpenSearchVendor(
+        const S9sString &vendor)
+{
+    return vendor == "opensearch";
+}
+
+/**
+ * \returns An error naming \a vendor when it is neither elasticsearch nor
+ *   opensearch, otherwise an empty string.
+ *
+ * The controller lists the vendors of all cluster types together, so it
+ * cannot be relied on to refuse a vendor that is not an elastic one.
+ */
+static S9sString
+nonElasticVendorError(const S9sString &vendor)
+{
+    S9sString message;
+
+    if (!vendor.empty() && vendor != "elasticsearch"
+        && !isOpenSearchVendor(vendor))
+    {
+        message.sprintf(
+                "Vendor '%s' is not an elastic vendor; use "
+                "--vendor=elasticsearch or --vendor=opensearch.",
+                STR(vendor));
+    }
+
+    return message;
+}
+
+static S9sString
+elasticDistributionName(
+        const S9sString &vendor)
+{
+    if (isOpenSearchVendor(vendor))
+        return "OpenSearch";
+
+    return "Elasticsearch";
+}
+
+/**
+ * \param vendor The vendor an elastic create or register job would carry.
+ * \returns true if the job may be sent; otherwise the reply holds an error
+ *   naming the vendor and the controller.
+ *
+ * Controllers before 2.5.2 ignore the vendor of an elastic cluster and deploy
+ * Elasticsearch whatever was asked for, so a job for another distribution
+ * would silently get the wrong one. The vendors the controller lists tell the
+ * two apart: a vendor it does not list is refused, and so is a request that
+ * fails, because then nothing shows the controller would honour the vendor.
+ * Elasticsearch and no vendor need no check, every controller handles them.
+ */
+bool
+S9sRpcClient::checkElasticVendorListed(const S9sString &vendor)
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sRpcReply    vendorsReply;
+    S9sVariantList vendors;
+    S9sString      controller;
+    S9sString      errorCode;
+    S9sString      message;
+
+    if (vendor.empty() || vendor == "elasticsearch")
+        return true;
+
+    controller.sprintf(
+            "%s:%d",
+            STR(options->controllerHostName()),
+            options->controllerPort());
+
+    if (!getVendors("elastic") || !reply().isOk())
+    {
+        vendorsReply = reply();
+        errorCode    = vendorsReply["request_status"].toString();
+        if (errorCode.empty())
+            errorCode = "ConnectError";
+
+        message.sprintf(
+                "Could not check whether the controller at %s lists vendor "
+                "'%s' for elastic clusters: %s",
+                STR(controller),
+                STR(vendor),
+                STR(errorString()));
+
+        setError(message, errorCode);
+        return false;
+    }
+
+    vendorsReply = reply();
+    vendors      = vendorsReply.vendors();
+    for (uint idx = 0u; idx < vendors.size(); ++idx)
+    {
+        if (vendors[idx].toString() == vendor)
+            return true;
+    }
+
+    message.sprintf(
+            "The controller at %s does not list vendor '%s' for elastic "
+            "clusters",
+            STR(controller),
+            STR(vendor));
+
+    if (isOpenSearchVendor(vendor))
+        message += "; OpenSearch needs ClusterControl 2.5.2 or later";
+
+    message += ".";
+    setError(message, "InvalidRequest");
+    return false;
+}
+
 /**
  * \param hosts the hosts that will be the member of the cluster (variant list
  *   with S9sNode elements).
@@ -5101,12 +5217,27 @@ S9sRpcClient::createElasticsearch(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    // Only --vendor counts: a vendor in s9s.conf is usually set for another
+    // cluster type, percona for MySQL say, and must not pick the distribution.
+    S9sString vendor
+            = options->hasVendorOption() ? options->vendor() : S9sString();
+    S9sString message;
 
     if (hosts.size() < 1u)
     {
         PRINT_ERROR("Missing node list while creating Elasticsearch cluster.");
         return false;
     }
+
+    message = nonElasticVendorError(vendor);
+    if (!message.empty())
+    {
+        setError(message, "InvalidRequest");
+        return false;
+    }
+
+    if (!checkElasticVendorListed(vendor))
+        return false;
 
     addCredentialsToJobData(jobData);
 
@@ -5121,6 +5252,9 @@ S9sRpcClient::createElasticsearch(
     jobData["db_password"]      = options->dbAdminPassword();
     jobData["disable_firewall"] = !options->keepFirewall();
     setDeployAgentsIfRequested(jobData);
+
+    if (!vendor.empty())
+        jobData["vendor"] = vendor;
 
     if (options->noInstall())
     {
@@ -5143,7 +5277,7 @@ S9sRpcClient::createElasticsearch(
     // 
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Creating Elasticsearch Cluster";
+    job["title"] = "Creating " + elasticDistributionName(vendor) + " Cluster";
     job["job_spec"]             = jobSpec;
 
     // 
@@ -12101,18 +12235,23 @@ S9sRpcClient::getClusterTypes()
 }
 
 /**
+ * \param clusterType The cluster type the vendors are asked for, empty to
+ *   leave it out of the request.
  * \returns the list of available vendors on all supported clusters
  *
  * The method that gets the list of available vendors
  */
 bool
-S9sRpcClient::getVendors()
+S9sRpcClient::getVendors(const S9sString &clusterType)
 {
     S9sString      uri = "/v2/dbversions/";
     S9sVariantMap  request;
     bool           retval;
 
     request["operation"] = "getVendors";
+    if (!clusterType.empty())
+        request["cluster_type"] = clusterType;
+
     retval = executeRequest(uri, request);
 
     return retval;
@@ -14862,6 +15001,12 @@ S9sRpcClient::registerElasticsearchCluster(
     S9sVariantMap   jobData = composeJobData();
     S9sVariantMap   jobSpec;
     S9sString       uri = "/v2/jobs/";
+    // Only --vendor counts: a vendor in s9s.conf is meant for installing new
+    // clusters and would otherwise be forced onto every registration.
+    S9sString       vendor = options->hasVendorOption() ?
+            options->vendor() : S9sString();
+    S9sString       distribution = elasticDistributionName(vendor);
+    S9sString       message      = nonElasticVendorError(vendor);
 
     if (hosts.size() < 1u)
     {
@@ -14872,16 +15017,29 @@ S9sRpcClient::registerElasticsearchCluster(
     else if (hosts.size() > 1u)
     {
 
-        PRINT_ERROR("Elasticsearch clusters requires only one cluster's node to discover topology");
+        PRINT_ERROR("%s clusters requires only one cluster's node to discover topology", STR(distribution));
         return false;
     }
 
+    if (!message.empty())
+    {
+        setError(message, "InvalidRequest");
+        return false;
+    }
+
+    // Ask the controller before printing any advice: the certificate hints
+    // are for a register that is going ahead, not for one it refuses.
+    if (!checkElasticVendorListed(vendor))
+        return false;
+
     addCredentialsToJobData(jobData);
 
-    if(!jobData.contains("certificates_password"))
-        PRINT_ERROR("Certificated password (--ssl-pass) is recommended for Elasticsearch cluster import. Add node operation may fail without it.");
+    // OpenSearch has no keystore password, so --ssl-pass would be ignored.
+    if(!jobData.contains("certificates_password") &&
+            !isOpenSearchVendor(vendor))
+        PRINT_ERROR("Certificated password (--ssl-pass) is recommended for %s cluster import. Add node operation may fail without it.", STR(distribution));
     if(!jobData.contains("move_certs_dir"))
-        PRINT_ERROR("It has not been specified the certificates folder to use for Elasticsearch imported cluster (--move-certs-dir). Add node operation may fail without it.");
+        PRINT_ERROR("It has not been specified the certificates folder to use for %s imported cluster (--move-certs-dir). Add node operation may fail without it.", STR(distribution));
 
     //
     // The job_data describing the cluster.
@@ -14891,16 +15049,21 @@ S9sRpcClient::registerElasticsearchCluster(
     jobData["nodes"]            = nodesField(hosts);
     if(options->dbAdminUserName().empty())
     {
-        PRINT_ERROR("Database user is required for Elasticsearch cluster");
+        PRINT_ERROR("Database user is required for %s cluster", STR(distribution));
         return false;
     }
     jobData["db_user"]          = options->dbAdminUserName();
     if(options->dbAdminPassword().empty())
     {
-        PRINT_ERROR("Database password is required for Elasticsearch cluster");
+        PRINT_ERROR("Database password is required for %s cluster", STR(distribution));
         return false;
     }
     jobData["db_password"]      = options->dbAdminPassword();
+
+    // The controller reads the distribution from the node and fails the import
+    // when a vendor sent here differs from the one the node reports.
+    if (!vendor.empty())
+        jobData["vendor"]       = vendor;
 
     if (!options->clusterName().empty())
         jobData["cluster_name"] = options->clusterName();
@@ -14913,7 +15076,7 @@ S9sRpcClient::registerElasticsearchCluster(
     //
     // The job instance describing how the job will be executed.
     //
-    job["title"]                = "Register Elasticsearch Cluster";
+    job["title"]                = "Register " + distribution + " Cluster";
     job["job_spec"]             = jobSpec;
 
     //
