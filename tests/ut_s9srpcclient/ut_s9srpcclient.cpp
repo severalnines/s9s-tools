@@ -1825,6 +1825,7 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         S9sString          vendor       = testCase.vendor;
         S9sString          configVendor = testCase.configVendor;
         S9sString          error;
+        S9sString          errors;
         S9sString          quoted;
         S9sVariantMap      probe;
         S9sVariantMap      notOk;
@@ -1878,9 +1879,19 @@ UtS9sRpcClient::testElasticVendorPrecheck()
         if (testCase.command == Create)
             success = client.createCluster();
         else
-            success = client.registerCluster();
+            errors = registerClusterErrors(client, success);
 
         error = client.errorString();
+
+        // The certificate hints only make sense for a register that is
+        // going ahead: a refused one prints none of them. A register that
+        // is sent prints the hint, so the capture itself is known to work.
+        if (testCase.command == Register)
+        {
+            S9S_COMPARE(errors.contains("--move-certs-dir"), success);
+            if (!success)
+                S9S_VERIFY(!errors.contains("--ssl-pass"));
+        }
         if (isVerbose())
         {
             printf("%s/%s/%s: %s, '%s'\n",
