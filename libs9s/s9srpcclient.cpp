@@ -15027,6 +15027,11 @@ S9sRpcClient::registerElasticsearchCluster(
         return false;
     }
 
+    // Ask the controller before printing any advice: the certificate hints
+    // are for a register that is going ahead, not for one it refuses.
+    if (!checkElasticVendorListed(vendor))
+        return false;
+
     addCredentialsToJobData(jobData);
 
     // OpenSearch has no keystore password, so --ssl-pass would be ignored.
@@ -15054,9 +15059,6 @@ S9sRpcClient::registerElasticsearchCluster(
         return false;
     }
     jobData["db_password"]      = options->dbAdminPassword();
-
-    if (!checkElasticVendorListed(vendor))
-        return false;
 
     // The controller reads the distribution from the node and fails the import
     // when a vendor sent here differs from the one the node reports.
