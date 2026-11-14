@@ -571,6 +571,7 @@ enum S9sOptionType
     OptionStopController,
     OptionRemoveController,
     OptionUpdateCmon,
+    OptionNoServicesBundle,
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
     OptionRemoveOpenBao,
@@ -5936,6 +5937,16 @@ S9sOptions::isUpdateCmon() const
     return getBool("update_cmon");
 }
 
+/*
+ * \returns true if the --no-services-bundle command line option was provided
+ *   (with --update-cmon: upgrade cmon only, not the services bundle).
+ */
+bool
+S9sOptions::isNoServicesBundle() const
+{
+    return getBool("no_services_bundle");
+}
+
 bool
 S9sOptions::isSetMaxClustersCapacityRequested() const
 {
@@ -9560,6 +9571,7 @@ S9sOptions::printHelpControllers()
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
 "  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
+"  --no-services-bundle       With --update-cmon: upgrade cmon only, not the services bundle on the same host.\n"
 "  --set-max-clusters-capacity=N  Set how many clusters this controller can own. Sentinels:\n"
 "                             -2 = auto (RAM-based), -1 = unlimited, 0 = inactive (own no\n"
 "                             clusters: abandon all, acquire none), >0 = explicit cap. Takes\n"
@@ -20846,6 +20858,7 @@ S9sOptions::readOptionsControllers(
                     {"stop",             no_argument, 0,       OptionStopController},
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
+                    {"no-services-bundle", no_argument, 0,     OptionNoServicesBundle},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
                     {"remove-openbao",   no_argument, 0,       OptionRemoveOpenBao},
@@ -21154,6 +21167,11 @@ S9sOptions::readOptionsControllers(
             case OptionUpdateCmon:
                 // --update-cmon
                 m_options["update_cmon"] = true;
+                break;
+
+            case OptionNoServicesBundle:
+                // --no-services-bundle
+                m_options["no_services_bundle"] = true;
                 break;
 
             case OptionAddOpenBao:

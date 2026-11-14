@@ -12876,6 +12876,8 @@ S9sRpcClient::updateCmon(S9sOptions *options)
     if (options->uninstall())
         jobData["enable_uninstall"] = true;
 
+    jobData["upgrade_services_bundle"] = !options->isNoServicesBundle();
+
     // The jobspec describing the command.
     jobSpec["command"]  = "updateCmonVersion";
     jobSpec["job_data"] = jobData;

@@ -236,6 +236,15 @@ s9s pool-controllers --update-cmon --controller-id=2
 .fi
 
 .TP
+.B --no-services-bundle
+With \fB--update-cmon\fP: upgrade cmon only, not the services bundle
+(clustercontrol-proxy, clustercontrol-mcc, ...) installed on the same host. By
+default the services bundle colocated with the controller is upgraded as well.
+.nf
+s9s pool-controllers --update-cmon --controller-id=2 --no-services-bundle
+.fi
+
+.TP
 .BI \-\^\-set-max-clusters-capacity=N
 Sets how many clusters the controller receiving the request can own. Sentinels:
 .B -2

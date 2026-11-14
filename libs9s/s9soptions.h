@@ -575,6 +575,7 @@ class S9sOptions
         bool isStopController() const;
         bool isRemoveController() const;
         bool isUpdateCmon() const;
+        bool isNoServicesBundle() const;
         bool isSetMaxClustersCapacityRequested() const;
         int  getMaxClustersCapacity() const;
         bool isAddOpenBao() const;
