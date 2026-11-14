@@ -50,6 +50,7 @@ class UtS9sOptions : public S9sUnitTest
         bool testConfigureWalOptions();
         bool testAddController();
         bool testAddDb();
+        bool testUpdateCmon();
         bool testDeleteDb();
         bool testListDb();
         bool testAddServicesBundle();

@@ -211,6 +211,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testConfigureWal, retval);
     PERFORM_TEST(testAddController, retval);
     PERFORM_TEST(testAddDb, retval);
+    PERFORM_TEST(testUpdateCmon, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddServicesBundle, retval);
@@ -3818,6 +3819,45 @@ UtS9sRpcClient::testAddController()
  * CmdAddCmonDbInstance) request shape: job_spec.command, and job_data's
  * server_address/port/force fields.
  */
+/*
+ * updateCmon(): updateCmonVersion job; upgrade_services_bundle is true unless
+ * --no-services-bundle was given.
+ */
+bool
+UtS9sRpcClient::testUpdateCmon()
+{
+    S9sOptions         *options;
+    S9sRpcClientTester  client;
+    S9sVariantMap       payload;
+    S9sVariantMap       jobData;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->m_options["controller_id"] = 2;
+
+    S9S_VERIFY(client.updateCmon(options));
+    payload = client.lastPayload();
+    if (isVerbose())
+        printDebug(payload);
+
+    S9S_COMPARE(payload["operation"], "createJobInstance");
+    S9S_COMPARE(
+            payload.valueByPath("/job/job_spec/command").toString(),
+            "updateCmonVersion");
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["controller_id"], 2);
+    S9S_COMPARE(jobData["upgrade_services_bundle"].toBoolean(), true);
+
+    options->m_options["no_services_bundle"] = true;
+    S9S_VERIFY(client.updateCmon(options));
+    payload = client.lastPayload();
+    jobData = payload["job"]["job_spec"]["job_data"].toVariantMap();
+    S9S_COMPARE(jobData["controller_id"], 2);
+    S9S_COMPARE(jobData["upgrade_services_bundle"].toBoolean(), false);
+
+    return true;
+}
+
 bool
 UtS9sRpcClient::testAddDb()
 {

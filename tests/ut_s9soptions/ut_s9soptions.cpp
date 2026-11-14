@@ -68,6 +68,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigureWalOptions, retval);
     PERFORM_TEST(testAddController, retval);
     PERFORM_TEST(testAddDb, retval);
+    PERFORM_TEST(testUpdateCmon, retval);
     PERFORM_TEST(testDeleteDb, retval);
     PERFORM_TEST(testListDb, retval);
     PERFORM_TEST(testAddServicesBundle, retval);
@@ -1051,6 +1052,50 @@ UtS9sOptions::testAddController()
  * Testing the "pool-controllers --add-db" option (joins a bare host into
  * the pool's cmon DB HA InnoDB Cluster via the addCmonDbInstance job).
  */
+/*
+ * --update-cmon with and without --no-services-bundle; --no-services-bundle
+ * alone is refused.
+ */
+bool
+UtS9sOptions::testUpdateCmon()
+{
+    S9sOptions    *options;
+
+    S9sOptions::uninit();
+    const char *argv1[] = { "/bin/s9s", "pool-controllers", "--update-cmon",
+                            "--controller-id=2", nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(options->isUpdateCmon());
+    S9S_VERIFY(!options->isNoServicesBundle());
+    S9sOptions::uninit();
+
+    const char *argv2[] = { "/bin/s9s", "pool-controllers", "--update-cmon",
+                            "--controller-id=2", "--no-services-bundle",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->isUpdateCmon());
+    S9S_VERIFY(options->isNoServicesBundle());
+    S9sOptions::uninit();
+
+    const char *argv3[] = { "/bin/s9s", "pool-controllers", "--start",
+                            "--controller-id=2", "--no-services-bundle",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+    S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    S9S_VERIFY(options->errorString().contains("--no-services-bundle"));
+    S9sOptions::uninit();
+    return true;
+}
+
 bool
 UtS9sOptions::testAddDb()
 {
