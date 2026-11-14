@@ -225,14 +225,26 @@ Controller stopped successfully.
 
 .TP
 .B --update-cmon
-Updates the cmon package on a controller instance. The '--controller-id' option is mandatory.
-The controller is updated to the version of the controller that runs the job: an
-active controller running the newest cmon version of the pool. It is refused when the target already runs
-that version or a newer one (no downgrade), and for a controller without SSH
-credentials stored in the pool (see \fB--remove-controller\fP): update that one
-by hand.
+Upgrade a controller's ClusterControl packages (clustercontrol-controller,
+s9s-tools and the colocated services bundle: clustercontrol-proxy,
+clustercontrol-mcc, clustercontrol-ssh, clustercontrol-notifications,
+clustercontrol-cloud) to the latest available versions. The '--controller-id'
+option is mandatory. The services bundle is only upgraded when the controller's
+host has a registered services bundle. The job is refused for a controller
+without SSH credentials stored in the pool (see \fB--remove-controller\fP):
+update that one by hand. Controllers older than CLUS-9390 only upgrade the
+controller package and ignore \fB--no-services-bundle\fP.
 .nf
 s9s pool-controllers --update-cmon --controller-id=2
+.fi
+
+.TP
+.B --no-services-bundle
+With \fB--update-cmon\fP: keep the colocated services bundle at its current
+version (only clustercontrol-controller and s9s-tools are upgraded). Refused
+without \fB--update-cmon\fP.
+.nf
+s9s pool-controllers --update-cmon --controller-id=2 --no-services-bundle
 .fi
 
 .TP

@@ -571,6 +571,7 @@ enum S9sOptionType
     OptionStopController,
     OptionRemoveController,
     OptionUpdateCmon,
+    OptionNoServicesBundle,
     OptionSetMaxClustersCapacity,
     OptionAddOpenBao,
     OptionRemoveOpenBao,
@@ -5936,6 +5937,16 @@ S9sOptions::isUpdateCmon() const
     return getBool("update_cmon");
 }
 
+/*
+ * \returns true if the --no-services-bundle command line option was provided
+ *   (with --update-cmon: upgrade cmon only, not the services bundle).
+ */
+bool
+S9sOptions::isNoServicesBundle() const
+{
+    return getBool("no_services_bundle");
+}
+
 bool
 S9sOptions::isSetMaxClustersCapacityRequested() const
 {
@@ -9559,7 +9570,10 @@ S9sOptions::printHelpControllers()
 "                             the last services bundle, are refused even with --force.\n"
 "  --start                    To start a controller (requires --controller-id).\n"
 "  --stop                     To stop a controller (requires --controller-id).\n"
-"  --update-cmon              To update cmon package on a controller (requires --controller-id).\n"
+"  --update-cmon              Upgrade a controller's ClusterControl packages (clustercontrol-controller,\n"
+"                             s9s-tools and the colocated services bundle) to the latest available\n"
+"                             versions (requires --controller-id).\n"
+"  --no-services-bundle       With --update-cmon: keep the colocated services bundle at its current version.\n"
 "  --set-max-clusters-capacity=N  Set how many clusters this controller can own. Sentinels:\n"
 "                             -2 = auto (RAM-based), -1 = unlimited, 0 = inactive (own no\n"
 "                             clusters: abandon all, acquire none), >0 = explicit cap. Takes\n"
@@ -20846,6 +20860,7 @@ S9sOptions::readOptionsControllers(
                     {"stop",             no_argument, 0,       OptionStopController},
                     {"remove-controller", no_argument, 0,      OptionRemoveController},
                     {"update-cmon",      no_argument, 0,       OptionUpdateCmon},
+                    {"no-services-bundle", no_argument, 0,     OptionNoServicesBundle},
                     {"set-max-clusters-capacity", required_argument, 0, OptionSetMaxClustersCapacity},
                     {"add-openbao",      no_argument, 0,       OptionAddOpenBao},
                     {"remove-openbao",   no_argument, 0,       OptionRemoveOpenBao},
@@ -21156,6 +21171,11 @@ S9sOptions::readOptionsControllers(
                 m_options["update_cmon"] = true;
                 break;
 
+            case OptionNoServicesBundle:
+                // --no-services-bundle
+                m_options["no_services_bundle"] = true;
+                break;
+
             case OptionAddOpenBao:
                 // --add-openbao
                 m_options["add_openbao"] = true;
@@ -21452,6 +21472,16 @@ S9sOptions::checkOptionsControllers()
         m_errorMessage =
             "The --no-require-db-cluster option can only be used with "
             "--set-pool-mode.";
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    // The services bundle opt-out only means something to --update-cmon.
+    if (isNoServicesBundle() && !isUpdateCmon())
+    {
+        m_errorMessage =
+            "The --no-services-bundle option can only be used with "
+            "--update-cmon.";
         m_exitStatus = BadOptions;
         return false;
     }
