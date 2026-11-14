@@ -142,6 +142,13 @@ S9sRpcClientPrivate::connect(
 
     m_errorString.sprintf("%s Port %d: %s",
             STR(firstError), m_port, STR(fallbackError));
+
+    /*
+     * A TLS failure does not mark the controller as failed, so a cached entry
+     * of this host would be picked again instead of an other controller.
+     */
+    setConnectFailed(hostName, port);
+    setConnectFailed(hostName, m_port);
     m_port = port;
 
     if (tryNextHost(redirect))

@@ -114,6 +114,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetClusterConfig,    retval);
     PERFORM_TEST(testPingController,      retval);
     PERFORM_TEST(testConnectFallbackPort, retval);
+    PERFORM_TEST(testConnectFailoverSkipsFailedHost, retval);
     PERFORM_TEST(testGetCpuInfo,          retval);
     PERFORM_TEST(testGetCpuStats,         retval);
     PERFORM_TEST(testGetSqlStats,         retval);
@@ -582,6 +583,72 @@ UtS9sRpcClient::testConnectFallbackPort()
         S9S_VERIFY(client.errorString().contains(STR(expected)));
         S9S_COMPARE(client.port(), httpPort);
     }
+
+    return true;
+}
+
+/**
+ * When the original host fails on both ports (TLS failure on the first, the
+ * fallback refused) the failover must not pick a cached entry of the original
+ * host again, but the next controller.
+ */
+bool
+UtS9sRpcClient::testConnectFailoverSkipsFailedHost()
+{
+    int   httpPort = 0;
+    int   httpFd   = listenOnFreePort(httpPort);
+    int   refused  = closedPort();
+    pid_t child;
+
+    S9S_VERIFY(httpFd >= 0);
+    S9S_VERIFY(refused > 0);
+
+    // Answers plain HTTP to every connection, so every TLS handshake fails.
+    child = fork();
+    if (child == 0)
+    {
+        for (;;)
+        {
+            int  connFd = accept(httpFd, NULL, NULL);
+            char buffer[1024];
+            const char *reply = "HTTP/1.0 400 Bad Request\r\n\r\n";
+
+            if (connFd < 0)
+                continue;
+
+            if (read(connFd, buffer, sizeof(buffer)) >= 0 &&
+                    write(connFd, reply, strlen(reply)) >= 0)
+            {
+                shutdown(connFd, SHUT_RDWR);
+            }
+
+            close(connFd);
+        }
+    }
+
+    S9S_VERIFY(child > 0);
+    close(httpFd);
+
+    S9sRpcClient  client("127.0.0.1", httpPort, "", true);
+    S9sVariantMap original, secondary;
+
+    original["hostname"]  = "127.0.0.1";
+    original["port"]      = httpPort;
+    secondary["hostname"] = "127.0.0.2";
+    secondary["port"]     = refused;
+
+    client.m_priv->m_servers.clear();
+    client.m_priv->m_servers << S9sController(original);
+    client.m_priv->m_servers << S9sController(secondary);
+
+    client.setFallbackPort(refused);
+    S9S_VERIFY(!client.m_priv->connect(S9s::AllowRedirect));
+
+    kill(child, SIGKILL);
+    waitpid(child, NULL, 0);
+
+    S9S_COMPARE(client.m_priv->m_hostName, "127.0.0.2");
+    S9S_COMPARE(client.m_priv->m_port, refused);
 
     return true;
 }
