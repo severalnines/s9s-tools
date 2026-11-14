@@ -49,6 +49,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testConfigFile01,  retval);
     PERFORM_TEST(testConfigFile02,  retval);
     PERFORM_TEST(testController,    retval);
+    PERFORM_TEST(testDefaultControllerPort, retval);
     PERFORM_TEST(testRpcTlsAllModes, retval);
     PERFORM_TEST(testReadOptions01, retval);
     PERFORM_TEST(testAlarmListHistory, retval);
@@ -225,6 +226,61 @@ UtS9sOptions::testController()
     return true;
 }
 
+/**
+ * Without a port on the command line or in the configuration the controller
+ * port is the built-in default 9500 and it is reported as default, so the RPC
+ * client may fall back to the deprecated port. A port given in the URL or in
+ * the configuration file is never reported as default, not even 9500.
+ */
+bool
+UtS9sOptions::testDefaultControllerPort()
+{
+    S9sOptions *options;
+
+    S9sOptions::sm_defaultUserConfigFileName = "";
+
+    // Nothing given: https://localhost:9500, default.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_COMPARE(options->controllerHostName(), "localhost");
+    S9S_COMPARE(options->controllerProtocol(), "https");
+    S9S_COMPARE(options->controllerPort(),     9500);
+    S9S_VERIFY(options->isControllerPortDefault());
+    S9S_COMPARE(options->controllerUrl(),      "https://localhost:9500");
+    S9S_COMPARE(options->controllerUrl(false), "https://localhost");
+
+    // Host without port: still the default port.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setController("https://10.0.0.1");
+    S9S_COMPARE(options->controllerPort(),     9500);
+    S9S_VERIFY(options->isControllerPortDefault());
+    S9S_COMPARE(options->controllerUrl(false), "https://10.0.0.1");
+
+    // Explicit ports are used as given, also the deprecated one.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setController("https://10.0.0.1:9501");
+    S9S_COMPARE(options->controllerPort(),     9501);
+    S9S_VERIFY(!options->isControllerPortDefault());
+    S9S_COMPARE(options->controllerUrl(false), "https://10.0.0.1:9501");
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    options->setController("https://10.0.0.1:9500");
+    S9S_COMPARE(options->controllerPort(),     9500);
+    S9S_VERIFY(!options->isControllerPortDefault());
+
+    // A controller_port in the configuration file is explicit too.
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->m_userConfig.parse("controller_port = 9501\n"));
+    S9S_COMPARE(options->controllerPort(),     9501);
+    S9S_VERIFY(!options->isControllerPortDefault());
+
+    S9sOptions::uninit();
+    return true;
+}
 
 /**
  * Checks that every mode whose option table declares --controller also
@@ -282,7 +338,7 @@ UtS9sOptions::testRpcTlsAllModes()
         const char *argv[] =
         {
             "/bin/s9s", mode[0], mode[1],
-            "--controller=https://127.0.0.1:9501", "--rpc-tls",
+            "--controller=https://127.0.0.1:9500", "--rpc-tls",
             mode[2], nullptr
         };
         int         argc = mode[2] == nullptr ? 5 : 6;

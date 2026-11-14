@@ -41,6 +41,7 @@ class S9sRpcClientPrivate
         void ensureHasBuffer(size_t size);
 
         bool connect(S9s::Redirect redirect = S9s::AllowRedirect);
+        bool connectOnce(S9s::Redirect redirect = S9s::AllowRedirect);
         void close();
         ssize_t write(const char *data, size_t length);
         ssize_t read(char *buffer, size_t bufSize);
@@ -57,6 +58,7 @@ class S9sRpcClientPrivate
         int             m_socketFd;
         S9sString       m_hostName;
         int             m_port;
+        int             m_fallbackPort;
         S9sString       m_path;
         bool            m_useTls;
         S9sString       m_errorString;
@@ -77,5 +79,6 @@ class S9sRpcClientPrivate
         S9sVariantList  m_controllers;
         S9sVector<S9sController> m_servers;
         friend class S9sRpcClient;
+        friend class UtS9sRpcClient;
 };
 

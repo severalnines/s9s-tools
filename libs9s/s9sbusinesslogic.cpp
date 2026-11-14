@@ -57,6 +57,9 @@ S9sBusinessLogic::execute()
     S9sRpcClient client(controller, port, path, useTls);
     bool         success;
 
+    if (options->isControllerPortDefault())
+        client.setFallbackPort(S9sOptions::DeprecatedControllerPort);
+
     /*
      * Authenticating... maybe.
      */
@@ -3182,7 +3185,7 @@ S9sBusinessLogic::executeCreateUserThroughPipe(
     if (!config.hasVariable("global", "controller") &&
             !config.hasVariable("", "controller"))
     {
-        config.setVariable("global", "controller", options->controllerUrl());
+        config.setVariable("global", "controller", options->controllerUrl(false));
     }
 
     if (!config.save(errorString))
@@ -3424,7 +3427,7 @@ S9sBusinessLogic::executeCreateUserThroughRpc(
     if (!config.hasVariable("global", "controller") &&
             !config.hasVariable("", "controller"))
     {
-        config.setVariable("global", "controller", options->controllerUrl());
+        config.setVariable("global", "controller", options->controllerUrl(false));
     }
 
     if (!config.save(errorString))

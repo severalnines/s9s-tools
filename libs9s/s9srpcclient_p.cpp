@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <cerrno>
+#include <algorithm>
 
 #include "s9sregexp.h"
 #include "s9soptions.h"
@@ -23,6 +24,7 @@ S9sRpcClientPrivate::S9sRpcClientPrivate() :
     m_requestId(0ull),
     m_socketFd(-1),
     m_port(0),
+    m_fallbackPort(0),
     m_useTls(false),
     m_buffer(0),
     m_bufferSize(0),
@@ -90,9 +92,80 @@ S9sRpcClientPrivate::clearBuffer()
 
 /**
  * \returns whether it connected successfully
+ *
+ * If the connect fails (refused, timeout, TLS handshake failure, e.g. a plain
+ * HTTP service on the port) and a fallback port is set, the same host is tried
+ * once more on the fallback port. The fallback is used only once per client,
+ * the first successful connect disables it. With a fallback port the other
+ * controllers known from the redirects are tried only after both ports of the
+ * original host failed.
  */
 bool
 S9sRpcClientPrivate::connect(
+        S9s::Redirect        redirect)
+{
+    S9sString hostName = m_hostName;
+    int       port     = m_port;
+    S9sString firstError;
+    bool      success;
+
+    if (m_fallbackPort <= 0 || m_fallbackPort == port)
+    {
+        success = connectOnce(redirect);
+        if (success)
+            m_fallbackPort = 0;
+
+        return success;
+    }
+
+    success = connectOnce(S9s::DenyRedirect);
+    if (success)
+    {
+        m_fallbackPort = 0;
+        return true;
+    }
+
+    firstError = m_errorString;
+    PRINT_LOG("Connect to %s:%d failed, trying port %d.",
+            STR(hostName), port, m_fallbackPort);
+    PRINT_VERBOSE("Connect to %s:%d failed, trying port %d.",
+            STR(hostName), port, m_fallbackPort);
+
+    m_port         = m_fallbackPort;
+    m_fallbackPort = 0;
+
+    success = connectOnce(S9s::DenyRedirect);
+    if (success)
+        return true;
+
+    S9sString fallbackError = m_errorString;
+
+    m_errorString.sprintf("%s Port %d: %s",
+            STR(firstError), m_port, STR(fallbackError));
+
+    /*
+     * A TLS failure does not mark the controller as failed, so a cached entry
+     * of this host would be picked again instead of an other controller.
+     */
+    setConnectFailed(hostName, port);
+    setConnectFailed(hostName, m_port);
+    m_port = port;
+
+    if (tryNextHost(redirect))
+    {
+        PRINT_VERBOSE("Failed, trying next host.");
+        return connectOnce(redirect);
+    }
+
+    return false;
+}
+
+/**
+ * \returns whether it connected successfully to the current host and port
+ *   (or to the next host from the redirects).
+ */
+bool
+S9sRpcClientPrivate::connectOnce(
         S9s::Redirect        redirect)
 {
     struct hostent *hp;
@@ -211,7 +284,7 @@ S9sRpcClientPrivate::connect(
     if (!success && tryNextHost(redirect))
     {
         PRINT_VERBOSE("Failed, trying next host.");
-        return connect();
+        return connectOnce();
     } else if (!success)
     {
         m_authenticated = false;
@@ -267,11 +340,34 @@ S9sRpcClientPrivate::connect(
         SSL_set_connect_state(m_ssl);
         SSL_set_tlsext_host_name(m_ssl, STR(m_hostName));
 
+        /*
+         * An older controller serves plain HTTP on the default port and never
+         * answers the TLS client hello, so with a fallback port we wait only a
+         * few seconds for the handshake instead of the connection timeout.
+         */
+        if (m_fallbackPort > 0)
+        {
+            struct timeval shortTimeout;
+
+            shortTimeout.tv_sec  = std::min(3, (int) timeout.tv_sec);
+            shortTimeout.tv_usec = 0;
+            setsockopt(
+                    m_socketFd, SOL_SOCKET, SO_RCVTIMEO,
+                    (char*) &shortTimeout, sizeof(shortTimeout));
+        }
+
         if (SSL_connect(m_ssl) <= 0 || SSL_do_handshake(m_ssl) <= 0)
         {
             m_errorString = "SSL handshake failed.";
             close();
             return false;
+        }
+
+        if (m_fallbackPort > 0)
+        {
+            setsockopt(
+                    m_socketFd, SOL_SOCKET, SO_RCVTIMEO,
+                    (char*) &timeout, sizeof(timeout));
         }
 
         PRINT_VERBOSE("TLS handshake finished (version: %s, cipher: %s).",

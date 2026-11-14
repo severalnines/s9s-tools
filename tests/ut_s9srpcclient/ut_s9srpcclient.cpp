@@ -25,7 +25,13 @@
 #include "s9srpcclient_p.h"
 
 #include <cstdio>
+#include <cstring>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 //#define DEBUG
 #define WARNING
@@ -126,6 +132,8 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testGetTree,             retval);
     PERFORM_TEST(testGetClusterConfig,    retval);
     PERFORM_TEST(testPingController,      retval);
+    PERFORM_TEST(testConnectFallbackPort, retval);
+    PERFORM_TEST(testConnectFailoverSkipsFailedHost, retval);
     PERFORM_TEST(testGetCpuInfo,          retval);
     PERFORM_TEST(testGetCpuStats,         retval);
     PERFORM_TEST(testGetSqlStats,         retval);
@@ -456,6 +464,212 @@ UtS9sRpcClient::testGetClusterConfig()
     S9S_COMPARE(payload.size(), 5);
     S9S_COMPARE(payload["cluster_id"].toInt(), 42);
     S9S_COMPARE(payload["operation"].toString(), "getConfig");
+
+    return true;
+}
+
+/**
+ * Opens a listening TCP socket on a free loopback port.
+ * \returns the socket, -1 on error; the port is stored in \p port.
+ */
+static int
+listenOnFreePort(
+        int &port)
+{
+    struct sockaddr_in addr;
+    socklen_t          addrLength = sizeof(addr);
+    int                fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (fd < 0)
+        return -1;
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family      = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    addr.sin_port        = 0;
+
+    if (bind(fd, (struct sockaddr *) &addr, sizeof(addr)) != 0 ||
+            listen(fd, 4) != 0 ||
+            getsockname(fd, (struct sockaddr *) &addr, &addrLength) != 0)
+    {
+        close(fd);
+        return -1;
+    }
+
+    port = ntohs(addr.sin_port);
+    return fd;
+}
+
+/**
+ * \returns a loopback port nothing listens on (connect is refused).
+ */
+static int
+closedPort()
+{
+    int port = 0;
+    int fd   = listenOnFreePort(port);
+
+    if (fd < 0)
+        return -1;
+
+    close(fd);
+    return port;
+}
+
+/**
+ * The connect falls back to the fallback port once when the first port
+ * refuses the connection or does not speak TLS (an old controller answering
+ * plain HTTP), and never without a fallback port.
+ */
+bool
+UtS9sRpcClient::testConnectFallbackPort()
+{
+    int listenPort = 0;
+    int listenFd   = listenOnFreePort(listenPort);
+    int refused    = closedPort();
+
+    S9S_VERIFY(listenFd >= 0);
+    S9S_VERIFY(refused > 0);
+
+    // Refused without a fallback port: fails, stays on the given port.
+    {
+        S9sRpcClient client("127.0.0.1", refused, "", false);
+
+        S9S_VERIFY(!client.m_priv->connect(S9s::DenyRedirect));
+        S9S_COMPARE(client.port(), refused);
+    }
+
+    // Refused with a fallback port: connects on the fallback port.
+    {
+        S9sRpcClient client("127.0.0.1", refused, "", false);
+
+        client.setFallbackPort(listenPort);
+        S9S_VERIFY(client.m_priv->connect(S9s::DenyRedirect));
+        S9S_COMPARE(client.port(), listenPort);
+        client.m_priv->close();
+    }
+
+    // The fallback is tried only once: the second failure is final.
+    {
+        S9sRpcClient client("127.0.0.1", refused, "", false);
+
+        client.setFallbackPort(closedPort());
+        S9S_VERIFY(!client.m_priv->connect(S9s::DenyRedirect));
+        S9S_COMPARE(client.port(), refused);
+    }
+
+    close(listenFd);
+
+    // A plain HTTP service where TLS is expected (pre 2.5.1 controller on
+    // the default port): the handshake fails and the fallback port is tried.
+    {
+        int   httpPort = 0;
+        int   httpFd   = listenOnFreePort(httpPort);
+        pid_t child;
+
+        S9S_VERIFY(httpFd >= 0);
+        child = fork();
+        if (child == 0)
+        {
+            int  connFd = accept(httpFd, NULL, NULL);
+            char buffer[1024];
+            const char *reply = "HTTP/1.0 400 Bad Request\r\n\r\n";
+
+            if (connFd >= 0)
+            {
+                if (read(connFd, buffer, sizeof(buffer)) >= 0 &&
+                        write(connFd, reply, strlen(reply)) >= 0)
+                {
+                    shutdown(connFd, SHUT_RDWR);
+                }
+
+                close(connFd);
+            }
+
+            _exit(0);
+        }
+
+        S9S_VERIFY(child > 0);
+        close(httpFd);
+
+        S9sRpcClient client("127.0.0.1", httpPort, "", true);
+        S9sString    expected;
+
+        client.setFallbackPort(refused);
+        S9S_VERIFY(!client.m_priv->connect(S9s::DenyRedirect));
+        waitpid(child, NULL, 0);
+
+        expected.sprintf("Port %d:", refused);
+        S9S_VERIFY(client.errorString().contains("SSL handshake failed."));
+        S9S_VERIFY(client.errorString().contains(STR(expected)));
+        S9S_COMPARE(client.port(), httpPort);
+    }
+
+    return true;
+}
+
+/**
+ * When the original host fails on both ports (TLS failure on the first, the
+ * fallback refused) the failover must not pick a cached entry of the original
+ * host again, but the next controller.
+ */
+bool
+UtS9sRpcClient::testConnectFailoverSkipsFailedHost()
+{
+    int   httpPort = 0;
+    int   httpFd   = listenOnFreePort(httpPort);
+    int   refused  = closedPort();
+    pid_t child;
+
+    S9S_VERIFY(httpFd >= 0);
+    S9S_VERIFY(refused > 0);
+
+    // Answers plain HTTP to every connection, so every TLS handshake fails.
+    child = fork();
+    if (child == 0)
+    {
+        for (;;)
+        {
+            int  connFd = accept(httpFd, NULL, NULL);
+            char buffer[1024];
+            const char *reply = "HTTP/1.0 400 Bad Request\r\n\r\n";
+
+            if (connFd < 0)
+                continue;
+
+            if (read(connFd, buffer, sizeof(buffer)) >= 0 &&
+                    write(connFd, reply, strlen(reply)) >= 0)
+            {
+                shutdown(connFd, SHUT_RDWR);
+            }
+
+            close(connFd);
+        }
+    }
+
+    S9S_VERIFY(child > 0);
+    close(httpFd);
+
+    S9sRpcClient  client("127.0.0.1", httpPort, "", true);
+    S9sVariantMap original, secondary;
+
+    original["hostname"]  = "127.0.0.1";
+    original["port"]      = httpPort;
+    secondary["hostname"] = "127.0.0.2";
+    secondary["port"]     = refused;
+
+    client.m_priv->m_servers.clear();
+    client.m_priv->m_servers << S9sController(original);
+    client.m_priv->m_servers << S9sController(secondary);
+
+    client.setFallbackPort(refused);
+    S9S_VERIFY(!client.m_priv->connect(S9s::AllowRedirect));
+
+    kill(child, SIGKILL);
+    waitpid(child, NULL, 0);
+
+    S9S_COMPARE(client.m_priv->m_hostName, "127.0.0.2");
+    S9S_COMPARE(client.m_priv->m_port, refused);
 
     return true;
 }
