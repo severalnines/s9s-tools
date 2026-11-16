@@ -23,23 +23,10 @@ else
   exit 1
 fi
 
-echo "Cleaning up."
-git reset --hard
-git clean -dfx
-git pull
-
-
-if [ "${PUBLISHING_REPO}" == "TESTING" ]; then
-    ./version-bump.sh
-else
-    ./version-bump.sh
-    if [ -f version.txt ]; then
-        git commit -a -m "Version bump"
-        git tag `cat version.txt`
-        git push origin master --tags
-    fi
-fi
-
+# The checkout is expected to be clean and already version-bumped: the s9s-tools-obs Jenkins job
+# resets the branch, runs version-bump.sh, then commits, tags and pushes before calling this
+# script. Bumping again here would add a second project.spec changelog entry with a different
+# version, and git cannot run in the job's build container anyway.
 
 rm -rf ${SRCDIR}
 mkdir -p ${SRCDIR}
