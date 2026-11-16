@@ -19,7 +19,9 @@ General options for \fBs9s\fP:
 .TP
 .BR \-c " \fIHOSTNAME\fP[:\fIPORT\fP]" "\fR,\fP \-\^\-controller=" \fIHOSTNAME\fP[:\fIPORT\fP]
 The host name of the Cmon Controller. The protocol and port is also accepted as
-part of the hostname. 
+part of the hostname. The default is \fBhttps://localhost:9500\fP. When no port
+is given (neither here nor in the configuration file) and the controller can not
+be reached on 9500, s9s retries once on port 9501 to support older controllers.
 
 The controller host and port can also be set in the s9s configuration file (see
 s9s.conf(5) for more information), so this command line option is usually not

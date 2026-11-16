@@ -730,7 +730,7 @@ S9sOptions::createConfigFiles()
         return;
 
     userFile.fprintf("[global]\n");
-    userFile.fprintf("# controller=https://localhost:9501\n");
+    userFile.fprintf("# controller=https://localhost:9500\n");
     userFile.fprintf("\n");
 
     userFile.fprintf("#\n");
@@ -1011,10 +1011,12 @@ S9sOptions::checkController()
     if (tmp.empty())
         tmp = m_systemConfig.variableValue("controller");
 
+    // The built-in default has no port, so controllerPort() can tell the
+    // default port apart from a configured one.
     if (!tmp.empty())
         setController(tmp);
     else
-        setController("https://localhost:9501");
+        setController("https://localhost");
 }
 
 /**
@@ -1066,10 +1068,11 @@ S9sOptions::controllerProtocol()
 }
 
 /**
- * \returns the controller port.
+ * \returns the controller port given in the --controller URL or in the
+ *   configuration files, 0 if no port was given.
  */
 int
-S9sOptions::controllerPort()
+S9sOptions::configuredControllerPort()
 {
     int retval = 0;
 
@@ -1084,10 +1087,28 @@ S9sOptions::controllerPort()
             retval = m_systemConfig.variableValue("controller_port").toInt();
     }
 
-    if (retval < 1)
-        retval = 9501;
+    return retval < 1 ? 0 : retval;
+}
 
-    return retval;
+/**
+ * \returns the controller port.
+ */
+int
+S9sOptions::controllerPort()
+{
+    int retval = configuredControllerPort();
+
+    return retval < 1 ? DefaultControllerPort : retval;
+}
+
+/**
+ * \returns true if no port was given on the command line or in the
+ *   configuration files, so controllerPort() returns the built-in default.
+ */
+bool
+S9sOptions::isControllerPortDefault()
+{
+    return configuredControllerPort() < 1;
 }
 
 S9sString
@@ -1097,8 +1118,14 @@ S9sOptions::controllerPath()
     return getString("controller_path");
 }
 
+/**
+ * \param withDefaultPort if false and the port is the built-in default the
+ *   port is left out of the URL, so a URL saved in a configuration file keeps
+ *   following the default.
+ */
 S9sString
-S9sOptions::controllerUrl()
+S9sOptions::controllerUrl(
+        bool withDefaultPort)
 {
     S9sString retval;
     S9sString protocol;
@@ -1125,7 +1152,7 @@ S9sOptions::controllerUrl()
     /*
      * The port.
      */
-    if (controllerPort() != 0)
+    if (withDefaultPort || !isControllerPortDefault())
         retval.sprintf("%s:%d", STR(retval), controllerPort());
 
     return retval;

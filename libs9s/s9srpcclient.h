@@ -47,6 +47,7 @@ class S9sRpcClient
         S9sString hostName() const;
         int port() const;
         bool useTls() const;
+        void setFallbackPort(const int port);
 
         bool hasPrivateKey() const;
         bool canAuthenticate(S9sString &reason) const;

@@ -72,14 +72,14 @@ Sanity-check the binary (no controller required):
 One-off invocation with credentials on the command line:
 
     my-s9s cluster --list --long \
-        --controller=https://<host>:9501 \
+        --controller=https://<host>:9500 \
         --cmon-user=<user> --password=<pass>
 
 For repeat use, store the credentials in `~/.s9s/s9s.conf`:
 
     [global]
     controller_host_name = <host>
-    controller_port      = 9501
+    controller_port      = 9500
     rpc_tls              = true
     cmon_user            = <user>
     cmon_password        = <pass>
@@ -93,7 +93,7 @@ Then commands can be run without flags:
 
 When running the Dockerised binary against a controller on the host's
 `localhost`, remember that the container's own `localhost` is not the host —
-`--network=host` (included in the alias above) is what makes `localhost:9501`
+`--network=host` (included in the alias above) is what makes `localhost:9500`
 resolve to the controller.
 
  
