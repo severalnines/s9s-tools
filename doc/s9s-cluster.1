@@ -231,7 +231,9 @@ mys9s cluster \\
 
 .TP
 .B \-\-upgrade-cluster
-Upgrade cluster packages while keeping the same major version.
+Upgrade database software on a supported cluster type. Without
+\fB--upgrade-to-version\fR, apply patch updates within the current release.
+For ClickHouse this installs the newest patch of each selected node's X.Y release.
 
 .B EXAMPLE
 .nf
@@ -244,22 +246,24 @@ s9s cluster \\
 
 .TP
 .B \-\-upgrade-to-version
-The new newer major version to upgrade too. Without this,
-only minor upgrade will be done.
+The target release for a major upgrade on a supported cluster type. Without
+this option, only a minor upgrade is performed. For ClickHouse, specify X.Y:
+the target must be the next supported release for every node's OS, without
+skipping a supported release.
 
 .B EXAMPLE
 .nf
 s9s cluster \\
     --upgrade-cluster \\
-    --upgrade-to-version=12 \\
+    --upgrade-to-version=25.3 \\
     --cluster-id=1 \\
     --log
 .fi
 
 .TP
 .B --upgrade-method
-Strategy for doing major upgrade. For PostgreSql there are two methods
-supported: copy and link. The default valuse is 'copy'.
+PostgreSQL only: strategy for a major upgrade. The supported methods are
+copy and link. The default value is 'copy'.
 
 .RS 7
 .TP
@@ -286,7 +290,7 @@ s9s cluster \\
 
 .TP
 .B --preserve-configuration
-When performing a major version upgrade, this option controls whether configuration
+PostgreSQL only. When performing a major version upgrade, this option controls whether configuration
 settings are migrated from the old PostgreSQL instance to the new one. This includes
 performance, memory, and security parameters. Default value is false, allowing new
 PostgreSQL versions to use their version-specific default settings unless explicitly overridden.
@@ -1929,4 +1933,3 @@ A short human readable description of the current state of the cluster.
 .SH ENVIRONMENT
 The s9s application will read and consider a number of environment variables.
 Please check s9s(1) for more information.
-
