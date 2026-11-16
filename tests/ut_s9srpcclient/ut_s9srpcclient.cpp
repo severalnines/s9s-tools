@@ -575,8 +575,12 @@ UtS9sRpcClient::testConnectFallbackPort()
         S9sString    expected;
 
         client.setFallbackPort(refused);
-        S9S_VERIFY(!client.m_priv->connect(S9s::DenyRedirect));
+        // Reap the server before any check: a failing check returns at once.
+        const bool connected = client.m_priv->connect(S9s::DenyRedirect);
+        kill(child, SIGKILL);
         waitpid(child, NULL, 0);
+
+        S9S_VERIFY(!connected);
 
         expected.sprintf("Port %d:", refused);
         S9S_VERIFY(client.errorString().contains("SSL handshake failed."));
@@ -642,10 +646,12 @@ UtS9sRpcClient::testConnectFailoverSkipsFailedHost()
     client.m_priv->m_servers << S9sController(secondary);
 
     client.setFallbackPort(refused);
-    S9S_VERIFY(!client.m_priv->connect(S9s::AllowRedirect));
-
+    // Reap the server before any check: a failing check returns at once.
+    const bool connected = client.m_priv->connect(S9s::AllowRedirect);
     kill(child, SIGKILL);
     waitpid(child, NULL, 0);
+
+    S9S_VERIFY(!connected);
 
     S9S_COMPARE(client.m_priv->m_hostName, "127.0.0.2");
     S9S_COMPARE(client.m_priv->m_port, refused);
