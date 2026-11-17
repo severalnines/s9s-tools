@@ -12581,6 +12581,13 @@ S9sRpcReply::printMaintenanceListLong()
     S9sFormat       startFormat;
     S9sFormat       endFormat;
     S9sFormat       nameFormat;
+    const auto formatEnd = [options](const S9sString &deadline) -> S9sString {
+        if (deadline.empty())
+            return "until operation completes";
+        S9sDateTime end;
+        end.parse(deadline);
+        return options->formatDateTime(end);
+    };
 
     recordList = operator[]("maintenance_records").toVariantList();
 
@@ -12613,16 +12620,15 @@ S9sRpcReply::printMaintenanceListLong()
             S9sString     userName  = period["username"].toString();
             S9sString     groupName = period["groupname"].toString();
             S9sString     uuid      = period["UUID"].toString();
-            S9sDateTime   start, end;
+            S9sDateTime   start;
             S9sString     startString, endString;
             
             if (!options->fullUuid())
                 uuid = uuid.substr(0, 7);
 
             start.parse(period["initiate"].toString());
-            end.parse(period["deadline"].toString());
             startString = options->formatDateTime(start);
-            endString   = options->formatDateTime(end);
+            endString   = formatEnd(period["deadline"].toString());
             
             uuidFormat.widen(uuid);
             ownerFormat.widen(userName);
@@ -12678,14 +12684,13 @@ S9sRpcReply::printMaintenanceListLong()
             S9sString     groupName = period["groupname"].toString();
             S9sString     reason    = period["reason"].toString();
             S9sString     uuid      = period["UUID"].toString();
-            S9sDateTime   start, end;
+            S9sDateTime   start;
             S9sString     startString, endString;
             bool          isActive = period["is_active"].toBoolean();
 
             start.parse(period["initiate"].toString());
-            end.parse(period["deadline"].toString());
             startString = options->formatDateTime(start);
-            endString   = options->formatDateTime(end);
+            endString   = formatEnd(period["deadline"].toString());
 
             if (!options->fullUuid())
                 uuid = uuid.substr(0, 7);

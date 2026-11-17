@@ -21,6 +21,7 @@
 
 #include "s9soptions.h"
 #include "s9srpcreply.h"
+#include "s9sdatetime.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -149,8 +150,47 @@ UtS9sRpcReply::runTest(const char *testName)
     PERFORM_TEST(testConfigStorageMigrationSkipped, retval);
     PERFORM_TEST(testPoolModeReadinessStorage, retval);
     PERFORM_TEST(testConfigStorageListRaft, retval);
+    PERFORM_TEST(testOperationMaintenanceDeadline, retval);
 
     return retval;
+}
+
+bool
+UtS9sRpcReply::testOperationMaintenanceDeadline()
+{
+    S9sVariantMap period;
+    period["UUID"] = "operation-maintenance";
+    period["initiate"] = "2026-01-01T00:00:00.000Z";
+    period["deadline"] = "";
+    period["is_active"] = true;
+    period["username"] = "system";
+    S9sVariantList periods;
+    periods << period;
+    S9sVariantMap timed = period;
+    timed["UUID"] = "timed-maintenance";
+    timed["deadline"] = "2026-01-01T00:15:00.000Z";
+    periods << timed;
+    S9sVariantMap record;
+    record["hostname"] = "maintenance-host";
+    record["maintenance_periods"] = periods;
+    S9sVariantList records;
+    records << record;
+    S9sRpcReply reply;
+    reply["maintenance_records"] = records;
+    S9sOptions *options = S9sOptions::instance();
+    const S9sVariant savedJson = options->m_options["print_json"];
+    const S9sVariant savedLong = options->m_options["long"];
+    options->m_options["print_json"] = false;
+    options->m_options["long"] = true;
+    const S9sString output = captureStdout([&reply]() { reply.printMaintenanceList(); });
+    options->m_options["print_json"] = savedJson;
+    options->m_options["long"] = savedLong;
+    S9S_VERIFY(output.contains("until operation completes"));
+    S9S_VERIFY(output.contains("maintenance-host"));
+    S9sDateTime end;
+    end.parse(timed["deadline"].toString());
+    S9S_VERIFY(output.contains(options->formatDateTime(end)));
+    return true;
 }
 
 /**

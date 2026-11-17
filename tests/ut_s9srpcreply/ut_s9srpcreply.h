@@ -38,4 +38,5 @@ class UtS9sRpcReply : public S9sUnitTest
         bool testConfigStorageMigrationSkipped();
         bool testPoolModeReadinessStorage();
         bool testConfigStorageListRaft();
+        bool testOperationMaintenanceDeadline();
 };
