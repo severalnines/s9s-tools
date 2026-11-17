@@ -232,7 +232,7 @@ mys9s cluster \\
 .TP
 .B \-\-upgrade-cluster
 Upgrade database software on a supported cluster type. Without
-\fB--upgrade-to-version\fR, apply patch updates within the current release.
+\fB\-\-upgrade-to-version\fR, apply patch updates within the current release.
 For ClickHouse this installs the newest patch of each selected node's X.Y release.
 
 .B EXAMPLE
@@ -249,7 +249,7 @@ s9s cluster \\
 The target release for a major upgrade on a supported cluster type. Without
 this option, only a minor upgrade is performed. For ClickHouse, specify X.Y:
 the target must be the next supported release for every node's OS, without
-skipping a supported release.
+skipping a supported release. The following example upgrades a ClickHouse cluster.
 
 .B EXAMPLE
 .nf
@@ -290,7 +290,7 @@ s9s cluster \\
 
 .TP
 .B --preserve-configuration
-PostgreSQL only. When performing a major version upgrade, this option controls whether configuration
+PostgreSQL only: when performing a major version upgrade, this option controls whether configuration
 settings are migrated from the old PostgreSQL instance to the new one. This includes
 performance, memory, and security parameters. Default value is false, allowing new
 PostgreSQL versions to use their version-specific default settings unless explicitly overridden.
