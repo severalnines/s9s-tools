@@ -189,7 +189,8 @@ UtS9sRpcReply::testOperationMaintenanceDeadline()
     S9S_VERIFY(output.contains("maintenance-host"));
     S9sDateTime end;
     end.parse(timed["deadline"].toString());
-    S9S_VERIFY(output.contains(options->formatDateTime(end)));
+    const S9sString formattedEnd = options->formatDateTime(end);
+    S9S_VERIFY(output.contains(STR(formattedEnd)));
     return true;
 }
 
