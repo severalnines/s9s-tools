@@ -602,6 +602,19 @@ S9sCluster::nodes() const
 
 
 /**
+ * \returns The ClickHouse shards of a getClusterInfo reply that was requested
+ *   with with_shards, an empty list otherwise.
+ */
+S9sVariantList
+S9sCluster::shards() const
+{
+    if (m_properties.contains("shards"))
+        return m_properties.at("shards").toVariantList();
+
+    return S9sVariantList();
+}
+
+/**
  * \returns How many hosts the cluster have including the controller.
  */
 int

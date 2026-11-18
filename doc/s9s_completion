@@ -218,6 +218,7 @@ function _s9s()
                 opts+="--os-user= "
                 opts+="--output-dir= "
                 opts+="--provider-version= "
+                opts+="--include-shards-info "
                 opts+="--shard-id= "
                 opts+="--subnet-id= "
                 opts+="--template= "

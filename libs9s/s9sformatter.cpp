@@ -16,6 +16,10 @@
 #define WARNING
 #include "s9sdebug.h"
 
+#include <algorithm>
+#include <cstring>
+#include <vector>
+
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
 
@@ -1284,6 +1288,7 @@ S9sFormatter::printClusterStat(
 
     printHostTable(cluster);
     printReplicationTable(cluster);
+    printShardTable(cluster);
 }
 
 void 
@@ -1761,6 +1766,134 @@ S9sFormatter::printReplicationTable(
     }
 
     ::printf("\n");
+}
+
+void
+S9sFormatter::printShardTable(
+        const S9sCluster &cluster) const
+{
+    S9sString table = shardTable(cluster, useSyntaxHighLight());
+
+    if (!table.empty())
+        ::printf("%s\n", STR(table));
+}
+
+/**
+ * \returns The shards of the cluster as a table, one line per replica with
+ *   the columns of the shard on the first line of it, or an empty string when
+ *   the cluster has no shards.
+ */
+S9sString
+S9sFormatter::shardTable(
+        const S9sCluster &cluster,
+        bool              color) const
+{
+    typedef std::vector<std::vector<S9sString> > Rows;
+
+    S9sVariantList shards = cluster.shards();
+    Rows           rows;
+    S9sString      retval;
+    size_t         widths[6] = { 0, 0, 0, 0, 0, 0 };
+    const char    *titles[6] =
+        { "SHARD", "WEIGHT", "ROWS", "SIZE", "REPLICA", "STATE" };
+
+    if (shards.empty())
+        return retval;
+
+    for (uint idx = 0u; idx < shards.size(); ++idx)
+    {
+        S9sVariantMap  shard    = shards[idx].toVariantMap();
+        S9sVariantList replicas = shard["replicas"].toVariantList();
+        S9sString      shardId, weight, rowCount, size;
+
+        shardId.sprintf("%d", shard["shard_id"].toInt());
+        weight.sprintf("%d", shard["weight"].toInt());
+        if (shard.contains("rows"))
+            rowCount.sprintf("%llu", shard["rows"].toULongLong());
+        else
+            rowCount = "-";
+
+        size     = shard.contains("bytes") ?
+            S9sFormat::toSizeString(shard["bytes"].toULongLong()) :
+            S9sString("-");
+
+        if (replicas.empty())
+        {
+            rows.push_back({
+                    shardId, weight, rowCount, size, "-",
+                    shard["state"].toString() });
+            continue;
+        }
+
+        for (uint r = 0u; r < replicas.size(); ++r)
+        {
+            S9sVariantMap replica = replicas[r].toVariantMap();
+            S9sString     name;
+
+            name.sprintf("%s:%d",
+                    STR(replica["hostname"].toString()),
+                    replica["port"].toInt());
+
+            if (r == 0u)
+                rows.push_back({
+                        shardId, weight, rowCount, size, name,
+                        replica["state"].toString() });
+            else
+                rows.push_back({
+                        "", "", "", "", name, replica["state"].toString() });
+        }
+    }
+
+    for (size_t c = 0u; c < 6u; ++c)
+    {
+        widths[c] = strlen(titles[c]);
+
+        for (size_t r = 0u; r < rows.size(); ++r)
+            widths[c] = std::max(widths[c], rows[r][c].length());
+    }
+
+    const auto line = [&](const std::vector<S9sString> &cells)
+    {
+        S9sString text;
+
+        for (size_t c = 0u; c < 6u; ++c)
+        {
+            const bool right = c >= 1u && c <= 3u;
+            S9sString  pad(" ");
+            pad = pad * (int) (widths[c] - cells[c].length());
+
+            if (c > 0u)
+                text += " ";
+
+            if (right)
+                text += pad + cells[c];
+            else if (c == 5u)
+                text += cells[c];
+            else
+                text += cells[c] + pad;
+        }
+
+        return text;
+    };
+
+    std::vector<S9sString> header;
+    for (size_t c = 0u; c < 6u; ++c)
+        header.push_back(titles[c]);
+
+    if (color)
+        retval += headerColorBegin();
+
+    retval += line(header);
+
+    if (color)
+        retval += headerColorEnd();
+
+    retval += "\n";
+
+    for (size_t r = 0u; r < rows.size(); ++r)
+        retval += line(rows[r]) + "\n";
+
+    return retval;
 }
 
 void 

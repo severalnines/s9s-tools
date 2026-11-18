@@ -23,6 +23,7 @@
 #include "s9svariantmap.h"
 #include "s9srpcclient.h"
 #include "s9soptions.h"
+#include "s9sformatter.h"
 
 #define DEBUG
 #define WARNING
@@ -337,6 +338,8 @@ UtS9sCluster::runTest(const char *testName)
     PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testAssign,          retval);
     PERFORM_TEST(testToString,        retval);
+    PERFORM_TEST(testShards,          retval);
+    PERFORM_TEST(testShardTable,      retval);
 
     return retval;
 }
@@ -461,3 +464,101 @@ UtS9sCluster::testToString()
 
 S9S_UNIT_TEST_MAIN(UtS9sCluster)
 
+
+static const char *clickHouseShardsJson =
+"{\n"
+"    'cluster_id': 7,\n"
+"    'cluster_name': 'ch',\n"
+"    'cluster_type': 'CLICKHOUSE',\n"
+"    'shards': [ \n"
+"    {\n"
+"        'shard_id': 1,\n"
+"        'weight': 1,\n"
+"        'state': 'read',\n"
+"        'rows': 1500000,\n"
+"        'bytes': 2048,\n"
+"        'replicas': [ \n"
+"        { 'hostname': '10.0.0.1', 'port': 9000, 'state': 'read', 'rows': 1500000, 'bytes': 2048 },\n"
+"        { 'hostname': '10.0.0.2', 'port': 9000, 'state': 'read', 'rows': 1400000, 'bytes': 2000 } ]\n"
+"    },\n"
+"    {\n"
+"        'shard_id': 2,\n"
+"        'weight': 0,\n"
+"        'state': 'no_online_replica',\n"
+"        'replicas': [ \n"
+"        { 'hostname': '10.0.0.3', 'port': 9000, 'state': 'failed', 'message': 'timeout' } ]\n"
+"    } ]\n"
+"}\n"
+;
+
+/**
+ * The shards of a getClusterInfo reply that was asked with with_shards.
+ */
+bool
+UtS9sCluster::testShards()
+{
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+
+    S9S_VERIFY(theMap.parse(clusterJson1));
+    theCluster = theMap;
+    S9S_COMPARE(theCluster.shards().size(), 0);
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(clickHouseShardsJson));
+    theCluster = theMap;
+
+    S9sVariantList shards = theCluster.shards();
+    S9S_COMPARE(shards.size(), 2);
+    S9S_COMPARE(shards[0]["shard_id"].toInt(), 1);
+    S9S_COMPARE(shards[0]["weight"].toInt(), 1);
+    S9S_COMPARE(shards[1]["state"].toString(), "no_online_replica");
+    S9S_COMPARE(shards[1]["replicas"].toVariantList().size(), 1);
+
+    return true;
+}
+
+/**
+ * The Shards table of cluster --stat: one line per replica, the shard columns
+ * on the first line of its shard, "-" where the rows or size are unknown.
+ */
+bool
+UtS9sCluster::testShardTable()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sFormatter   formatter;
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+
+    options->setHumanReadable(false);
+
+    S9S_VERIFY(theMap.parse(clusterJson1));
+    theCluster = theMap;
+    S9S_COMPARE(formatter.shardTable(theCluster, false), "");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(clickHouseShardsJson));
+    theCluster = theMap;
+
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT    ROWS SIZE REPLICA       STATE\n"
+            "1          1 1500000 2048 10.0.0.1:9000 read\n"
+            "                          10.0.0.2:9000 read\n"
+            "2          0       -    - 10.0.0.3:9000 failed\n");
+
+    options->setHumanReadable(true);
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(
+                "{ 'shards': [ { 'shard_id': 1, 'weight': 1, 'state': 'read', "
+                "'rows': 10, 'bytes': 3145728, "
+                "'replicas': [ { 'hostname': 'h', 'port': 9000, 'state': 'read' } ] } ] }"));
+    theCluster = theMap;
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT ROWS SIZE REPLICA STATE\n"
+            "1          1   10 3.0M h:9000  read\n");
+
+    options->setHumanReadable(false);
+    return true;
+}

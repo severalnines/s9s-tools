@@ -30,5 +30,7 @@ class UtS9sCluster : public S9sUnitTest
         bool testCreate();
         bool testAssign();
         bool testToString();
+        bool testShards();
+        bool testShardTable();
 };
 
