@@ -372,6 +372,7 @@ enum S9sOptionType
     OptionExcludeSheetInfo,
     OptionIncludeContainerInfo,
     OptionIncludeDatabasesInfo,
+    OptionIncludeShardsInfo,
     OptionFail,
     OptionSuccess,
     OptionStuck,
@@ -6818,6 +6819,18 @@ S9sOptions::setIncludeDatabasesInfo(bool value)
     m_options["include_databases_info"] = value;
 }
 
+bool
+S9sOptions::includeShardsInfo() const
+{
+    return getBool("include_shards_info");
+}
+
+void
+S9sOptions::setIncludeShardsInfo(bool value)
+{
+    m_options["include_shards_info"] = value;
+}
+
 /**
  * \returns True if the --recursive command line option was provided.
  */
@@ -8980,6 +8993,8 @@ S9sOptions::printHelpCluster()
 "  --exclude-sheet-info[=BOOL] Exclude sheet information from cluster list.\n"
 "  --include-container-info[=BOOL] Include container information in cluster list.\n"
 "  --include-databases-info[=BOOL] Include database information in cluster list.\n"
+"  --include-shards-info[=BOOL] Include the rows and size of every ClickHouse\n"
+"                             shard in the cluster list and --stat.\n"
 "  --config-template=FILE     Use the given file as configuration template.\n"
 "  --containers=LIST          List of containers to be created.\n"
 "  --credential-id=ID         The optional cloud credential ID.\n"
@@ -16086,6 +16101,7 @@ S9sOptions::readOptionsCluster(
         { "exclude-sheet-info", optional_argument, 0, OptionExcludeSheetInfo },
         { "include-container-info", optional_argument, 0, OptionIncludeContainerInfo },
         { "include-databases-info", optional_argument, 0, OptionIncludeDatabasesInfo },
+        { "include-shards-info", optional_argument, 0, OptionIncludeShardsInfo },
 
         // Main Option
         { "add-node",         no_argument,       0, OptionAddNode         },
@@ -16788,6 +16804,11 @@ S9sOptions::readOptionsCluster(
             case OptionIncludeDatabasesInfo:
                 // --include-databases-info[=BOOLEAN]
                 setIncludeDatabasesInfo(optarg ? S9sString(optarg).toBoolean() : true);
+                break;
+
+            case OptionIncludeShardsInfo:
+                setIncludeShardsInfo(
+                        optarg ? S9sString(optarg).toBoolean() : true);
                 break;
 
 

@@ -757,6 +757,8 @@ class S9sOptions
         void setIncludeContainerInfo(bool value);
         bool includeDatabasesInfo() const;
         void setIncludeDatabasesInfo(bool value);
+        bool includeShardsInfo() const;
+        void setIncludeShardsInfo(bool value);
         bool isRecursiveRequested() const;
         bool isDirectoryRequested() const;
         bool isUnregisterRequested() const;

@@ -983,6 +983,27 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\^\-include\-shards\-info[=BOOL]
+Ask the controller for the rows and the size of every shard of the ClickHouse
+clusters, read live from their replicas. \fB\-\-stat\fP prints them as a
+Shards table after the hosts, and \fB\-\-list\fP prints the Shards table of
+every listed cluster after the list. The table has one line per replica: the
+shard number, weight, rows, size and state of the shard on its first line, then
+the replica and its state. A shard or replica that could not be read shows its
+state and "-" instead of the numbers. \fB\-\-list \-\-print\-json\fP carries
+the shards in the cluster. A controller that does not support the option sends
+no shards; s9s then prints "No shard information from the controller." for a
+ClickHouse cluster instead of the table.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --stat \\
+    --cluster-id=1 \\
+    --include-shards-info
+.fi
+
+.TP
 .B \-\^\-refresh
 Do not use cached data, collect fresh information from the cluster. When this
 command line option is provided with the \fB\-\-list\fP operation, the controller

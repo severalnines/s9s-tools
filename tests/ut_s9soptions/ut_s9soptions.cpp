@@ -95,6 +95,7 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testAddShard, retval);
     PERFORM_TEST(testRemoveShard, retval);
     PERFORM_TEST(testShardId, retval);
+    PERFORM_TEST(testIncludeShardsInfo, retval);
 
     return retval;
 }
@@ -2592,6 +2593,51 @@ UtS9sOptions::testRemoveShard()
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
     S9S_COMPARE(options->errorString(),
             "The --drop-rows option can only be used with --remove-shard.");
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testIncludeShardsInfo()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--list",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(!options->includeShardsInfo());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--stat",
+                            "--cluster-id=5",
+                            "--include-shards-info",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->includeShardsInfo());
+
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--list",
+                            "--include-shards-info=false",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(!options->includeShardsInfo());
 
     S9sOptions::uninit();
     return true;

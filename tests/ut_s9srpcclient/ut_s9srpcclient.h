@@ -90,6 +90,7 @@ class UtS9sRpcClient : public S9sUnitTest
 
         bool testGetAllClusterInfo();
         bool testGetCluster();
+        bool testGetClusterShards();
         bool testPing();
         bool testGetMateTypes();
         bool testGetMetaTypeProps();

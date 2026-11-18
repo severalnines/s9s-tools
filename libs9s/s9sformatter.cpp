@@ -16,6 +16,10 @@
 #define WARNING
 #include "s9sdebug.h"
 
+#include <algorithm>
+#include <iterator>
+#include <vector>
+
 #define BoolToHuman(boolVal) ((boolVal) ? 'y' : 'n')
 
 
@@ -1284,6 +1288,7 @@ S9sFormatter::printClusterStat(
 
     printHostTable(cluster);
     printReplicationTable(cluster);
+    printShardTable(cluster);
 }
 
 void 
@@ -1761,6 +1766,206 @@ S9sFormatter::printReplicationTable(
     }
 
     ::printf("\n");
+}
+
+void
+S9sFormatter::printShardTable(
+        const S9sCluster &cluster) const
+{
+    S9sString section = shardSection(cluster);
+
+    if (!section.empty())
+    {
+        ::printf("%s\n", STR(section));
+    }
+}
+
+// The Shards table, or a note when the controller does not know with_shards.
+S9sString
+S9sFormatter::shardSection(
+        const S9sCluster &cluster) const
+{
+    S9sString table = shardTable(cluster, useSyntaxHighLight());
+
+    if (table.empty() && isShardInfoMissing(cluster))
+    {
+        table = "No shard information from the controller.\n";
+    }
+
+    return table;
+}
+
+// A controller that does not know with_shards sends no shards at all.
+bool
+S9sFormatter::isShardInfoMissing(
+        const S9sCluster &cluster) const
+{
+    return S9sOptions::instance()->includeShardsInfo() &&
+        cluster.clusterType().toUpper() == "CLICKHOUSE" &&
+        cluster.shards().empty();
+}
+
+// One line per replica, the shard's own columns on the first line of each.
+S9sString
+S9sFormatter::shardTable(
+        const S9sCluster &cluster,
+        bool              color) const
+{
+    enum Column
+    {
+        ShardColumn,
+        WeightColumn,
+        RowsColumn,
+        SizeColumn,
+        StateColumn,
+        ReplicaColumn,
+        ReplicaStateColumn,
+        NumberOfColumns
+    };
+
+    typedef std::vector<S9sString> Row;
+
+    static constexpr const char *titles[NumberOfColumns] = {
+        "SHARD", "WEIGHT", "ROWS", "SIZE", "STATE", "REPLICA",
+        "REPLICA-STATE" };
+
+    const Row      header(std::begin(titles), std::end(titles));
+    S9sVariantList shards = cluster.shards();
+    std::vector<Row> rows;
+    S9sString      retval;
+    size_t         widths[NumberOfColumns] = { 0u };
+
+    if (shards.empty())
+        return retval;
+
+    const auto valueOrDash = [](const S9sVariantMap &map, const char *key)
+    {
+        S9sString value = map.contains(key) ? map.at(key).toString() : "";
+
+        return value.empty() ? S9sString("-") : value;
+    };
+
+    for (uint idx = 0u; idx < shards.size(); ++idx)
+    {
+        if (!shards[idx].isVariantMap())
+            continue;
+
+        S9sVariantMap  shard    = shards[idx].toVariantMap();
+        S9sVariantList replicas = shard["replicas"].toVariantList();
+        Row            shardRow(NumberOfColumns);
+
+        // The controller sends 0 rows and bytes for a shard it could not read.
+        const bool measured =
+            !shard.contains("state") || shard["state"].toString() == "read";
+
+        shardRow[ShardColumn]  = valueOrDash(shard, "shard_id");
+        shardRow[WeightColumn] = valueOrDash(shard, "weight");
+        if (measured && shard.contains("rows"))
+        {
+            shardRow[RowsColumn].sprintf(
+                    "%llu", shard["rows"].toULongLong());
+        }
+        else
+        {
+            shardRow[RowsColumn] = "-";
+        }
+
+        shardRow[SizeColumn] = measured && shard.contains("bytes") ?
+            S9sFormat::toSizeString(shard["bytes"].toULongLong()) :
+            S9sString("-");
+
+        shardRow[StateColumn] = valueOrDash(shard, "state");
+
+        if (replicas.empty())
+        {
+            shardRow[ReplicaColumn]      = "-";
+            shardRow[ReplicaStateColumn] = "-";
+            rows.push_back(shardRow);
+            continue;
+        }
+
+        for (uint r = 0u; r < replicas.size(); ++r)
+        {
+            S9sVariantMap replica = replicas[r].toVariantMap();
+            Row           row = r == 0u ? shardRow : Row(NumberOfColumns);
+
+            row[ReplicaColumn] = valueOrDash(replica, "hostname");
+            if (replica.contains("hostname") && replica.contains("port"))
+            {
+                row[ReplicaColumn] += ":" + valueOrDash(replica, "port");
+            }
+
+            row[ReplicaStateColumn] = valueOrDash(replica, "state");
+            rows.push_back(row);
+        }
+    }
+
+    if (rows.empty())
+        return retval;
+
+    for (size_t c = 0u; c < NumberOfColumns; ++c)
+    {
+        widths[c] = header[c].length();
+
+        for (size_t r = 0u; r < rows.size(); ++r)
+        {
+            widths[c] = std::max(widths[c], rows[r][c].length());
+        }
+    }
+
+    const auto formatRow = [&](const Row &cells)
+    {
+        S9sString formatted;
+
+        for (size_t c = 0u; c < NumberOfColumns; ++c)
+        {
+            const bool right =
+                c == WeightColumn || c == RowsColumn || c == SizeColumn;
+            S9sString  pad(" ");
+            pad = pad * (int) (widths[c] - cells[c].length());
+
+            if (c > 0u)
+            {
+                formatted += " ";
+            }
+
+            if (right)
+            {
+                formatted += pad + cells[c];
+            }
+            else if (c == NumberOfColumns - 1u)
+            {
+                formatted += cells[c];
+            }
+            else
+            {
+                formatted += cells[c] + pad;
+            }
+        }
+
+        return formatted;
+    };
+
+    if (color)
+    {
+        retval += headerColorBegin();
+    }
+
+    retval += formatRow(header);
+
+    if (color)
+    {
+        retval += headerColorEnd();
+    }
+
+    retval += "\n";
+
+    for (size_t r = 0u; r < rows.size(); ++r)
+    {
+        retval += formatRow(rows[r]) + "\n";
+    }
+
+    return retval;
 }
 
 void 

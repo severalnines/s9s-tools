@@ -613,6 +613,11 @@ S9sRpcClient::getCluster(
     //request["with_containers"] = true;
     //request["with_sheet_info"] = true;
 
+    if (S9sOptions::instance()->includeShardsInfo())
+    {
+        request["with_shards"] = true;
+    }
+
     if (S9S_CLUSTER_ID_IS_VALID(clusterId))
         request["cluster_id"]   = clusterId;
 
@@ -686,6 +691,7 @@ S9sRpcClient::getClusters()
     request["with_sheet_info"] = !options->excludeSheetInfo();
     request["with_containers"] = options->includeContainerInfo();
     request["with_databases"]  = options->includeDatabasesInfo();
+    request["with_shards"]     = options->includeShardsInfo();
 
     if (options->isRefreshRequested())
         request["refresh_now"] = true;

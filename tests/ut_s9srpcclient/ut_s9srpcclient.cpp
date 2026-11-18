@@ -242,6 +242,7 @@ UtS9sRpcClient::runTest(
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
     PERFORM_TEST(testGetCluster,          retval);
+    PERFORM_TEST(testGetClusterShards,    retval);
     PERFORM_TEST(testPing,                retval);
     PERFORM_TEST(testGetMateTypes,        retval);
     PERFORM_TEST(testGetMetaTypeProps,    retval);
@@ -3025,6 +3026,61 @@ UtS9sRpcClient::testGetCluster()
     S9S_COMPARE(payload["cluster_id"], 42);
     S9S_COMPARE(payload["with_hosts"], true);
 
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetClusterShards()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_VERIFY(!client.lastPayload().contains("with_shards"));
+    }
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"]          = 5;
+        options->m_options["include_shards_info"] = true;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_COMPARE(client.lastPayload()["operation"], "getClusterInfo");
+        S9S_COMPARE(client.lastPayload()["cluster_id"], 5);
+        S9S_COMPARE(client.lastPayload()["with_shards"], true);
+    }
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_name"]        = "ch";
+        options->m_options["include_shards_info"] = true;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_COMPARE(client.lastPayload()["cluster_name"], "ch");
+        S9S_COMPARE(client.lastPayload()["with_shards"], true);
+    }
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["include_shards_info"] = true;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_COMPARE(client.lastPayload()["operation"], "getAllClusterInfo");
+        S9S_COMPARE(client.lastPayload()["with_shards"], true);
+    }
+
+    options->m_options.clear();
     return true;
 }
 

@@ -115,4 +115,8 @@ class S9sFormatter
         void printContainersCompact(const S9sVariantList &containers) const;
         void printHostTable(const S9sCluster &cluster) const;
         void printReplicationTable(const S9sCluster &cluster) const;
+        void printShardTable(const S9sCluster &cluster) const;
+        S9sString shardSection(const S9sCluster &cluster) const;
+        S9sString shardTable(const S9sCluster &cluster, bool color) const;
+        bool isShardInfoMissing(const S9sCluster &cluster) const;
 };

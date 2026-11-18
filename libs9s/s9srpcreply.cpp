@@ -5491,6 +5491,7 @@ S9sRpcReply::printClusterListBrief()
     S9sString       format    = options->clusterFormat();
     bool            hasFormat = options->hasClusterFormat();
     S9sVariantList  theList   = clusters();
+    S9sVariantList  shown;
     int             nPrinted  = 0;
 
     for (uint idx = 0; idx < theList.size(); ++idx)
@@ -5532,6 +5533,7 @@ S9sRpcReply::printClusterListBrief()
         }
 
 
+        shown << theMap;
         ++nPrinted;
     }
 
@@ -5540,6 +5542,8 @@ S9sRpcReply::printClusterListBrief()
         printf("\n");
         fflush(stdout);
     }
+
+    printClusterListShards(shown);
 }
 
 void 
@@ -5710,6 +5714,7 @@ S9sRpcReply::printClusterListLong()
     int             terminalWidth = options->terminalWidth();
     S9sString       formatString  = options->longClusterFormat();
     int             nLines = 0;
+    S9sVariantList  shown;
     S9sFormat       idFormat;
     S9sFormat       stateFormat;
     S9sFormat       typeFormat;
@@ -5753,11 +5758,13 @@ S9sRpcReply::printClusterListLong()
              * Printing using the formatstring.
              */
             printf("%s", STR(cluster.toString(syntaxHighlight, formatString)));
+            shown << clusterMap;
         }
 
         if (!options->isBatchRequested())
             printf("Total: %lu\n", (unsigned long int) theList.size());
 
+        printClusterListShards(shown);
         return;
     }
 
@@ -5921,10 +5928,33 @@ S9sRpcReply::printClusterListLong()
         printf("%s", clusterColorEnd());
 
         printf("%s\n", STR(statusText));
+        shown << clusterMap;
     }
    
     if (!options->isBatchRequested())
         printf("Total: %lu\n", (unsigned long int) theList.size());
+
+    printClusterListShards(shown);
+}
+
+void
+S9sRpcReply::printClusterListShards(
+        const S9sVariantList &listed)
+{
+    for (uint idx = 0u; idx < listed.size(); ++idx)
+    {
+        S9sCluster cluster(listed[idx].toVariantMap());
+        S9sString  section = m_formatter.shardSection(cluster);
+
+        if (section.empty())
+            continue;
+
+        printf("\nShards of %s%s%s:\n%s",
+                clusterColorBegin(),
+                STR(cluster.name()),
+                clusterColorEnd(),
+                STR(section));
+    }
 }
 
 void 
