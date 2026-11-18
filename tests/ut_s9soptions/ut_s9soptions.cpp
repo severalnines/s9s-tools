@@ -2594,6 +2594,52 @@ UtS9sOptions::testRemoveShard()
     S9S_COMPARE(options->errorString(),
             "The --drop-rows option can only be used with --remove-shard.");
 
+    const char *argv5[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--uninstall",
+                            nullptr };
+    int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
+    S9S_VERIFY(options->uninstall());
+    S9S_VERIFY(!options->unregisterOnly());
+
+    const char *argv6[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--unregister-only",
+                            nullptr };
+    int         argc6   = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc6, (char **)argv6));
+    S9S_COMPARE(options->errorString(),
+            "The --unregister-only option can not be used with "
+            "--remove-shard.");
+    S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+
+    const char *argv7[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.0.1",
+                            "--unregister-only",
+                            nullptr };
+    int         argc7   = sizeof(argv7) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc7, (char **)argv7));
+    S9S_VERIFY(options->unregisterOnly());
+
     S9sOptions::uninit();
     return true;
 }

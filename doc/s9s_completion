@@ -222,6 +222,7 @@ function _s9s()
                 opts+="--shard-id= "
                 opts+="--subnet-id= "
                 opts+="--template= "
+                opts+="--uninstall "
                 opts+="--use-internal-repos "
                 opts+="--vendor= "
                 opts+="--volumes= "

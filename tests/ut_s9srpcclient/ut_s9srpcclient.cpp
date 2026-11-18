@@ -2284,6 +2284,22 @@ UtS9sRpcClient::testRemoveShard()
         S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(), "remove_shard");
         S9S_COMPARE(payload.valueByPath(JOB_DATA "shard_id"), 2);
         S9S_COMPARE(payload.valueByPath(JOB_DATA "drop_rows").toBoolean(), false);
+        S9S_VERIFY(
+                !payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean());
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        options->m_options["uninstall"]  = true;
+        setClusterReply(client, 5, "ch", "CLICKHOUSE");
+
+        S9S_VERIFY(client.removeShard());
+        S9sVariantMap payload = client.lastPayload();
+        S9S_VERIFY(payload.valueByPath(JOB_DATA "enable_uninstall").isBoolean());
+        S9S_VERIFY(payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean());
     }
 
     {

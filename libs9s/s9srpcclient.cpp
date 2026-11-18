@@ -6157,6 +6157,7 @@ S9sRpcClient::removeShard()
 
     jobData["shard_id"]  = options->shardId();
     jobData["drop_rows"] = options->isDropRowsRequested();
+    jobData["enable_uninstall"] = options->uninstall();
 
     jobSpec["command"]   = "remove_shard";
     jobSpec["job_data"]  = jobData;
