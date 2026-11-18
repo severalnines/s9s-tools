@@ -74,6 +74,7 @@ class UtS9sRpcClient : public S9sUnitTest
         bool testElasticVendorPrecheck();
         bool testAddShardClickHouse();
         bool testRemoveShard();
+        bool testEditShard();
         bool testGetAlarmHistory();
         bool testAddShardRejectsNonClickHouseNodes();
         bool testAddNodeClickHouseShardId();

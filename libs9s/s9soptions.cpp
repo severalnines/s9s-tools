@@ -71,6 +71,8 @@ enum S9sOptionType
     OptionAddNode,
     OptionAddShard,
     OptionRemoveShard,
+    OptionEditShard,
+    OptionShardWeight,
     OptionDropRows,
     OptionReinstallNode,
     OptionReconfigureNode,
@@ -7391,6 +7393,24 @@ S9sOptions::isDropRowsRequested() const
     return getBool("drop_rows");
 }
 
+bool
+S9sOptions::isEditShardRequested() const
+{
+    return getBool("edit_shard");
+}
+
+bool
+S9sOptions::hasShardWeight() const
+{
+    return m_options.contains("shard_weight");
+}
+
+int
+S9sOptions::shardWeight() const
+{
+    return getInt("shard_weight");
+}
+
 /**
  * \returns true if the reinstall operation was requested using the "--reinstall-node"
  *   command line option.
@@ -8967,6 +8987,8 @@ S9sOptions::printHelpCluster()
 "  --remove-node              Remove a node from the cluster.\n"
 "  --remove-shard             Remove the shard given by --shard-id from a\n"
 "                             ClickHouse cluster.\n"
+"  --edit-shard               Change the weight (--weight) of the shard given\n"
+"                             by --shard-id of a ClickHouse cluster.\n"
 "  --rolling-restart          Restart the nodes without stopping the cluster.\n"
 "  --set-read-only            Set the entire cluster into read-only mode.\n"
 "  --set-read-write           Set the entire cluster into read-write mode.\n"
@@ -9084,7 +9106,10 @@ S9sOptions::printHelpCluster()
 "\n"
 "ClickHouse shard related options\n"
 "  --shard-id=ID              The shard the node added by --add-node becomes a\n"
-"                             replica of, or the shard --remove-shard removes.\n"
+"                             replica of, the shard --remove-shard removes, or\n"
+"                             the shard --edit-shard changes.\n"
+"  --weight=INT               The new weight, from 0 to 1000, that --edit-shard\n"
+"                             gives to the shard. With 0 it gets no new rows.\n"
 "  --drop-rows                Confirm that --remove-shard drops the rows the\n"
 "                             shard holds.\n"
 "\n"
@@ -13715,6 +13740,11 @@ S9sOptions::checkOptionsCluster()
     if (isRemoveShardRequested())
         countOptions++;
 
+    if (isEditShardRequested())
+    {
+        countOptions++;
+    }
+
     if (isDropRequested())
         countOptions++;
 
@@ -13852,11 +13882,12 @@ S9sOptions::checkOptionsCluster()
         }
     }
 
-    if (shardId() > 0 && !isAddNodeRequested() && !isRemoveShardRequested())
+    if (shardId() > 0 && !isAddNodeRequested() && !isRemoveShardRequested() &&
+            !isEditShardRequested())
     {
         m_errorMessage =
-            "The --shard-id option can only be used with --add-node or "
-            "--remove-shard.";
+            "The --shard-id option can only be used with --add-node, "
+            "--remove-shard or --edit-shard.";
 
         m_exitStatus = BadOptions;
         return false;
@@ -13867,6 +13898,35 @@ S9sOptions::checkOptionsCluster()
         m_errorMessage =
             "The --remove-shard option needs --shard-id to name the shard "
             "to remove.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isEditShardRequested() && shardId() <= 0)
+    {
+        m_errorMessage =
+            "The --edit-shard option needs --shard-id to name the shard "
+            "to change.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isEditShardRequested() && !hasShardWeight())
+    {
+        m_errorMessage =
+            "The --edit-shard option needs --weight to give the new weight "
+            "of the shard.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (hasShardWeight() && !isEditShardRequested())
+    {
+        m_errorMessage =
+            "The --weight option can only be used with --edit-shard.";
 
         m_exitStatus = BadOptions;
         return false;
@@ -16119,6 +16179,7 @@ S9sOptions::readOptionsCluster(
         { "add-node",         no_argument,       0, OptionAddNode         },
         { "add-shard",        no_argument,       0, OptionAddShard        },
         { "remove-shard",     no_argument,       0, OptionRemoveShard     },
+        { "edit-shard",       no_argument,       0, OptionEditShard       },
         { "drop-rows",        no_argument,       0, OptionDropRows        },
         { "reinstall-node",   no_argument,       0, OptionReinstallNode   },
         { "reconfigure-node", no_argument,       0, OptionReconfigureNode },
@@ -16322,6 +16383,7 @@ S9sOptions::readOptionsCluster(
         // Options for add cluster/node.
         { "master-delay",        required_argument, 0,  OptionMasterDelay  },
         { "shard-id",            required_argument, 0,  OptionShardId      },
+        { "weight",              required_argument, 0,  OptionShardWeight  },
 
         // Options for remove cluster/node.
         { "uninstall",           no_argument,       0,  OptionUninstall     },
@@ -16531,6 +16593,10 @@ S9sOptions::readOptionsCluster(
 
             case OptionRemoveShard:
                 m_options["remove_shard"] = true;
+                break;
+
+            case OptionEditShard:
+                m_options["edit_shard"] = true;
                 break;
 
             case OptionDropRows:
@@ -17549,6 +17615,26 @@ S9sOptions::readOptionsCluster(
                 }
 
                 m_options["shard_id"] = atoi(optarg);
+                break;
+
+            case OptionShardWeight:
+                {
+                    int weight = atoi(optarg);
+
+                    if (!S9sString(optarg).looksInteger() || weight < 0 ||
+                            weight > MaxClickHouseShardWeight)
+                    {
+                        m_errorMessage.sprintf(
+                                "The value '%s' is invalid for --weight, it "
+                                "must be an integer from 0 to %d.",
+                                optarg, MaxClickHouseShardWeight);
+
+                        m_exitStatus = BadOptions;
+                        return false;
+                    }
+
+                    m_options["shard_weight"] = weight;
+                }
                 break;
 
             case '?':
