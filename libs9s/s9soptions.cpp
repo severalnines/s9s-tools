@@ -9076,7 +9076,8 @@ S9sOptions::printHelpCluster()
 "                             system memory used as auto DataMemory.\n"
 "                             Default 0.5. Persists into the cluster's\n"
 "                             cmon_N.cnf.\n"
-"  --uninstall                Uninstall software when removing a node.\n"
+"  --uninstall                Uninstall software when removing a node, or the\n"
+"                             replicas of the shard --remove-shard removes.\n"
 
 "\n"
 " Options for cluster creation\n"
@@ -13871,6 +13872,16 @@ S9sOptions::checkOptionsCluster()
         m_errorMessage =
             "The --remove-shard option needs --shard-id to name the shard "
             "to remove.";
+
+        m_exitStatus = BadOptions;
+        return false;
+    }
+
+    if (isRemoveShardRequested() && unregisterOnly())
+    {
+        m_errorMessage =
+            "The --unregister-only option can not be used with "
+            "--remove-shard.";
 
         m_exitStatus = BadOptions;
         return false;

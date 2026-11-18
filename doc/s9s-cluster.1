@@ -649,7 +649,11 @@ With Keeper embedded in the data nodes, data nodes of the remaining shards
 take over the Keeper votes of the removed shard. The remaining shards keep
 their numbers, and a shard added later never reuses a removed number. Every
 replica of the shard is stopped, its replica metadata is removed from Keeper
-and the node is removed from the cluster.
+and the node is removed from the cluster. ClickHouse and its data stay on the
+removed hosts unless \fB\-\-uninstall\fR is given: then the packages, the
+configuration and the data of every removed replica are removed too, and a
+replica that cannot be reached is only unregistered, with a warning. The
+\fB\-\-unregister\-only\fR option can not be used with \fB\-\-remove\-shard\fR.
 
 .B EXAMPLE
 .nf
@@ -657,6 +661,7 @@ s9s cluster \\
     --remove-shard \\
     --cluster-id=1 \\
     --shard-id=2 \\
+    --uninstall \\
     --wait
 .fi
 
