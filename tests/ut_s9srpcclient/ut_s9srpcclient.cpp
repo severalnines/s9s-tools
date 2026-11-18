@@ -2844,7 +2844,7 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
             "clickhouse://10.0.2.11?shard_id=1&weight=2;"
             "clickhouse://10.0.2.12?shard_id=1"));
 
-    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=0"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=-0"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=-2"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=1.5"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=2.0"));
@@ -2876,6 +2876,21 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
         shards = client.lastPayload().valueByPath(
                 "/job/job_spec/job_data/shards").toVariantList();
         S9S_COMPARE(shards[0]["weight"], 1000);
+    }
+
+    {
+        S9sRpcClientTester client;
+        S9sVariantList     shards;
+
+        setClickHouseCreateOptions(
+                "clickhouse://10.0.2.11?shard_id=1&weight=0;"
+                "clickhouse://10.0.2.12?shard_id=2&weight=2");
+        S9S_VERIFY(client.createCluster());
+        shards = client.lastPayload().valueByPath(
+                "/job/job_spec/job_data/shards").toVariantList();
+        S9S_VERIFY(shards[0]["weight"].isInt());
+        S9S_COMPARE(shards[0]["weight"], 0);
+        S9S_COMPARE(shards[1]["weight"], 2);
     }
 
     {
@@ -2958,6 +2973,15 @@ UtS9sRpcClient::testAddShardClickHouseWeight()
     S9S_COMPARE(
             maxWeight.lastPayload().valueByPath(JOB_DATA "weight"), 1000);
 
+    S9sRpcClientTester zeroWeight;
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11?weight=0");
+    S9S_VERIFY(zeroWeight.addShard());
+    S9S_VERIFY(zeroWeight.lastPayload().valueByPath(JOB_DATA "weight").isInt());
+    S9S_COMPARE(
+            zeroWeight.lastPayload().valueByPath(JOB_DATA "weight"), 0);
+
     return true;
 }
 
@@ -2968,7 +2992,7 @@ UtS9sRpcClient::testAddShardClickHouseWeightRefused()
     const char *refused[] = {
         "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12?weight=4",
         "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12",
-        "clickhouse://10.0.2.11?weight=0",
+        "clickhouse://10.0.2.11?weight=-0",
         "clickhouse://10.0.2.11?weight=-1",
         "clickhouse://10.0.2.11?weight=1.5",
         "clickhouse://10.0.2.11?weight=two",

@@ -48,7 +48,6 @@ namespace
 {
     const S9sString AWS_CLOUD_PROVIDER = "aws";
     const S9sString S3_CLOUD_SERVICE_PROVIDER  = "s3";
-    const int       MAX_CLICKHOUSE_SHARD_WEIGHT = 1000;
     const int       MAX_CLICKHOUSE_WEIGHT_TOTAL = 10000;
 }
 
@@ -5357,14 +5356,14 @@ sharedClickHouseWeight(
 
         if (properties.contains("weight"))
         {
-            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 1 ||
-                    parsed > MAX_CLICKHOUSE_SHARD_WEIGHT)
+            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 0 ||
+                    parsed > S9sOptions::MaxClickHouseShardWeight)
             {
                 PRINT_ERROR(
                         "The weight of the node '%s' is not valid, it must be "
-                        "an integer from 1 to %d.",
+                        "an integer from 0 to %d.",
                         STR(properties["hostname"].toString()),
-                        MAX_CLICKHOUSE_SHARD_WEIGHT);
+                        S9sOptions::MaxClickHouseShardWeight);
 
                 options->setExitStatus(S9sOptions::BadOptions);
                 return false;
