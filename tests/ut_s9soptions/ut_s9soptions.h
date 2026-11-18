@@ -78,4 +78,5 @@ class UtS9sOptions : public S9sUnitTest
         bool testRemoveShard();
         bool testShardId();
         bool testIncludeShardsInfo();
+        bool testEditShard();
 };

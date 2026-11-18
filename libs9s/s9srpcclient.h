@@ -467,6 +467,7 @@ class S9sRpcClient
         bool createNode();
         bool addShard();
         bool removeShard();
+        bool editShard();
         bool reinstallNode();
         bool reconfigureNode();
         bool removeNode();
@@ -572,6 +573,10 @@ class S9sRpcClient
                     const S9sVariantMap &reply) const;
 
     private:
+        bool requireClickHouseCluster(
+                const S9sString &option,
+                bool            &result);
+
         bool openBaoServiceJob(
                 S9sOptions      *options,
                 const S9sString &command,

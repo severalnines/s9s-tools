@@ -666,6 +666,29 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\-edit\-shard
+Creates a job that changes the weight of one shard of a ClickHouse cluster. The
+shard is named by its number with \fB\-\-shard\-id\fR and its new weight, an
+integer from 0 to 1000, is given with \fB\-\-weight\fR. A shard of weight 0
+receives no new rows through the Distributed tables but keeps the rows it
+holds and keeps answering for them. The weights of the other shards stay as
+they are. The new weight applies only to rows inserted from then on; the rows
+that are already in the shards are not moved. The controller refuses the change
+before changing anything when the shard does not exist, a data node is
+unreachable, or the weights of all shards would add up to 0 or to more than
+10000. Setting the weight a shard already has succeeds with nothing to change.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --edit-shard \\
+    --cluster-id=1 \\
+    --shard-id=2 \\
+    --weight=0 \\
+    --wait
+.fi
+
+.TP
 .B --rolling-restart
 Restart all nodes of the cluster by keeping the cluster alive. This command 
 line option will create a job that will restart all the nodes.

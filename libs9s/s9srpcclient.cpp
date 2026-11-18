@@ -6090,17 +6090,31 @@ S9sRpcClient::addShard()
     return executeRequest(uri, request);
 }
 
+/**
+ * Looks the cluster of a shard operation up and refuses the operation, before
+ * any job is created, unless it is an existing ClickHouse cluster.
+ *
+ * \returns True when the job can be created. Otherwise false, and \p result
+ *   is what the shard operation returns to its caller.
+ */
 bool
-S9sRpcClient::removeShard()
+S9sRpcClient::requireClickHouseCluster(
+        const S9sString &option,
+        bool            &result)
 {
     S9sOptions *options = S9sOptions::instance();
+
+    result = false;
 
     if (!getCluster(options->clusterName(), options->clusterId()))
         return false;
 
     S9sRpcReply clusterReply = reply();
     if (!clusterReply.isOk())
-        return true;
+    {
+        result = true;
+        return false;
+    }
 
     S9sVariantList clusters = clusterReply.clusters();
     S9sCluster cluster = clusters.empty()
@@ -6137,16 +6151,63 @@ S9sRpcClient::removeShard()
         }
 
         return refuse(
-                "The --remove-shard option needs the --cluster-id or "
+                "The " + option + " option needs the --cluster-id or "
                 "--cluster-name of an existing cluster.");
     }
 
     if (cluster.clusterType().toLower() != "clickhouse")
     {
         return refuse(
-                "The --remove-shard option is only supported for ClickHouse "
+                "The " + option + " option is only supported for ClickHouse "
                 "clusters.");
     }
+
+    return true;
+}
+
+bool
+S9sRpcClient::editShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    bool        proceed;
+
+    if (!requireClickHouseCluster("--edit-shard", proceed))
+        return proceed;
+
+    S9sVariantMap request = composeRequest();
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+    S9sVariantMap shard;
+    S9sVariantList shards;
+
+    shard["shard_id"]   = options->shardId();
+    shard["weight"]     = options->shardWeight();
+    shards << shard;
+    jobData["shards"]   = shards;
+
+    jobSpec["command"]  = "set_shard_weights";
+    jobSpec["job_data"] = jobData;
+
+    job["title"]        = "Change Shard Weight";
+    job["job_spec"]     = jobSpec;
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest("/v2/jobs/", request);
+}
+
+bool
+S9sRpcClient::removeShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    bool        proceed;
+
+    if (!requireClickHouseCluster("--remove-shard", proceed))
+        return proceed;
 
     S9sVariantMap request = composeRequest();
     S9sVariantMap job     = composeJob();
