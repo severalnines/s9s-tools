@@ -81,6 +81,8 @@ class S9sOptions
             Controllers,
         };
 
+        static const int MaxClickHouseShardWeight = 1000;
+
         enum ExitCodes
         {
             ExitOk          = 0,
