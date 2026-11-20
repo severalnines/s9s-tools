@@ -467,6 +467,7 @@ class S9sRpcClient
         bool createNode();
         bool addShard();
         bool removeShard();
+        bool editShard();
         bool reinstallNode();
         bool reconfigureNode();
         bool removeNode();
@@ -572,6 +573,16 @@ class S9sRpcClient
                     const S9sVariantMap &reply) const;
 
     private:
+        enum ShardClusterCheck
+        {
+            ShardClusterIsClickHouse,
+            ShardClusterLookupFailed,
+            ShardClusterLookupReplyNotOk,
+            ShardClusterRefused
+        };
+
+        ShardClusterCheck checkShardCluster(const S9sString &option);
+
         bool openBaoServiceJob(
                 S9sOptions      *options,
                 const S9sString &command,

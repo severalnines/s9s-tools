@@ -95,6 +95,8 @@ UtS9sOptions::runTest(const char *testName)
     PERFORM_TEST(testAddShard, retval);
     PERFORM_TEST(testRemoveShard, retval);
     PERFORM_TEST(testShardId, retval);
+    PERFORM_TEST(testIncludeShardsInfo, retval);
+    PERFORM_TEST(testEditShard, retval);
 
     return retval;
 }
@@ -2523,8 +2525,8 @@ UtS9sOptions::testAddShard()
     options = S9sOptions::instance();
     S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
     S9S_COMPARE(options->errorString(),
-            "The --shard-id option can only be used with --add-node or "
-            "--remove-shard.");
+            "The --shard-id option can only be used with --add-node, "
+            "--remove-shard or --edit-shard.");
 
     S9sOptions::uninit();
     return true;
@@ -2592,6 +2594,218 @@ UtS9sOptions::testRemoveShard()
     S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
     S9S_COMPARE(options->errorString(),
             "The --drop-rows option can only be used with --remove-shard.");
+
+    const char *argv5[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--uninstall",
+                            nullptr };
+    int         argc5   = sizeof(argv5) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc5, (char **)argv5));
+    S9S_VERIFY(options->uninstall());
+    S9S_VERIFY(!options->unregisterOnly());
+
+    const char *argv6[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--unregister-only",
+                            nullptr };
+    int         argc6   = sizeof(argv6) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc6, (char **)argv6));
+    S9S_COMPARE(options->errorString(),
+            "The --unregister-only option can not be used with "
+            "--remove-shard.");
+    S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+
+    const char *argv7[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-node",
+                            "--cluster-id=5",
+                            "--nodes=clickhouse://10.0.0.1",
+                            "--unregister-only",
+                            nullptr };
+    int         argc7   = sizeof(argv7) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc7, (char **)argv7));
+    S9S_VERIFY(options->unregisterOnly());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testIncludeShardsInfo()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--list",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc1, (char **)argv1));
+    S9S_VERIFY(!options->includeShardsInfo());
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--stat",
+                            "--cluster-id=5",
+                            "--include-shards-info",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc2, (char **)argv2));
+    S9S_VERIFY(options->includeShardsInfo());
+
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--list",
+                            "--include-shards-info=false",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(options->readOptions(&argc3, (char **)argv3));
+    S9S_VERIFY(!options->includeShardsInfo());
+
+    S9sOptions::uninit();
+    return true;
+}
+
+bool
+UtS9sOptions::testEditShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const struct { const char *weight; int expected; } accepted[] = {
+        { "0", 0 }, { "1", 1 }, { "1000", 1000 } };
+
+    for (const auto &entry : accepted)
+    {
+        S9sString   weightArg = S9sString("--weight=") + entry.weight;
+        const char *argv[]    = { "/bin/s9s",
+                                  "cluster",
+                                  "--edit-shard",
+                                  "--cluster-id=5",
+                                  "--shard-id=3",
+                                  STR(weightArg),
+                                  nullptr };
+        int         argc      = sizeof(argv) / sizeof(char *) - 1;
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+        S9S_VERIFY(options->readOptions(&argc, (char **)argv));
+        S9S_VERIFY(options->isEditShardRequested());
+        S9S_COMPARE(options->shardId(), 3);
+        S9S_VERIFY(options->hasShardWeight());
+        S9S_COMPARE(options->shardWeight(), entry.expected);
+    }
+
+    const char *invalid[] = { "1001", "-1", "heavy", "1.5", "" };
+
+    for (const char *weight : invalid)
+    {
+        S9sString   weightArg = S9sString("--weight=") + weight;
+        const char *argv[]    = { "/bin/s9s",
+                                  "cluster",
+                                  "--edit-shard",
+                                  "--cluster-id=5",
+                                  "--shard-id=3",
+                                  STR(weightArg),
+                                  nullptr };
+        int         argc      = sizeof(argv) / sizeof(char *) - 1;
+        S9sString   expected;
+
+        expected.sprintf(
+                "The value '%s' is invalid for --weight, it must be an "
+                "integer from 0 to 1000.", weight);
+
+        S9sOptions::uninit();
+        options = S9sOptions::instance();
+        S9S_VERIFY(!options->readOptions(&argc, (char **)argv));
+        S9S_COMPARE(options->errorString(), expected);
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+    }
+
+    const char *argv1[] = { "/bin/s9s",
+                            "cluster",
+                            "--edit-shard",
+                            "--cluster-id=5",
+                            "--weight=2",
+                            nullptr };
+    int         argc1   = sizeof(argv1) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc1, (char **)argv1));
+    S9S_COMPARE(options->errorString(),
+            "The --edit-shard option needs --shard-id to name the shard "
+            "to change.");
+
+    const char *argv2[] = { "/bin/s9s",
+                            "cluster",
+                            "--edit-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            nullptr };
+    int         argc2   = sizeof(argv2) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc2, (char **)argv2));
+    S9S_COMPARE(options->errorString(),
+            "The --edit-shard option needs --weight to give the new weight "
+            "of the shard.");
+
+    const char *argv3[] = { "/bin/s9s",
+                            "cluster",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--weight=2",
+                            nullptr };
+    int         argc3   = sizeof(argv3) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc3, (char **)argv3));
+    S9S_COMPARE(options->errorString(),
+            "The --weight option can only be used with --edit-shard.");
+
+    const char *argv4[] = { "/bin/s9s",
+                            "cluster",
+                            "--edit-shard",
+                            "--remove-shard",
+                            "--cluster-id=5",
+                            "--shard-id=3",
+                            "--weight=2",
+                            nullptr };
+    int         argc4   = sizeof(argv4) / sizeof(char *) - 1;
+
+    S9sOptions::uninit();
+    options = S9sOptions::instance();
+    S9S_VERIFY(!options->readOptions(&argc4, (char **)argv4));
+    S9S_COMPARE(
+            options->errorString(),
+            "The main options are mutually exclusive.");
 
     S9sOptions::uninit();
     return true;

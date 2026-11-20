@@ -601,6 +601,16 @@ S9sCluster::nodes() const
 }
 
 
+// Empty unless the cluster was requested with with_shards.
+S9sVariantList
+S9sCluster::shards() const
+{
+    if (m_properties.contains("shards"))
+        return m_properties.at("shards").toVariantList();
+
+    return S9sVariantList();
+}
+
 /**
  * \returns How many hosts the cluster have including the controller.
  */

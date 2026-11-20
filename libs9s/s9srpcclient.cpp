@@ -48,7 +48,6 @@ namespace
 {
     const S9sString AWS_CLOUD_PROVIDER = "aws";
     const S9sString S3_CLOUD_SERVICE_PROVIDER  = "s3";
-    const int       MAX_CLICKHOUSE_SHARD_WEIGHT = 1000;
     const int       MAX_CLICKHOUSE_WEIGHT_TOTAL = 10000;
 }
 
@@ -613,6 +612,11 @@ S9sRpcClient::getCluster(
     //request["with_containers"] = true;
     //request["with_sheet_info"] = true;
 
+    if (S9sOptions::instance()->includeShardsInfo())
+    {
+        request["with_shards"] = true;
+    }
+
     if (S9S_CLUSTER_ID_IS_VALID(clusterId))
         request["cluster_id"]   = clusterId;
 
@@ -686,6 +690,7 @@ S9sRpcClient::getClusters()
     request["with_sheet_info"] = !options->excludeSheetInfo();
     request["with_containers"] = options->includeContainerInfo();
     request["with_databases"]  = options->includeDatabasesInfo();
+    request["with_shards"]     = options->includeShardsInfo();
 
     if (options->isRefreshRequested())
         request["refresh_now"] = true;
@@ -5353,14 +5358,14 @@ sharedClickHouseWeight(
 
         if (properties.contains("weight"))
         {
-            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 1 ||
-                    parsed > MAX_CLICKHOUSE_SHARD_WEIGHT)
+            if (!decimalNodeProperty(node, "weight", parsed) || parsed < 0 ||
+                    parsed > S9sOptions::MaxClickHouseShardWeight)
             {
                 PRINT_ERROR(
                         "The weight of the node '%s' is not valid, it must be "
-                        "an integer from 1 to %d.",
+                        "an integer from 0 to %d.",
                         STR(properties["hostname"].toString()),
-                        MAX_CLICKHOUSE_SHARD_WEIGHT);
+                        S9sOptions::MaxClickHouseShardWeight);
 
                 options->setExitStatus(S9sOptions::BadOptions);
                 return false;
@@ -6087,37 +6092,39 @@ S9sRpcClient::addShard()
     return executeRequest(uri, request);
 }
 
-bool
-S9sRpcClient::removeShard()
+// A shard job is created only for an existing ClickHouse cluster.
+S9sRpcClient::ShardClusterCheck
+S9sRpcClient::checkShardCluster(
+        const S9sString &option)
 {
     S9sOptions *options = S9sOptions::instance();
 
     if (!getCluster(options->clusterName(), options->clusterId()))
-        return false;
+        return ShardClusterLookupFailed;
 
     S9sRpcReply clusterReply = reply();
     if (!clusterReply.isOk())
-        return true;
+        return ShardClusterLookupReplyNotOk;
 
     S9sVariantList clusters = clusterReply.clusters();
     S9sCluster cluster = clusters.empty()
             ? S9sCluster()
             : S9sCluster(clusters[0].toVariantMap());
-    // The controller answers with some other cluster when the request names none it can use.
+    // The controller answers with another cluster for one it does not know.
     const bool byName =
             !options->hasClusterIdOption() && !options->clusterName().empty();
     const bool requested = byName
             ? cluster.name() == options->clusterName()
             : S9S_CLUSTER_ID_IS_VALID(options->clusterId()) &&
               cluster.clusterId() == options->clusterId();
-    // The cluster lookup's reply would otherwise be reported as the result of the refused request.
+    // Replaces the lookup's reply, which would read as the refused request's.
     const auto refuse = [&](const S9sString &message)
     {
         m_priv->m_reply.clear();
         m_priv->m_reply["request_status"] = "InvalidRequest";
         m_priv->m_reply["error_string"]   = message;
         options->setExitStatus(S9sOptions::BadOptions);
-        return false;
+        return ShardClusterRefused;
     };
 
     if (clusters.empty() || !requested)
@@ -6134,16 +6141,63 @@ S9sRpcClient::removeShard()
         }
 
         return refuse(
-                "The --remove-shard option needs the --cluster-id or "
+                "The " + option + " option needs the --cluster-id or "
                 "--cluster-name of an existing cluster.");
     }
 
     if (cluster.clusterType().toLower() != "clickhouse")
     {
         return refuse(
-                "The --remove-shard option is only supported for ClickHouse "
+                "The " + option + " option is only supported for ClickHouse "
                 "clusters.");
     }
+
+    return ShardClusterIsClickHouse;
+}
+
+bool
+S9sRpcClient::editShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const ShardClusterCheck check = checkShardCluster("--edit-shard");
+
+    if (check != ShardClusterIsClickHouse)
+        return check == ShardClusterLookupReplyNotOk;
+
+    S9sVariantMap request = composeRequest();
+    S9sVariantMap job     = composeJob();
+    S9sVariantMap jobData = composeJobData();
+    S9sVariantMap jobSpec;
+    S9sVariantMap shard;
+    S9sVariantList shards;
+
+    shard["shard_id"]   = options->shardId();
+    shard["weight"]     = options->shardWeight();
+    shards << shard;
+    jobData["shards"]   = shards;
+
+    jobSpec["command"]  = "set_shard_weights";
+    jobSpec["job_data"] = jobData;
+
+    job["title"]        = "Change Shard Weight";
+    job["job_spec"]     = jobSpec;
+
+    request["operation"] = "createJobInstance";
+    request["job"]       = job;
+
+    return executeRequest("/v2/jobs/", request);
+}
+
+bool
+S9sRpcClient::removeShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const ShardClusterCheck check = checkShardCluster("--remove-shard");
+
+    if (check != ShardClusterIsClickHouse)
+        return check == ShardClusterLookupReplyNotOk;
 
     S9sVariantMap request = composeRequest();
     S9sVariantMap job     = composeJob();
@@ -6152,6 +6206,7 @@ S9sRpcClient::removeShard()
 
     jobData["shard_id"]  = options->shardId();
     jobData["drop_rows"] = options->isDropRowsRequested();
+    jobData["enable_uninstall"] = options->uninstall();
 
     jobSpec["command"]   = "remove_shard";
     jobSpec["job_data"]  = jobData;

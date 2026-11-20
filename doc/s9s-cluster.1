@@ -48,9 +48,10 @@ The new shard uses the Keeper ensemble the cluster already has; Keeper
 nodes cannot be part of the list. ClickHouse does not rebalance existing data,
 rows written before the shard was added stay on the shards that hold them.
 The nodes can give the \fBweight\fR property, the same for all of them, to set
-the weight of the new shard, an integer from 1 to 1000; it is 1 when omitted.
-The controller refuses a weight that makes the weights of all shards of the
-cluster add up to more than 10000. The schema is copied to the
+the weight of the new shard, an integer from 0 to 1000; it is 1 when omitted.
+A shard of weight 0 receives no new rows through the Distributed tables but
+keeps the rows it holds. The controller refuses a weight that makes the weights
+of all shards of the cluster add up to 0 or to more than 10000. The schema is copied to the
 new shard but the users are not, so users that query Distributed tables have
 to be created on it.
 
@@ -157,9 +158,10 @@ A ClickHouse cluster with several shards is created in one job by giving every
 the numbers from 1 to N without gaps, and every shard needs at least one node;
 the nodes of one shard are its replicas. The optional \fBweight\fR property
 sets the shard's weight, the share of the rows written through a Distributed
-table that the shard receives. It is an integer from 1 to 1000, the same
-for all nodes of a shard, and 1 when omitted; the weights of all shards of a
-cluster add up to at most 10000. When any \fBclickhouse://\fR
+table that the shard receives. It is an integer from 0 to 1000, the same
+for all nodes of a shard, and 1 when omitted (0 means the shard receives no new
+rows through the Distributed tables); the weights of all shards of a
+cluster add up to more than 0 and at most 10000. When any \fBclickhouse://\fR
 node has \fBshard_id\fR or \fBweight\fR, every one of them needs
 \fBshard_id\fR. Dedicated Keeper servers are given as
 \fBclickhouse-keeper://\fR nodes, which belong to no shard and take neither
@@ -646,8 +648,19 @@ remaining node is unreachable or Keeper has no quorum.
 With Keeper embedded in the data nodes, data nodes of the remaining shards
 take over the Keeper votes of the removed shard. The remaining shards keep
 their numbers, and a shard added later never reuses a removed number. Every
-replica of the shard is stopped, its replica metadata is removed from Keeper
-and the node is removed from the cluster.
+reachable replica of the shard is stopped; every replica has its replica
+metadata removed from Keeper and its node removed from the cluster. A replica
+that cannot be reached is only unregistered, with a warning, and may still be
+running. ClickHouse and its data stay on the removed hosts unless
+\fB\-\-uninstall\fR is given: then the controller also tries to delete the
+packages, the configuration and the data of every reachable removed replica.
+The uninstall is best effort: a replica whose uninstall fails is reported with a
+warning and named on the last line of the job messages, and its files have to
+be removed by hand before the host is reused. \fB\-\-uninstall\fR needs a
+controller that supports it with \fB\-\-remove\-shard\fR; an older
+controller removes the shard and leaves the files on the hosts without a
+warning. The
+\fB\-\-unregister\-only\fR option can not be used with \fB\-\-remove\-shard\fR.
 
 .B EXAMPLE
 .nf
@@ -655,6 +668,30 @@ s9s cluster \\
     --remove-shard \\
     --cluster-id=1 \\
     --shard-id=2 \\
+    --uninstall \\
+    --wait
+.fi
+
+.TP
+.B \-\-edit\-shard
+Creates a job that changes the weight of one shard of a ClickHouse cluster. The
+shard is named by its number with \fB\-\-shard\-id\fR and its new weight, an
+integer from 0 to 1000, is given with \fB\-\-weight\fR. A shard of weight 0
+receives no new rows through the Distributed tables but keeps the rows it
+holds and keeps answering for them. The weights of the other shards stay as
+they are. The new weight applies only to rows inserted from then on; the rows
+that are already in the shards are not moved. The controller refuses the change
+before changing anything when the shard does not exist, a data node is
+unreachable, or the weights of all shards would add up to 0 or to more than
+10000. Setting the weight a shard already has succeeds with nothing to change.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --edit-shard \\
+    --cluster-id=1 \\
+    --shard-id=2 \\
+    --weight=0 \\
     --wait
 .fi
 
@@ -983,6 +1020,27 @@ s9s cluster \\
 .fi
 
 .TP
+.B \-\^\-include\-shards\-info[=BOOL]
+Ask the controller for the rows and the size of every shard of the ClickHouse
+clusters, read live from their replicas. \fB\-\-stat\fP prints them as a
+Shards table after the hosts, and \fB\-\-list\fP prints the Shards table of
+every listed cluster after the list. The table has one line per replica: the
+shard number, weight, rows, size and state of the shard on its first line, then
+the replica and its state. A shard or replica that could not be read shows its
+state and "-" instead of the numbers. \fB\-\-list \-\-print\-json\fP carries
+the shards in the cluster. A controller that does not support the option sends
+no shards; s9s then prints "No shard information from the controller." for a
+ClickHouse cluster instead of the table.
+
+.B EXAMPLE
+.nf
+s9s cluster \\
+    --stat \\
+    --cluster-id=1 \\
+    --include-shards-info
+.fi
+
+.TP
 .B \-\^\-refresh
 Do not use cached data, collect fresh information from the cluster. When this
 command line option is provided with the \fB\-\-list\fP operation, the controller
@@ -1104,7 +1162,8 @@ The protocol to install and handle dedicated ClickHouse Keeper servers.
 .TP
 .BI \-\^\-shard\-id= ID
 The shard of a ClickHouse cluster the node added by \fB\-\-add\-node\fR
-becomes a replica of, or the shard \fB\-\-remove\-shard\fR removes. Shards
+becomes a replica of, the shard \fB\-\-remove\-shard\fR removes, or the
+shard \fB\-\-edit\-shard\fR changes. Shards
 are numbered from 1 in the order they were created, and a removed shard leaves
 its number unused; with \fB\-\-add\-node\fR shard 1 is used when the option
 is omitted. Every node in the
@@ -1119,6 +1178,11 @@ s9s cluster \\
     --shard-id=2 \\
     --wait
 .fi
+
+.TP
+.BI \-\^\-weight= INT
+The new weight of the shard \fB\-\-edit\-shard\fR changes, an integer from 0
+to 1000. The option can only be used with \fB\-\-edit\-shard\fR.
 
 .TP
 .B \-\-drop\-rows

@@ -378,6 +378,7 @@ class S9sRpcReply : public S9sVariantMap
 
         void printClusterListBrief();
         void printClusterListLong();
+        void printClusterListShards(const S9sVariantList &listed);
         void printClustersStat();
 
         void printReplicationListLong();

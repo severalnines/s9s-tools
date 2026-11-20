@@ -227,6 +227,7 @@ UtS9sRpcClient::runTest(
     PERFORM_TEST(testElasticVendorPrecheck, retval);
     PERFORM_TEST(testAddShardClickHouse,  retval);
     PERFORM_TEST(testRemoveShard,         retval);
+    PERFORM_TEST(testEditShard,           retval);
     PERFORM_TEST(testGetAlarmHistory,     retval);
     PERFORM_TEST(testAddShardRejectsNonClickHouseNodes, retval);
     PERFORM_TEST(testAddNodeClickHouseShardId, retval);
@@ -242,6 +243,7 @@ UtS9sRpcClient::runTest(
 
     PERFORM_TEST(testGetAllClusterInfo,   retval);
     PERFORM_TEST(testGetCluster,          retval);
+    PERFORM_TEST(testGetClusterShards,    retval);
     PERFORM_TEST(testPing,                retval);
     PERFORM_TEST(testGetMateTypes,        retval);
     PERFORM_TEST(testGetMetaTypeProps,    retval);
@@ -2283,6 +2285,22 @@ UtS9sRpcClient::testRemoveShard()
         S9S_COMPARE(payload.valueByPath("/job/job_spec/command").toString(), "remove_shard");
         S9S_COMPARE(payload.valueByPath(JOB_DATA "shard_id"), 2);
         S9S_COMPARE(payload.valueByPath(JOB_DATA "drop_rows").toBoolean(), false);
+        S9S_VERIFY(
+                !payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean());
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+        options->m_options["shard_id"]   = 2;
+        options->m_options["uninstall"]  = true;
+        setClusterReply(client, 5, "ch", "CLICKHOUSE");
+
+        S9S_VERIFY(client.removeShard());
+        S9sVariantMap payload = client.lastPayload();
+        S9S_VERIFY(payload.valueByPath(JOB_DATA "enable_uninstall").isBoolean());
+        S9S_VERIFY(payload.valueByPath(JOB_DATA "enable_uninstall").toBoolean());
     }
 
     {
@@ -2359,6 +2377,95 @@ UtS9sRpcClient::testRemoveShard()
         S9S_COMPARE(client.uri(1), "/v2/jobs/");
         S9S_COMPARE(client.lastPayload().valueByPath(JOB_DATA "shard_id"), 2);
         options->m_userConfig.parse("");
+    }
+
+    options->setExitStatus(S9sOptions::ExitOk);
+    return true;
+}
+
+bool
+UtS9sRpcClient::testEditShard()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    const auto setClusterReply = [](S9sRpcClientTester &client, int clusterId,
+            const char *clusterName, const char *clusterType)
+    {
+        S9sVariantMap cluster;
+        cluster["cluster_id"]   = clusterId;
+        cluster["cluster_name"] = clusterName;
+        cluster["cluster_type"] = clusterType;
+
+        S9sVariantMap reply;
+        reply["request_status"] = "Ok";
+        reply["cluster"]        = cluster;
+        client.setReplyFor("getClusterInfo", reply);
+    };
+
+    const int weights[] = { 0, 7, 1000 };
+
+    for (int weight : weights)
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"]   = 5;
+        options->m_options["shard_id"]     = 2;
+        options->m_options["shard_weight"] = weight;
+        setClusterReply(client, 5, "ch", "CLICKHOUSE");
+
+        S9S_VERIFY(client.editShard());
+        S9S_COMPARE(client.uri(0), "/v2/clusters/");
+        S9S_COMPARE(client.uri(1), "/v2/jobs/");
+
+        S9sVariantMap  payload = client.lastPayload();
+        S9sVariantList shards  =
+            payload.valueByPath(JOB_DATA "shards").toVariantList();
+
+        S9S_COMPARE(payload["operation"].toString(), "createJobInstance");
+        S9S_COMPARE(payload["cluster_id"], 5);
+        S9S_COMPARE(
+                payload.valueByPath("/job/title").toString(),
+                "Change Shard Weight");
+        S9S_COMPARE(
+                payload.valueByPath("/job/job_spec/command").toString(),
+                "set_shard_weights");
+        S9S_COMPARE(shards.size(), 1);
+        S9S_VERIFY(shards[0]["shard_id"].isInt());
+        S9S_VERIFY(shards[0]["weight"].isInt());
+        S9S_COMPARE(shards[0]["shard_id"], 2);
+        S9S_COMPARE(shards[0]["weight"], weight);
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"]   = 5;
+        options->m_options["shard_id"]     = 2;
+        options->m_options["shard_weight"] = 3;
+        setClusterReply(client, 5, "galera", "GALERA");
+
+        S9S_VERIFY(!client.editShard());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(client.uri(1), "");
+        S9S_COMPARE(client.errorString(),
+                "The --edit-shard option is only supported for ClickHouse clusters.");
+    }
+
+    {
+        S9sRpcClientTester client;
+        options->m_options.clear();
+        options->m_options["cluster_id"]   = 5;
+        options->m_options["shard_id"]     = 2;
+        options->m_options["shard_weight"] = 3;
+        setClusterReply(client, 7, "other", "CLICKHOUSE");
+        options->setExitStatus(S9sOptions::ExitOk);
+
+        S9S_VERIFY(!client.editShard());
+        S9S_COMPARE(options->exitStatus(), S9sOptions::BadOptions);
+        S9S_COMPARE(client.uri(1), "");
+        S9S_COMPARE(client.errorString(),
+                "The --edit-shard option needs the --cluster-id or "
+                "--cluster-name of an existing cluster.");
     }
 
     options->setExitStatus(S9sOptions::ExitOk);
@@ -2843,7 +2950,7 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
             "clickhouse://10.0.2.11?shard_id=1&weight=2;"
             "clickhouse://10.0.2.12?shard_id=1"));
 
-    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=0"));
+    S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=-0"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=-2"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=1.5"));
     S9S_VERIFY(createRefused("clickhouse://10.0.2.11?shard_id=1&weight=2.0"));
@@ -2875,6 +2982,21 @@ UtS9sRpcClient::testCreateClickHouseShardsRefused()
         shards = client.lastPayload().valueByPath(
                 "/job/job_spec/job_data/shards").toVariantList();
         S9S_COMPARE(shards[0]["weight"], 1000);
+    }
+
+    {
+        S9sRpcClientTester client;
+        S9sVariantList     shards;
+
+        setClickHouseCreateOptions(
+                "clickhouse://10.0.2.11?shard_id=1&weight=0;"
+                "clickhouse://10.0.2.12?shard_id=2&weight=2");
+        S9S_VERIFY(client.createCluster());
+        shards = client.lastPayload().valueByPath(
+                "/job/job_spec/job_data/shards").toVariantList();
+        S9S_VERIFY(shards[0]["weight"].isInt());
+        S9S_COMPARE(shards[0]["weight"], 0);
+        S9S_COMPARE(shards[1]["weight"], 2);
     }
 
     {
@@ -2957,6 +3079,15 @@ UtS9sRpcClient::testAddShardClickHouseWeight()
     S9S_COMPARE(
             maxWeight.lastPayload().valueByPath(JOB_DATA "weight"), 1000);
 
+    S9sRpcClientTester zeroWeight;
+    options->m_options.clear();
+    options->m_options["cluster_id"] = 5;
+    options->setNodes("clickhouse://10.0.2.11?weight=0");
+    S9S_VERIFY(zeroWeight.addShard());
+    S9S_VERIFY(zeroWeight.lastPayload().valueByPath(JOB_DATA "weight").isInt());
+    S9S_COMPARE(
+            zeroWeight.lastPayload().valueByPath(JOB_DATA "weight"), 0);
+
     return true;
 }
 
@@ -2967,7 +3098,7 @@ UtS9sRpcClient::testAddShardClickHouseWeightRefused()
     const char *refused[] = {
         "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12?weight=4",
         "clickhouse://10.0.2.11?weight=3;clickhouse://10.0.2.12",
-        "clickhouse://10.0.2.11?weight=0",
+        "clickhouse://10.0.2.11?weight=-0",
         "clickhouse://10.0.2.11?weight=-1",
         "clickhouse://10.0.2.11?weight=1.5",
         "clickhouse://10.0.2.11?weight=two",
@@ -3025,6 +3156,61 @@ UtS9sRpcClient::testGetCluster()
     S9S_COMPARE(payload["cluster_id"], 42);
     S9S_COMPARE(payload["with_hosts"], true);
 
+    return true;
+}
+
+bool
+UtS9sRpcClient::testGetClusterShards()
+{
+    S9sOptions *options = S9sOptions::instance();
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"] = 5;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_VERIFY(!client.lastPayload().contains("with_shards"));
+    }
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_id"]          = 5;
+        options->m_options["include_shards_info"] = true;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_COMPARE(client.lastPayload()["operation"], "getClusterInfo");
+        S9S_COMPARE(client.lastPayload()["cluster_id"], 5);
+        S9S_COMPARE(client.lastPayload()["with_shards"], true);
+    }
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["cluster_name"]        = "ch";
+        options->m_options["include_shards_info"] = true;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_COMPARE(client.lastPayload()["cluster_name"], "ch");
+        S9S_COMPARE(client.lastPayload()["with_shards"], true);
+    }
+
+    {
+        S9sRpcClientTester client;
+
+        options->m_options.clear();
+        options->m_options["include_shards_info"] = true;
+
+        S9S_VERIFY(client.getClusters());
+        S9S_COMPARE(client.lastPayload()["operation"], "getAllClusterInfo");
+        S9S_COMPARE(client.lastPayload()["with_shards"], true);
+    }
+
+    options->m_options.clear();
     return true;
 }
 

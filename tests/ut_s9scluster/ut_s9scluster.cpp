@@ -23,6 +23,7 @@
 #include "s9svariantmap.h"
 #include "s9srpcclient.h"
 #include "s9soptions.h"
+#include "s9sformatter.h"
 
 #define DEBUG
 #define WARNING
@@ -337,6 +338,9 @@ UtS9sCluster::runTest(const char *testName)
     PERFORM_TEST(testCreate,          retval);
     PERFORM_TEST(testAssign,          retval);
     PERFORM_TEST(testToString,        retval);
+    PERFORM_TEST(testShards,          retval);
+    PERFORM_TEST(testShardTable,      retval);
+    PERFORM_TEST(testShardInfoMissing, retval);
 
     return retval;
 }
@@ -461,3 +465,174 @@ UtS9sCluster::testToString()
 
 S9S_UNIT_TEST_MAIN(UtS9sCluster)
 
+
+static const char *clickHouseShardsJson =
+"{\n"
+"    'cluster_id': 7,\n"
+"    'cluster_name': 'ch',\n"
+"    'cluster_type': 'CLICKHOUSE',\n"
+"    'shards': [ \n"
+"    {\n"
+"        'shard_id': 1,\n"
+"        'weight': 1,\n"
+"        'state': 'read',\n"
+"        'rows': 1500000,\n"
+"        'bytes': 2048,\n"
+"        'replicas': [ \n"
+"        { 'hostname': '10.0.0.1', 'port': 9000, 'state': 'read', 'rows': 1500000, 'bytes': 2048 },\n"
+"        { 'hostname': '10.0.0.2', 'port': 9000, 'state': 'read', 'rows': 1400000, 'bytes': 2000 } ]\n"
+"    },\n"
+"    {\n"
+"        'shard_id': 2,\n"
+"        'weight': 0,\n"
+"        'state': 'no_online_replica',\n"
+"        'replicas': [ \n"
+"        { 'hostname': '10.0.0.3', 'port': 9000, 'state': 'failed', 'message': 'timeout' } ]\n"
+"    } ]\n"
+"}\n"
+;
+
+bool
+UtS9sCluster::testShards()
+{
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+
+    S9S_VERIFY(theMap.parse(clusterJson1));
+    theCluster = theMap;
+    S9S_COMPARE(theCluster.shards().size(), 0);
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(clickHouseShardsJson));
+    theCluster = theMap;
+
+    S9sVariantList shards = theCluster.shards();
+    S9S_COMPARE(shards.size(), 2);
+    S9S_COMPARE(shards[0]["shard_id"].toInt(), 1);
+    S9S_COMPARE(shards[0]["weight"].toInt(), 1);
+    S9S_COMPARE(shards[1]["state"].toString(), "no_online_replica");
+    S9S_COMPARE(shards[1]["replicas"].toVariantList().size(), 1);
+
+    return true;
+}
+
+bool
+UtS9sCluster::testShardTable()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sFormatter   formatter;
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+
+    options->setHumanReadable(false);
+
+    S9S_VERIFY(theMap.parse(clusterJson1));
+    theCluster = theMap;
+    S9S_COMPARE(formatter.shardTable(theCluster, false), "");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(clickHouseShardsJson));
+    theCluster = theMap;
+
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT    ROWS SIZE STATE             REPLICA       REPLICA-STATE\n"
+            "1          1 1500000 2048 read              10.0.0.1:9000 read\n"
+            "                                            10.0.0.2:9000 read\n"
+            "2          0       -    - no_online_replica 10.0.0.3:9000 failed\n");
+
+    options->setHumanReadable(true);
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(
+                "{ 'shards': [ { 'shard_id': 1, 'weight': 1, 'state': 'read', "
+                "'rows': 10, 'bytes': 3145728, "
+                "'replicas': [ { 'hostname': 'h', 'port': 9000, 'state': 'read' } ] } ] }"));
+    theCluster = theMap;
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT ROWS SIZE STATE REPLICA REPLICA-STATE\n"
+            "1          1   10 3.0M read  h:9000  read\n");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(
+                "{ 'shards': [ { 'shard_id': 3, 'weight': 1, "
+                "'state': 'no_online_replica', 'replicas': [ ] } ] }"));
+    theCluster = theMap;
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT ROWS SIZE STATE             REPLICA REPLICA-STATE\n"
+            "3          1    -    - no_online_replica -       -\n");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(
+                "{ 'shards': [ { 'shard_id': 4, 'weight': 1, 'state': 'failed', "
+                "'rows': 0, 'bytes': 0, "
+                "'replicas': [ { 'hostname': 'h', 'port': 9000, 'state': 'failed' } ] }, "
+                "{ 'shard_id': 5, 'weight': 1, 'state': 'read', "
+                "'rows': 0, 'bytes': 0, "
+                "'replicas': [ { 'hostname': 'h', 'port': 9001, 'state': 'read' } ] }, "
+                "{ 'shard_id': 6, 'weight': 1, 'rows': 7, 'bytes': 7 } ] }"));
+    theCluster = theMap;
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT ROWS SIZE STATE  REPLICA REPLICA-STATE\n"
+            "4          1    -    - failed h:9000  failed\n"
+            "5          1    0    0 read   h:9001  read\n"
+            "6          1    7    7 -      -       -\n");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(
+                "{ 'shards': [ 'unexpected', "
+                "{ 'replicas': [ { 'port': 9000 }, 'unexpected' ] } ] }"));
+    theCluster = theMap;
+    S9S_COMPARE(
+            formatter.shardTable(theCluster, false),
+            "SHARD WEIGHT ROWS SIZE STATE REPLICA REPLICA-STATE\n"
+            "-          -    -    - -     -       -\n"
+            "                             -       -\n");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse("{ 'shards': [ 'unexpected' ] }"));
+    theCluster = theMap;
+    S9S_COMPARE(formatter.shardTable(theCluster, false), "");
+
+    options->setHumanReadable(false);
+    return true;
+}
+
+// A controller that does not know with_shards answers without shards.
+bool
+UtS9sCluster::testShardInfoMissing()
+{
+    S9sOptions    *options = S9sOptions::instance();
+    S9sFormatter   formatter;
+    S9sVariantMap  theMap;
+    S9sCluster     theCluster;
+
+    S9S_VERIFY(theMap.parse(
+                "{ 'cluster_id': 7, 'cluster_name': 'ch', "
+                "'cluster_type': 'CLICKHOUSE' }"));
+    theCluster = theMap;
+
+    options->setIncludeShardsInfo(false);
+    S9S_VERIFY(!formatter.isShardInfoMissing(theCluster));
+
+    options->setIncludeShardsInfo(true);
+    S9S_VERIFY(formatter.isShardInfoMissing(theCluster));
+    S9S_COMPARE(
+            formatter.shardSection(theCluster),
+            "No shard information from the controller.\n");
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(clickHouseShardsJson));
+    theCluster = theMap;
+    S9S_VERIFY(!formatter.isShardInfoMissing(theCluster));
+
+    theMap.clear();
+    S9S_VERIFY(theMap.parse(clusterJson1));
+    theCluster = theMap;
+    S9S_VERIFY(!formatter.isShardInfoMissing(theCluster));
+
+    options->setIncludeShardsInfo(false);
+    return true;
+}
