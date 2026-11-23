@@ -881,79 +881,20 @@ supplied by the caller.
 
 .RS 7
 .PP
-A ClickHouse cluster with several shards is backed up as one part per shard,
-taken from one online Data node of each shard. A backup of such a cluster must
-go either to S3 (\fB\-\^\-cloud\-only\fP with the cloud credentials) or to a
-backup directory (\fB\-\^\-backup\-directory\fP) that every Data node sees at
-the same path. Without \fB\-\^\-backup\-directory\fP the configured default
-backup directory is used, and the check below runs on it. The parts of a backup
-in a shared backup directory are written to \fIDIRECTORY/BACKUP/shard_N\fP, one
-per shard, where \fIBACKUP\fP is the name of the backup and \fIN\fP the shard
-number; a compressed part is named \fIshard_N.zip\fP. Storing the backup on the
-controller is not supported for ClickHouse. Backups of a sharded cluster cannot
-overlap: a backup job is refused while another backup job of the same cluster is
-still running. Verifying a backup that holds more than one shard is not
-supported.
+A ClickHouse cluster with several shards is backed up as one part per shard.
+Such a backup must go to S3 (\fB\-\^\-cloud\-only\fP) or to a backup
+directory that every Data node shares at the same path, for example an NFS
+mount; the controller checks this before the backup starts and refuses an
+unshared directory.
 
 .PP
-Before it writes anything to a backup directory, the controller checks that the
-directory is really shared. It writes a marker file into the directory from one
-online Data node, and every other online Data node must find the file there;
-the marker is removed afterwards. Data nodes that are stopped cannot be asked:
-the job log names them as host:port in a warning, and the directory must be
-shared by them as well before they start again. The directory must already
-exist on every Data node and be writable by the clickhouse user; the controller
-does not create it or change its owner. If some online nodes do not see the
-marker, the backup is refused with a message naming those nodes as host:port
-and asking for S3 or a backup directory shared by every Data node. If the check
-cannot give an answer for a node, because the node did not reply in time, the
-check could not be run there or the node could not be reached, the backup does
-not start and the message says that the directory could not be verified, with
-the reason for each such node. The whole check is limited to 60 seconds; nodes
-not reached within that time are named. The directory must be an absolute path
-made of letters, digits, \fB_\fP, \fB.\fP, \fB\-\fP and \fB/\fP.
+An incremental backup of a sharded cluster builds on the newest completed
+backup on the same storage. A full backup is asked for when there is none, or
+when the shards of the cluster have changed since.
 
 .PP
-An incremental backup (\fIclickhouse-native-incr\fP) of a sharded cluster builds
-each shard's part on the same shard's part of the parent backup, and the parent
-backup may itself be incremental. The parent is the newest completed backup on
-the same storage: the same S3 bucket and credentials, or the same backup
-directory. A newer backup on the other kind of storage is not used. A cluster
-with one shard never takes a backup of several shards as its parent. The parts
-of the new backup record the parts they were built on.
-
-.PP
-An incremental backup is refused, and a full backup is asked for, in these
-cases:
-
-.IP \(bu 3
-no completed backup of the cluster exists on that storage;
-.IP \(bu 3
-the shard numbers of the cluster differ from the shard numbers of the parent
-backup;
-.IP \(bu 3
-on S3, a part would be written in a different archive format than the same
-shard's part of the parent backup.
-
-.PP
-Compression follows the single-shard rules. On S3 every part is an archive with
-a fixed compression and the compression level is ignored. In a shared backup
-directory, a compression level from 1 to 9 writes every part of a full backup as
-a zip archive, and \fB\-\^\-no\-compression\fP writes plain directories. An
-incremental backup is written as zip archives only when compression is requested
-and its parent backup is a zip archive; otherwise it is a plain directory. When
-compression is requested but the parent backup is not a zip archive, a warning
-says that compression was skipped.
-
-.PP
-A restore of a sharded backup needs a cluster with the same number of shards
-and the same shard numbers as the backup, and every Data node online, so that no
-replica keeps its old rows. Otherwise it is refused with a message that names
-the difference. If a shard cannot find what it restores, the restore
-reports the shard, the node, the part or parent backup that was not found and
-the error of ClickHouse, and lists the possible causes: a parent backup that is
-missing from the storage, a backup directory that is not shared by every Data
-node at the same path, or files that were removed.
+A sharded backup is restored into a cluster with the same shards, with every
+Data node online.
 .RE
 
 .TP
