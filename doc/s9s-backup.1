@@ -876,8 +876,26 @@ clickhouse-native, clickhouse-native-incr.
 For ClickHouse clusters, \fIclickhouse-native\fP creates a full backup using
 the native ClickHouse BACKUP SQL command.  \fIclickhouse-native-incr\fP
 creates an incremental backup; Cluster Control automatically locates the most
-recent completed backup as the base — no parent backup ID needs to be
+recent completed backup as the base - no parent backup ID needs to be
 supplied by the caller.
+
+.RS 7
+.PP
+A ClickHouse cluster with several shards is backed up as one part per shard.
+Such a backup must go to S3 (\fB\-\^\-cloud\-only\fP) or to a backup
+directory that every Data node shares at the same path, for example an NFS
+mount; the controller checks this before the backup starts and refuses an
+unshared directory.
+
+.PP
+An incremental backup of a sharded cluster builds on the newest completed
+backup on the same storage. A full backup is asked for when there is none, or
+when the shards of the cluster have changed since.
+
+.PP
+A sharded backup is restored into a cluster with the same shards, with every
+Data node online.
+.RE
 
 .TP
 .BI \-\^\-backup\-password= PASSWORD
